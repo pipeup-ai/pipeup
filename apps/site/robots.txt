@@ -1,0 +1,4 @@
+# Pipeup's site. Everyone, including AI agents, is welcome to read it.
+# For agents: llms.txt (a short guide) and llms-full.txt (the guide and skills in one file).
+User-agent: *
+Allow: /

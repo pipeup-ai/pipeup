@@ -1,0 +1,154 @@
+import { formatAgo } from "../export/format";
+import { nameOf } from "../model/animals";
+import type { Comment, Thread } from "../model/types";
+import { avatar, easeIn, faceOf, retire } from "./animals";
+import { composer } from "./composer";
+import { clip, h, linkify } from "./dom";
+import { icon, type IconName } from "./icons";
+
+export interface ThreadActions {
+  reply(parentId: string, text: string): Promise<void>;
+  resolve(threadId: string): Promise<void>;
+  reopen(threadId: string): Promise<void>;
+  copy(threadId: string): void;
+  /** Esc in the reply line: closes the thread. */
+  close(): void;
+}
+
+export interface ThreadViewOptions {
+  variant: "column" | "popover";
+  quote?: string | null;
+  /** Snapshot of content that is no longer on the page. */
+  lost?: string | null;
+  now?: () => number;
+}
+
+const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
+
+export interface ThreadView {
+  readonly element: HTMLElement;
+  /** Shows a newer copy of the thread. The reply line is kept, so what's being typed in it (and focus) survives. */
+  update(t: Thread, o?: { quote?: string | null; lost?: string | null }): void;
+}
+
+/**
+ * One thread: the words first; who, when and actions ease open beneath them on hover. Replies sit one level
+ * in beneath the comment, oldest first, and the thread ends with its reply line at the same indent.
+ */
+export function threadView(first: Thread, actions: ThreadActions, options: ThreadViewOptions): ThreadView {
+  const o = { ...options };
+  let id = first.id;
+  const line = h(
+    "div",
+    { class: "rbox always" },
+    h(
+      "div",
+      {},
+      composer({ label: "Reply", onSend: (text) => actions.reply(id, text), onCancel: actions.close })
+        .element,
+    ),
+  );
+  const inner = h("div", {});
+  let root: HTMLElement = h("div", {});
+  let list: HTMLElement | null = null;
+  const element = h("div", {}, root, h("div", { class: "more" }, inner));
+  /**
+   * Avatars by comment, with the face they show. Updates rebuild the comment's box, so the same avatar is
+   * moved into the new one instead: it eases in once, when it first appears, and never again. When the face
+   * changes (its writer added a name), the old one stays beneath until the new one has eased in over it.
+   */
+  let faces = new Map<string, { key: string; el: HTMLElement }>();
+  let nextFaces = new Map<string, { key: string; el: HTMLElement }>();
+  const leaving = new Map<string, HTMLElement>();
+  const face = (c: Comment): HTMLElement[] => {
+    const key = faceOf(c.author, c.name);
+    const had = faces.get(c.id);
+    let el = had?.el;
+    if (!el || had!.key !== key) {
+      el = easeIn(avatar(c.author, c.name));
+      if (had) {
+        const old = had.el;
+        leaving.set(c.id, old);
+        retire(old, () => leaving.get(c.id) === old && leaving.delete(c.id));
+      }
+    }
+    el.title = nameOf(c);
+    nextFaces.set(c.id, { key, el });
+    const old = leaving.get(c.id);
+    return old ? [old, el] : [el];
+  };
+
+  const button = (name: IconName, label: string, run: () => void) => {
+    const b = h("button", { class: "ib", type: "button", "aria-label": label, title: label }, icon(name));
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      run();
+    });
+    return b;
+  };
+
+  function update(t: Thread, next: { quote?: string | null; lost?: string | null } = {}): void {
+    Object.assign(o, next);
+    id = t.id;
+    const now = (o.now ?? Date.now)();
+    const n = t.root.replies.length;
+    const who = (c: Comment) => h("span", { class: "who" }, `${nameOf(c)} · ${formatAgo(c.at, now)}`);
+    const words = (c: Comment) =>
+      h(
+        "div",
+        { class: c.deleted ? "tx del" : "tx" },
+        ...(c.deleted ? ["Deleted"] : [...linkify(c.text), c.edited ? " (edited)" : ""]),
+      );
+    const restText = t.resolved ? "Resolved" + (n ? ` · ${plural(n)}` : "") : n ? plural(n) : "";
+    const footer = h(
+      "div",
+      { class: o.variant === "column" && restText ? "ft has-rest" : "ft" },
+      o.variant === "column" && restText ? h("span", { class: "rest" }, restText) : null,
+      h(
+        "span",
+        { class: "hover" },
+        who(t.root),
+        h(
+          "span",
+          { class: "acts" },
+          button("copy", "Copy thread", () => actions.copy(t.id)),
+          t.resolved
+            ? button("reopen", "Reopen", () => void actions.reopen(t.id))
+            : button("resolve", "Resolve", () => void actions.resolve(t.id)),
+        ),
+      ),
+    );
+    const context = o.lost
+      ? h("div", { class: "ctx" }, `No longer on the page — it read “${clip(o.lost, 120)}”`)
+      : o.quote
+        ? h("div", { class: "ctx" }, `“${clip(o.quote, 80)}”`)
+        : null;
+    nextFaces = new Map();
+    // Each comment keeps room for its avatar at the top right, so the words never move or narrow for it.
+    const nextRoot = h("div", { class: "root" }, ...face(t.root), context, words(t.root), footer);
+    root.replaceWith(nextRoot);
+    root = nextRoot;
+
+    // Swap the comment and replies around the reply line; never rebuild the line itself.
+    list?.remove();
+    list = n
+      ? h(
+          "div",
+          { class: "rps" },
+          ...t.root.replies.map((c) =>
+            h("div", { class: "it" }, ...face(c), words(c), h("div", { class: "rft" }, who(c))),
+          ),
+        )
+      : null;
+    if (list) inner.prepend(list);
+    faces = nextFaces;
+    if (t.resolved) line.remove();
+    else if (line.parentNode !== inner) inner.append(line);
+
+    element.className = t.resolved ? "thread resolved" : "thread";
+    element.setAttribute("data-thread", t.id);
+  }
+
+  update(first);
+  return { element, update };
+}

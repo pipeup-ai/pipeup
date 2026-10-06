@@ -1,0 +1,70 @@
+<!doctype html>
+<html
+  lang="en"
+  data-pipeup-doc="sItEfIxTuRe00001:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Lumen</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          15px/1.6 -apple-system,
+          Helvetica,
+          Arial,
+          sans-serif;
+        color: #14171f;
+        background: #fff;
+      }
+      nav {
+        position: sticky;
+        top: 0;
+        display: flex;
+        gap: 20px;
+        padding: 16px 24px;
+        background: #fff;
+        border-bottom: 1px solid #e6e8ee;
+      }
+      header {
+        padding: 60px 24px;
+      }
+      h1 {
+        font-size: 44px;
+        margin: 0 0 12px;
+      }
+      .cta {
+        display: inline-block;
+        padding: 10px 16px;
+        background: #2f6feb;
+        color: #fff;
+        border-radius: 10px;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 0 24px 40px;
+      }
+      .tile {
+        border: 1px solid #e6e8ee;
+        border-radius: 12px;
+        padding: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav data-pipeup-ignore><a href="#a">Product</a><a href="#b">Pricing</a></nav>
+    <header>
+      <h1 data-pipeup-id="hero-title">Answers about your business, in minutes not meetings.</h1>
+      <a class="cta" href="#signup" data-pipeup-id="cta-trial">Start free trial</a>
+    </header>
+    <section class="tiles">
+      <div class="tile" data-pipeup-id="tile-mrr" data-pipeup-label="MRR tile">MRR <b>$218k</b></div>
+      <div class="tile" data-pipeup-id="tile-churn" data-pipeup-label="Churn tile">Churn <b>2.1%</b></div>
+      <div class="tile" data-pipeup-id="tile-teams" data-pipeup-label="Teams tile">Teams <b>4,664</b></div>
+    </section>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

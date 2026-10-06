@@ -1,0 +1,102 @@
+<!doctype html>
+<html
+  lang="en"
+  data-pipeup-doc="cOnTrOlSfIxTuRe1:EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Lumen controls</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          15px/1.6 -apple-system,
+          Helvetica,
+          Arial,
+          sans-serif;
+        color: #14171f;
+        background: #fff;
+      }
+      nav {
+        display: flex;
+        gap: 20px;
+        padding: 16px 24px;
+        border-bottom: 1px solid #e6e8ee;
+      }
+      header {
+        padding: 40px 24px;
+      }
+      h1 {
+        font-size: 40px;
+        margin: 0 0 12px;
+      }
+      .cta,
+      #go {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 10px;
+      }
+      .cta {
+        background: #2f6feb;
+        color: #fff;
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 0 24px 24px;
+      }
+      .tile,
+      .card {
+        border: 1px solid #e6e8ee;
+        border-radius: 12px;
+        padding: 14px;
+      }
+      form {
+        padding: 0 24px 24px;
+      }
+      .spacer {
+        height: 1600px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav data-pipeup-ignore>
+      <button id="nav-btn" type="button">Menu</button><a href="#pricing">Pricing</a>
+    </nav>
+    <header data-pipeup-id="hero" data-pipeup-label="Hero">
+      <h1 id="title">Answers in minutes, not meetings.</h1>
+      <a class="cta" id="cta" href="https://example.test/signup">Start free trial</a>
+      <button id="go" type="button">Start free</button>
+    </header>
+    <section class="tiles">
+      <div class="tile" data-pipeup-id="tile-mrr" data-pipeup-label="MRR tile">MRR <b id="mrr">$218k</b></div>
+      <div class="card" id="card">
+        <span id="wrap"><span id="inner">Plain card</span></span>
+      </div>
+      <div class="tile" data-pipeup-id="tile-teams" data-pipeup-label="Teams tile">Teams <b>4,664</b></div>
+    </section>
+    <form id="form"><input id="email" name="email" aria-label="Email" /><button id="join">Join</button></form>
+    <div class="spacer"><span id="far">Far below</span></div>
+    <script>
+      window.fired = [];
+      const note = (what) => () => window.fired.push(what);
+      document.getElementById("nav-btn").addEventListener("click", note("nav"));
+      document.getElementById("go").addEventListener("click", note("go"));
+      document.getElementById("go").addEventListener("pointerdown", note("go-down"));
+      document.getElementById("card").addEventListener("mouseover", note("card-over"));
+      document.getElementById("card").addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        window.fired.push("menu");
+      });
+      document.getElementById("card").addEventListener("touchstart", note("touch"), { passive: true });
+      document.getElementById("cta").addEventListener("dragstart", note("drag"));
+      document.getElementById("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        window.fired.push("submit");
+      });
+    </script>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

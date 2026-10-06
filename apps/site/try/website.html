@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="pIpEuPtRyWeBsIt1:SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lumen — for review</title>
+    <style>
+      @font-face { font-family: "Geist"; src: url("../fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      :root { --red: #ff4a1c; --cream: #fff3dc; --lime: #d4ff3a; --black: #111; }
+      body { margin: 0; font: 17px/1.5 "Geist", -apple-system, system-ui, sans-serif; color: var(--cream); background: var(--red); }
+      nav { display: flex; gap: 26px; align-items: center; padding: 22px 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 13px; }
+      nav b { margin-right: auto; font-size: 22px; letter-spacing: -0.03em; text-transform: none; color: var(--black); background: var(--lime); padding: 2px 12px; border-radius: 999px; }
+      nav a { color: var(--cream); text-decoration: none; }
+      .hero { padding: 56px 40px 64px; }
+      .hero h1 { font: 900 clamp(56px, 11vw, 150px)/0.86 "Arial Black", "Helvetica Neue", Impact, sans-serif; text-transform: uppercase; letter-spacing: -0.05em; margin: 0 0 26px; color: var(--cream); }
+      .hero p { font-size: 22px; max-width: 520px; margin: 0 0 32px; color: var(--black); font-weight: 500; }
+      .cta { background: var(--lime); color: var(--black); border: 3px solid var(--black); border-radius: 999px; padding: 16px 34px; font: 800 18px/1 "Geist", sans-serif; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; box-shadow: 6px 6px 0 var(--black); transform: rotate(-2deg); }
+      .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; padding: 0 40px; }
+      .card { background: var(--black); color: var(--cream); border-radius: 28px; padding: 30px; }
+      .card:nth-child(2) { transform: rotate(1.5deg); background: var(--lime); color: var(--black); }
+      .card h3 { margin: 0 0 8px; font: 900 30px/1 "Arial Black", Impact, sans-serif; text-transform: uppercase; letter-spacing: -0.03em; }
+      .stats { display: flex; gap: 18px; padding: 36px 40px 90px; }
+      .stat { flex: 1; border: 3px solid var(--black); border-radius: 28px; padding: 22px 26px; background: var(--cream); color: var(--black); }
+      .stat b { display: block; font: 900 64px/1 "Arial Black", Impact, sans-serif; letter-spacing: -0.04em; }
+      .stat span { font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: 0.06em; }
+      .spark { display: flex; gap: 5px; align-items: flex-end; height: 48px; margin-top: 12px; }
+      .spark i { flex: 1; background: var(--red); border-radius: 4px; }
+      @media (max-width: 640px) { .stats { flex-direction: column; } nav a { display: none; } .hero, .cards, .stats { padding-left: 20px; padding-right: 20px; } }
+    </style>
+  </head>
+  <body>
+    <nav data-pipeup-ignore>
+      <b>Lumen</b><a href="#product">Product</a><a href="#pricing">Pricing</a><a href="#docs">Docs</a>
+    </nav>
+    <section class="hero" data-pipeup-id="hero">
+      <h1>Light up your reading list</h1>
+      <p>Lumen saves articles, syncs them everywhere and reads them aloud when your hands are busy.</p>
+      <button class="cta" data-pipeup-id="start-free" onclick="alert('Signed up')">Start free</button>
+    </section>
+    <section class="cards" data-pipeup-id="features">
+      <div class="card" data-pipeup-id="feature-save"><h3>Save anything</h3><p>One tap from any browser or app.</p></div>
+      <div class="card" data-pipeup-id="feature-offline"><h3>Offline first</h3><p>Everything you save is there on the plane.</p></div>
+      <div class="card" data-pipeup-id="feature-listen"><h3>Listen</h3><p>Natural voices, any speed.</p></div>
+    </section>
+    <section class="stats" data-pipeup-id="stats">
+      <div class="stat" data-pipeup-id="stat-readers">
+        <b>48k</b><span>weekly readers</span>
+        <div class="spark" data-pipeup-id="readers-chart" data-pipeup-label="Weekly readers, last 8 weeks">
+          <i style="height: 40%"></i><i style="height: 45%"></i><i style="height: 52%"></i><i style="height: 50%"></i>
+          <i style="height: 61%"></i><i style="height: 70%"></i><i style="height: 82%"></i><i style="height: 100%"></i>
+        </div>
+      </div>
+      <div class="stat" data-pipeup-id="stat-retention"><b>63%</b><span>week-one retention</span></div>
+    </section>
+    <script src="../pipeup.min.js"></script>
+  </body>
+</html>

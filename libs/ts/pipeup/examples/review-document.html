@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- A document designed for review: a centred reading area with a reserved comment gutter on the right.
+     Open it from disk after `npm run build`. The doc key below is a sample; `pipeup init` makes a real one. -->
+<html lang="en" data-pipeup-doc="eXaMpLeDoCuMeNt1:HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH" data-pipeup-reserve>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Q3 plan — for review</title>
+    <style>
+      body {
+        margin: 0;
+        font: 17px/1.7 Georgia, serif;
+        color: #23221f;
+        background: #fff;
+        padding-right: var(--pipeup-gutter, 0px);
+        transition: padding-right 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      main { max-width: 680px; margin: 56px auto; padding: 0 24px; box-sizing: border-box; }
+      h1 { font-size: 34px; line-height: 1.2; }
+      figure { margin: 28px 0; }
+      .chart { display: flex; gap: 10px; align-items: flex-end; height: 140px; border: 1px solid #e3e1d8; padding: 12px; border-radius: 10px; }
+      .chart div { flex: 1; background: #b5d4f4; border-radius: 4px 4px 0 0; }
+      figcaption { font-size: 14px; color: #6b6a64; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Q3 plan</h1>
+      <section data-pipeup-id="summary">
+        <h2>Summary</h2>
+        <p>We will launch the new onboarding flow in July, targeting a 20% lift in week-one retention, and follow with pricing changes in August.</p>
+        <p>The team stays at six people through the end of the quarter. Hiring a second designer moves to Q4.</p>
+      </section>
+      <figure data-pipeup-id="revenue-chart" data-pipeup-label="Revenue by quarter">
+        <div class="chart">
+          <div style="height: 40%" data-pipeup-id="q2-bar" data-pipeup-label="Q2 bar"></div>
+          <div style="height: 70%" data-pipeup-id="q3-bar" data-pipeup-label="Q3 bar"></div>
+          <div style="height: 100%" data-pipeup-id="q4-bar" data-pipeup-label="Q4 bar"></div>
+        </div>
+        <figcaption>Revenue by quarter, forecast.</figcaption>
+      </figure>
+      <section data-pipeup-id="risks">
+        <h2>Risks</h2>
+        <p>If onboarding slips past July, the pricing work slips with it.</p>
+      </section>
+    </main>
+    <script src="../dist/pipeup.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+Pipeup
+Copyright (c) 2026 Pipeup contributors. Licensed under the MIT licence (see LICENSE).
+
+The website bundles third-party fonts, which keep their own licence:
+
+- Geist (apps/site/fonts/geist.woff2)
+  Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
+  SIL Open Font License 1.1, see apps/site/fonts/OFL-geist.txt
+
+- Geist Mono (apps/site/fonts/geist-mono.woff2)
+  Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
+  SIL Open Font License 1.1, see apps/site/fonts/OFL-geistmono.txt
+
+The npm package (libs/ts/pipeup) contains no third-party code.

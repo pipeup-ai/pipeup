@@ -1,0 +1,641 @@
+<!doctype html>
+<!-- Pipeup's website: one page that runs Pipeup itself. Spec: docs/WEBSITE_SPEC.md.
+     Light only. Build with `apps/site/build.sh` (copies the page, fonts, skills, llms.txt and pipeup.min.js into _site/). -->
+<html lang="en" data-pipeup-doc="pIpEuPwEbSiTe001:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeup: feedback for any HTML</title>
+    <meta name="description" content="Pipeup lets people comment on any HTML file, from documents and decks to whole sites, with no accounts or servers." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="alternate" type="text/plain" href="llms.txt" title="Pipeup for AI agents" />
+    <link rel="alternate" type="text/plain" href="llms-full.txt" title="Pipeup for AI agents, in full" />
+    <link rel="alternate" type="text/markdown" href="index.html.md" title="This page as Markdown" />
+    <meta property="og:title" content="Pipeup: feedback for any HTML" />
+    <meta property="og:description" content="People comment right on your page: documents, decks or whole sites. No accounts, no servers." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pipeup-ai.github.io/pipeup/" />
+    <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Pipeup",
+        "url": "https://pipeup-ai.github.io/pipeup/",
+        "sameAs": "https://github.com/pipeup-ai/pipeup",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any modern web browser",
+        "description": "A JavaScript library that lets people comment on any HTML file, from documents and decks to whole sites, with no accounts or servers. Comments copy out as Markdown for AI tools.",
+        "offers": { "@type": "Offer", "price": "0" }
+      }
+    </script>
+    <style>
+      /* Bundled fonts (SIL Open Font License, see fonts/): no third-party requests. */
+      @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+      :root {
+        --ink: #2f3437; --strong: #111111; --muted: #787774; --faint: #a8a7a2;
+        --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
+        --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
+        --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --move: cubic-bezier(0.4, 0, 0.2, 1);
+        --exit: cubic-bezier(0.4, 0, 1, 1);
+        --pan: 250px; /* How far a scene slides sideways to make room for its comment. */
+      }
+      * { box-sizing: border-box; }
+      html { background: var(--paper); }
+      body { margin: 0; font: 16px/1.55 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; }
+      body { min-height: 100vh; display: flex; flex-direction: column; }
+      main { max-width: 1120px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
+      main > footer { margin-top: auto; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+      .mark { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      /* The GitHub link, top right: the mark and its name, in the muted ink until hovered. */
+      .gh { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .gh svg { display: block; transition: transform 0.26s var(--ease); }
+      .gh:hover, .gh:focus-visible { color: var(--strong); }
+      .gh:hover svg { transform: translateY(-1px); }
+      .status { font-size: 13px; color: var(--muted); text-decoration: none; }
+      .status:hover { color: var(--strong); }
+      .agents { position: relative; }
+      .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
+      .agents-menu {
+        position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; padding: 6px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        opacity: 0; transform: translateY(4px); visibility: hidden;
+        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
+      }
+      /* A short bridge so the pointer can travel from the link up to the menu. */
+      .agents-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; }
+      .agents:hover .agents-menu, .agents:focus-within .agents-menu, .agents.open .agents-menu {
+        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
+      }
+      .agents-menu a { display: block; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: var(--strong); text-decoration: none; transition: background-color 0.15s var(--ease); }
+      .agents-menu a:hover, .agents-menu a:focus-visible { background: var(--bone); outline: none; }
+      a { color: var(--strong); text-underline-offset: 3px; text-decoration-color: var(--line); }
+      a:hover { text-decoration-color: var(--strong); }
+      h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
+
+      /* ---------- Hero: words and actions left, the showcase right, tops aligned ---------- */
+      .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 48px; align-items: start; padding: 32px 0 48px; }
+      .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 27em; }
+      .lede b { font-weight: 500; color: var(--ink); }
+
+      /* Two actions: copy the prompt (one click), or pick how to install. */
+      .actions { position: relative; display: grid; grid-template-columns: 240px; gap: 10px; margin-top: 28px; }
+      .actions .btn { justify-content: center; position: relative; }
+      .actions .btn .chev { position: absolute; right: 14px; }
+      .btn {
+        appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
+        padding: 12px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--strong);
+        transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+      }
+      .btn:hover { background: var(--bone); }
+      .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
+      .btn.primary:hover { background: #2a2a2a; }
+      .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .btn .chev { transition: transform 0.26s var(--ease); }
+      .btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+      .ok { display: none; }
+      .copied .ok { display: block; animation: pop 0.3s var(--ease); }
+      @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
+      .copied .ic { display: none; }
+      .choices {
+        position: absolute; left: 0; top: calc(100% + 8px); z-index: 10; width: 340px; padding: 6px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity 0.2s var(--exit), transform 0.2s var(--exit);
+      }
+      .choices.open { opacity: 1; transform: none; pointer-events: auto; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease); }
+      .choices .sep { height: 1px; background: var(--line); margin: 6px 8px; }
+      .choice {
+        appearance: none; border: 0; background: none; width: 100%; text-align: left; cursor: pointer; display: grid;
+        grid-template-columns: 30px 1fr auto; gap: 0 10px; align-items: center; padding: 9px 10px; border-radius: 8px;
+        font: 14px var(--sans); color: var(--strong); text-decoration: none; transition: background-color 0.15s var(--ease);
+      }
+      .choice:hover, .choice:focus-visible { background: var(--bone); }
+      .choice .glyph { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; background: var(--paper); }
+      .choice small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+      .choice .state { font-size: 12px; color: var(--violet); opacity: 0; transition: opacity 0.2s var(--ease); }
+      .choice.copied .state { opacity: 1; }
+      .done { font-size: 13px; color: var(--muted); min-height: 20px; margin: 10px 0 0; opacity: 0; transition: opacity 0.26s var(--ease); }
+      .done.show { opacity: 1; }
+
+      .try { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+      .keys { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      [data-shortcut] { display: inline-flex; gap: 4px; }
+      kbd {
+        display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px;
+        font: 500 14px/1 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; color: var(--ink);
+        background: var(--bone); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px;
+      }
+      .facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
+      .facts b { font-weight: 500; color: var(--ink); }
+
+      /* ---------- The showcase: Document → Slides → Website ---------- */
+      .viewport { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--bone); touch-action: pan-y; }
+      .track { display: flex; transition: transform 0.7s var(--move); }
+      .scene { flex: 0 0 100%; aspect-ratio: 4 / 3.2; position: relative; }
+      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .bar-dots { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2; }
+      .bar-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+      /* The page and its comment share one wide canvas; when the comment opens, the view slides over to it. */
+      .canvas { position: absolute; top: 0; bottom: 0; left: 0; width: calc(100% + var(--pan)); transition: transform 0.8s var(--move); }
+      .s3 .canvas { transform: translateX(calc(-1 * var(--pan))); }
+      .content { position: absolute; top: 0; bottom: 0; left: 0; right: var(--pan); }
+      .ln { height: 8px; border-radius: 4px; background: var(--line); margin: 0 0 12px; }
+
+      .hl { position: relative; border-radius: 3px; transition: background-color 0.5s var(--ease); }
+      .s1 .hl { background: #dbe7fb; }
+      .s2 .hl { background: var(--amber); }
+      .selicon { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translate(-50%, 4px); width: 26px; height: 26px; border-radius: 7px;
+        background: var(--paper); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.05); display: grid; place-items: center;
+        opacity: 0; transition: opacity 0.26s var(--ease), transform 0.34s var(--ease); }
+      .s1 .selicon { opacity: 1; transform: translate(-50%, 0); }
+      .s3 .selicon { opacity: 0; }
+      .cbox {
+        position: absolute; right: 18px; width: 214px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+        padding: 12px 14px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        opacity: 0; transform: translateY(6px); transition: opacity 0.3s var(--ease) 0.3s, transform 0.4s var(--ease) 0.3s;
+      }
+      .s3 .cbox { opacity: 1; transform: none; }
+      .cbox .who { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; color: var(--faint); }
+      .cbox .av { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; flex: none; }
+      .cbox .txt { font-size: 14px; color: var(--strong); min-height: 21px; padding: 0 22px 4px 0; border-bottom: 1.5px solid var(--strong); transition: border-color 0.3s var(--ease); }
+      .s4 .cbox .txt { border-color: transparent; }
+      .cbox .txt::after { content: ""; display: inline-block; width: 1.5px; height: 15px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+      .s4 .cbox .txt::after { display: none; }
+      .cbox .send { position: absolute; right: 12px; bottom: 15px; opacity: 0; transition: opacity 0.2s var(--ease); }
+      .typing .cbox .send { opacity: 1; }
+      .cbox .line { position: absolute; left: -1px; top: 10px; bottom: 10px; width: 2px; background: var(--violet); opacity: 0; transition: opacity 0.3s var(--ease); }
+      .s4 .cbox .line { opacity: 1; }
+      @keyframes blink { 50% { opacity: 0; } }
+      .cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; transition: transform 0.7s var(--move); }
+      .cursor svg { display: block; transition: transform 0.12s var(--ease); transform-origin: 2px 2px; }
+      .cursor.down svg { transform: scale(0.82); }
+      .cursor::before { content: ""; position: absolute; left: -9px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: rgba(83, 74, 183, 0.22); transform: scale(0.3); opacity: 0; transition: transform 0.3s var(--ease), opacity 0.4s var(--ease); }
+      .cursor.down::before { transform: scale(1); opacity: 1; }
+
+      /* Document */
+      .doc .page { position: absolute; left: 36px; right: 36px; top: 46px; }
+      .doc .ttl { height: 14px; width: 46%; background: var(--strong); border-radius: 3px; margin-bottom: 20px; }
+      .doc .words { font-size: 13px; line-height: 1.75; color: var(--muted); margin: 0 0 18px; }
+      .doc .cbox { top: 78px; }
+      /* Slides */
+      .slides .stage { position: absolute; inset: 36px 28px 40px; border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; }
+      .slides .stage b { font-size: 17px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      .slides .stage span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+      .slides .bars { position: absolute; left: 20px; right: 20px; bottom: 16px; height: 58%; display: flex; gap: 14px; align-items: flex-end; }
+      .slides .bars i { flex: 1; background: #d3d1c7; border-radius: 4px 4px 0 0; position: relative; }
+      .slides .bars i.q4 { background: #b5d4f4; }
+      .slides .pin { position: absolute; left: 40%; top: 12%; width: 20px; height: 20px; border-radius: 50% 50% 50% 4px; background: var(--violet);
+        opacity: 0; transform: scale(0.4); transform-origin: 2px 18px; transition: opacity 0.26s var(--ease), transform 0.34s var(--ease); }
+      .slides.s2 .pin { opacity: 1; transform: none; }
+      .slides .cbox { top: 92px; }
+      .slides .count { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); font: 11px var(--mono); color: var(--faint); }
+      /* Website */
+      .site .nav { position: absolute; left: 0; right: 0; top: 30px; height: 32px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 16px; padding: 0 22px; font-size: 11px; color: var(--faint); }
+      .site .nav b { color: var(--strong); margin-right: auto; font-weight: 600; }
+      .site .heroish { position: absolute; left: 0; right: 0; top: 96px; text-align: center; }
+      .site .heroish b { display: block; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; color: var(--strong); }
+      .site .heroish p { font-size: 12px; color: var(--muted); margin: 6px 0 38px; }
+      .site .cta { display: inline-block; position: relative; background: var(--strong); color: #fff; font-size: 12px; border-radius: 999px; padding: 7px 16px; }
+      .site .pick { position: absolute; inset: -6px; border: 1.5px solid var(--strong); border-radius: 999px; opacity: 0; transition: opacity 0.26s var(--ease); }
+      .site.s1 .pick { opacity: 1; }
+      .site .tag { position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%); white-space: nowrap; font-size: 11px; color: var(--muted);
+        background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; opacity: 0; transition: opacity 0.26s var(--ease); }
+      .site.s1 .tag { opacity: 1; }
+      .site .cards { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; gap: 10px; }
+      .site .cards i { flex: 1; height: 56px; border: 1px solid var(--line); border-radius: 8px; }
+      .site .cbox { top: 150px; }
+
+      .controls { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
+      .tabs { display: flex; gap: 4px; }
+      .tab { appearance: none; border: 0; background: none; font: 14px var(--sans); color: var(--muted); padding: 6px 12px 12px; cursor: pointer; position: relative; border-radius: 6px; transition: color 0.3s var(--ease); }
+      .tab:hover { color: var(--ink); }
+      .tab[aria-selected="true"] { color: var(--strong); }
+      .tab .prog { position: absolute; left: 12px; right: 12px; bottom: 4px; height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; opacity: 0; transition: opacity 0.3s var(--ease); }
+      .tab[aria-selected="true"] .prog { opacity: 1; }
+      .tab .prog i { display: block; height: 100%; background: var(--strong); transform-origin: left; transform: scaleX(0); }
+      .pause { appearance: none; border: 1px solid var(--line); background: var(--paper); width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; margin-left: 8px; color: var(--strong); transition: background-color 0.2s var(--ease); }
+      .pause:hover { background: var(--bone); }
+      .tryit { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--strong); text-decoration: none;
+        padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); transition: background-color 0.2s var(--ease); }
+      .tryit:hover { background: var(--bone); }
+      .tryit svg { transition: transform 0.26s var(--ease); }
+      .tryit:hover svg { transform: translateX(2px); }
+      .tab:focus-visible, .pause:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+
+      footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+      .rise { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
+      .rise.in { opacity: 1; transform: none; }
+      @media (prefers-reduced-motion: reduce) {
+        .agents-menu { transform: none !important; }
+        .rise, .choices, .choices.open { transform: none; transition: opacity 0.16s ease-in-out; transition-delay: 0s; }
+        .btn:active { transform: none; }
+        .track, .canvas { transition: none; }
+        .cbox, .slides .pin, .selicon { transform: none !important; }
+        .cbox .txt::after { animation: none; }
+        .cursor { display: none; }
+      }
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; gap: 36px; }
+      }
+      @media (max-width: 680px) {
+        main { padding: 0 20px; }
+        :root { --pan: 0px; }
+        .scene { aspect-ratio: 4 / 5; }
+        .win { inset: 14px; }
+        .cbox { left: 14px; right: 14px; width: auto; top: auto !important; bottom: 14px; }
+        .slides .bars { height: 34%; bottom: 46%; }
+        .site .cards { display: none; }
+        .actions { grid-template-columns: 1fr; }
+        .choices { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="top" data-pipeup-ignore>
+        <span class="mark">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          Pipeup
+        </span>
+        <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" /></svg>
+          GitHub
+        </a>
+      </header>
+
+      <section class="hero">
+        <div data-pipeup-id="intro">
+          <h1 class="rise">Feedback for<br />any HTML.</h1>
+          <p class="lede rise" style="--i: 1">
+            People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback
+            comes back ready for your AI to act on.
+          </p>
+          <div class="actions rise" style="--i: 2" data-pipeup-ignore>
+            <button class="btn primary" type="button" data-copy="prompt">
+              <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
+              <svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+              <span class="label">Copy prompt</span>
+            </button>
+            <button class="btn more" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="label">Install</span>
+              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="choices" role="menu" aria-label="Install Pipeup" inert>
+              <button class="choice" role="menuitem" type="button" data-copy="claude">
+                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l5 5-5 5" /><path d="M12 17h7" /></svg></span>
+                <span>Claude Code<small>Copy a command that installs the skill</small></span><span class="state">Copied</span>
+              </button>
+              <button class="choice" role="menuitem" type="button" data-copy="codex">
+                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z" /><path d="M14 4v4h4" /><path d="M10 13h5M10 16h3" /></svg></span>
+                <span>Codex<small>Copy a command that adds it to AGENTS.md</small></span><span class="state">Copied</span>
+              </button>
+              <a class="choice" role="menuitem" href="llms.txt">
+                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" /><path d="M4 12h16M12 4c2.5 2.6 2.5 13.4 0 16M12 4c-2.5 2.6-2.5 13.4 0 16" /></svg></span>
+                <span>Any other agent<small>Point it at llms.txt</small></span><span></span>
+              </a>
+              <div class="sep" role="separator"></div>
+              <button class="choice" role="menuitem" type="button" data-copy="script">
+                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-4 5 4 5" /><path d="M16 7l4 5-4 5" /></svg></span>
+                <span>Script tag<small>Add it to a page by hand</small></span><span class="state">Copied</span>
+              </button>
+              <a class="choice" role="menuitem" href="pipeup.min.js" download>
+                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg></span>
+                <span>Download pipeup.min.js<small>One file, about 30 KB</small></span><span></span>
+              </a>
+            </div>
+          </div>
+          <p class="done" role="status" aria-live="polite"></p>
+          <p class="try rise" style="--i: 3"><span class="keys">Press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span></p>
+        </div>
+
+        <div class="ad rise" style="--i: 2" data-pipeup-ignore role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides and a website">
+          <div class="viewport">
+            <div class="track">
+              <!-- Document: select words, then comment -->
+              <div class="scene" role="group" aria-roledescription="slide" aria-label="Document">
+                <div class="win doc" data-scene>
+                  <div class="bar-dots"><i></i><i></i><i></i></div>
+                  <div class="canvas">
+                    <div class="content">
+                      <div class="page">
+                        <div class="ttl"></div>
+                        <p class="words">We'll launch the new onboarding in July, aiming for a <span class="hl">20% lift<span class="selicon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /><path d="M12.3 8.2v6.6M9 11.5h6.6" /></svg></span></span> in week-one retention, then change pricing in August.</p>
+                        <div class="ln" style="width: 94%"></div>
+                        <div class="ln" style="width: 78%"></div>
+                        <div class="ln" style="width: 88%"></div>
+                        <div class="ln" style="width: 62%"></div>
+                      </div>
+                    </div>
+                    <div class="cbox" data-say="Is 20% realistic? Q2 was 8%.">
+                      <span class="line"></span>
+                      <div class="who"><span class="av" style="background: #e1f5ee"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6" /><circle cx="7.5" cy="7.5" r="1.8" /><circle cx="16.5" cy="7.5" r="1.8" /></svg></span>Otter</div>
+                      <div class="txt"></div>
+                      <svg class="send" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13" /></svg>
+                    </div>
+                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                  </div>
+                </div>
+              </div>
+              <!-- Slides: drop a pin on the chart, then comment -->
+              <div class="scene" role="group" aria-roledescription="slide" aria-label="Slides">
+                <div class="win slides" data-scene>
+                  <div class="bar-dots"><i></i><i></i><i></i></div>
+                  <div class="canvas">
+                    <div class="content">
+                      <div class="stage">
+                        <b>Revenue grew 42%</b>
+                        <span>Quarterly revenue, this year</span>
+                        <div class="bars"><i style="height: 44%"></i><i style="height: 58%"></i><i style="height: 71%"></i><i class="q4" style="height: 100%"><span class="pin"></span></i></div>
+                      </div>
+                      <span class="count">3 / 12</span>
+                    </div>
+                    <div class="cbox" data-say="Make Q4 the only coloured bar.">
+                      <span class="line"></span>
+                      <div class="who"><span class="av" style="background: #faece7"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#993C1D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6l3 5h8l3-5-2 9-5 4-5-4z" /></svg></span>Fox</div>
+                      <div class="txt"></div>
+                      <svg class="send" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13" /></svg>
+                    </div>
+                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                  </div>
+                </div>
+              </div>
+              <!-- Website: pick the button, then comment -->
+              <div class="scene" role="group" aria-roledescription="slide" aria-label="Website">
+                <div class="win site" data-scene>
+                  <div class="bar-dots"><i></i><i></i><i></i></div>
+                  <div class="canvas">
+                    <div class="content">
+                      <div class="nav"><b>Lumen</b><span>Product</span><span>Pricing</span><span>Docs</span></div>
+                      <div class="heroish">
+                        <b>Light up your reading list</b>
+                        <p>Save anything. Read it anywhere.</p>
+                        <span class="cta">Start free<span class="pick"></span><span class="tag">Button · Start free</span></span>
+                      </div>
+                      <div class="cards"><i></i><i></i><i></i></div>
+                    </div>
+                    <div class="cbox" data-say="Say what's free: no card needed?">
+                      <span class="line"></span>
+                      <div class="who"><span class="av" style="background: #eeedfe"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3C3489" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="6" /><path d="M8 8L6 4M16 8l2-4" /></svg></span>Owl</div>
+                      <div class="txt"></div>
+                      <svg class="send" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13" /></svg>
+                    </div>
+                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="controls">
+            <div class="tabs" role="tablist" aria-label="Choose an example">
+              <button class="tab" role="tab" aria-selected="true">Document<span class="prog"><i></i></span></button>
+              <button class="tab" role="tab" aria-selected="false">Slides<span class="prog"><i></i></span></button>
+              <button class="tab" role="tab" aria-selected="false">Website<span class="prog"><i></i></span></button>
+            </div>
+            <button class="pause" type="button" aria-label="Pause">
+              <svg class="i-pause" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1.5" width="2.5" height="9" rx="1" fill="currentColor" /><rect x="7.5" y="1.5" width="2.5" height="9" rx="1" fill="currentColor" /></svg>
+              <svg class="i-play" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" style="display: none"><path d="M3 1.8v8.4a.6.6 0 0 0 .9.5l6.6-4.2a.6.6 0 0 0 0-1L3.9 1.3a.6.6 0 0 0-.9.5z" fill="currentColor" /></svg>
+            </button>
+            <a class="tryit" href="try/document.html">Try<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
+          </div>
+        </div>
+      </section>
+
+      <footer data-pipeup-ignore>
+        <ul class="facts">
+            <li><b>One file</b>, about 30 KB</li>
+            <li><b>No dependencies</b></li>
+            <li><b>Works from disk</b></li>
+          </ul>
+        <div class="agents">
+          <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
+          <div class="agents-menu" role="menu" aria-label="For agents">
+            <a role="menuitem" href="llms.txt" title="A short guide for AI agents">llms.txt</a>
+            <a role="menuitem" href="llms-full.txt" title="The guide and every skill, in one file">llms-full.txt</a>
+            <a role="menuitem" href="index.html.md" title="This page as plain Markdown">This page as Markdown</a>
+            <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      // Gentle reveal as things come into view.
+      const io = new IntersectionObserver(
+        (entries) => { for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } },
+        { rootMargin: "0px 0px -8% 0px" },
+      );
+      document.querySelectorAll(".rise").forEach((el) => io.observe(el));
+      const isMac = /Mac|iP(hone|ad|od)/.test(navigator.platform);
+      if (!isMac) document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd><kbd>Alt</kbd><kbd>C</kbd>"));
+
+      // ---------- The showcase: each scene acts out a comment being added, then the next slides in ----------
+      (() => {
+        const SCENE_MS = 10000;
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const track = document.querySelector(".track");
+        const scenes = [...document.querySelectorAll("[data-scene]")];
+        const tabs = [...document.querySelectorAll(".tab")];
+        const pauseBtn = document.querySelector(".pause");
+        // When each step happens, in ms into the scene: chosen, marked, comment opens (the view slides over), posted.
+        const STEPS = [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]];
+        const TYPE_FROM = 4300, TYPE_TO = 6700;
+        // The cursor: [ms, target, x, y, flags]. It only moves to act, and holds still while the comment is typed.
+        const SEND = [[6800, ".send", 0.5, 0.5, ""], [7150, ".send", 0.5, 0.5, "down"], [7300, ".send", 0.5, 0.5, ""]];
+        const PATHS = [
+          [[0, ".hl", 0.1, 2.4, ""], [400, ".hl", 0.02, 0.6, ""], [900, ".hl", 0.02, 0.6, "down"], [1150, ".hl", 0.98, 0.6, "down drag"],
+           [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...SEND],
+          [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...SEND],
+          [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...SEND],
+        ];
+        let index = 0, elapsed = 0, last = performance.now(), playing = !reduced;
+
+        function moveCursor(scene, t) {
+          const path = PATHS[scenes.indexOf(scene)];
+          let step = path[0];
+          for (const s of path) if (t >= s[0]) step = s;
+          const [, sel, fx, fy, flags] = step;
+          const canvas = scene.querySelector(".canvas").getBoundingClientRect();
+          const r = scene.querySelector(sel).getBoundingClientRect();
+          const c = scene.querySelector(".cursor");
+          // Measured in the canvas, so the cursor rides along when the view slides over.
+          const to = `translate(${Math.round(r.left - canvas.left + r.width * fx)}px, ${Math.round(r.top - canvas.top + r.height * fy)}px)`;
+          if (c.dataset.at !== to) {
+            c.style.transitionDuration = t === 0 ? "0s" : flags.includes("drag") ? "0.25s" : "";
+            c.style.transform = to;
+            c.dataset.at = to;
+          }
+          c.className = "cursor " + flags;
+        }
+        function apply(scene, t) {
+          for (const [at, cls] of STEPS) scene.classList.toggle(cls, t >= at);
+          const say = scene.querySelector(".cbox").dataset.say;
+          const n = Math.max(0, Math.min(say.length, Math.round(((t - TYPE_FROM) / (TYPE_TO - TYPE_FROM)) * say.length)));
+          scene.querySelector(".txt").textContent = say.slice(0, n);
+          scene.classList.toggle("typing", n > 0 && t < STEPS[3][0]);
+          if (!reduced) moveCursor(scene, t);
+        }
+        const TRY = [["try/document.html", "Try the document"], ["try/slides.html", "Try the slides"], ["try/website.html", "Try the website"]]; // [href, accessible name]
+        const tryLink = document.querySelector(".tryit");
+        function show(i) {
+          const prev = index;
+          index = (i + scenes.length) % scenes.length;
+          tryLink.href = TRY[index][0];
+          tryLink.setAttribute("aria-label", TRY[index][1]);
+          elapsed = reduced ? SCENE_MS : 0;
+          track.style.transform = `translateX(${-index * 100}%)`;
+          tabs.forEach((t, k) => { t.setAttribute("aria-selected", String(k === index)); t.tabIndex = k === index ? 0 : -1; });
+          apply(scenes[index], elapsed);
+          // The scene we left resets once it has slid away.
+          if (prev !== index) setTimeout(() => prev !== index && apply(scenes[prev], 0), 750);
+        }
+        function frame(now) {
+          const dt = Math.min(now - last, 100);
+          last = now;
+          if (playing) {
+            elapsed += dt;
+            if (elapsed >= SCENE_MS) show(index + 1);
+            else apply(scenes[index], elapsed);
+          }
+          tabs[index].querySelector(".prog i").style.transform = `scaleX(${Math.min(1, elapsed / SCENE_MS)})`;
+          requestAnimationFrame(frame);
+        }
+        function setPlaying(on) {
+          playing = on;
+          pauseBtn.setAttribute("aria-label", on ? "Pause" : "Play");
+          pauseBtn.querySelector(".i-pause").style.display = on ? "" : "none";
+          pauseBtn.querySelector(".i-play").style.display = on ? "none" : "";
+        }
+        tabs.forEach((t, k) => t.addEventListener("click", () => show(k)));
+        tabs.forEach((t) =>
+          t.addEventListener("keydown", (e) => {
+            if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+            show(index + (e.key === "ArrowRight" ? 1 : -1));
+            tabs[index].focus();
+          }),
+        );
+        pauseBtn.addEventListener("click", () => setPlaying(!playing));
+        let x0 = null;
+        const vp = document.querySelector(".viewport");
+        vp.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") x0 = e.clientX; });
+        vp.addEventListener("pointerup", (e) => {
+          if (x0 === null) return;
+          const dx = e.clientX - x0;
+          x0 = null;
+          if (Math.abs(dx) > 40) show(index + (dx < 0 ? 1 : -1));
+        });
+        setPlaying(playing);
+        show(0);
+        requestAnimationFrame(frame);
+      })();
+
+      // ---------- The two actions: copy the prompt, or choose how to install ----------
+      (() => {
+        const http = location.protocol.startsWith("http");
+        const SITE = "https://pipeup-ai.github.io/pipeup/"; // The canonical address.
+        const base = http ? new URL(".", location.href).href : SITE; // Opened from disk: use the published site.
+        const skillUrl = () => `${base}skills/pipeup-integrate/SKILL.md`;
+        let docKey = null; // A fresh document key for the reader's page, made in this browser.
+        const texts = {
+          prompt: () =>
+            [
+              "Add Pipeup to my HTML file so people can comment on it right on the page.",
+              "",
+              `1. Download ${base}pipeup.min.js and put it next to the HTML file.`,
+              `2. On the <html> element, add data-pipeup-doc="${docKey ?? "<a key from Pipeup.newDocumentAttribute()>"}" (keep it exactly as it is from now on).`,
+              '3. Add <script src="pipeup.min.js"><\/script> just before </body>.',
+              "4. Mark stable blocks (sections, figures, cards, key buttons) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation and toolbars with data-pipeup-ignore.",
+              "5. Don't change the page's layout or styling to make room for Pipeup.",
+              "",
+              `The full guide: ${skillUrl()}`,
+            ].join("\n"),
+          claude: () => `mkdir -p ~/.claude/skills/pipeup-integrate && curl -fsSL ${skillUrl()} -o ~/.claude/skills/pipeup-integrate/SKILL.md`,
+          codex: () => `curl -fsSL ${skillUrl()} >> AGENTS.md`,
+          script: () => '<script src="pipeup.min.js"><\/script>',
+        };
+        const NOTE = {
+          prompt: "Copied. Paste it into Claude or Codex with your HTML file open.",
+          claude: "Copied. Run it in a terminal, then ask Claude Code to add Pipeup to a page.",
+          codex: "Copied. Run it in your project folder; Codex reads AGENTS.md.",
+          script: "Copied. Put pipeup.min.js next to your page and add this before </body>.",
+        };
+        const wrap = document.querySelector(".actions");
+        const primary = wrap.querySelector(".primary");
+        const more = wrap.querySelector(".more");
+        const menu = wrap.querySelector(".choices");
+        const items = [...menu.querySelectorAll(".choice")];
+        const done = document.querySelector(".done");
+        let doneTimer;
+
+        async function write(text) {
+          try { await navigator.clipboard.writeText(text); return true; } catch {}
+          const t = document.createElement("textarea");
+          t.value = text; t.style.position = "fixed"; t.style.opacity = "0";
+          document.body.append(t); t.select();
+          let ok = false;
+          try { ok = document.execCommand("copy"); } catch {}
+          t.remove();
+          return ok;
+        }
+        async function copy(name, from) {
+          const ok = await write(texts[name]());
+          done.textContent = ok ? NOTE[name] : "Couldn't copy here. Open llms.txt instead.";
+          done.classList.add("show");
+          clearTimeout(doneTimer);
+          doneTimer = setTimeout(() => done.classList.remove("show"), 4500);
+          if (!ok) return;
+          from.classList.add("copied");
+          const label = from === primary ? from.querySelector(".label") : null;
+          if (label) label.textContent = "Copied";
+          setTimeout(() => {
+            from.classList.remove("copied");
+            if (label) label.textContent = "Copy prompt";
+          }, 1800);
+          if (from !== primary) setTimeout(() => setOpen(false, true), 700);
+        }
+        function setOpen(open, refocus) {
+          menu.classList.toggle("open", open);
+          menu.inert = !open;
+          more.setAttribute("aria-expanded", String(open));
+          if (open) items[0].focus({ preventScroll: true });
+          else if (refocus) more.focus({ preventScroll: true });
+        }
+        primary.addEventListener("click", () => copy("prompt", primary));
+        more.addEventListener("click", () => setOpen(!menu.classList.contains("open"), false));
+        items.forEach((b) => b.dataset.copy && b.addEventListener("click", () => copy(b.dataset.copy, b)));
+        menu.addEventListener("keydown", (e) => {
+          const i = items.indexOf(document.activeElement);
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
+          }
+          if (e.key === "Escape") setOpen(false, true);
+        });
+        document.addEventListener("click", (e) => { if (menu.classList.contains("open") && !wrap.contains(e.target)) setOpen(false, false); });
+
+        // For agents: hover or focus shows the menu; on touch screens (no hover) the first tap opens it.
+        const agents = document.querySelector(".agents");
+        const agentsLink = agents.querySelector(".agents-link");
+        const setAgents = (on) => { agents.classList.toggle("open", on); agentsLink.setAttribute("aria-expanded", String(on)); };
+        agentsLink.addEventListener("click", (e) => {
+          if (matchMedia("(hover: none)").matches && !agents.classList.contains("open")) { e.preventDefault(); setAgents(true); }
+        });
+        agents.addEventListener("mouseenter", () => agentsLink.setAttribute("aria-expanded", "true"));
+        agents.addEventListener("mouseleave", () => setAgents(false));
+        agents.addEventListener("keydown", (e) => { if (e.key === "Escape") { setAgents(false); agentsLink.blur(); } });
+        document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
+
+        async function freshKey() { try { docKey = await window.Pipeup.newDocumentAttribute(); } catch {} }
+        if (window.Pipeup) freshKey();
+        else addEventListener("load", freshKey);
+      })();
+    </script>
+    <script src="pipeup.min.js"></script>
+  </body>
+</html>

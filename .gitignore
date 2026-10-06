@@ -1,0 +1,9 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+coverage/
+apps/site/_site/
+.DS_Store
+*.local
+.env

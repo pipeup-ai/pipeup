@@ -1,0 +1,136 @@
+<!doctype html>
+<!-- A deck that teaches the reviewer's side of Pipeup, and runs Pipeup so you can try it on each slide.
+     One element per slide (data-pipeup-slide); the slide controls are ignored so they keep working in comment mode. -->
+<html lang="en" data-pipeup-doc="pIpEuPtRySlIdEs1:TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reviewing an HTML file with Pipeup</title>
+    <style>
+      @font-face { font-family: "Geist"; src: url("../fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      @font-face { font-family: "Geist Mono"; src: url("../fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+      :root { --ink: #2f3437; --strong: #111; --muted: #787774; --line: #eaeaea; --bone: #f7f6f3; --violet: #534ab7; --amber: #fbf3db; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #ffd84d; font: 18px/1.5 "Geist", -apple-system, system-ui, sans-serif; color: var(--ink); }
+      .deck { width: min(92vw, 1000px); aspect-ratio: 16 / 9; position: relative; }
+      .slide { position: absolute; inset: 0; background: #fff; border: 3px solid #111; border-radius: 18px; box-shadow: 10px 10px 0 #111; padding: 52px 60px; display: flex; flex-direction: column;
+        opacity: 0; visibility: hidden; transition: opacity 0.34s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.34s; }
+      .slide.on { opacity: 1; visibility: visible; transition-delay: 0s; }
+      .step { display: inline-block; align-self: flex-start; font: 600 13px "Geist Mono", ui-monospace, monospace; color: #111; background: #ffd84d; border: 2px solid #111; border-radius: 999px; padding: 3px 12px; margin-bottom: 16px; }
+      h1 { font-size: 54px; font-weight: 600; letter-spacing: -0.05em; line-height: 1.05; color: var(--strong); margin: 0 0 14px; }
+      h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; color: var(--strong); margin: 0 0 12px; }
+      p { margin: 0; color: var(--muted); max-width: 34em; }
+      .art { margin-top: auto; display: flex; gap: 16px; align-items: flex-end; }
+      .file { display: inline-flex; align-items: center; gap: 12px; border: 2px solid #111; box-shadow: 4px 4px 0 #111; border-radius: 12px; padding: 14px 18px; background: #fff; }
+      .file b { color: var(--strong); font-weight: 500; }
+      .file small { display: block; color: var(--muted); font-size: 13px; }
+      .prompt { font: 15px/1.6 "Geist Mono", ui-monospace, monospace; color: var(--strong); background: #fff6cc; border: 2px solid #111; border-radius: 12px; padding: 18px 20px; max-width: 42em; }
+      .prompt span { color: var(--violet); }
+      .ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; width: 100%; }
+      .way { border: 2px solid #111; border-radius: 12px; padding: 16px 18px; box-shadow: 4px 4px 0 #111; }
+      .way b { display: block; color: var(--strong); font-weight: 500; margin-bottom: 4px; }
+      .way span { font-size: 15px; color: var(--muted); }
+      .hl { background: var(--amber); border-radius: 3px; padding: 0 2px; }
+      kbd { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; font: 500 14px/1 -apple-system, "Segoe UI", system-ui, sans-serif; background: var(--bone); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; color: var(--ink); }
+      .try { margin-top: 18px; font-size: 15px; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+      .controls { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; background: #fff; border: 2px solid #111; border-radius: 999px; padding: 6px 10px; font-size: 15px; }
+      .controls button { appearance: none; border: 0; background: none; font: inherit; cursor: pointer; padding: 4px 10px; border-radius: 999px; color: var(--strong); }
+      .controls button:hover { background: var(--bone); }
+      @media (prefers-reduced-motion: reduce) { .slide { transition: opacity 0.16s ease-in-out, visibility 0s linear 0.16s; } }
+      @media (max-width: 760px) {
+        .deck { aspect-ratio: auto; height: 78vh; }
+        .slide { padding: 28px 24px; overflow: auto; }
+        h1 { font-size: 32px; } h2 { font-size: 24px; }
+        .ways { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <section class="slide on" data-pipeup-slide="1" data-pipeup-id="s1-intro">
+        <div class="step">Reviewing with Pipeup</div>
+        <h1>Someone sent you an HTML file.<br />Here's how to review it.</h1>
+        <p>Comment right on the page, then send your feedback back. No accounts, no servers.</p>
+        <div class="art">
+          <span class="file" data-pipeup-id="s1-file" data-pipeup-label="An HTML file from Alex">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4" /></svg>
+            <span><b>q3-plan.html</b><small>From Alex · "Can you review this?"</small></span>
+          </span>
+        </div>
+      </section>
+
+      <section class="slide" data-pipeup-slide="2" data-pipeup-id="s2-agent">
+        <div class="step">Step 1</div>
+        <h2>Hand the file to your AI agent</h2>
+        <p>Open the file in Claude Code, Codex or any coding agent and paste this. The skill teaches it how to add Pipeup without changing the page.</p>
+        <div class="art">
+          <div class="prompt" data-pipeup-id="s2-prompt">Add Pipeup to q3-plan.html so I can comment on it.<br />Follow <span data-skill>the Pipeup skill</span>.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-pipeup-slide="3" data-pipeup-id="s3-comment">
+        <div class="step">Step 2</div>
+        <h2>Comment right on the page</h2>
+        <p>Open the file in your browser. Turn on commenting, then point at what you mean.</p>
+        <div class="art">
+          <div class="ways">
+            <div class="way" data-pipeup-id="s3-words"><b>Select words</b><span>Like <span class="hl">this 20% lift</span>, and say what you think.</span></div>
+            <div class="way" data-pipeup-id="s3-block"><b>Click a block</b><span>A chart, a card, a button, a whole section.</span></div>
+            <div class="way" data-pipeup-id="s3-pin"><b>Drop a pin</b><span>Option-click (Alt-click) an exact spot.</span></div>
+          </div>
+        </div>
+        <p class="try">Try it on this slide: press <span data-shortcut><kbd>⇧</kbd> <kbd>⌥</kbd> <kbd>C</kbd></span> and click anything.</p>
+      </section>
+
+      <section class="slide" data-pipeup-slide="4" data-pipeup-id="s4-send">
+        <div class="step">Step 3</div>
+        <h2>Send your feedback back</h2>
+        <p>Open the comment menu and choose <b>Copy all</b>. Every comment is copied as Markdown that says exactly where it is. Paste it to the author however you like: email, chat, a ticket.</p>
+        <div class="art">
+          <div class="prompt" data-pipeup-id="s4-copy">## Thread 1 · open<br />- <span>Where:</span> Section "Summary" › "20% lift"<br />- <span>Started by:</span> Red Fox<br /><br />Is 20% realistic? Q2 was 8%.</div>
+        </div>
+      </section>
+
+      <section class="slide" data-pipeup-slide="5" data-pipeup-id="s5-author">
+        <div class="step">Step 4</div>
+        <h2>The author's AI does the rest</h2>
+        <p>Alex pastes your comments into their agent with q3-plan.html open. Because every comment says exactly where it is, the agent can make the changes and tell you what it did.</p>
+        <div class="art">
+          <div class="prompt" data-pipeup-id="s5-ask">Here's Red Fox's feedback on q3-plan.html. Make the changes,<br />then reply to each comment with what you did.</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="controls" data-pipeup-ignore>
+      <button id="prev" aria-label="Previous slide">←</button>
+      <span id="count">1 / 5</span>
+      <button id="next" aria-label="Next slide">→</button>
+    </div>
+
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      let n = 0;
+      function go(i) {
+        n = Math.max(0, Math.min(slides.length - 1, i));
+        slides.forEach((s, k) => s.classList.toggle("on", k === n));
+        document.getElementById("count").textContent = `${n + 1} / ${slides.length}`;
+      }
+      document.getElementById("prev").onclick = () => go(n - 1);
+      document.getElementById("next").onclick = () => go(n + 1);
+      addEventListener("keydown", (e) => {
+        if (e.target.closest?.("input,textarea,[contenteditable]")) return;
+        if (e.key === "ArrowRight") go(n + 1);
+        if (e.key === "ArrowLeft") go(n - 1);
+      });
+      // The skill's real address, once the site is hosted.
+      {
+        const site = location.protocol.startsWith("http") ? new URL("../", location.href).href : "https://pipeup-ai.github.io/pipeup/";
+        document.querySelectorAll("[data-skill]").forEach((el) => (el.textContent = `${site}skills/pipeup-integrate/SKILL.md`));
+      }
+      if (!/Mac|iP(hone|ad|od)/.test(navigator.platform))
+        document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd> <kbd>Alt</kbd> <kbd>C</kbd>"));
+    </script>
+    <script src="../pipeup.min.js"></script>
+  </body>
+</html>

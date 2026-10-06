@@ -1,0 +1,99 @@
+<!doctype html>
+<!-- A document that explains Pipeup, laid out for review: a centred reading area with a reserved comment gutter.
+     It runs Pipeup, so readers can comment on it as they learn. -->
+<html lang="en" data-pipeup-doc="pIpEuPtRyDoCuMt1:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD" data-pipeup-reserve>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How Pipeup works</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; background: #f0f2f5; color: #202124; font: 15px/1.6 Arial, "Helvetica Neue", Helvetica, sans-serif;
+        padding-right: var(--pipeup-gutter, 0px); transition: padding-right 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* One white page on a grey canvas, like a document editor. */
+      main {
+        max-width: 816px; min-height: 1056px; margin: 28px auto 48px; background: #fff; padding: 96px 96px 120px;
+        box-shadow: 0 1px 3px rgba(60, 64, 67, 0.15), 0 4px 8px 3px rgba(60, 64, 67, 0.08);
+      }
+      .kicker { display: none; }
+      h1 { font-size: 34px; font-weight: 400; line-height: 1.2; margin: 0 0 4px; }
+      .lede { font-size: 20px; color: #5f6368; margin: 0 0 24px; }
+      h2 { font-size: 21px; font-weight: 400; margin: 28px 0 6px; }
+      p { margin: 0 0 12px; }
+      ul { padding-left: 2em; margin: 0 0 12px; }
+      li { margin: 2px 0; }
+      b { font-weight: 700; }
+      a { color: #1155cc; }
+      code { font: 14px "Courier New", Courier, monospace; }
+      kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; font: 500 13px/1 -apple-system, "Segoe UI", system-ui, sans-serif;
+        color: #202124; background: #f1f3f4; border: 1px solid #dadce0; border-bottom-width: 2px; border-radius: 4px; vertical-align: 1px; }
+      figure { margin: 16px 0; }
+      figcaption { font-size: 13px; color: #5f6368; margin-top: 6px; text-align: center; }
+      .flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid #000; }
+      .flow div { padding: 8px 10px; font-size: 14px; border-right: 1px solid #000; }
+      .flow div:last-child { border-right: 0; }
+      .flow b { display: block; }
+      .tip { background: #fff2cc; padding: 2px 4px; }
+      @media (prefers-reduced-motion: reduce) { body { transition: none; } }
+      @media (max-width: 860px) { main { margin: 0; padding: 40px 24px 64px; min-height: 0; box-shadow: none; } .flow { grid-template-columns: 1fr 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>How Pipeup works</h1>
+      <p class="lede">Pipeup adds comments to any HTML page, so people can give feedback right where it applies. This page runs Pipeup: try commenting on it as you read.</p>
+
+      <p class="tip" data-pipeup-id="try">Press <span data-shortcut><kbd>⇧</kbd> <kbd>⌥</kbd> <kbd>C</kbd></span> to start commenting, then select some words on this page, or click a paragraph or the diagram below.</p>
+
+      <section data-pipeup-id="commenting">
+        <h2>Commenting</h2>
+        <p>Turn on commenting from the round button in the corner, or with the shortcut. Then point at what you mean:</p>
+        <ul>
+          <li><b>Select words</b> to comment on a phrase.</li>
+          <li><b>Click a block</b>, such as a paragraph, chart or button, to comment on all of it. The expand icon steps out to the block around it.</li>
+          <li><b>Option-click</b> (Alt-click) to drop a pin on an exact spot.</li>
+        </ul>
+        <p>Replies sit under the comment they answer. When commenting is off, comments stay out of the way; the number on the button tells you they're there, and <b>All comments</b> lists every one.</p>
+      </section>
+
+      <section data-pipeup-id="identity">
+        <h2>Who you are</h2>
+        <p>There's nothing to sign up for. You start as an animal in a colour, like <b>Red Fox</b>, and you can add your name whenever you like. Only you can edit or delete your own comments.</p>
+      </section>
+
+      <section data-pipeup-id="sharing">
+        <h2>Where comments go</h2>
+        <p>Comments are kept in your own browser. To share them, choose <b>Copy all</b>: every comment is copied as Markdown that says exactly where it is. Paste it to the author any way you like.</p>
+        <figure data-pipeup-id="flow" data-pipeup-label="How feedback travels">
+          <div class="flow">
+            <div><b>1. Receive</b>An HTML file someone sent you</div>
+            <div><b>2. Add Pipeup</b>Your agent adds it with the skill</div>
+            <div><b>3. Comment</b>Right on the page</div>
+            <div><b>4. Send back</b>Copy all, then paste it to the author</div>
+          </div>
+          <figcaption>How feedback travels from a reviewer back to the author.</figcaption>
+        </figure>
+      </section>
+
+      <section data-pipeup-id="ai">
+        <h2>Working with AI</h2>
+        <p><b>Copy all</b> turns every open comment into Markdown that says exactly where it is: the section, the element and the words. Paste it into your agent and it can make the changes. Agent skills teach AI tools to add Pipeup to a page, summarise feedback and apply it.</p>
+      </section>
+
+      <section data-pipeup-id="adding">
+        <h2>Adding it to a page</h2>
+        <p>Pipeup is one file with no dependencies, and it works when a page is opened straight from disk. Put <code>pipeup.min.js</code> next to your page and add one line before <code>&lt;/body&gt;</code>:</p>
+        <p><code>&lt;script src="pipeup.min.js"&gt;&lt;/script&gt;</code></p>
+        <p>Or let your agent do it: copy the prompt from the Pipeup home page and paste it in with your file open.</p>
+      </section>
+    </main>
+    <script>
+      if (!/Mac|iP(hone|ad|od)/.test(navigator.platform))
+        document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd> <kbd>Alt</kbd> <kbd>C</kbd>"));
+    </script>
+    <script src="../pipeup.min.js"></script>
+  </body>
+</html>
