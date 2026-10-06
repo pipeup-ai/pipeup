@@ -7,6 +7,15 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-06
+
+### Changed
+- Releases publish to npm with trusted publishing: the release workflow proves its identity to npm,
+  so no npm token is stored. Provenance is unchanged.
+- The pinned CDN address in the README, the integrate skill and llms.txt points to 0.3.1.
+
+No change to the library's behaviour.
+
 ## [0.3.0] - 2026-10-06
 
 The first public release.
@@ -49,5 +58,6 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/pipeup-ai/pipeup/releases/tag/v0.3.0

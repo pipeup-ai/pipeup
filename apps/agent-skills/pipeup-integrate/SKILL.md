@@ -72,7 +72,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.3.0/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.3.1/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -133,7 +133,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.3.0/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.3.1/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.

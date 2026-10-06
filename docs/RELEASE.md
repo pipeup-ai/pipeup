@@ -41,6 +41,9 @@ format may still change; the README says the project is in alpha until 1.0.
 4. GitHub Actions then: runs the full check, publishes to npm with provenance, deploys the site to
    Pages, and creates the GitHub Release from the CHANGELOG.
 
+npm publishing uses trusted publishing: npm accepts the `release.yml` workflow in
+`pipeup-ai/pipeup` by its GitHub identity, so no npm token is stored anywhere.
+
 ## What is public
 
 Everything in this repository is the whole project except the maintainers' internal working notes,
@@ -56,3 +59,4 @@ are fictional; there are no personal names or addresses.
 - 2026-10-06 — The sync script stays in the monorepo; it refuses to sync if personal information is found
   and never pushes. Release notes carry the SRI `integrity` value.
 - 2026-10-06 — Reworded for a public audience: development happens in the maintainers' private repository and GitHub receives one commit per release.
+- 2026-10-06 — npm publishing moved to trusted publishing; no stored npm token.

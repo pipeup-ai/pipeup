@@ -19,10 +19,11 @@ jobs:
       run:
         working-directory: libs/ts/pipeup
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          # Node 24 ships npm 11, which trusted publishing needs (11.5.1 or later).
+          node-version: 24
           registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: libs/ts/pipeup/package-lock.json
@@ -71,9 +72,9 @@ jobs:
           } >> "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
 
+      # Trusted publishing: npm accepts this workflow's short-lived GitHub identity (id-token: write
+      # above) in place of a stored token. Set on npmjs.com under the package's Trusted Publisher.
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           tag=latest
           case "$VERSION" in *-*) tag=next ;; esac
