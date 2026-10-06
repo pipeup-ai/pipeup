@@ -421,6 +421,11 @@ any of them off.
   the website (with its Try pages and agent skills) is published alongside it.
 - Versions follow semantic versioning. Until 1.0 the project is in **alpha**: the API and the stored
   format may change between minor versions, and each release says what changed.
+- **Pre-releases** can be tried before a milestone reaches everyone: installed from npm and the CDNs
+  by their exact version or a `next` tag, with their own copy of the website, Try pages and agent
+  skills at a separate address, clearly marked as a pre-release and not indexed by search engines.
+  A pre-release never changes what a plain install gets, the stable website or the stable CDN
+  address.
 
 ## 17. Out of scope for the first release
 
@@ -508,3 +513,4 @@ any of them off.
 - 2026-10-06 — Opening a thread puts the cursor in its reply line.
 - 2026-10-06 — Simplified copying and feedback: the menu has two plain rows, Copy all (Markdown for AI) and Copy all as text, with no copy-format setting and no `copyAs` option; Send feedback and Add feedback and dropping files are removed for now (feedback comes back by copying it), with sealed feedback files kept in the design for sharing later.
 - 2026-10-06 — First public release prepared (0.3.0, alpha): open source under MIT, published on npm and public CDNs, with the website, Try pages and agent skills at a public address and a link to the source from the site. Phase 1's comments on this machine ship before rooms. The licence question is closed. Sample names in examples and tests are fictional.
+- 2026-10-06 — Pre-releases: tried by exact version or the `next` tag, with their own marked copy of the website at a separate address; stable installs and the stable site are never changed by one.

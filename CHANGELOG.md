@@ -7,6 +7,19 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-06
+
+### Changed
+- Pre-releases have their own channel: the npm `next` tag and a marked copy of the site at
+  `/next/`, so a milestone can be tried before it reaches everyone.
+- The site is deployed after a release is published, so it never points at a version npm doesn't
+  have yet.
+- Release tooling: one command sets the version everywhere, and a smoke test checks npm, the
+  GitHub Release, the CDNs and the site after each release.
+- Workflows run on Node 24 and a pinned Ubuntu 24.04 runner.
+
+No change to the library's behaviour.
+
 ## [0.3.1] - 2026-10-06
 
 ### Changed
@@ -58,6 +71,7 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/pipeup-ai/pipeup/releases/tag/v0.3.0

@@ -1,8 +1,15 @@
 name: Pages
 
+# The site is deployed after a release has been published, so it never points at a version npm and
+# the CDNs don't have yet; run it by hand for a site-only fix. Both run on the default branch, the
+# only one allowed to deploy to github-pages.
+#
+# One deployment holds both channels: main at the root, and the pre-release on the `next` branch
+# under /next/ while it is newer than main (otherwise /next/ sends people to the stable site).
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -16,32 +23,70 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: libs/ts/pipeup/package-lock.json
-      - name: Build the library
-        working-directory: libs/ts/pipeup
+          ref: main
+          path: stable
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Build the stable site
         run: |
-          npm ci
-          npm run build
-      - name: Build the site
-        run: apps/site/build.sh --no-lib-build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+          (cd stable/libs/ts/pipeup && npm ci && npm run build)
+          stable/apps/site/build.sh --no-lib-build
+          cp -R stable/apps/site/_site site
+
+      - name: Is there a newer pre-release?
+        id: next
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${{ github.repository }}" next >/dev/null; then
+            git clone --quiet --depth 1 --branch next "https://github.com/${{ github.repository }}" next
+            stable="$(node -p 'require("./stable/libs/ts/pipeup/package.json").version')"
+            pre="$(node -p 'require("./next/libs/ts/pipeup/package.json").version')"
+            if node stable/tools/version-newer.mjs "$pre" "$stable"; then
+              echo "build=true" >> "$GITHUB_OUTPUT"
+              echo "Pre-release $pre is newer than $stable: building /next/"
+              exit 0
+            fi
+            echo "next ($pre) is not newer than main ($stable)"
+          fi
+          echo "build=false" >> "$GITHUB_OUTPUT"
+
+      - name: Build the pre-release site under /next/
+        if: steps.next.outputs.build == 'true'
+        run: |
+          (cd next/libs/ts/pipeup && npm ci && npm run build)
+          next/apps/site/build.sh --no-lib-build --channel next
+          cp -R next/apps/site/_site site/next
+
+      - name: "No pre-release: /next/ goes to the stable site"
+        if: steps.next.outputs.build != 'true'
+        run: |
+          mkdir -p site/next
+          cat > site/next/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8" />
+          <meta name="robots" content="noindex" />
+          <meta http-equiv="refresh" content="0; url=../" />
+          <title>No pre-release right now</title>
+          <p>There is no pre-release right now. <a href="../">Go to the stable site</a>.</p>
+          HTML
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
-          path: apps/site/_site
+          path: site
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
