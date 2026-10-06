@@ -7,6 +7,12 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.0-beta.0] - 2026-10-06
+
+A pre-release to try out the pre-release channel itself: the same library as 0.3.2, published
+under the npm `next` tag, with its own copy of the site at https://pipeup-ai.github.io/pipeup/next/.
+0.4.0 (slides, the narrow-page drawer, keyboard and touch for blocks) comes in later betas.
+
 ## [0.3.2] - 2026-10-06
 
 ### Changed
@@ -72,6 +78,7 @@ The first public release.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
 [Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...HEAD
+[0.4.0-beta.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0-beta.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/pipeup-ai/pipeup/releases/tag/v0.3.0
