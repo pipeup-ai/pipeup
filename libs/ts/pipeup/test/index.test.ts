@@ -21,6 +21,8 @@ describe("public API", () => {
       "formatAgo",
       "animalName",
       "nameOf",
+      "setViewState",
+      "onReveal",
     ]) {
       expect(typeof (pipeup as Record<string, unknown>)[name], name).toBe("function");
     }

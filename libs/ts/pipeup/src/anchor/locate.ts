@@ -77,12 +77,27 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
     const title = el.closest("[data-pipeup-slide]")?.querySelector("h1,h2,h3")?.textContent;
     parts.push(`Slide ${slide}` + (title ? ` "${clip(normalizeText(title))}"` : ""));
   } else {
+    // A view the page reported (a tab, a route) comes first, by its readable name.
+    const view = viewName(anchor.view);
+    if (view) parts.push(view);
     const heading = headingBefore(el, root);
     if (heading) parts.push(`Section "${clip(normalizeText(heading.textContent ?? ""))}"`);
   }
   const label = labelOf(el);
   parts.push(label);
   return { where: parts.join(" › "), element: label, id, quote, pin };
+}
+
+/** A view's readable name: its label, else its values joined with " · " (the slide left out); "" for none. */
+export function viewName(view: Record<string, string> | undefined): string {
+  if (!view) return "";
+  return (
+    view.label ||
+    Object.entries(view)
+      .filter(([k, v]) => v && k !== "slide")
+      .map(([, v]) => v)
+      .join(" · ")
+  );
 }
 
 /** The last h1–h3 that comes before `el` in the page (not `el` itself or one containing it). */

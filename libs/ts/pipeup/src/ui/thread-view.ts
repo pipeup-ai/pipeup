@@ -18,8 +18,10 @@ export interface ThreadActions {
 export interface ThreadViewOptions {
   variant: "column" | "popover";
   quote?: string | null;
-  /** Snapshot of content that is no longer on the page. */
+  /** Snapshot of content that can't be shown: gone from the page, or somewhere it couldn't be reached. */
   lost?: string | null;
+  /** Where that content is, when it isn't gone ("On slide 3"); default "No longer on the page". */
+  place?: string | null;
   now?: () => number;
 }
 
@@ -28,7 +30,7 @@ const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
 export interface ThreadView {
   readonly element: HTMLElement;
   /** Shows a newer copy of the thread. The reply line is kept, so what's being typed in it (and focus) survives. */
-  update(t: Thread, o?: { quote?: string | null; lost?: string | null }): void;
+  update(t: Thread, o?: { quote?: string | null; lost?: string | null; place?: string | null }): void;
 }
 
 /**
@@ -87,7 +89,10 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     return b;
   };
 
-  function update(t: Thread, next: { quote?: string | null; lost?: string | null } = {}): void {
+  function update(
+    t: Thread,
+    next: { quote?: string | null; lost?: string | null; place?: string | null } = {},
+  ): void {
     Object.assign(o, next);
     id = t.id;
     const now = (o.now ?? Date.now)();
@@ -119,7 +124,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       ),
     );
     const context = o.lost
-      ? h("div", { class: "ctx" }, `No longer on the page — it read “${clip(o.lost, 120)}”`)
+      ? h("div", { class: "ctx" }, `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`)
       : o.quote
         ? h("div", { class: "ctx" }, `“${clip(o.quote, 80)}”`)
         : null;

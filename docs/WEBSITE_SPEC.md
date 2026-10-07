@@ -44,7 +44,7 @@ visitor how to add it. Functional requirements only.
      the author's AI acts on it. Bold and graphic.
    - **Website**: a product landing page with a loud brand: vivid colour, huge heavy type, bold cards.
    A slim bar on top offers "← Pipeup" back to the home page (working when opened from disk too),
-   the comment shortcut (on wide windows), a **Try** menu listing the three examples with the current
+   the comment shortcut centred in the bar (when there is room), a **Try** menu listing the three examples with the current
    one ticked, and the GitHub link. It stays on one line at any width; on phones the GitHub link is
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
@@ -113,3 +113,4 @@ structured data describing Pipeup as software.
 - 2026-10-06 — Feedback goes back by copying (Copy all), not sealed files: the slides, guide and agent files say so.
 - 2026-10-06 — The showcase can be commented on as one whole block; its controls keep working in comment mode. The copy rows are called Copy as Markdown and Copy as Text throughout.
 - 2026-10-06 — Everything on the site can be commented on except the Try bar (buttons, links and navigation included). The Try bar's example links become a Try menu, and the bar fits on one line at any width.
+- 2026-10-07 — The Try bar's shortcut hint is centred; it gives way when the bar is too narrow, including while All comments is open.

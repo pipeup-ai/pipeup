@@ -73,7 +73,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -102,18 +102,38 @@ Then choose the options (see "Options" below): usually just the defaults.
    AI tools see.
 
 5. **Decks: mark slides.** Add `data-pipeup-slide="1"`, `"2"`, … (1-based, in order) to each
-   slide's outer element. If the deck uses reveal.js or another framework Pipeup detects, that's
-   all (slide support is not built yet — planned for 0.4); otherwise call `Pipeup.mount({ slides: { current: () => n, go: (n) => … } })` with the
-   deck's own functions.
+   slide's outer element. Pipeup follows the deck by itself — the current slide is the marked slide
+   that is showing, or reveal.js's current slide — so only that slide's comments show, the control
+   marks comments on other slides, and All comments groups them by slide. So that choosing a
+   comment on another slide can go there, hand Pipeup the deck's own way to change slides, after the
+   Pipeup script — this works on auto-mounted pages (the usual route; reveal.js decks need nothing,
+   Pipeup calls `Reveal.slide()`):
+
+   ```html
+   <script>
+     Pipeup.onReveal((view) => {
+       const n = parseInt(view.slide, 10);
+       if (n > 0) goToSlide(n);
+     });
+   </script>
+   ```
+
+   Only a page that starts Pipeup itself (`data-pipeup-auto="off"`) needs to pass both of the deck's
+   functions, 1-based: `Pipeup.mount({ slides: { current: () => n, go: (n) => … } })`.
 
 6. **Exclude chrome** with `data-pipeup-ignore`: slide navigation buttons, progress bars, sticky
    toolbars that aren't part of the content, cookie banners, logo strips.
    Ignored areas keep working in comment mode, so mark navigation and slide controls this way
    rather than leaving them as comment targets.
 
-7. **Tabs, accordions, routes** (not built yet — planned for 0.4): if content can be hidden, register a reveal handler so comments
-   on hidden content can be opened: `Pipeup.onReveal(view => showTab(view.tab))`, and report the
-   current view with `Pipeup.setViewState({ tab: "pricing" })` when it changes.
+7. **Tabs, accordions, routes:** if content can be hidden behind a tab or a route, report the view
+   whenever it changes, with a readable `label` (string values only):
+   `Pipeup.setViewState({ tab: "pricing", label: "Pricing tab" })`. Comments remember it and show
+   only in that view; elsewhere they are counted on the control and listed under the label. Register
+   a handler so choosing one can go there: `Pipeup.onReveal((view) => showTab(view.tab))`. Pipeup
+   never opens tabs or accordions itself; without a handler the comment opens on its own with a
+   snapshot of what it was on. The handler receives the whole view (every key you set, plus `slide`
+   on decks); `label` is only a display name.
 
 8. **Check, and fix until it passes:** once it ships, run `npx pipeup check page.html`; until then, open the page and check the items below by eye. Fix every `fail`; fix
    `warn` items unless the author says otherwise. Typical fixes:
@@ -134,7 +154,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -162,3 +182,4 @@ Markup on the page:
 | `root` | `document.body` | Limit commenting to one area of the page. |
 | `name` | none — never asked | The reviewer's name, when the page already knows it. Without one, each reviewer is an animal in a colour ("Red Fox") with an animal avatar, and can add a name from the comment box or the menu whenever they like. |
 | `store` | this browser | Where comments are kept; leave it unless the author asks. |
+| `slides` | followed automatically | A deck's own `{ current(): number, go(n: number): void }`, 1-based; replaces Pipeup's following of the deck (Step 5). |

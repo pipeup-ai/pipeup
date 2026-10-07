@@ -2,8 +2,9 @@
 <!-- A deck designed for review: one element per slide, marked with data-pipeup-slide; the slide controls
      are marked data-pipeup-ignore so they keep working in comment mode. Comment on a slide's text, or
      press Shift+Alt+C (Shift+Option+C on a Mac) and click a block to comment on it, or Option-click to pin a spot.
-     Slide-aware commenting (only the current slide's comments, jumping to a comment's slide) comes in
-     0.4; for now comments on hidden slides simply aren't shown until their slide is.
+     Pipeup follows the slides by itself: only the current slide's comments show, the control marks comments
+     on other slides, and All comments groups them by slide. The one line after the script lets Pipeup go to a
+     comment's slide with the deck's own go().
      Open it from disk after `npm run build`. The doc key below is a sample; `pipeup init` makes a real one. -->
 <html lang="en" data-pipeup-doc="eXaMpLeDeCk00001:KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK">
   <head>
@@ -70,5 +71,11 @@
       });
     </script>
     <script src="../dist/pipeup.min.js"></script>
+    <script>
+      Pipeup.onReveal((view) => {
+        const i = parseInt(view.slide, 10) - 1;
+        if (i >= 0) go(i);
+      });
+    </script>
   </body>
 </html>

@@ -7,6 +7,31 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.0-beta.2] - 2026-10-07
+
+### Added
+- **Slides and hidden views.** Pipeup follows a deck's current slide by itself (slides marked
+  `data-pipeup-slide`, or reveal.js) and shows only that slide's comments; they ease out and in as the slide
+  changes. New comments remember their slide and the page's view.
+- `Pipeup.setViewState({ tab, label })` lets a page report its view (a tab, a route); comments made there show
+  only there. `Pipeup.onReveal(fn)` lets the page go to a view or slide when a reviewer chooses a comment there.
+- `mount({ slides: { current, go } })` for decks that drive Pipeup themselves.
+- All comments groups threads by slide in deck order ("Slide 3 · 2 open", this slide marked) or by view.
+- Copy as Markdown names a non-slide view in each thread's "Where" line.
+
+### Changed
+- The control's number counts the open threads here; a small dot and its label ("2 here · 5 on other
+  slides") say how many are elsewhere.
+- Choosing a thread on another slide or view in All comments goes there first, then opens it; if it can't, it
+  opens beside the panel with a snapshot.
+- `pipeup.min.js` and `pipeup.esm.js` may be up to 33 KB gzip.
+
+### Fixed
+- The Try pages' shortcut hint sits in the middle of the top bar.
+- A comment being written on a slide or view that has gone is no longer lost or stuck: opening another thread,
+  choosing one in All comments, or commenting on selected words goes back to it.
+- A deck's hook that reports no slide number, or a saved slide that is not a plain slide number, is ignored.
+
 ## [0.4.0-beta.1] - 2026-10-07
 
 ### Changed
@@ -100,7 +125,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.2...HEAD
+[0.4.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.0...v0.4.0-beta.1
 [0.4.0-beta.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0-beta.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2

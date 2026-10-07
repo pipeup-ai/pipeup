@@ -152,11 +152,21 @@ any of them off.
 
 ## 6. Commenting on slides
 
-- Pins and comments belong to a slide; only the **current slide's** comments are shown. Pins keep
-  their position relative to the slide when it is resized.
+- Pins and comments belong to a slide; only the **current slide's** comments are shown, and they
+  ease out and in as the slide changes. Pins keep their position relative to the slide when it is
+  resized.
+- Pipeup follows the deck on its own: the current slide is the marked slide that is showing. Decks
+  built with a common framework are followed and driven without any code; any deck can also tell
+  Pipeup how to go to a slide.
 - Moving between slides is never blocked by Pipeup, including in comment mode.
-- A slide strip or the comment control shows which slides have open threads and how many.
-- Choosing a thread **navigates to its slide** (and its build step, where the deck has steps).
+- The comment control's number counts the open threads **here** (on this slide); a small mark on the
+  control shows when other slides have open threads, and its label says how many ("2 here · 5 on
+  other slides").
+- **All comments** groups threads by slide, in deck order ("Slide 3 · 2 open"), with this slide's
+  group marked.
+- Choosing a thread **navigates to its slide** and opens it there. If the deck can't be moved, the
+  thread opens on its own in the panel with its snapshot. Build steps within a slide are not
+  tracked.
 - Text on a slide can also be selected and commented on, as in documents.
 
 ## 7. Reading, replying and managing comments
@@ -287,9 +297,16 @@ any of them off.
   - **Moved** — found nearby or after the content changed; flagged so someone can confirm;
   - **Orphaned** — its content is gone; the comment remains in the panel with a **snapshot** of
     what the reviewer was looking at.
-- Comments made in a view that is currently hidden (another tab, accordion, route or slide) are
-  listed with where they live, and choosing one **reopens that view** when the page tells Pipeup
-  how to do so.
+- Every comment remembers the view it was made in: the slide, and whatever the page reports about
+  itself (such as the open tab or route), with a readable name when the page gives one.
+- Comments made in a view that is currently hidden (another tab, accordion, route or slide) show
+  nothing on the page, are counted as elsewhere on the comment control, and are listed in All
+  comments under where they live. Choosing one **reopens that view** when the page tells Pipeup how
+  to do so, and opens the thread on its content; otherwise the thread opens on its own with its
+  snapshot. Pipeup never opens tabs or accordions itself.
+- A new comment with words in it whose slide or view goes away steps aside and keeps its words. Opening
+  another thread, choosing one in All comments, or starting another comment then takes the reviewer back
+  to it (when the page can go there) rather than dropping or hiding it.
 - Comments on charts or other dynamic visuals record what the reviewer saw, including any state
   the page reports (for example, a chosen filter).
 - When the author publishes a new version of the file, comments on text that changed are marked
@@ -534,3 +551,5 @@ any of them off.
 - 2026-10-06 — First public release prepared (0.3.0, alpha): open source under MIT, published on npm and public CDNs, with the website, Try pages and agent skills at a public address and a link to the source from the site. Phase 1's comments on this machine ship before rooms. The licence question is closed. Sample names in examples and tests are fictional.
 - 2026-10-06 — Pre-releases: tried by exact version or the `next` tag, with their own marked copy of the website at a separate address; stable installs and the stable site are never changed by one.
 - 2026-10-06 — Menu and picking fixes: the copy rows are named Copy as Markdown and Copy as Text; toggling Start commenting leaves the menu open, which closes on Esc, a click outside, or after the pointer has been away for 3 seconds; your name is edited in its own row, in place; no block is outlined while text is selected in comment mode; picking also finds page sections, lists, elements with accessible roles and boxes that lay out several things, and the website's showcase is commented on as one whole block.
+- 2026-10-07 — Slides and hidden views (0.4): Pipeup follows the current slide by itself (frameworks and a deck's own hook can drive it); threads are here or elsewhere, the control counts those here and marks those elsewhere, All comments groups by slide or view, and choosing a thread elsewhere goes there first. Comments remember their view. Build steps are not tracked.
+- 2026-10-07 — A new comment with words that stepped aside with its slide or view is returned to, not lost, when the reviewer opens or starts something else.

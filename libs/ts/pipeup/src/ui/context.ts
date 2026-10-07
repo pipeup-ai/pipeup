@@ -3,6 +3,7 @@ import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
 import type { Anchor, Thread } from "../model/types";
 import type { DraftBox } from "./draft-view";
+import type { Here } from "./here";
 import type { ThreadActions } from "./thread-view";
 
 /** A comment being written: what it's on, and where that is now. */
@@ -62,6 +63,12 @@ export interface Ctx {
   readonly pending: ReadonlySet<string>;
   readonly actions: ThreadActions;
   readonly menu: MenuActions;
+  /** Where the reviewer is: the slide, or the page's own view. */
+  readonly here: Here;
+  /** The thread lives on another slide or view, or the page hides its content: nothing of it shows. */
+  elsewhere(t: Thread): boolean;
+  /** Sorts threads into here and elsewhere again now, re-rendering if that changed anything. */
+  recheck(): void;
   visible(t: Thread): boolean;
   /** The shown text comment whose highlight is at (x, y), if any. */
   quoteAt(x: number, y: number): Thread | null;
@@ -91,7 +98,7 @@ export interface Ctx {
   cancelDraft(): void;
   /** Turns comment mode on or off; comments show while it is on. */
   setCommenting(on: boolean): void;
-  /** What a click on the page does: cancels an empty draft, else closes the open thread. */
+  /** What a click on the page does: cancels an empty draft (back to one with words), else closes the open thread. */
   dismiss(): void;
   registerDraft(box: DraftBox | null): void;
   toast(message: string): void;

@@ -1,3 +1,4 @@
+import { viewName } from "../anchor/locate";
 import type { ExportItem } from "../export/format";
 import { animalName } from "../model/animals";
 import type { Thread } from "../model/types";
@@ -13,6 +14,8 @@ import { threadView, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
 const AWAY_MS = 3000;
+/** Where threads on content the page hides are listed, with no view of their own to name. */
+const HIDDEN = "Hidden on the page";
 
 /**
  * The comment control: one round button in the corner (the comment icon, or the open count inside a comment
@@ -37,8 +40,11 @@ export function createLauncher(ctx: Ctx): View {
     },
     h("span", { class: "plus" }, mark),
     h("span", { class: "cnt" }, icon("bubble", 34, 1.4), ...nums),
+    // Open threads on other slides or views: a small dot.
+    h("span", { class: "dot" }),
   );
-  const tip = h("span", { class: "ttip", "aria-hidden": "true" }, "Comment", h("small", {}, SHORTCUT_LABEL));
+  const tipWords = document.createTextNode("Comment");
+  const tip = h("span", { class: "ttip", "aria-hidden": "true" }, tipWords, h("small", {}, SHORTCUT_LABEL));
   const launch = h("div", { class: "launch" }, btn, tip);
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
   const list = h("div", { class: "list", role: "menu", "aria-label": "All comments" });
@@ -126,11 +132,65 @@ export function createLauncher(ctx: Ctx): View {
   });
 
   const lost = (t: Thread) => lostIn(ctx, t);
-  const open = () => latest.filter((t) => !t.resolved).length;
+  /** Open threads: here (the control's number), elsewhere (its dot), and all of them (All comments). */
+  const open = () => latest.filter((t) => !t.resolved && !ctx.elsewhere(t)).length;
+  const others = () => latest.filter((t) => !t.resolved && ctx.elsewhere(t)).length;
+  const allOpen = () => latest.filter((t) => !t.resolved).length;
+
+  /** Where a thread that can't be shown lives: "On slide 3", "In Pricing tab", or hidden on the page. */
+  const placeOf = (t: Thread) => {
+    const s = t.anchor.view?.slide;
+    const name = ctx.here.holds(t.anchor.view) ? "" : viewName(t.anchor.view);
+    return s && ctx.here.slide() !== null ? `On slide ${s}` : name ? `In ${name}` : HIDDEN;
+  };
+
+  /** A titled group of rows; `mark` ("This slide") follows the title. */
+  const group = (title: string, rows: Node[], mark = "") =>
+    h(
+      "div",
+      { role: "group", "aria-label": mark ? `${title} · ${mark}` : title },
+      h("div", { class: "sec", "aria-hidden": "true" }, title, mark && h("b", {}, mark)),
+      ...rows,
+    );
+
+  /**
+   * On a deck, threads by slide in deck order ("Slide 3 · 2 open"), this slide's group marked; threads with no
+   * slide join this slide's. On other pages, the threads here first, then each other view's under its name.
+   */
+  function groups(items: ExportItem[], row: (i: ExportItem) => HTMLElement): Node[] {
+    const now = ctx.here.slide();
+    const by = new Map<string | null, ExportItem[]>();
+    for (const i of items) {
+      const t = i.thread;
+      const k =
+        now !== null
+          ? (t.anchor.view?.slide ?? now)
+          : ctx.elsewhere(t)
+            ? ctx.here.holds(t.anchor.view)
+              ? ""
+              : viewName(t.anchor.view)
+            : null;
+      by.set(k, [...(by.get(k) ?? []), i]);
+    }
+    if (now === null) {
+      const mine = by.get(null) ?? [];
+      by.delete(null);
+      return [...mine.map(row), ...[...by].map(([k, l]) => group(k || HIDDEN, l.map(row)))];
+    }
+    return [...by]
+      .sort(([a], [b]) => Number(a) - Number(b) || 0)
+      .map(([k, l]) =>
+        group(
+          `Slide ${k} · ${l.filter((i) => !i.thread.resolved).length} open`,
+          l.map(row),
+          k === now ? "This slide" : "",
+        ),
+      );
+  }
 
   /** Every thread, in page order; the ones whose content is gone last, under their own heading. */
   function buildAll(): void {
-    const before = items(list).indexOf(focused() as HTMLElement);
+    const before = (focused() as HTMLElement | null)?.dataset.thread;
     const shownItems = ctx.menu.all().filter((i) => !i.thread.resolved || ctx.state.showResolved);
     const row = (i: ExportItem) => {
       const t = i.thread;
@@ -154,23 +214,18 @@ export function createLauncher(ctx: Ctx): View {
       return b;
     };
     const gone = shownItems.filter((i) => lost(i.thread));
-    const heading = "No longer on the page";
-    total.textContent = String(open());
+    total.textContent = String(allOpen());
     showResolved.setAttribute("aria-checked", String(ctx.state.showResolved));
     list.replaceChildren(
       shownItems.length ? "" : h("div", { class: "sec", role: "presentation" }, "No open comments"),
-      ...shownItems.filter((i) => !lost(i.thread)).map(row),
-      gone.length
-        ? h(
-            "div",
-            { role: "group", "aria-label": heading },
-            h("div", { class: "sec", "aria-hidden": "true" }, heading),
-            ...gone.map(row),
-          )
-        : "",
+      ...groups(
+        shownItems.filter((i) => !lost(i.thread)),
+        row,
+      ),
+      gone.length ? group("No longer on the page", gone.map(row)) : "",
     );
     const now = items(list);
-    if (before >= 0) now[Math.min(before, now.length - 1)]?.focus({ preventScroll: true });
+    if (before) now.find((b) => b.dataset.thread === before)?.focus({ preventScroll: true });
   }
 
   /**
@@ -186,11 +241,30 @@ export function createLauncher(ctx: Ctx): View {
     go(id, y);
   }
 
+  let going = "";
   function go(id: string, y: number): void {
     const t = latest.find((x) => x.id === id);
-    const r = ctx.resolved.get(id);
     if (!t) return;
-    const el = r && !lost(t) ? (r.element ?? r.range?.startContainer.parentElement ?? null) : null;
+    going = id;
+    if (!ctx.elsewhere(t)) return place(t, y);
+    // Like opening, going somewhere else leaves a draft with words where it is, and goes back to it.
+    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.dismiss();
+    // On another slide or view: go there first, then open it on its content, or beside the panel if it never
+    // shows (unless the panel and the thread were closed meanwhile).
+    void ctx.here.navigate(t.anchor.view ?? {}).then(() => {
+      ctx.recheck();
+      const now = latest.find((x) => x.id === id);
+      if (now && going === id && (ctx.state.listing || ctx.state.reading)) place(now, y);
+    });
+  }
+
+  function place(t: Thread, y: number): void {
+    const id = t.id;
+    const r = ctx.resolved.get(id);
+    const el =
+      r && !lost(t) && !ctx.elsewhere(t)
+        ? (r.element ?? r.range?.startContainer.parentElement ?? null)
+        : null;
     el?.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
     if (
       el &&
@@ -212,7 +286,12 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Shows thread `t` beside the panel, level with the row chosen (at `y`); with no `y`, only updates it. */
   function showSide(t: Thread, y?: number): void {
-    const o = { quote: t.anchor.quote?.exact ?? null, lost: lost(t) ? t.anchor.snapshot : null };
+    const away = !lost(t) && ctx.elsewhere(t);
+    const o = {
+      quote: t.anchor.quote?.exact ?? null,
+      lost: lost(t) || away ? t.anchor.snapshot : null,
+      place: away ? placeOf(t) : null,
+    };
     if (sideView?.id === t.id) sideView.view.update(t, o);
     else {
       sideView = { id: t.id, view: threadView(t, ctx.actions, { variant: "popover", ...o }) };
@@ -322,7 +401,7 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Brings every row up to date in place. */
   function sync(): void {
-    const n = open();
+    const n = allOpen();
     const name = ctx.menu.name();
     const shown = name || animalName(ctx.doc.me);
     set(idRow, shown, name ? "The name on your comments" : "Add a name to show on your comments");
@@ -469,9 +548,16 @@ export function createLauncher(ctx: Ctx): View {
           next.classList.add("on");
         }
         btn.classList.toggle("has", n > 0);
-        btn.setAttribute("aria-label", n ? `Comment, ${n} open` : "Comment");
         shown = n;
       }
+      const m = others();
+      const label = m
+        ? `${n} here · ${m} ${ctx.here.slide() !== null ? "on other slides" : "in other views"}`
+        : "";
+      btn.classList.toggle("else", m > 0);
+      const aria = label ? `Comment, ${label}` : n ? `Comment, ${n} open` : "Comment";
+      if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
+      if (tipWords.data !== (label || "Comment")) tipWords.data = label || "Comment";
       btn.classList.toggle("on", ctx.state.commenting);
       if (menuOpen) sync();
       const listing = ctx.state.listing;

@@ -4,6 +4,7 @@ import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
 import { startApp } from "./app";
+import { setSlideHook, type SlideHook } from "./here";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -12,6 +13,8 @@ export interface MountOptions {
   name?: string;
   /** Where comments are kept. Default: this browser's IndexedDB. */
   store?: OpStore;
+  /** A deck's own slide functions (1-based); they replace Pipeup's following of the deck. */
+  slides?: SlideHook;
 }
 
 export interface PipeupInstance {
@@ -82,15 +85,23 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     identity: profile.identity,
     name: profile.name,
   });
-  const app = startApp({
-    doc,
-    root: o.root ?? document.body,
-    onName: async (name) => {
-      doc.name = name;
-      profile = { ...profile, name };
-      await kept.saveProfile(profile);
-    },
-  });
+  // The hook is needed while the app starts; if starting fails it must not outlive the failure.
+  setSlideHook(o.slides ?? null);
+  let app: ReturnType<typeof startApp>;
+  try {
+    app = startApp({
+      doc,
+      root: o.root ?? document.body,
+      onName: async (name) => {
+        doc.name = name;
+        profile = { ...profile, name };
+        await kept.saveProfile(profile);
+      },
+    });
+  } catch (e) {
+    setSlideHook(null);
+    throw e;
+  }
   if (ephemeral)
     app.ctx.toast(
       "This browser can't keep comments for this page — copy the comments (Copy as Markdown) to keep them",
@@ -106,6 +117,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       unmounted = true;
       window.removeEventListener("pagehide", onHide);
       app.destroy();
+      setSlideHook(null);
       if (current === self()) current = null;
     },
   };

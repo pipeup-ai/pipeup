@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- A reveal.js-shaped deck: window.Reveal with getIndices, slide and a slidechanged event. The stub shows
+     every section stacked, so only Reveal can say which slide is current. Calls to slide() are kept in
+     window.slid. -->
+<html
+  lang="en"
+  data-pipeup-doc="rEvEaLsTuB000001:RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reveal stub</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          18px/1.5 system-ui,
+          sans-serif;
+      }
+      .slides > section {
+        padding: 24px 48px;
+        border-bottom: 1px solid #ddd;
+      }
+      .slides > section.present {
+        background: #f1efe8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section class="present" data-pipeup-slide="1" data-pipeup-id="r1">
+          <h2>One</h2>
+          <p id="r1p">First.</p>
+        </section>
+        <section data-pipeup-slide="2" data-pipeup-id="r2">
+          <h2>Two</h2>
+          <p id="r2p">Second.</p>
+        </section>
+        <section data-pipeup-slide="3" data-pipeup-id="r3">
+          <h2>Three</h2>
+          <p id="r3p">Third.</p>
+        </section>
+      </div>
+    </div>
+    <p id="note">Speaker notes sit outside the slides.</p>
+    <script src="../../dist/pipeup.min.js"></script>
+    <script>
+      window.slid = [];
+      let h = 0;
+      const sections = [...document.querySelectorAll(".slides > section")];
+      window.Reveal = {
+        getIndices: () => ({ h, v: 0 }),
+        slide(i) {
+          window.slid.push(i);
+          h = i;
+          sections.forEach((s, k) => s.classList.toggle("present", k === h));
+          document.querySelector(".reveal").dispatchEvent(new Event("slidechanged", { bubbles: true }));
+        },
+      };
+      addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") Reveal.slide(Math.min(2, h + 1));
+      });
+    </script>
+  </body>
+</html>

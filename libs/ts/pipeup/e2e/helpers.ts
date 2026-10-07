@@ -149,3 +149,31 @@ export async function commenting(page: Page, on = true): Promise<void> {
   if (on) await expect(control(page)).toHaveClass(/\bon\b/);
   else await expect(control(page)).not.toHaveClass(/\bon\b/);
 }
+
+/** The view saved with each thread, by its first words. */
+export async function savedViews(page: Page): Promise<Record<string, unknown>> {
+  return page.evaluate(() =>
+    Object.fromEntries(
+      (window as any).pu.document.threads().map((t: any) => [t.root.text, t.anchor.view ?? null]),
+    ),
+  );
+}
+
+/** Comments on an element as if made in `view` (a slide, a tab), through the API, returning the thread id. */
+export async function seedView(
+  page: Page,
+  selector: string,
+  text: string,
+  view: Record<string, string>,
+): Promise<string> {
+  return page.evaluate(
+    ({ selector, text, view }) => {
+      const w = window as any;
+      return w.pu.document.comment(
+        w.Pipeup.describeElement(document.querySelector(selector), document.body, undefined, view),
+        text,
+      );
+    },
+    { selector, text, view },
+  );
+}

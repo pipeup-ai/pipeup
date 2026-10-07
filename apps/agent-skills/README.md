@@ -26,26 +26,26 @@ Every item is something an agent will rely on. Status says where it comes from.
 | Item | Meaning | Status |
 |---|---|---|
 | `<html data-pipeup-doc="<id>:<key>">` | Document identity and key. Generated once, never changed. | Format exists (core `newDocumentAttribute`); auto-detection — **done in 0.3.0** |
-| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 32 KB gzip; on npm from 0.3.0 |
+| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 33 KB gzip; on npm from 0.3.0 |
 | Auto-mount when `data-pipeup-doc` is present | No inline script needed, so strict CSP pages work | **Done in 0.3.0** |
 | `Pipeup.mount(options)` | Manual mount; options below | **Done in 0.3.0** (`root`, `name`, `store`) |
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |
 | `data-pipeup-label="Q4 revenue bar"` | Human name for things without text (charts, images, canvases) | Used by core `labelOf` |
-| `data-pipeup-slide="3"` | Marks a slide; 1-based | Used by core `locate`; navigation — **planned for 0.4** |
+| `data-pipeup-slide="3"` | Marks a slide; 1-based | **Done in 0.4** — followed by itself (the marked slide showing, or reveal.js); only its comments show; navigation through `onReveal` or `mount({ slides })` |
 | `data-pipeup-ignore` | Chrome that is never a comment target and keeps working in comment mode | **Done** — never a comment target; keeps working in comment mode (0.3.0) |
 | `<html data-pipeup-layout="column\|bubbles">` | Authors set it to force the column or bubbles; Pipeup reads it and never sets it | **Done in 0.3.0** |
-| `Pipeup.onReveal(view => …)` / `Pipeup.setViewState({...})` | Reopen tabs/routes; record chart filters | **Planned for 0.4** |
+| `Pipeup.onReveal(view => …)` / `Pipeup.setViewState({...})` | Reopen tabs/routes and go to slides; record the page's view (string values; `label` is the readable name and is never compared) | **Done in 0.4** — `onReveal` returns a function that removes the handler |
 | `var(--pipeup-panel, 0px)` | Width of the open All comments panel, for a page's fixed bars (the rest of the page is moved over for it) | **Done** (0.4) |
 | `<html data-pipeup-reserve>` | The page reserves a 320 px gutter and consumes `var(--pipeup-gutter, 0px)`; Pipeup publishes `320px` while its column shows, `0px` otherwise | **Done in 0.3.0** |
 | Comment mode (**C**, the control's Comment button; Option-click pins) | Blocks and pins on any page; the page's controls never fire while it is on | **Done in 0.3.0** |
 
-### `Pipeup.mount(options)` — `root`, `name` and `store` built; `modes` and `slides` not yet built
+### `Pipeup.mount(options)` — `root`, `name`, `store` and `slides` built; `modes` not yet built
 
 | Option | Default | Notes |
 |---|---|---|
 | `root` | `document.body` | Area that can be commented on |
 | `modes` | all | Subset of `"text"`, `"block"`, `"pin"`, `"general"` |
-| `slides` | auto-detect | `"auto"`, `false`, or `{ current(): number, go(n): void }` |
+| `slides` | followed automatically | `{ current(): number, go(n: number): void }`, 1-based; replaces Pipeup's following of the deck |
 | `name` | asked on first comment | Reviewer display name |
 
 ### On the command line — proposed, planned for 0.5 (`npx pipeup …`)

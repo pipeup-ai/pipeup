@@ -65,11 +65,13 @@ export function createSelection(ctx: Ctx): View {
   button.addEventListener("mousedown", (e) => e.preventDefault());
   button.addEventListener("click", (e) => {
     e.stopPropagation();
+    // A draft with words keeps them: the reviewer goes back to it instead.
+    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.dismiss();
     const r = range;
     if (!r) return;
     let anchor;
     try {
-      anchor = describeRange(r, ctx.root);
+      anchor = describeRange(r, ctx.root, ctx.here.view(r.commonAncestorContainer));
     } catch (err) {
       ctx.report(err);
       hide();

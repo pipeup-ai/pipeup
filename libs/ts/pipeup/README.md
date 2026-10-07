@@ -2,13 +2,13 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.4.0-beta.1).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.4.0-beta.2).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
 local storage, sealed feedback files, copy for AI, and the UI: comments in a column beside documents or as
 bubbles, comment mode for blocks and pins on any page, and an opt-in reserved gutter. It is one file
-(at most 32 KB gzip) so it works from `file://` with nothing else to load.
+(at most 33 KB gzip) so it works from `file://` with nothing else to load.
 
 Nobody has to give a name. Each reviewer is an animal in a colour ("Red Fox": 5 animals, 10 colours),
 picked from their identity so it is the same on every page, shown as a squircle avatar (the animal drawn in its
@@ -21,7 +21,7 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value
@@ -32,7 +32,7 @@ Install with `npm i pipeup`. From a bundler (no side effects; call `mount` yours
 
 ```js
 import { mount } from "pipeup";
-const pipeup = await mount({ name: "Sam" }); // options: root, name (optional), store
+const pipeup = await mount({ name: "Sam" }); // options: root, name (optional), store, slides
 await pipeup.flush(); // write any unsaved changes now (this also happens when the page is hidden)
 pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 ```
@@ -41,11 +41,18 @@ Pages designed for review can reserve a comment gutter: add `data-pipeup-reserve
 page out with `var(--pipeup-gutter, 0px)`. While All comments is open the page is moved over for it and its
 width is published as `--pipeup-panel`, so fixed bars can use `right: var(--pipeup-panel, 0px)` — see [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html).
 
+Comments belong to where they were made. On a deck (slides marked `data-pipeup-slide`, or reveal.js) only the
+current slide's comments show; the control counts those and a small dot marks comments on other slides, and All
+comments groups every thread by slide. Choosing one goes to its slide and opens it there. Pages with tabs or
+routes report their view with `Pipeup.setViewState({ tab: "faq", label: "FAQ tab" })` and go to one with
+`Pipeup.onReveal((view) => showTab(view.tab))`; a deck can pass `mount({ slides: { current, go } })` or use the
+same `onReveal`. Without a way to go there, the comment opens beside the panel with a snapshot of what it was on.
+
 Examples in the source repository, one per kind of page, each following the agent skill's guidance (open from disk after `npm run build`):
 
 - [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html) — a document: centred reading area with a reserved comment gutter.
 - [examples/review-site.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-site.html) — a site: clear blocks with stable ids for comment mode and pins; navigation ignored.
-- [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) — a deck: one marked element per slide; slide controls ignored so they keep working (slide-aware comments come in a later release).
+- [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) — a deck: one marked element per slide; slide controls ignored so they keep working, and one line so Pipeup can go to a comment's slide.
 
 Comments show only while someone is reviewing: in comment mode, while All comments is open, or while a comment
 is being written. With comment mode off (as every page opens) the page is the author's alone; the control still

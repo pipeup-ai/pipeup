@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- A scrolling deck: every slide is a full-window section, one under the other. -->
+<html
+  lang="en"
+  data-pipeup-doc="sCrOlLdEcK000001:SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Scrolling deck</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          18px/1.5 system-ui,
+          sans-serif;
+      }
+      section {
+        height: 100vh;
+        padding: 48px;
+        box-sizing: border-box;
+        border-bottom: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <section data-pipeup-slide="1" data-pipeup-id="s1">
+      <h1>One</h1>
+      <p id="s1p">The first slide.</p>
+    </section>
+    <section data-pipeup-slide="2" data-pipeup-id="s2">
+      <h2>Two</h2>
+      <p id="s2p">The second slide.</p>
+    </section>
+    <section data-pipeup-slide="3" data-pipeup-id="s3">
+      <h2>Three</h2>
+      <p id="s3p">The third slide.</p>
+    </section>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

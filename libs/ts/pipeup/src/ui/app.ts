@@ -14,6 +14,7 @@ import { narrow, PANEL } from "./layout";
 import { createSelection } from "./select";
 import { copyText } from "./files";
 import { createLauncher } from "./launcher";
+import { createHere } from "./here";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
@@ -91,6 +92,14 @@ export function startApp(o: AppOptions): App {
   let mutationSince = 0;
   let deferredTimer = 0;
   let raf = 0;
+  /** Threads that live elsewhere (another slide or view, or content the page hides), and what that was judged on. */
+  let elsewhere = new Set<string>();
+  let sorted = "";
+  /** Replies half-typed in threads that went elsewhere, put back when the thread reopens. */
+  const unsent = new Map<string, string>();
+  const here = createHere(o.root, () => {
+    if (!destroyed && classify()) render();
+  });
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS. */
   let hint = false;
@@ -232,7 +241,12 @@ export function startApp(o: AppOptions): App {
     pending: pendingFuzzy,
     actions,
     menu,
-    visible: (t) => !state.hidden && (!t.resolved || state.showResolved),
+    here,
+    elsewhere: (t) => elsewhere.has(t.id),
+    recheck: () => {
+      if (classify()) render();
+    },
+    visible: (t) => !state.hidden && (!t.resolved || state.showResolved) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
       for (const t of o.doc.threads()) {
         const r = resolved.get(t.id);
@@ -293,6 +307,31 @@ export function startApp(o: AppOptions): App {
     }
   }
 
+  /**
+   * Sorts threads into here and elsewhere: on a deck by slide; on other pages by the page's reported view, and
+   * content the page hides (gone content stays here, under "No longer on the page"). True when that changed.
+   */
+  function classify(): boolean {
+    const next = new Set<string>();
+    const deck = here.slide() !== null;
+    const ids = new Set<string>();
+    for (const t of o.doc.threads()) {
+      ids.add(t.id);
+      const el = resolved.get(t.id)?.element;
+      if (
+        !here.holds(t.anchor.view) ||
+        (!deck && el?.checkVisibility?.({ visibilityProperty: true }) === false)
+      )
+        next.add(t.id);
+    }
+    elsewhere = next;
+    for (const id of unsent.keys()) if (!ids.has(id)) unsent.delete(id);
+    const key = `${here.slide()}|${[...next].join()}`;
+    if (key === sorted) return false;
+    sorted = key;
+    return true;
+  }
+
   function paint(threads: readonly Thread[]): void {
     const quote: Range[] = [];
     const on: Range[] = [];
@@ -300,12 +339,12 @@ export function startApp(o: AppOptions): App {
     // Hidden comments keep their highlights, faded to nothing, so hiding and showing can ease.
     for (const t of threads) {
       const r = resolved.get(t.id);
-      if ((t.resolved && !state.showResolved) || !r?.range) continue;
+      if ((t.resolved && !state.showResolved) || !r?.range || elsewhere.has(t.id)) continue;
       if (t.id === state.active || t.id === state.hot) on.push(r.range);
       else if (t.resolved) done.push(r.range);
       else quote.push(r.range);
     }
-    if (state.draft) on.push(...state.draft.ranges);
+    if (state.draft && here.holds(state.draft.anchor.view)) on.push(...state.draft.ranges);
     paintHighlights({ quote, on, done });
   }
 
@@ -351,6 +390,15 @@ export function startApp(o: AppOptions): App {
   function render(): void {
     if (destroyed) return;
     const threads = o.doc.threads();
+    classify();
+    // A thread open on a slide or view that is no longer here closes; a reply half-typed in it waits for it.
+    if (state.active && elsewhere.has(state.active)) {
+      const words = host.layer.querySelector<HTMLTextAreaElement>(
+        `[data-thread="${state.active}"] .rbox textarea`,
+      )?.value;
+      if (words) unsent.set(state.active, words);
+      state.active = null;
+    }
     // Comments show in comment mode, while All comments is open, while a thread chosen there on a narrow screen
     // (where the panel steps aside) is open, and while a comment is being written (its words are never lost);
     // otherwise the open thread closes.
@@ -390,9 +438,17 @@ export function startApp(o: AppOptions): App {
     line.focus({ preventScroll: true });
   }
 
+  /** A draft with words holds the reviewer: true, after going back to its slide or view if that is gone. */
+  function held(): boolean {
+    const d = state.draft;
+    if (!d || ctx.draftEmpty()) return false;
+    if (!here.holds(d.anchor.view)) void here.navigate(d.anchor.view ?? {});
+    return true;
+  }
+
   function open(id: string | null): void {
     // Words being written are never dropped: another thread waits (comment mode follows the same rule).
-    if (id && state.draft && !ctx.draftEmpty()) return;
+    if (id && held()) return;
     if (state.active === id && !state.draft) return id ? focusReply(id) : undefined;
     const busy = writing();
     // A thread read from All comments on a narrow screen has closed: the comments go with it.
@@ -403,7 +459,17 @@ export function startApp(o: AppOptions): App {
       pulse(id);
     }
     render();
-    if (id) focusReply(id, busy);
+    if (id) {
+      const words = unsent.get(id);
+      const line =
+        words && host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`);
+      if (line && !line.value) {
+        line.value = words;
+        line.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      unsent.delete(id);
+      focusReply(id, busy);
+    }
   }
 
   function hot(id: string | null): void {
@@ -457,7 +523,7 @@ export function startApp(o: AppOptions): App {
 
   function dismiss(): void {
     if (state.draft) {
-      if (ctx.draftEmpty()) cancelDraft();
+      if (!held()) cancelDraft();
       return;
     }
     if (state.active) open(null);
@@ -532,7 +598,8 @@ export function startApp(o: AppOptions): App {
   // comment mode. The menu (capture phase) and Pipeup's own fields stop Escape before it gets here.
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
-      if (state.draft) cancelDraft();
+      // A draft with words on a slide that is gone can't be seen: Escape leaves it and steps back past it.
+      if (state.draft && (here.holds(state.draft.anchor.view) || ctx.draftEmpty())) cancelDraft();
       else if (state.active) open(null);
       else if (modeView && !modeView.back()) setCommenting(false);
       return;
@@ -595,6 +662,7 @@ export function startApp(o: AppOptions): App {
       destroyed = true;
       cancelAnimationFrame(raf);
       cancelAnimationFrame(fadeRaf);
+      here.destroy();
       window.clearTimeout(reflowTimer);
       window.clearTimeout(toastTimer);
       window.clearTimeout(mutationTimer);

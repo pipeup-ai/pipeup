@@ -132,5 +132,12 @@
         document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd> <kbd>Alt</kbd> <kbd>C</kbd>"));
     </script>
     <script src="../pipeup.min.js"></script>
+    <script>
+      // Choosing a comment on another slide in All comments goes there with the deck's own go().
+      Pipeup.onReveal((view) => {
+        const i = parseInt(view.slide, 10) - 1;
+        if (i >= 0) go(i);
+      });
+    </script>
   </body>
 </html>

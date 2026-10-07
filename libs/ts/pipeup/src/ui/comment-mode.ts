@@ -28,7 +28,7 @@ const MUTED = [
   "touchend",
   "touchcancel",
 ];
-/** How long a move counts as a glide: must cover `--pu-move` (0.34 s), the glide's duration in the stylesheet. */
+/** How long a move counts as a glide: must cover `--mv` (0.34 s), the glide's duration in the stylesheet. */
 const GLIDE_MS = 400;
 
 /** Comment mode's view; `back()` is Escape's step for it: clears a chosen block, false when none was chosen. */
@@ -197,7 +197,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   function commentOn(el: Element): void {
     let anchor;
     try {
-      anchor = describeElement(el, ctx.root);
+      anchor = describeElement(el, ctx.root, undefined, ctx.here.view(el));
     } catch (err) {
       ctx.report(err);
       return;
@@ -228,7 +228,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     const point = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
     let anchor;
     try {
-      anchor = describeElement(el, ctx.root, point);
+      anchor = describeElement(el, ctx.root, point, ctx.here.view(el));
     } catch (err) {
       ctx.report(err);
       return;

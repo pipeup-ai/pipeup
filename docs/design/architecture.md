@@ -248,9 +248,9 @@ examples; the document page has its own gutter prototype.
 - **Resolve time budget.** Anchors resolve in passes of at most 40 ms; threads that run out of
   budget get only the exact match first and are shown as unplaced (not lost) until a deferred
   pass (250 ms later) gives them the fuzzy match, so they never flash as lost.
-- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 32 KB
-  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 32 KB) and
-  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B, see below. `scripts/size.mjs` enforces the budgets.
+- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 33 KB
+  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 33 KB) and
+  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B and again to 33 KB (min, esm) for 0.4, see §11. `scripts/size.mjs` enforces the budgets.
 
 ### Motion tokens (starting values)
 
@@ -516,6 +516,26 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
 - **Open question:** when comments are hidden, the comment control still sits over the page's bottom-right
   corner. Not decided in 2B.
 
+### 0.4 part 1 — slides and hidden views (built)
+
+- *Here* (`ui/here.ts`). Page state (`setViewState`), reveal handlers (`onReveal`) and the deck hook
+  (`mount({ slides })`) live at module level, so a page may register before Pipeup mounts. The current slide:
+  the hook, else `window.Reveal.getIndices()` mapped to the marked slide (or the n-th `.slides > section`), else
+  `pickSlide` — the marked slide that is shown (`checkVisibility` with opacity and visibility) and covers most of
+  the window; equal areas (a cross-fade) go to the more opaque, a full tie keeps the current one. Checks run on
+  `scroll`, `resize`, `keyup`, `click`, `transitionend`, `slidechanged` and slide attribute mutations, one per
+  frame; `navigate` polls frames for at most 1 s. New comments take the marked slide holding their content,
+  else the current slide.
+- *Here or elsewhere* (`app.ts` `classify()`, every render and every re-check). Elsewhere threads are not
+  `visible` and are left out of the highlights, so bubbles, pins and the column fade them out as before; an
+  open thread that leaves closes. Gone (detached) threads stay here, under "No longer on the page". On non-slide
+  pages a thread whose content the page hides is elsewhere too, listed under its view's name or "Hidden on the
+  page".
+- *Size.* The size pass shortened the stylesheet's internal tokens (`--eo`, `--in`, `--su`, …; only
+  `--pu-accent`, `--pu-font`, `--pu-panel`, `--pu-pop` keep the prefix, as the host writes them) and turned on
+  esbuild `mangleProps` for internal UI property names (list in `scripts/build.mjs`): −0.43 KB gzip. Budgets
+  33 KB (min, esm), 12 KB (core).
+
 ---
 
 ## Change log
@@ -532,3 +552,5 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
 - 2026-10-06 — §11: simpler menu (one-line rows with tooltips, identity row, copy-format button, Start commenting switch); comments shown only in comment mode, All comments, a draft, or a narrow-screen chosen thread (highlight fade via the page sheet); Show resolved in the panel header; the open panel makes room with an adopted-sheet margin on `html`.
 - 2026-10-06 — §11: menu and picking fixes — Copy as Markdown / Copy as Text; Start commenting keeps the menu open (closes on Esc, outside click, 3 s away); name edited in its row; no hover outline over a selection; picking adds HTML5 containers, lists, ARIA roles and flex/grid groups (`Look.grouped`); the site showcase picks as one block.
 - 2026-10-07 — §11: room for All comments is also published as `--pipeup-panel`, for a page's fixed elements.
+- 2026-10-07 — §11: 0.4 part 1 built — `ui/here.ts`, here/elsewhere sorting in the app, the control's dot and label, All comments by slide or view, navigate then open; size pass (short CSS tokens, `mangleProps`); budgets 33 KB.
+- 2026-10-07 — §2: bundle budgets read 33 KB (min, esm) for 0.4, as in `scripts/size.mjs`.

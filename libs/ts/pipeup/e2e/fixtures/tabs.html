@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- A tabbed page that reports its tab with setViewState (before Pipeup mounts, too) and reveals a tab with
+     onReveal. -->
+<html
+  lang="en"
+  data-pipeup-doc="tAbSfIxTuRe00001:TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Tabs</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+      }
+      [role="tabpanel"] {
+        padding: 16px;
+        border: 1px solid #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <div role="tablist">
+      <button role="tab" id="tab-plans" data-tab="plans">Plans</button>
+      <button role="tab" id="tab-faq" data-tab="faq">FAQ</button>
+    </div>
+    <div role="tabpanel" id="plans" data-pipeup-id="plans">
+      <h2>Plans</h2>
+      <p id="pro" data-pipeup-id="plan-pro">Pro is $12 a month.</p>
+    </div>
+    <div role="tabpanel" id="faq" data-pipeup-id="faq" hidden>
+      <h2>FAQ</h2>
+      <p id="refunds" data-pipeup-id="faq-refunds">Refunds within 30 days.</p>
+    </div>
+    <details id="more">
+      <summary>More</summary>
+      <p id="fine" data-pipeup-id="fine-print">Fine print.</p>
+    </details>
+    <script src="../../dist/pipeup.min.js"></script>
+    <script>
+      const NAMES = { plans: "Plans tab", faq: "FAQ tab" };
+      function show(tab) {
+        for (const p of document.querySelectorAll("[role=tabpanel]")) p.hidden = p.id !== tab;
+        Pipeup.setViewState({ tab, label: NAMES[tab] });
+      }
+      for (const b of document.querySelectorAll("[role=tab]")) b.onclick = () => show(b.dataset.tab);
+      window.revealed = [];
+      Pipeup.onReveal((view) => {
+        window.revealed.push(view);
+        if (view.tab) show(view.tab);
+      });
+      show("plans");
+    </script>
+  </body>
+</html>

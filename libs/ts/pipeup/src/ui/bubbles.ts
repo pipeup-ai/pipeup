@@ -135,6 +135,9 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     return b;
   }
 
+  /** The draft box is stepped aside because its slide or view is elsewhere. */
+  let stepped = false;
+
   function place(): void {
     const d = ctx.state.draft;
     const block = draft && d && !d.anchor.quote && !d.anchor.point ? d.resolved.element : null;
@@ -255,6 +258,14 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         }
         draft.box.hideLabel(named(d));
       }
+      // Its slide or view is elsewhere: the words wait, the box steps aside and comes back with the reviewer.
+      const away = !ctx.here.holds(d.anchor.view);
+      if (away !== stepped) {
+        stepped = away;
+        pop.classList.toggle("show", !away);
+        pop.inert = away;
+        if (!away) place();
+      }
       return;
     }
     if (draft) {
@@ -262,6 +273,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       window.clearTimeout(gliding);
       pop.classList.remove("glide");
       draft = null;
+      stepped = false;
       ctx.registerDraft(null);
     }
 
@@ -306,7 +318,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       }
     }
     const d = ctx.state.draft;
-    const g = d?.anchor.point ? bubblePoint(d.anchor, d.resolved) : null;
+    const g = d?.anchor.point && ctx.here.holds(d.anchor.view) ? bubblePoint(d.anchor, d.resolved) : null;
     if (g) {
       ghost.style.left = `${g.x}px`;
       ghost.style.top = `${g.y}px`;
