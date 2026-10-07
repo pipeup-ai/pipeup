@@ -100,6 +100,17 @@ stable site on its own.
 private repository, release `X.Y.(Z+1)` as a normal stable version, then bring the fix into the
 main line.
 
+## Website-only updates
+
+Site and doc changes for the current stable version ship without a new library version:
+
+1. Merge the change in the private repository.
+2. Run the sync script with `--yes --site`. It commits "Site update for vX.Y.Z" to `main` with no tag, so
+   nothing is published to npm and the GitHub Releases are unchanged. It refuses a pre-release version
+   and a version that hasn't been released yet.
+3. Push `main`, wait for CI, then run the Pages workflow by hand (`gh workflow run pages.yml --ref main`).
+   The next stable release includes the commit as usual.
+
 ## After a release
 
 `tools/smoke-release.sh X.Y.Z` checks all of this from the outside, waiting up to 10 minutes for npm
@@ -146,3 +157,4 @@ are fictional; there are no personal names or addresses.
 - 2026-10-06 — The release process spelled out: one-time setup, stable steps, pre-releases (designed, see `design/prerelease.md`), promotion, fixes during a pre-release cycle, checks after a release and known failures.
 - 2026-10-06 — The `next` channel is built: `tools/set-version.sh`, the sync script picks the branch from the version, the site builds per channel, Pages deploys both after a release, `tools/smoke-release.sh`.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
+- 2026-10-07 — Website-only updates: the sync script's `--site` mode commits to `main` without a tag; the Pages workflow is run by hand.

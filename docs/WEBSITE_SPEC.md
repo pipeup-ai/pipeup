@@ -26,15 +26,25 @@ visitor how to add it. Functional requirements only.
      the skill), Codex (a command that adds it to AGENTS.md), any other agent (llms.txt), the script
      tag for adding it by hand, and a download of the script. Choosing one copies or opens it.
    - The comment shortcut, so visitors can try Pipeup on this page.
-2. **The showcase**: a looping demo that swipes between a **document**, **slides** and a
-   **website**, changing every 10 seconds, each showing a comment being added, with a cursor that
-   moves only to act and holds still while the comment is typed. Each scene's page is laid out at
+   - One calm line on where it lives and where feedback goes: nothing to install (one script added
+     to the HTML file, or loaded from a CDN, and an AI agent can add it); comments stay in the
+     reviewer's own browser on their device and are never sent to any server; feedback leaves only
+     when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves. The
+     page's Markdown copy and llms.txt say the same.
+2. **The showcase**: a looping demo that swipes between a **document**, **slides**, a
+   **website** and the **keyboard**, changing every 10 seconds, each showing a comment being added, with a cursor that
+   moves only to act and holds still while the comment is typed. The keyboard scene uses no pointer
+   at all: Pipeup's block cursor (its outline and naming bar) moves through a small page while each
+   key pressed appears on screen with what it does, like a screencast's key overlay: the comment
+   shortcut (Comment mode), Tab (Next block) twice, ↑ (Around it), ↓ (Back in), Enter (Comment, and
+   a comment is typed), Enter (Send) and Esc (Done). Key captions ease in and out; the shortcut is
+   shown the way the visitor's keyboard labels it. Each scene's page is laid out at
    full width; when the comment opens, the view slides sideways to make room, like a horizontal
-   scroll. Visitors can **pause** it, jump to any of the three, or swipe on a touch screen. With
+   scroll. Visitors can **pause** it, jump to any of the four, or swipe on a touch screen. With
    reduced motion it doesn't move on its own. In comment mode the showcase is commented on as one whole block (its moving parts are never
    picked on their own), while its tabs, pause and Try keep working.
    Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
-   "Try the document", "Try the slides", "Try the website") and opens that example as a real page in the same tab.
+   "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
 3. **Try pages**: one real example each, running Pipeup, each with a very different look so
    visitors see Pipeup fit in anywhere:
    - **Document**: a short guide to how Pipeup works, laid out like a familiar word-processor page
@@ -49,7 +59,7 @@ visitor how to add it. Functional requirements only.
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
 4. **Footer**: always at the bottom of the window, with the facts that matter (one file and its size, no dependencies,
-   works from disk) on the left and one **For agents** link on the right. Clicking
+   works from disk, stays on your device) on the left and one **For agents** link on the right. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
@@ -60,6 +70,10 @@ There is no separate set-up section: the two actions cover it.
 a short guide (llms.txt), the guide and all agent skills in one file (llms-full.txt), the page
 itself as Markdown, the agent skills, the script, a robots.txt that welcomes every agent, and
 structured data describing Pipeup as software.
+
+**Link previews**: a link to the home page or a Try page shared in a chat app or social site
+unfurls with a large preview image (the Pipeup mark, the name and "Feedback for any HTML", in the
+site's light look), a title and a description. The pre-release copy's previews use its own image.
 
 ## 4. Look and feel
 
@@ -115,3 +129,7 @@ structured data describing Pipeup as software.
 - 2026-10-06 — Everything on the site can be commented on except the Try bar (buttons, links and navigation included). The Try bar's example links become a Try menu, and the bar fits on one line at any width.
 - 2026-10-07 — The Try bar's shortcut hint is centred; it gives way when the bar is too narrow, including while All comments is open.
 - 2026-10-07 — The size is stated as about 36 KB; the home page's Markdown, llms.txt and the Try pages say reviewers can comment with the keyboard and screen readers.
+- 2026-10-07 — Link previews: a large preview image (mark, name, "Feedback for any HTML") with title and description for the home page and Try pages, the pre-release copy included.
+- 2026-10-07 — The first screen says plainly there is nothing to install and that comments stay in the reviewer's browser until they copy and send them; the footer adds "Stays on your device"; the Markdown page and llms.txt say the same.
+- 2026-10-07 — A fourth showcase scene, Keyboard: no pointer, the block cursor moves through a page while each key and its action show as on-screen captions.
+- 2026-10-07 — The privacy point lives only in the footer: "Stays on your device" with a lock, and a short note on hover, focus or tap ("Private by design…"); the first screen stays as it was.

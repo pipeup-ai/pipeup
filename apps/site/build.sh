@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the website into apps/site/_site: the page, fonts, favicon, skills, llms.txt,
+# Builds the website into apps/site/_site: the page, fonts, favicon, link-preview image (og.png), skills, llms.txt,
 # llms-full.txt, robots.txt, the Markdown page, the Try pages and the current pipeup.min.js.
 #
 # Works from any directory: paths are relative to the project root (two levels up from here),
@@ -35,7 +35,7 @@ rm -rf "$out"
 mkdir -p "$out/skills"
 cp -R "$site/index.html" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
-cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/favicon.svg" "$out/"
+cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 

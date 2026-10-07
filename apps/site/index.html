@@ -15,6 +15,16 @@
     <meta property="og:description" content="People comment right on your page: documents, decks or whole sites. No accounts, no servers." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://pipeup-ai.github.io/pipeup/" />
+    <meta property="og:site_name" content="Pipeup" />
+    <meta property="og:image" content="https://pipeup-ai.github.io/pipeup/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The Pipeup comment-bubble mark and the words: Pipeup, Feedback for any HTML." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pipeup: feedback for any HTML" />
+    <meta name="twitter:description" content="People comment right on your page: documents, decks or whole sites. No accounts, no servers." />
+    <meta name="twitter:image" content="https://pipeup-ai.github.io/pipeup/og.png" />
+    <meta name="twitter:image:alt" content="The Pipeup comment-bubble mark and the words: Pipeup, Feedback for any HTML." />
     <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/" />
     <script type="application/ld+json">
       {
@@ -131,6 +141,24 @@
         font: 500 14px/1 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; color: var(--ink);
         background: var(--bone); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px;
       }
+      /* Where it lives and where feedback goes: one calm line under the actions. */
+      /* "Stays on your device": a lock and a short note on hover, focus or tap. */
+      .private { position: relative; }
+      .private button { all: unset; cursor: default; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; }
+      .private button:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+      .private svg { flex: none; color: var(--ink); }
+      .private .tip {
+        position: absolute; left: -10px; bottom: calc(100% + 12px); width: 264px; padding: 12px 14px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        font-size: 13px; line-height: 1.5; color: var(--muted);
+        opacity: 0; transform: translateY(4px); visibility: hidden;
+        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
+      }
+      .private .tip b { display: block; color: var(--strong); margin-bottom: 2px; }
+      .private .tip::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
+      .private:hover .tip, .private:focus-within .tip {
+        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
+      }
       .facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
       .facts b { font-weight: 500; color: var(--ink); }
 
@@ -212,6 +240,34 @@
       .site .cards i { flex: 1; height: 56px; border: 1px solid var(--line); border-radius: 8px; }
       .site .cbox { top: 150px; }
 
+      /* Keyboard: no pointer. Pipeup's block cursor (outline and naming bar) moves as each key is pressed, and the key shows as a caption. */
+      .kb .page { position: absolute; left: 40px; right: 40px; top: 70px; }
+      .kb .kh { display: inline-block; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: var(--strong); margin: 0 0 12px; }
+      .kb .kp { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 16px; }
+      .kb .sec { border: 1px solid var(--line); border-radius: 8px; background: var(--bone); padding: 12px 14px 2px; margin: 0 0 18px; }
+      .kb .sec .kp { color: var(--ink); margin-bottom: 12px; }
+      .kb .sec .ln { background: #e6e4de; }
+      .kb .cbox { top: 150px; }
+      .kpick { position: absolute; left: 0; top: 0; z-index: 3; border: 3px solid var(--violet); box-shadow: 0 0 0 2px var(--paper); background: rgba(83, 74, 183, 0.05);
+        border-radius: 8px; pointer-events: none; opacity: 0; transition: opacity 0.2s var(--exit); }
+      .kbar { position: absolute; left: 0; top: 0; z-index: 4; display: flex; align-items: center; gap: 2px; padding: 2px 3px 2px 9px; border-radius: 9px;
+        font-size: 11px; color: var(--muted); white-space: nowrap; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 6px 20px rgba(44, 44, 42, 0.1);
+        opacity: 0; transition: opacity 0.2s var(--exit); }
+      .kbar .lbl { max-width: 180px; overflow: hidden; text-overflow: ellipsis; margin-right: 3px; }
+      .kbar svg { display: block; margin: 3px; }
+      .kpick.show, .kbar.show { opacity: 1; transition: opacity 0.26s var(--ease); }
+      .kpick.show.glide { transition: opacity 0.26s var(--ease), transform 0.34s var(--move), width 0.34s var(--move), height 0.34s var(--move); }
+      .kbar.show.glide { transition: opacity 0.26s var(--ease), transform 0.34s var(--move); }
+      /* Key captions, like a screencast's key overlay: each eases in from below and out upwards as the next arrives. */
+      .kcap { position: absolute; left: 50%; bottom: 18px; z-index: 6; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 8px;
+        background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        font-size: 14px; color: var(--strong); white-space: nowrap; opacity: 0; transform: translate(-50%, 8px);
+        transition: opacity 0.22s var(--exit), transform 0.22s var(--exit); }
+      .kcap.on { opacity: 1; transform: translate(-50%, 0); transition: opacity 0.3s var(--ease), transform 0.4s var(--ease); }
+      .kcap.off { transform: translate(-50%, -8px); }
+      .kcap .ks { display: inline-flex; gap: 4px; }
+      .kcap .sep { color: var(--faint); }
+
       .controls { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
       .tabs { display: flex; gap: 4px; }
       .tab { appearance: none; border: 0; background: none; font: 14px var(--sans); color: var(--muted); padding: 6px 12px 12px; cursor: pointer; position: relative; border-radius: 6px; transition: color 0.3s var(--ease); }
@@ -234,11 +290,13 @@
       .rise { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
       .rise.in { opacity: 1; transform: none; }
       @media (prefers-reduced-motion: reduce) {
-        .agents-menu { transform: none !important; }
+        .agents-menu, .private .tip { transform: none !important; }
         .rise, .choices, .choices.open { transform: none; transition: opacity 0.16s ease-in-out; transition-delay: 0s; }
         .btn:active { transform: none; }
         .track, .canvas { transition: none; }
         .cbox, .slides .pin, .selicon { transform: none !important; }
+        .kcap, .kcap.on, .kcap.off { transform: translateX(-50%); transition: opacity 0.16s ease-in-out; }
+        .kpick.show.glide, .kbar.show.glide { transition: opacity 0.16s ease-in-out; }
         .cbox .txt::after { animation: none; }
         .cursor { display: none; }
       }
@@ -253,6 +311,11 @@
         .cbox { left: 14px; right: 14px; width: auto; top: auto !important; bottom: 14px; }
         .slides .bars { height: 34%; bottom: 46%; }
         .site .cards { display: none; }
+        .kb .page { left: 24px; right: 24px; top: 60px; }
+        .kb .cbox { bottom: 66px; }
+        .controls { flex-wrap: wrap; row-gap: 10px; }
+        .tab { padding: 6px 8px 12px; }
+        .tab .prog { left: 8px; right: 8px; }
         .actions { grid-template-columns: 1fr; }
         .choices { width: 100%; }
       }
@@ -316,7 +379,7 @@
           <p class="try rise" style="--i: 3"><span class="keys">Press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span></p>
         </div>
 
-        <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides and a website">
+        <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides, a website and with the keyboard">
           <div class="viewport" data-pipeup-id="showcase" data-pipeup-label="Showcase">
             <div class="track">
               <!-- Document: select words, then comment -->
@@ -391,6 +454,36 @@
                   </div>
                 </div>
               </div>
+              <!-- Keyboard: no pointer; the block cursor moves as keys are pressed, each key captioned -->
+              <div class="scene" role="group" aria-roledescription="slide" aria-label="Keyboard">
+                <div class="win kb" data-scene>
+                  <div class="bar-dots"><i></i><i></i><i></i></div>
+                  <div class="canvas">
+                    <div class="content">
+                      <div class="page">
+                        <div class="kh" data-k="Heading · Launch plan">Launch plan</div>
+                        <p class="kp k1" data-k="Paragraph · The new onboarding ships in July…">The new onboarding ships in July, to every team at once.</p>
+                        <div class="sec" data-k="Section · Pricing changes later…">
+                          <p class="kp k2" data-k="Paragraph · Pricing changes later…">Pricing changes later in the summer, after the first results.</p>
+                          <div class="ln" style="width: 86%"></div>
+                          <div class="ln" style="width: 64%"></div>
+                        </div>
+                        <div class="ln" style="width: 92%"></div>
+                        <div class="ln" style="width: 74%"></div>
+                      </div>
+                    </div>
+                    <span class="kpick" aria-hidden="true"></span>
+                    <span class="kbar" aria-hidden="true"><span class="lbl"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-6 6M10 20H4v-6M4 20l6-6M20 14v6h-6M20 20l-6-6M4 10V4h6M4 4l6 6" /></svg><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M14 10l6-6M4 14h6v6M10 14l-6 6M14 20v-6h6M14 14l6 6M10 4v6H4M10 10L4 4" /></svg></span>
+                    <div class="cbox" data-say="Give the date, not just summer.">
+                      <span class="line"></span>
+                      <div class="who"><span class="av" style="background: #faeeda"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#854F0B" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13.5" r="6.5" /><circle cx="6.6" cy="7.4" r="2.1" /><circle cx="17.4" cy="7.4" r="2.1" /></svg></span>Bear</div>
+                      <div class="txt"></div>
+                      <svg class="send" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#534AB7" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13" /></svg>
+                    </div>
+                  </div>
+                  <div class="kcaps"></div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="controls">
@@ -398,6 +491,7 @@
               <button class="tab" role="tab" aria-selected="true">Document<span class="prog"><i></i></span></button>
               <button class="tab" role="tab" aria-selected="false">Slides<span class="prog"><i></i></span></button>
               <button class="tab" role="tab" aria-selected="false">Website<span class="prog"><i></i></span></button>
+              <button class="tab" role="tab" aria-selected="false">Keyboard<span class="prog"><i></i></span></button>
             </div>
             <button class="pause" type="button" aria-label="Pause">
               <svg class="i-pause" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="1.5" width="2.5" height="9" rx="1" fill="currentColor" /><rect x="7.5" y="1.5" width="2.5" height="9" rx="1" fill="currentColor" /></svg>
@@ -413,6 +507,10 @@
             <li><b>One file</b>, about 36 KB</li>
             <li><b>No dependencies</b></li>
             <li><b>Works from disk</b></li>
+            <li class="private">
+              <button type="button" aria-describedby="private-tip"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" /><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" /></svg><b>Stays on your device</b></button>
+              <span class="tip" role="tooltip" id="private-tip"><b>Private by design.</b>Nothing to install: one script in your HTML file. Comments stay in your browser and are never sent anywhere. They leave only when you copy them and share them yourself.</span>
+            </li>
           </ul>
         <div class="agents">
           <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
@@ -445,8 +543,22 @@
         const tabs = [...document.querySelectorAll(".tab")];
         const pauseBtn = document.querySelector(".pause");
         // When each step happens, in ms into the scene: chosen, marked, comment opens (the view slides over), posted.
-        const STEPS = [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]];
-        const TYPE_FROM = 4300, TYPE_TO = 6700;
+        // `still`: the moment shown with reduced motion (the end, unless a scene says otherwise).
+        const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]], typeFrom: 4300, typeTo: 6700 };
+        const KEYBOARD = { steps: [[6000, "s3"], [8200, "s4"]], typeFrom: 6500, typeTo: 7900, still: 8700 };
+        const TIMES = [POINTER, POINTER, POINTER, KEYBOARD];
+        // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: put away)].
+        const KEYS = [
+          [600, isMac ? ["⇧", "⌥", "C"] : ["Shift", "Alt", "C"], "Comment mode", ".kh"],
+          [1700, ["Tab"], "Next block", ".k1"],
+          [2800, ["Tab"], "Next block", ".k2"],
+          [3900, ["↑"], "Around it", ".sec"],
+          [5000, ["↓"], "Back in", ".k2"],
+          [6000, ["Enter"], "Comment", ".k2"],
+          [8200, ["Enter"], "Send", ".k2"],
+          [9000, ["Esc"], "Done", null],
+        ];
+        const KEYS_END = 9800; // The last caption eases out before the next scene slides in.
         // The cursor: [ms, target, x, y, flags]. It only moves to act, and holds still while the comment is typed.
         const SEND = [[6800, ".send", 0.5, 0.5, ""], [7150, ".send", 0.5, 0.5, "down"], [7300, ".send", 0.5, 0.5, ""]];
         const PATHS = [
@@ -454,7 +566,17 @@
            [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...SEND],
           [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...SEND],
           [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...SEND],
+          null, // Keyboard: no pointer at all.
         ];
+        const kbScene = scenes[3];
+        const caps = KEYS.map(([, keys, what]) => {
+          const c = document.createElement("span");
+          c.className = "kcap";
+          c.innerHTML = `<span class="ks">${keys.map((k) => `<kbd>${k}</kbd>`).join("")}</span><span class="sep">·</span>`;
+          c.append(what);
+          kbScene.querySelector(".kcaps").append(c);
+          return c;
+        });
         let index = 0, elapsed = 0, last = performance.now(), playing = !reduced;
 
         function moveCursor(scene, t) {
@@ -474,15 +596,57 @@
           }
           c.className = "cursor " + flags;
         }
-        function apply(scene, t) {
-          for (const [at, cls] of STEPS) scene.classList.toggle(cls, t >= at);
-          const say = scene.querySelector(".cbox").dataset.say;
-          const n = Math.max(0, Math.min(say.length, Math.round(((t - TYPE_FROM) / (TYPE_TO - TYPE_FROM)) * say.length)));
-          scene.querySelector(".txt").textContent = say.slice(0, n);
-          scene.classList.toggle("typing", n > 0 && t < STEPS[3][0]);
-          if (!reduced) moveCursor(scene, t);
+        // The keyboard scene's block cursor: the outline wraps the block, the naming bar sits centred above it.
+        function moveBlockCursor(scene, t) {
+          let step = -1;
+          KEYS.forEach(([at], k) => { if (t >= at) step = k; });
+          caps.forEach((c, k) => {
+            c.classList.toggle("on", k === step && t < KEYS_END);
+            c.classList.toggle("off", k < step || (k === step && t >= KEYS_END));
+          });
+          const sel = step < 0 ? null : KEYS[step][3];
+          const pick = scene.querySelector(".kpick");
+          const bar = scene.querySelector(".kbar");
+          const showing = pick.classList.contains("show");
+          if (!sel) {
+            pick.classList.remove("show");
+            bar.classList.remove("show");
+            return;
+          }
+          const el = scene.querySelector(sel);
+          const canvas = scene.querySelector(".canvas").getBoundingClientRect();
+          const room = scene.querySelector(".content").offsetWidth;
+          const r = el.getBoundingClientRect();
+          const x = r.left - canvas.left - 6, y = r.top - canvas.top - 6, w = r.width + 12, h = r.height + 12;
+          const at = `${Math.round(x)},${Math.round(y)},${Math.round(w)},${Math.round(h)}`;
+          if (pick.dataset.at === at && showing) return;
+          // The first landing appears in place; later moves glide (with reduced motion, nothing moves while seen).
+          pick.classList.toggle("glide", showing && !reduced);
+          bar.classList.toggle("glide", showing && !reduced);
+          pick.dataset.at = at;
+          pick.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+          pick.style.width = `${Math.round(w)}px`;
+          pick.style.height = `${Math.round(h)}px`;
+          bar.querySelector(".lbl").textContent = el.dataset.k;
+          const bw = bar.offsetWidth, bh = bar.offsetHeight;
+          const bx = Math.max(8, Math.min(x + w / 2 - bw / 2, room - bw - 8));
+          const by = y - bh - 8 < 30 ? y + h + 8 : y - bh - 8;
+          bar.style.transform = `translate(${Math.round(bx)}px, ${Math.round(by)}px)`;
+          pick.classList.add("show");
+          bar.classList.add("show");
         }
-        const TRY = [["try/document.html", "Try the document"], ["try/slides.html", "Try the slides"], ["try/website.html", "Try the website"]]; // [href, accessible name]
+        function apply(scene, t) {
+          const { steps, typeFrom, typeTo, still } = TIMES[scenes.indexOf(scene)];
+          if (reduced && still !== undefined && t >= SCENE_MS) t = still;
+          for (const [at, cls] of steps) scene.classList.toggle(cls, t >= at);
+          const say = scene.querySelector(".cbox").dataset.say;
+          const n = Math.max(0, Math.min(say.length, Math.round(((t - typeFrom) / (typeTo - typeFrom)) * say.length)));
+          scene.querySelector(".txt").textContent = say.slice(0, n);
+          scene.classList.toggle("typing", n > 0 && t < steps[steps.length - 1][0]);
+          if (scene === kbScene) moveBlockCursor(scene, t);
+          else if (!reduced) moveCursor(scene, t);
+        }
+        const TRY = [["try/document.html", "Try the document"], ["try/slides.html", "Try the slides"], ["try/website.html", "Try the website"], ["try/document.html", "Try the keyboard on the document"]]; // [href, accessible name]
         const tryLink = document.querySelector(".tryit");
         function show(i) {
           const prev = index;
@@ -620,6 +784,7 @@
         });
         document.addEventListener("click", (e) => { if (menu.classList.contains("open") && !wrap.contains(e.target)) setOpen(false, false); });
 
+        document.querySelector(".private button").addEventListener("keydown", (e) => { if (e.key === "Escape") e.currentTarget.blur(); });
         // For agents: hover or focus shows the menu; on touch screens (no hover) the first tap opens it.
         const agents = document.querySelector(".agents");
         const agentsLink = agents.querySelector(".agents-link");

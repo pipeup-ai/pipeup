@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- The link-preview image (og.png, 1200×630): rendered by og/render.mjs, never served as a page.
+     Light only, in the site's colours and font. Edit this, then run `node apps/site/og/render.mjs`. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Pipeup link preview</title>
+    <style>
+      @font-face { font-family: "Geist"; src: url("../fonts/geist.woff2") format("woff2"); font-weight: 400 600; }
+      :root { --ink: #2f3437; --strong: #111111; --muted: #787774; --faint: #a8a7a2; --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --violet: #534ab7; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--paper); }
+      body { font-family: "Geist", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; position: relative; }
+      .words { position: absolute; left: 88px; top: 0; bottom: 0; width: 560px; display: flex; flex-direction: column; justify-content: center; }
+      .mark { display: flex; align-items: center; gap: 22px; }
+      .mark svg { display: block; }
+      .name { font-size: 92px; font-weight: 600; letter-spacing: -0.05em; color: var(--strong); line-height: 1; }
+      .line { margin: 34px 0 0; font-size: 44px; font-weight: 500; letter-spacing: -0.035em; line-height: 1.12; color: var(--strong); }
+      .sub { margin: 18px 0 0; font-size: 24px; color: var(--muted); letter-spacing: -0.01em; }
+      /* A small page with a comment on it, like the site's showcase. */
+      .stage { position: absolute; right: 0; top: 0; bottom: 0; width: 500px; background: var(--bone); border-left: 1px solid var(--line); }
+      .win { position: absolute; left: 56px; top: 92px; width: 380px; height: 446px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 56px 34px 0; }
+      .dots { position: absolute; top: 18px; left: 20px; display: flex; gap: 8px; }
+      .dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
+      .ttl { height: 18px; width: 58%; background: var(--strong); border-radius: 4px; margin-bottom: 28px; }
+      .ln { height: 11px; border-radius: 6px; background: var(--line); margin: 0 0 17px; }
+      .hl { display: flex; gap: 10px; margin: 0 0 17px; }
+      .hl i { height: 11px; border-radius: 6px; background: var(--line); }
+      .hl b { height: 20px; margin-top: -4.5px; width: 120px; border-radius: 4px; background: #dbe7fb; }
+      .cbox { position: absolute; left: 132px; top: 236px; width: 334px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+        padding: 18px 20px 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06); }
+      .cbox::before { content: ""; position: absolute; left: -1px; top: 16px; bottom: 16px; width: 3px; border-radius: 2px; background: var(--violet); }
+      .who { display: flex; align-items: center; gap: 10px; font-size: 16px; color: var(--faint); margin-bottom: 10px; }
+      .av { width: 32px; height: 32px; border-radius: 9px; background: #e1f5ee; display: grid; place-items: center; }
+      .say { font-size: 21px; line-height: 1.35; color: var(--strong); letter-spacing: -0.01em; }
+    </style>
+  </head>
+  <body>
+    <div class="words">
+      <div class="mark">
+        <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+        <span class="name">Pipeup</span>
+      </div>
+      <p class="line">Feedback for any HTML.</p>
+      <p class="sub">People comment right on your page.<br />No accounts, no servers.</p>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="win">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="ttl"></div>
+        <div class="ln" style="width: 96%"></div>
+        <div class="hl"><i style="width: 90px"></i><b></b><i style="flex: 1"></i></div>
+        <div class="ln" style="width: 84%"></div>
+        <div class="ln" style="width: 92%"></div>
+        <div class="ln" style="width: 70%"></div>
+        <div class="ln" style="width: 90%; margin-top: 118px"></div>
+        <div class="ln" style="width: 76%"></div>
+        <div class="ln" style="width: 52%"></div>
+      </div>
+      <div class="cbox">
+        <div class="who"><span class="av"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6" /><circle cx="7.5" cy="7.5" r="1.8" /><circle cx="16.5" cy="7.5" r="1.8" /></svg></span>Otter</div>
+        <div class="say">Is 20% realistic? Q2 was 8%.</div>
+      </div>
+    </div>
+  </body>
+</html>

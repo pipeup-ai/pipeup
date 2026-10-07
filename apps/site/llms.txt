@@ -2,6 +2,12 @@
 
 > Pipeup lets people comment on any HTML file (documents, slide decks, whole sites) right on the page, with no accounts or servers. Comments are kept in each reviewer's browser and are copied as Markdown that says exactly where each comment is, ready to send to the author or paste into an AI agent. Reviewers can comment with a mouse, the keyboard or a screen reader.
 
+## Where it installs and where feedback goes
+
+- Nothing to install: one script goes in the HTML file (a copy next to it, or loaded from a CDN). An AI agent can add it with the steps below.
+- Comments are stored only in the reviewer's own browser, on their device. Pipeup never sends them to any server.
+- Feedback leaves only when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves, for example to the author or into an AI agent.
+
 ## Add Pipeup to an HTML page
 
 1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file. Or load the pinned release from a CDN instead of steps 1 and 3: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js"></script>`.
