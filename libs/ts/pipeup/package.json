@@ -1,6 +1,6 @@
 {
   "name": "pipeup",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Comments and feedback right on any HTML page: documents, slide decks and whole sites.",
   "keywords": [
     "comments",
@@ -37,7 +37,8 @@
     "./core": {
       "types": "./dist/types/core.d.ts",
       "import": "./dist/pipeup.core.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist/*.js",

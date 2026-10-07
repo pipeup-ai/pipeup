@@ -2,7 +2,7 @@
 
 People comment right on your page: documents, decks or whole sites. No accounts, no servers. Their feedback comes back ready for your AI to act on.
 
-- **One file**, about 30 KB, with no dependencies.
+- **One file**, about 36 KB, with no dependencies.
 - **Works from disk**: no server needed.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
 
@@ -26,8 +26,9 @@ People comment right on your page: documents, decks or whole sites. No accounts,
 ## How reviewers comment
 
 - Select words and click the comment icon, or press Shift+Option+C and click any block. Option-click (Alt-click) drops a pin.
+- With the keyboard: press Shift+Option+C (Shift+Alt+C), then Tab moves between blocks, ↑ and ↓ step out and back in, Enter comments, Shift+Enter opens a block's comments, Pin pins it, and Esc finishes. Screen readers hear each block's name and words.
 - Comments stay attached to what they're about when the page changes.
-- Comments are kept in the reviewer's browser. **Copy all** copies them as Markdown that says exactly where each one is, ready to send to the author or paste into an AI agent; **Copy all as text** gives just the words.
+- Comments are kept in the reviewer's browser. **Copy as Markdown** copies them as Markdown that says exactly where each one is, ready to send to the author or paste into an AI agent; **Copy as Text** gives just the words.
 
 ## For agents
 

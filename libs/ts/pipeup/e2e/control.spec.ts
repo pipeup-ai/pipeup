@@ -93,7 +93,7 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   const b = (await control(page).boundingBox())!;
   expect(m.y + m.height).toBeLessThanOrEqual(b.y);
   const names = await menu.locator(".mi .lb").allTextContents();
-  expect(names.slice(1)).toEqual(["Copy all", "Copy all as text", "All comments", "Start commenting"]);
+  expect(names.slice(1)).toEqual(["Copy as Markdown", "Copy as Text", "All comments", "Start commenting"]);
   await expect(menu.locator("[role=separator]")).toHaveCount(2);
   const last = menu.locator(".mi").last();
   await expect(last).toContainText(/⇧⌥C|Shift\+Alt\+C/);
@@ -101,8 +101,8 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   await expect(last).toHaveAttribute("aria-checked", "false");
   await last.click();
   await commenting(page);
-  await expect(page.locator(".menu.show")).toHaveCount(0);
-  await openMenu(page);
+  // The menu stays open so the switch is seen to move.
+  await expect(page.locator(".menu.show")).toHaveCount(1);
   await expect(page.locator(".menu.show .mi").last().locator(".lb")).toHaveText("Start commenting");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
     "aria-checked",
@@ -333,7 +333,7 @@ test("All comments has its own icon in the menu", async ({ page }) => {
       .first()
       .evaluate((s) => [...s.querySelectorAll("path")].map((p) => p.getAttribute("d")).join(" "));
   const all = await d(/All comments/);
-  for (const other of [/Copy all/, /add your name/]) expect(await d(other)).not.toBe(all);
+  for (const other of [/Copy as/, /add your name/]) expect(await d(other)).not.toBe(all);
   const start = await page
     .getByRole("menuitemcheckbox", { name: "Start commenting" })
     .locator("svg")

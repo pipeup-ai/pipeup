@@ -21,9 +21,11 @@ describe("public API", () => {
       "formatAgo",
       "animalName",
       "nameOf",
+      "setViewState",
+      "onReveal",
     ]) {
       expect(typeof (pipeup as Record<string, unknown>)[name], name).toBe("function");
     }
-    expect(pipeup.VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(pipeup.VERSION).toMatch(/^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$/);
   });
 });

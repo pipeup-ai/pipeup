@@ -30,7 +30,7 @@ async function body(
       text: "hi",
       anchor: ANCHOR,
       author: me.publicKey,
-      name: "Kev",
+      name: "Sam",
       clock: 1,
       at: 1,
       ...over,
@@ -75,7 +75,7 @@ describe("ops", () => {
     expect(isWellFormed(bad({ clock: 0 }))).toBe(false);
     expect(isWellFormed(bad({ name: "n".repeat(81) }))).toBe(false);
     expect(isWellFormed(bad({ name: "  " }))).toBe(false);
-    expect(isWellFormed(bad({ name: " Kev " }))).toBe(false);
+    expect(isWellFormed(bad({ name: " Sam " }))).toBe(false);
   });
 
   it("accepts an op from someone who has not added a name", async () => {

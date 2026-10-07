@@ -1,4 +1,4 @@
-export const VERSION = "0.3.2";
+export const VERSION = "0.4.0";
 
 export { PipeupDocument, UnsavedChangeError, type Listener, type OpenOptions } from "./document";
 export {

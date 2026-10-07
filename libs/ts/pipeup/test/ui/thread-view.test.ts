@@ -175,6 +175,20 @@ describe("threadView", () => {
     expect(lost.querySelector(".ctx")!.textContent).toBe(`No longer on the page — it read “old words”`);
   });
 
+  it("says where content it can't show lives, when it isn't gone", () => {
+    const view = threadView(thread(), actions(), {
+      variant: "popover",
+      lost: "old words",
+      place: "On slide 3",
+      now: () => NOW,
+    });
+    expect(view.element.querySelector(".ctx")!.textContent).toBe(`On slide 3 — it read “old words”`);
+    view.update(thread(), { lost: "old words", place: null });
+    expect(view.element.querySelector(".ctx")!.textContent).toBe(
+      `No longer on the page — it read “old words”`,
+    );
+  });
+
   it("updates for a newer copy of the thread and keeps the reply line, with its words", () => {
     const view = threadView(thread(), actions(), { variant: "column", now: () => NOW });
     const line = view.element.querySelector(".rbox.always textarea") as HTMLTextAreaElement;

@@ -1,10 +1,10 @@
 # Pipeup
 
-> Pipeup lets people comment on any HTML file (documents, slide decks, whole sites) right on the page, with no accounts or servers. Comments are kept in each reviewer's browser and are copied as Markdown that says exactly where each comment is, ready to send to the author or paste into an AI agent.
+> Pipeup lets people comment on any HTML file (documents, slide decks, whole sites) right on the page, with no accounts or servers. Comments are kept in each reviewer's browser and are copied as Markdown that says exactly where each comment is, ready to send to the author or paste into an AI agent. Reviewers can comment with a mouse, the keyboard or a screen reader.
 
 ## Add Pipeup to an HTML page
 
-1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file. Or load the pinned release from a CDN instead of steps 1 and 3: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.3.2/dist/pipeup.min.js"></script>`.
+1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file. Or load the pinned release from a CDN instead of steps 1 and 3: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js"></script>`.
 2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented.
 3. Add `<script src="pipeup.min.js"></script>` just before `</body>`.
 4. Mark stable blocks with short `data-pipeup-id` names, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.

@@ -17,17 +17,17 @@ test("the control shows the open count and a menu", async ({ page }) => {
   await expect(page.locator(".menu.show .mi")).toHaveCount(5);
 });
 
-test("Copy all copies Markdown with locations; Copy all as text copies the words", async ({ page }) => {
+test("Copy as Markdown copies Markdown with locations; Copy as Text copies the words", async ({ page }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy all", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Copy as Markdown", exact: true }).click();
   await expect.poll(() => lastCopy(page)).toContain("# Review comments: Q3 plan");
   const md = await lastCopy(page);
   expect(md).toContain("- **Thread:** ");
   expect(md).toContain('- **Quoted text:** "20% lift"');
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy all as text", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Copy as Text", exact: true }).click();
   await expect.poll(() => lastCopy(page)).toMatch(/^Section "Q3 plan"/);
   expect(await lastCopy(page)).not.toContain("**Thread:**");
 });
@@ -70,7 +70,8 @@ test("dropping a feedback file on the page does nothing", async ({ browser }) =>
   // Nothing listens for drops any more; flushing proves no import was queued.
   await page.evaluate(() => (window as any).pu.flush());
   await expect(page.locator(".th")).toHaveCount(0);
-  await expect(page.locator(".toast.show")).toHaveCount(0);
+  // The only toast is still comment mode's keyboard hint.
+  await expect(page.locator(".toast.show")).toContainText("Tab moves between blocks");
   expect(await page.evaluate(() => (window as any).pu.document.threads().length)).toBe(0);
 });
 
@@ -124,10 +125,10 @@ test("Your name changes the name on new comments", async ({ page }) => {
   await menu(page);
   await page.locator(".menu.show [data-item=name]").click();
   const input = page.getByRole("textbox", { name: "Your name" });
-  await input.fill("Kev");
+  await input.fill("Robin");
   await input.press("Enter");
   await seedText(page, "#p1", "20% lift", "Short name now");
-  expect(await page.evaluate(() => (window as any).pu.document.threads()[0].root.name)).toBe("Kev");
+  expect(await page.evaluate(() => (window as any).pu.document.threads()[0].root.name)).toBe("Robin");
 });
 
 /** Opens the fixture with a store whose next save (after window.failNextSave()) fails once. */
@@ -196,8 +197,8 @@ test("a name that can't be remembered still applies, and says so", async ({ page
   await menu(page);
   await page.locator(".menu.show [data-item=name]").click();
   const input = page.getByRole("textbox", { name: "Your name" });
-  await input.fill("Kev");
+  await input.fill("Robin");
   await input.press("Enter");
   await expect(page.locator(".toast.show")).toContainText("couldn't remember");
-  expect(await page.evaluate(() => (window as any).pu.document.name)).toBe("Kev");
+  expect(await page.evaluate(() => (window as any).pu.document.name)).toBe("Robin");
 });

@@ -1,10 +1,12 @@
+import { labelOf } from "../anchor/locate";
 import { nameOf } from "../model/animals";
 import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
-import { clip, fit, h, inert, linkify } from "./dom";
+import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, POPOVER, room, type AnchorPoint } from "./layout";
+import { byPage } from "./order";
 import { threadView, type ThreadView } from "./thread-view";
 
 const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
@@ -29,7 +31,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   let threads: readonly Thread[] = [];
   let shown: Thread | null = null;
   let shownView: ThreadView | null = null;
-  let draft: { box: DraftBox; of: Draft; at: Element | null; above: boolean | null } | null = null;
+  let draft: { box: DraftBox; of: Draft; at: unknown; above: boolean | null } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let gliding = 0;
   /** The thread under the pointer (its bubble, highlight or preview). */
@@ -117,11 +119,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   function bubbleFor(t: Thread): HTMLButtonElement {
     const existing = bubbles.get(t.id);
     if (existing) return existing;
-    const b = h("button", {
-      class: "bub",
-      type: "button",
-      "aria-label": `Comment: ${clip(t.root.text, 60)}`,
-    });
+    // `data-thread`: Esc in the thread it opens comes back here.
+    const b = h("button", { class: "bub", type: "button", "data-thread": t.id });
     b.addEventListener("mouseenter", () => pointAt(t.id));
     b.addEventListener("mouseleave", () => pointAt(null));
     b.addEventListener("click", (e) => {
@@ -134,6 +133,9 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     bubbles.set(t.id, b);
     return b;
   }
+
+  /** The draft box is stepped aside because its slide or view is elsewhere. */
+  let stepped = false;
 
   function place(): void {
     const d = ctx.state.draft;
@@ -215,7 +217,19 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       b.classList.toggle("done", t.resolved);
       b.classList.toggle("on", ctx.state.active === t.id);
       b.classList.toggle("pin", t.anchor.point !== undefined);
+      // Its name says what it is on, and keeps up with the comment.
+      const name = `Comment on ${labelOf(r.element!)}: ${clip(t.root.text, 60)}`;
+      if (b.getAttribute("aria-label") !== name) b.setAttribute("aria-label", name);
     }
+    // Tab meets the bubbles in page order, before the preview and the popover.
+    reorder(
+      ctx.layer,
+      list
+        .filter((t) => live.has(t.id))
+        .sort(byPage(ctx))
+        .map((t) => bubbles.get(t.id)!),
+      mark,
+    );
     for (const [id, b] of bubbles) {
       if (live.has(id)) continue;
       b.classList.remove("in");
@@ -234,10 +248,11 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
 
     const d = opts.popovers ? ctx.state.draft : null;
     if (d) {
+      const where = d.anchor.point ?? d.resolved.element;
       if (draft?.of !== d) {
         window.clearTimeout(gliding);
         pop.classList.remove("glide");
-        draft = { box: draftBox(ctx, d), of: d, at: d.resolved.element, above: null };
+        draft = { box: draftBox(ctx, d), of: d, at: where, above: null };
         draft.box.hideLabel(named(d));
         pop.replaceChildren(draft.box.element);
         pop.inert = false;
@@ -248,12 +263,20 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         pop.classList.add("show");
       } else if (draft) {
         // Moved to another block: the same box, its words and focus kept, glides (or fades) there.
-        if (draft.at !== d.resolved.element) {
-          draft.at = d.resolved.element;
+        if (draft.at !== where) {
+          draft.at = where;
           draft.above = null;
           moveDraftBox(d.label);
         }
         draft.box.hideLabel(named(d));
+      }
+      // Its slide or view is elsewhere: the words wait, the box steps aside and comes back with the reviewer.
+      const away = !ctx.here.holds(d.anchor.view);
+      if (away !== stepped) {
+        stepped = away;
+        pop.classList.toggle("show", !away);
+        pop.inert = away;
+        if (!away) place();
       }
       return;
     }
@@ -262,6 +285,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       window.clearTimeout(gliding);
       pop.classList.remove("glide");
       draft = null;
+      stepped = false;
       ctx.registerDraft(null);
     }
 
@@ -306,7 +330,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       }
     }
     const d = ctx.state.draft;
-    const g = d?.anchor.point ? bubblePoint(d.anchor, d.resolved) : null;
+    const g = d?.anchor.point && ctx.here.holds(d.anchor.view) ? bubblePoint(d.anchor, d.resolved) : null;
     if (g) {
       ghost.style.left = `${g.x}px`;
       ghost.style.top = `${g.y}px`;

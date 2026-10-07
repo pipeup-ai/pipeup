@@ -3,7 +3,7 @@ name: pipeup-integrate
 description: Use when creating or editing an HTML document, slide deck, report, prototype or web page that people will review or give feedback on, or when asked to "add comments", "make this reviewable" or "add Pipeup". Adds Pipeup so reviewers can comment in place without changing how the page looks or behaves.
 ---
 
-# Add Pipeup to a page (`pipeup init` and `check` arrive in 0.5)
+# Add Pipeup to a page (`pipeup init` and `check` arrive in 0.6)
 
 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
@@ -51,9 +51,13 @@ Choose the layout by page type, then follow the Steps for markup.
   - Give charts, images and icons a `data-pipeup-label` (Step 4).
   - Reviewers press **⇧⌥C** on a Mac or **Shift+Alt+C** elsewhere (or the control's Comment button) to comment on blocks: the outline picks
     the nearest element with a data-pipeup-id, an obvious element (button, link, image, paragraph,
-    table, chart) or a card with its own background or border, and skips containers covering most
-    of the window. Clear blocks with ids make this precise. Clicking a block opens its comment box at
-    once; the bar's expand icon moves the box to the block around it. Option-click drops a pin.
+    table, chart, list, section, form, anything with an ARIA role), a card with its own background or
+    border, or a flex/grid box holding several things, and skips containers covering most of the
+    window. Clear blocks with ids make this precise. Clicking a block opens its comment box at
+    once; the bar's Around it and Inside it move the box to the block around it or inside it, and
+    Pin makes it a pin at the block's centre. Option-click drops a pin exactly there. From the
+    keyboard the shortcut starts a block cursor (Tab between blocks, ↑ ↓ to change level, Enter to
+    comment) that screen readers can follow: real headings, paragraphs and labelled images read well.
 - **Deck** (slides):
   - One element per slide, marked with `data-pipeup-slide` (Step 5); one slide visible at a time.
   - Mark the slide controls `data-pipeup-ignore` (Step 6).
@@ -68,11 +72,11 @@ Then choose the options (see "Options" below): usually just the defaults.
    - *Site / app* (landing page, prototype, dashboard): dense UI. Comments appear as bubbles.
 
 2. **Load Pipeup and give the document an identity, once.** Until the `pipeup init` command
-   ships (planned for 0.5), do it by hand:
+   ships (planned for 0.6), do it by hand:
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.3.2/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -101,18 +105,38 @@ Then choose the options (see "Options" below): usually just the defaults.
    AI tools see.
 
 5. **Decks: mark slides.** Add `data-pipeup-slide="1"`, `"2"`, … (1-based, in order) to each
-   slide's outer element. If the deck uses reveal.js or another framework Pipeup detects, that's
-   all (slide support is not built yet — planned for 0.4); otherwise call `Pipeup.mount({ slides: { current: () => n, go: (n) => … } })` with the
-   deck's own functions.
+   slide's outer element. Pipeup follows the deck by itself — the current slide is the marked slide
+   that is showing, or reveal.js's current slide — so only that slide's comments show, the control
+   marks comments on other slides, and All comments groups them by slide. So that choosing a
+   comment on another slide can go there, hand Pipeup the deck's own way to change slides, after the
+   Pipeup script — this works on auto-mounted pages (the usual route; reveal.js decks need nothing,
+   Pipeup calls `Reveal.slide()`):
+
+   ```html
+   <script>
+     Pipeup.onReveal((view) => {
+       const n = parseInt(view.slide, 10);
+       if (n > 0) goToSlide(n);
+     });
+   </script>
+   ```
+
+   Only a page that starts Pipeup itself (`data-pipeup-auto="off"`) needs to pass both of the deck's
+   functions, 1-based: `Pipeup.mount({ slides: { current: () => n, go: (n) => … } })`.
 
 6. **Exclude chrome** with `data-pipeup-ignore`: slide navigation buttons, progress bars, sticky
    toolbars that aren't part of the content, cookie banners, logo strips.
    Ignored areas keep working in comment mode, so mark navigation and slide controls this way
    rather than leaving them as comment targets.
 
-7. **Tabs, accordions, routes** (not built yet — planned for 0.4): if content can be hidden, register a reveal handler so comments
-   on hidden content can be opened: `Pipeup.onReveal(view => showTab(view.tab))`, and report the
-   current view with `Pipeup.setViewState({ tab: "pricing" })` when it changes.
+7. **Tabs, accordions, routes:** if content can be hidden behind a tab or a route, report the view
+   whenever it changes, with a readable `label` (string values only):
+   `Pipeup.setViewState({ tab: "pricing", label: "Pricing tab" })`. Comments remember it and show
+   only in that view; elsewhere they are counted on the control and listed under the label. Register
+   a handler so choosing one can go there: `Pipeup.onReveal((view) => showTab(view.tab))`. Pipeup
+   never opens tabs or accordions itself; without a handler the comment opens on its own with a
+   snapshot of what it was on. The handler receives the whole view (every key you set, plus `slide`
+   on decks); `label` is only a display name.
 
 8. **Check, and fix until it passes:** once it ships, run `npx pipeup check page.html`; until then, open the page and check the items below by eye. Fix every `fail`; fix
    `warn` items unless the author says otherwise. Typical fixes:
@@ -133,7 +157,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.3.2/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -146,6 +170,7 @@ Markup on the page:
 |---|---|---|
 | `data-pipeup-doc` | `<html>` | The document's identity and key. Added by `pipeup init`; never change it. |
 | `data-pipeup-reserve` | `<html>` | The page reserves a 320 px comment gutter on the right and lays itself out with `var(--pipeup-gutter, 0px)` (documents you create). |
+| `--pipeup-panel` (read it, don't set it) | page CSS | While All comments is open, Pipeup moves the page over by the panel's width and publishes that width here. Normal content moves by itself; give fixed or sticky bars `right: var(--pipeup-panel, 0px)` (or offset centred ones by half of it) and size things in `%`, not `vw`, so nothing sits under the panel. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |
@@ -160,3 +185,4 @@ Markup on the page:
 | `root` | `document.body` | Limit commenting to one area of the page. |
 | `name` | none — never asked | The reviewer's name, when the page already knows it. Without one, each reviewer is an animal in a colour ("Red Fox") with an animal avatar, and can add a name from the comment box or the menu whenever they like. |
 | `store` | this browser | Where comments are kept; leave it unless the author asks. |
+| `slides` | followed automatically | A deck's own `{ current(): number, go(n: number): void }`, 1-based; replaces Pipeup's following of the deck (Step 5). |

@@ -2,11 +2,11 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites. Add one
 script tag and reviewers can select words, click a block or drop a pin, and comment in place. No
-accounts and no servers: comments stay in each reviewer's browser, and **Copy all** turns them into
+accounts and no servers: comments stay in each reviewer's browser, and **Copy as Markdown** turns them into
 Markdown that says exactly where each comment is, ready to send to the author or paste into an AI
 agent.
 
-> **Status: alpha (0.3.2).** The API and the stored comment format may change before 1.0. Pin an
+> **Status: alpha (0.4.0).** The API and the stored comment format may change before 1.0. Pin an
 > exact version.
 
 - Website: https://pipeup-ai.github.io/pipeup/
@@ -25,7 +25,7 @@ Give the page a document key once, then load the pinned script just before `</bo
 <html data-pipeup-doc="<key>">
   ...
   <script
-    src="https://cdn.jsdelivr.net/npm/pipeup@0.3.2/dist/pipeup.min.js"
+    src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js"
     integrity="sha384-…"
     crossorigin="anonymous"
   ></script>
@@ -49,7 +49,7 @@ import { mount } from "pipeup";
 const pipeup = await mount(); // options: root, name, store
 ```
 
-`pipeup/core` is the headless core (signed comments, anchoring, storage, Copy all) for tools that
+`pipeup/core` is the headless core (signed comments, anchoring, storage, copying all comments) for tools that
 never draw UI. See the [package README](libs/ts/pipeup/README.md).
 
 ### With an AI agent

@@ -24,7 +24,7 @@ test("Parent steps out to the containing block, and goes when there is none", as
   await open(page, "controls.html", { name: "Sam" });
   await commentMode(page);
   await page.locator("#go").click();
-  await bar(page).getByRole("button", { name: "Select the block around it" }).click();
+  await bar(page).getByRole("button", { name: "Around it" }).click();
   await expect(bar(page)).toContainText("Hero");
   const o = page.locator(".pick.show");
   await settled(o);
@@ -32,11 +32,11 @@ test("Parent steps out to the containing block, and goes when there is none", as
   const hero = (await page.locator("header").boundingBox())!;
   expect(Math.abs(box.y + 4 - hero.y)).toBeLessThan(2);
   expect(Math.abs(box.height - 8 - hero.height)).toBeLessThan(2);
-  await expect(bar(page).getByRole("button", { name: "Select the block around it" })).toBeHidden();
+  await expect(bar(page).getByRole("button", { name: "Around it" })).toBeHidden();
 });
 
 const textbox = (page: Page) => page.locator(".pop.show .draft").getByRole("textbox", { name: "Comment" });
-const expand = (page: Page) => bar(page).getByRole("button", { name: "Select the block around it" });
+const expand = (page: Page) => bar(page).getByRole("button", { name: "Around it" });
 
 test("one click on a block opens the comment box on it, with focus, and the bar has no comment button", async ({
   page,
@@ -48,7 +48,8 @@ test("one click on a block opens the comment box on it, with focus, and the bar 
   await expect(draft.locator(".ctx")).toHaveText("Button · Start free");
   await expect(textbox(page)).toBeFocused();
   await expect(bar(page)).toContainText("Button · Start free");
-  await expect(bar(page).getByRole("button")).toHaveCount(1);
+  // Around it and Pin; Inside it is hidden at a block with nothing inside.
+  await expect(bar(page).getByRole("button")).toHaveCount(2);
   await expect(bar(page).getByRole("button", { name: "Comment" })).toHaveCount(0);
   await expect(page.locator(".pick.on")).toHaveCount(1);
 });
@@ -403,7 +404,7 @@ test("the bar keeps to its block while the page scrolls, and glides when Parent 
     return document.getElementById("go")!.getBoundingClientRect().top - b.bottom;
   });
   expect(Math.abs(gap - 10)).toBeLessThan(1);
-  await bar(page).getByRole("button", { name: "Select the block around it" }).click();
+  await bar(page).getByRole("button", { name: "Around it" }).click();
   await expect(page.locator(".namebar.show.glide")).toHaveCount(1);
 });
 
@@ -459,7 +460,7 @@ test("with reduced motion the bar fades out before Parent moves it, never moving
     });
     w.watch.observe(el, { attributes: true, attributeFilter: ["style"] });
   });
-  await bar(page).getByRole("button", { name: "Select the block around it" }).click();
+  await bar(page).getByRole("button", { name: "Around it" }).click();
   await expect(bar(page)).toContainText("Hero");
   await settled(bar(page));
   const moves = await page.evaluate(() => {

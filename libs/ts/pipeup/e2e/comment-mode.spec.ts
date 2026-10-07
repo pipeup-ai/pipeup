@@ -40,6 +40,9 @@ test("the shortcut enters comment mode and Escape leaves; the menu's Comment ite
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
   await expect(page.locator(".toast.show")).toContainText("Esc to finish");
+  // The first Escape puts the keyboard's block cursor away; the next one leaves comment mode.
+  await page.keyboard.press("Escape");
+  await commenting(page);
   await page.keyboard.press("Escape");
   await commenting(page, false);
   await toggleCommenting(page);
@@ -147,6 +150,28 @@ test("the outline glides between blocks instead of jumping", async ({ page }) =>
   expect(gliding).toBe(true);
 });
 
+test("a flex row of several things and a section are blocks; a flex box with one child is not", async ({
+  page,
+}) => {
+  await open(page, "controls.html");
+  await page.evaluate(() => {
+    document.querySelector("#form")!.insertAdjacentHTML(
+      "beforebegin",
+      `<div id="row" style="display:flex;gap:8px"><span id="r1">One</span><span id="r2">Two</span></div>
+       <div id="solo" style="display:flex"><span id="s1">Alone</span></div>
+       <section id="sec"><span id="sec-text">In a section</span></section>`,
+    );
+  });
+  await commentMode(page);
+  await page.locator("#r1").hover();
+  expect(near(await outlined(page), await box(page, "#row"))).toBe(true);
+  await page.locator("#sec-text").hover();
+  expect(near(await outlined(page), await box(page, "#sec"))).toBe(true);
+  // One child: not a group, so nothing is outlined there (the page around it is too large).
+  await page.locator("#s1").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+});
+
 test("very large containers are never outlined", async ({ page }) => {
   await open(page, "controls.html");
   await commentMode(page);
@@ -168,6 +193,26 @@ test("selecting text still offers the comment icon in comment mode", async ({ pa
   await commentMode(page);
   await selectWords(page, "#title", "in minutes");
   await expect(page.locator(".selbar.show")).toHaveCount(1);
+});
+
+test("while text is selected no block is outlined; clearing the selection brings the outline back", async ({
+  page,
+}) => {
+  await open(page, "controls.html");
+  await commentMode(page);
+  await page.locator("#go").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+  await selectWords(page, "#title", "in minutes");
+  await expect(page.locator(".selbar.show")).toHaveCount(1);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await page.locator("#mrr").hover();
+  await page.locator("#inner").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await expect(page.locator(".namebar.show")).toHaveCount(0);
+  await page.evaluate(() => getSelection()!.removeAllRanges());
+  await expect(page.locator(".selbar.show")).toHaveCount(0);
+  await page.locator("#mrr").hover();
+  expect(near(await outlined(page), await box(page, "[data-pipeup-id=tile-mrr]"))).toBe(true);
 });
 
 test("entering comment mode closes an open thread; Escape steps back one level at a time", async ({
@@ -336,13 +381,61 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
   await expect(page.locator(".tip.show")).toHaveCount(1);
 });
 
-test("the shortcut on a focused menu item enters comment mode and closes the menu", async ({ page }) => {
+test("the shortcut on a focused menu item enters comment mode and keeps the menu open", async ({ page }) => {
   await open(page, "controls.html");
   await control(page).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".menu.show")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
+  await expect(page.locator(".menu.show")).toHaveCount(1);
+  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  // Escape closes the menu first and leaves focus on the control.
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(control(page)).toBeFocused();
+});
+
+test("in comment mode a click outside the open menu only closes it", async ({ page }) => {
+  await open(page, "controls.html");
+  await commentMode(page);
+  await openMenu(page);
+  // A block, a pin (Option-click) and an ignored control: each click only closes the menu.
+  await page.locator("#go").click();
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(page.locator(".pick.on")).toHaveCount(0);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await openMenu(page);
+  await page.locator("#card").click({ modifiers: ["Alt"] });
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await openMenu(page);
+  await page.locator("#nav-btn").click();
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  expect(await fired(page)).toEqual([]);
+  await commenting(page);
+  // With the menu closed, the next click picks as usual.
+  await page.locator("#go").click();
+  await expect(page.locator(".pick.on")).toHaveCount(1);
+});
+
+test("outside comment mode a click outside the menu closes it and reaches the page", async ({ page }) => {
+  await open(page, "controls.html");
+  await openMenu(page);
+  await page.locator("#go").click();
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  expect(await fired(page)).toContain("go");
+});
+
+test("the shortcut with the menu closed never opens it", async ({ page }) => {
+  await open(page, "controls.html");
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page);
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page, false);
   await expect(page.locator(".menu.show")).toHaveCount(0);
 });
 

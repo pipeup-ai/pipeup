@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
 import { describeElement, describeRange } from "../src/anchor/describe";
-import { labelOf, locate } from "../src/anchor/locate";
+import { labelOf, locate, viewName } from "../src/anchor/locate";
 import { resolveAnchor } from "../src/anchor/resolve";
 import { indexText, rangeFromOffsets } from "../src/anchor/text";
 
@@ -57,10 +57,32 @@ describe("locate", () => {
     expect(loc.pin).toBe("50% across, 6% down the element");
   });
 
+  it("names a view the page reported before the section; a slide's view is the slide", () => {
+    const a = document.querySelector("a")!;
+    const labelled = describeElement(a, document.body, undefined, { tab: "pricing", label: "Pricing tab" });
+    expect(locate(labelled, resolveAnchor(labelled, document.body), document.body).where).toBe(
+      'Pricing tab › Section "Pricing" › Link · Start free trial',
+    );
+    const plain = describeElement(a, document.body, undefined, { tab: "pricing", plan: "pro" });
+    expect(locate(plain, resolveAnchor(plain, document.body), document.body).where).toBe(
+      'pricing · pro › Section "Pricing" › Link · Start free trial',
+    );
+  });
+
   it("explains orphaned comments with their snapshot", () => {
     const anchor = describeElement(document.querySelector("a")!, document.body);
     document.querySelector("a")!.remove();
     const loc = locate(anchor, resolveAnchor(anchor, document.body), document.body);
     expect(loc.where).toBe('No longer on the page (it read: "Start free trial")');
+  });
+});
+
+describe("viewName", () => {
+  it("is the label, else the values joined, never the slide", () => {
+    expect(viewName({ tab: "faq", label: "FAQ tab" })).toBe("FAQ tab");
+    expect(viewName({ slide: "3", tab: "faq", plan: "pro" })).toBe("faq · pro");
+    expect(viewName({ slide: "3" })).toBe("");
+    expect(viewName(undefined)).toBe("");
+    expect(viewName({ tab: "faq", label: "" })).toBe("faq");
   });
 });

@@ -2,7 +2,7 @@
 
 **Status:** Draft for review
 **Owner:** Pipeup maintainers
-**Last updated:** 2026-10-06 (first public release prepared)
+**Last updated:** 2026-10-07 (keyboard and screen-reader cursor)
 
 This document describes *what* Pipeup does. It is **functional only** — it does not prescribe
 languages, frameworks, protocols, ciphers or hosting internals. Those live in the dev design
@@ -45,7 +45,7 @@ Principles:
 
 1. *I made an HTML deck and want feedback.* I add Pipeup to it, send the file or link, and get
    comments pinned to the exact slide and spot.
-2. *Several people reviewed my file separately.* Each copies their comments (Copy all) and sends
+2. *Several people reviewed my file separately.* Each copies their comments (Copy as Markdown) and sends
    them to me; I paste them into my AI agent, which knows exactly where each comment is.
 3. *I want a live review session.* I create a room on my own relay, share an invite link, and
    everyone sees who is here, which slide they are on and where their cursor is.
@@ -57,7 +57,7 @@ Principles:
 5. *Someone sent me an HTML file.* I open it, choose "Comment", select a sentence and type. I
    don't need an account.
 6. *I'm reviewing a deck.* I click anywhere on a slide to drop a pin and comment, Figma style.
-7. *I'm done.* I press "Copy all" and send what I copied back however I like — or, in a
+7. *I'm done.* I press "Copy as Markdown" and send what I copied back however I like — or, in a
    room, my comments are already shared.
 
 **Agents**
@@ -109,7 +109,7 @@ any of them off.
 |---|---|---|
 | **Text** | In comment mode, select words. A small comment control eases in above the selection. | Wording, specific claims |
 | **Block** | In comment mode, hover: an outline glides to the most obvious thing under the pointer — a paragraph, card, image, table, chart or a single button. Click it and the comment box opens straight away. | Whole elements, including controls |
-| **Pin** | In comment mode, Option-click an exact spot. | Slides, charts, canvases, designs |
+| **Pin** | In comment mode, Option-click an exact spot, or choose a block and press **Pin** on its naming bar. | Slides, charts, canvases, designs |
 | **General** | Comment on the page or slide as a whole. | Overall reactions |
 
 - **Selecting text offers commenting only in comment mode.** Outside it, selecting text offers
@@ -121,13 +121,25 @@ any of them off.
 - In comment mode the pointer becomes a **picking cursor** (an arrow over a dashed box, like a
   browser's element picker), except over areas the author marked to ignore.
 - In comment mode, **links, buttons, toggles, menus and form fields become things to comment on**
-  instead of things that act. Nothing on the page fires, submits or navigates.
+  instead of things that act. Nothing on the page fires, submits or navigates when clicked or tapped.
+  From the keyboard, while the block cursor (below) is not in use, Enter and Space on a focused control
+  of the page do what the page expects, and Pipeup does nothing with them.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
-  the block ("Button · Start free trial") and offers an **expand icon** that moves the comment to
-  the block around it ("Select the block around it" on hover), keeping anything already typed. The
-  bar uses icons, not words.
+  the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
+  readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
+  both keeping anything already typed, and **Pin** turns it into a pin at the block's centre (on touch
+  screens, at the next spot tapped). The bar uses icons, not words.
 - Pipeup skips invisible wrappers and very large containers when choosing the obvious block, and
   prefers anything the author marked with a stable identifier.
+- Besides paragraphs, headings, images, tables and controls, the obvious blocks include page
+  sections (sections, articles, asides, navigation, headers, footers, forms and field groups),
+  lists and their items, captions, anything the page marks with an accessible role (a button, a
+  tab, a region, a dialog and so on), and any box that visibly lays out several things in a row
+  or grid. The innermost such block under the pointer wins; something covering most of the window
+  is still the page, not a block.
+- **While text is selected in comment mode**, no block is outlined or named on hover, wherever the
+  pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
+  selection is cleared or its comment is started or cancelled.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: type and press **Enter** to send (**Shift+Enter** for a new line, **Esc** to
@@ -138,16 +150,61 @@ any of them off.
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
 - The writer of a comment can **edit** or **delete** it; edits are marked as edited.
-- On touch screens: tap chooses a block, long-press selects text, two-finger tap drops a pin.
-  With a keyboard: Tab moves between blocks, ↑ chooses the parent, ↓ a child, Enter comments.
+- On touch screens: tap chooses a block, long-press selects text, and the naming bar's Pin drops a pin.
+
+**From the keyboard and with a screen reader**
+
+- Turning comment mode on **from the keyboard** (the shortcut, or Start commenting chosen with the
+  keyboard) starts the **block cursor**: an outline on the block that has focus, or else the first block
+  in view. Mouse users never see it.
+- While the block cursor is in use: **Tab** and **Shift+Tab** move between blocks at the same level as
+  the current one, starting with the smallest blocks a click would choose; **↑** chooses the block
+  around it and **↓** a block inside it, after which Tab moves between blocks at that new level, so no
+  part of the page is skipped; **Enter** comments on the block, and **Shift+Enter** opens the comments
+  already on it or inside it: the first in page order, then the next one with each press, saying which of
+  how many it is ("Comment 1 of 3 on this block"), or "No comments on this block" when there are none. The naming bar's Around it and Inside it
+  do the same as ↑ and ↓, for screen readers that keep the arrow keys for reading. ← and → are never
+  taken.
+- The block cursor tells screen readers what it is on: the kind of block, its place ("Paragraph, 3 of
+  12"), how many comments are on it or inside it, and the block's own words. Pipeup never changes the
+  page to do this.
+- After a comment is sent or cancelled, the block cursor is back on the same block, so a reviewer can
+  comment on block after block. Moving it closes an open thread, as a click elsewhere does.
+- **Esc** steps back as with the mouse (a comment being written, then an open thread), then puts the
+  block cursor away and gives Tab back to the page, with focus where it was before; one more Esc leaves
+  comment mode. While the block cursor is put away, the comment mode shortcut brings it back; pressing
+  the shortcut while it is in use leaves comment mode. How to move and how to leave are said when it starts.
+- Words can be selected with the browser's caret browsing (F7) or a screen reader's own selection. The
+  comment icon appears once the selection stops changing, and **Enter** comments on it. A mouse drag that is still going is not a settled selection, and selecting words
+  while the block cursor is out puts it away.
+- With the block cursor not in use, Enter on a focused page control does what the page expects, even when
+  words are selected, and Enter in a page's form field submits the form. Moving the block cursor off the
+  block a comment box is on leaves the box waiting there with its words; the cursor's keys move the cursor,
+  and Enter returns to the box. Modifier+↑/↓ are left to the page.
+- Resolving a thread returns focus to the block cursor, or to the Comment control when there is none; Send
+  keeps focus in the reply line.
+- Pins are dropped with the naming bar's Pin, at the centre of the block.
 
 ## 6. Commenting on slides
 
-- Pins and comments belong to a slide; only the **current slide's** comments are shown. Pins keep
-  their position relative to the slide when it is resized.
-- Moving between slides is never blocked by Pipeup, including in comment mode.
-- A slide strip or the comment control shows which slides have open threads and how many.
-- Choosing a thread **navigates to its slide** (and its build step, where the deck has steps).
+- Pins and comments belong to a slide; only the **current slide's** comments are shown, and they
+  ease out and in as the slide changes. Pins keep their position relative to the slide when it is
+  resized.
+- Pipeup follows the deck on its own: the current slide is the marked slide that is showing. Decks
+  built with a common framework are followed and driven without any code; any deck can also tell
+  Pipeup how to go to a slide.
+- Moving between slides is never blocked by Pipeup, including in comment mode, with one exception:
+  while the keyboard's block cursor is in use, ↑ and ↓ choose the block around it and a block inside it,
+  so decks that use ↑ and ↓ for vertical slides wait until it is put away (Esc). ← and → always reach
+  the deck.
+- The comment control's number counts the open threads **here** (on this slide); a small mark on the
+  control shows when other slides have open threads, and its label says how many ("2 here · 5 on
+  other slides").
+- **All comments** groups threads by slide, in deck order ("Slide 3 · 2 open"), with this slide's
+  group marked.
+- Choosing a thread **navigates to its slide** and opens it there. If the deck can't be moved, the
+  thread opens on its own in the panel with its snapshot. Build steps within a slide are not
+  tracked.
 - Text on a slide can also be selected and commented on, as in documents.
 
 ## 7. Reading, replying and managing comments
@@ -194,7 +251,13 @@ any of them off.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
   elsewhere on the page, or by opening another thread.
 - An open thread always ends with a quiet **reply line**. **Opening a thread puts the cursor in its
-  reply line**, so the reader can type a reply straight away; Esc still closes the thread.
+  reply line**, so the reader can type a reply straight away; Esc still closes the thread. A new comment
+  opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
+  is in use, with focus back on the block cursor.
+- Every thread can be opened from the keyboard: bubbles and threads at rest in the column are buttons,
+  reached with Tab in the order they sit on the page, and text threads through All comments. Closing a
+  thread with Esc gives focus back to what opened it (its bubble, its place in the column, its row in
+  All comments, or the block cursor).
 
 **Replies — one level, under the comment**
 
@@ -223,16 +286,28 @@ any of them off.
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
-    **Add name** or an edit mark at the end; choosing it edits your name in place;
-  - **Copy all** — every open thread as Markdown for AI, in order, with where each one is (§7a);
-  - **Copy all as text** — the same threads as plain text: where it is, then just the names and
+    **Add name** or an edit mark at the end; choosing it turns that row into a name field in place
+    (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
+    and leaves the menu open; the row then shows the name and avatar again. The menu never closes
+    while the name is being edited;
+  - **Copy as Markdown** — every open thread as Markdown for AI, in order, with where each one is (§7a);
+  - **Copy as Text** — the same threads as plain text: where it is, then just the names and
     words (§7a). Each copy row has a one-line tooltip. There is no copy-format setting;
   - **All comments**, with the number of open threads;
   - nearest the button, **Start commenting**, with its shortcut and a **switch** that shows whether
-    comment mode is on. Toggling it starts or stops comment mode and closes the menu.
+    comment mode is on. Toggling it starts or stops comment mode and **leaves the menu open**, so
+    the switch is seen to move — except that turning it on from the keyboard closes the menu as the
+    switch moves and puts the block cursor on the page (§5).
+  - The comment control's name tells screen readers whether comment mode is on.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
   switch; Esc closes the menu) and by touch
   with no hover needed. Switches ease between their states.
+- Choosing a copy row or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
+  click or tap anywhere outside the menu and the button, or once the pointer has been away from
+  both for **3 seconds** (coming back sooner keeps it open). On touch screens, where there is no
+  hover, only a tap outside or Esc closes it. In comment mode, a click outside the menu only closes
+  it: it doesn't choose a block, drop a pin or reach the page. The comment mode shortcut toggles comment mode
+  without opening the menu; with the menu open it leaves the menu open.
 - **All comments** opens a **panel on the right** listing every thread, including ones in hidden
   views and ones whose content is gone (§8), with each author's avatar.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
@@ -250,15 +325,15 @@ any of them off.
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy all** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
+- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
   for each one: where it is (slide or section, then the element), the element's stable identifier,
   the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copy all adds the page title and address, the export time, the number of open threads
+  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
   (noting resolved ones are left out) and a one-line instruction to work through them and say what
   changed.
-- **Copy all as text** gives **plain text** — where it is, then just the names and words.
+- **Copy as Text** gives **plain text** — where it is, then just the names and words.
 - There is no copy-format setting.
-- Resolved threads are left out of Copy all.
+- Resolved threads are left out of both copy rows.
 
 ## 8. Staying attached on changing pages
 
@@ -268,9 +343,16 @@ any of them off.
   - **Moved** — found nearby or after the content changed; flagged so someone can confirm;
   - **Orphaned** — its content is gone; the comment remains in the panel with a **snapshot** of
     what the reviewer was looking at.
-- Comments made in a view that is currently hidden (another tab, accordion, route or slide) are
-  listed with where they live, and choosing one **reopens that view** when the page tells Pipeup
-  how to do so.
+- Every comment remembers the view it was made in: the slide, and whatever the page reports about
+  itself (such as the open tab or route), with a readable name when the page gives one.
+- Comments made in a view that is currently hidden (another tab, accordion, route or slide) show
+  nothing on the page, are counted as elsewhere on the comment control, and are listed in All
+  comments under where they live. Choosing one **reopens that view** when the page tells Pipeup how
+  to do so, and opens the thread on its content; otherwise the thread opens on its own with its
+  snapshot. Pipeup never opens tabs or accordions itself.
+- A new comment with words in it whose slide or view goes away steps aside and keeps its words. Opening
+  another thread, choosing one in All comments, or starting another comment then takes the reviewer back
+  to it (when the page can go there) rather than dropping or hiding it.
 - Comments on charts or other dynamic visuals record what the reviewer saw, including any state
   the page reports (for example, a chosen filter).
 - When the author publishes a new version of the file, comments on text that changed are marked
@@ -295,7 +377,11 @@ any of them off.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
-- Pipeup is fully usable with a **keyboard and screen reader**.
+- Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
+  every thread, the menu and All comments can be reached and used without a pointer; focus is never
+  lost after sending, cancelling or closing; and screen readers are told which block a comment is
+  being written on, when it changes, and when comment mode ends. Pipeup's focus marks stay visible in
+  high-contrast (forced colours) modes.
 
 **Motion — nothing switches on or off abruptly**
 
@@ -331,7 +417,7 @@ any of them off.
 
 **Returning feedback (for now)**
 
-- A reviewer sends feedback back to the author by pressing **Copy all** and sending what they copied
+- A reviewer sends feedback back to the author by pressing **Copy as Markdown** and sending what they copied
   any way they like: a message, an email, or pasted straight into a conversation with an AI
   assistant.
 - **Sealed feedback files** remain part of the design for sharing later: a single small file of the
@@ -407,7 +493,7 @@ any of them off.
   - colour contrast and keyboard reachability of Pipeup's UI.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy all); later they will also read and write feedback
+- Agents read comments a reviewer copied (Copy as Markdown); later they will also read and write feedback
   files and, with an invite, take part in rooms.
 
 ## 16. Distribution
@@ -443,7 +529,7 @@ any of them off.
 1. **Comments on this machine** — documents, slides and rich pages; all ways to start a comment
    (§5); reading, replies, resolve and copy for AI (§7, §7a); anchoring (§8); placement and
    motion (§9); feedback files; check; agent skills. Private builds only.
-2. **Rooms** — relay, invites, presence, live sync.
+2. **Rooms** — relay, invites, presence, live sync. Planned as sharing add-ons in 0.7 (share, then voice, then live).
 3. **Public release** — npm and CDN publication, verification guidance, open-source licence. The
    first public release (0.3.0) ships phase 1's comments on this machine, ahead of rooms.
 
@@ -514,3 +600,29 @@ any of them off.
 - 2026-10-06 — Simplified copying and feedback: the menu has two plain rows, Copy all (Markdown for AI) and Copy all as text, with no copy-format setting and no `copyAs` option; Send feedback and Add feedback and dropping files are removed for now (feedback comes back by copying it), with sealed feedback files kept in the design for sharing later.
 - 2026-10-06 — First public release prepared (0.3.0, alpha): open source under MIT, published on npm and public CDNs, with the website, Try pages and agent skills at a public address and a link to the source from the site. Phase 1's comments on this machine ship before rooms. The licence question is closed. Sample names in examples and tests are fictional.
 - 2026-10-06 — Pre-releases: tried by exact version or the `next` tag, with their own marked copy of the website at a separate address; stable installs and the stable site are never changed by one.
+- 2026-10-06 — Menu and picking fixes: the copy rows are named Copy as Markdown and Copy as Text; toggling Start commenting leaves the menu open, which closes on Esc, a click outside, or after the pointer has been away for 3 seconds; your name is edited in its own row, in place; no block is outlined while text is selected in comment mode; picking also finds page sections, lists, elements with accessible roles and boxes that lay out several things, and the website's showcase is commented on as one whole block.
+- 2026-10-07 — Slides and hidden views (0.4): Pipeup follows the current slide by itself (frameworks and a deck's own hook can drive it); threads are here or elsewhere, the control counts those here and marks those elsewhere, All comments groups by slide or view, and choosing a thread elsewhere goes there first. Comments remember their view. Build steps are not tracked.
+- 2026-10-07 — A new comment with words that stepped aside with its slide or view is returned to, not lost, when the reviewer opens or starts something else.
+- 2026-10-07 — Keyboard and screen readers (0.4, part 2, step 1): turning comment mode on from the keyboard
+  starts a block cursor — Tab between blocks at one level, ↑ and ↓ to the block around or inside, Enter to
+  comment, Esc to put it away and then to leave — that tells screen readers what it is on and comes back
+  to the same block after each comment. The naming bar gains Inside it and Pin; pins no longer use a
+  two-finger tap (it opens links in a new tab, right-clicks on trackpads and pauses screen readers).
+  Vertical slides wait while the block cursor is in use. Words selected with caret browsing or a screen
+  reader can be commented on with Enter. Every thread can be opened from the keyboard, Esc returns focus to
+  what opened it, and the comment control says when comment mode is on. Turning comment mode on from the
+  keyboard closes the menu.
+- 2026-10-07 — Keyboard follow-ups: Shift+Enter on the block cursor opens the block's comments one at a time
+  in page order (or says there are none); the comment mode shortcut brings a put-away block cursor back and
+  leaves comment mode when it is in use; with the block cursor not in use, Enter and Space on the page's own
+  controls do what the page expects (clicks and taps are still only for commenting).
+- 2026-10-07 — The keyboard and screen-reader block cursor is built. The page never hears the keys the cursor
+  takes; Tab and the arrows never land on removed blocks; the shortcut leaves the menu open and, with nothing
+  to land on, leaves comment mode; Resolve returns focus to the cursor (or the Comment control). Selecting words
+  while the block cursor is out puts it away, so the words' comment icon shows. After Esc puts the block cursor
+  away, the next Tab continues from where the cursor was, so it may reach Pipeup's own controls before the
+  page's.
+- 2026-10-07 — Keyboard review fixes: Enter in a page's form field submits the form while the block cursor
+  isn't in use; moving the block cursor off a comment box's block leaves the box waiting; All comments and
+  Copy use the same page order as the comments on the page.
+- 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.

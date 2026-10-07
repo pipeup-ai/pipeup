@@ -136,7 +136,8 @@
 
       /* ---------- The showcase: Document → Slides → Website ---------- */
       .viewport { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--bone); touch-action: pan-y; }
-      .track { display: flex; transition: transform 0.7s var(--move); }
+      /* The moving demo is never a target itself: pointing anywhere in it picks the whole showcase to comment on. */
+      .track { display: flex; transition: transform 0.7s var(--move); pointer-events: none; }
       .scene { flex: 0 0 100%; aspect-ratio: 4 / 3.2; position: relative; }
       .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
       .bar-dots { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2; }
@@ -259,7 +260,7 @@
   </head>
   <body>
     <main>
-      <header class="top" data-pipeup-ignore>
+      <header class="top">
         <span class="mark">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
           Pipeup
@@ -277,7 +278,7 @@
             People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback
             comes back ready for your AI to act on.
           </p>
-          <div class="actions rise" style="--i: 2" data-pipeup-ignore>
+          <div class="actions rise" style="--i: 2">
             <button class="btn primary" type="button" data-copy="prompt">
               <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
               <svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
@@ -307,7 +308,7 @@
               </button>
               <a class="choice" role="menuitem" href="pipeup.min.js" download>
                 <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg></span>
-                <span>Download pipeup.min.js<small>One file, about 30 KB</small></span><span></span>
+                <span>Download pipeup.min.js<small>One file, about 36 KB</small></span><span></span>
               </a>
             </div>
           </div>
@@ -315,8 +316,8 @@
           <p class="try rise" style="--i: 3"><span class="keys">Press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span></p>
         </div>
 
-        <div class="ad rise" style="--i: 2" data-pipeup-ignore role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides and a website">
-          <div class="viewport">
+        <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides and a website">
+          <div class="viewport" data-pipeup-id="showcase" data-pipeup-label="Showcase">
             <div class="track">
               <!-- Document: select words, then comment -->
               <div class="scene" role="group" aria-roledescription="slide" aria-label="Document">
@@ -407,9 +408,9 @@
         </div>
       </section>
 
-      <footer data-pipeup-ignore>
+      <footer>
         <ul class="facts">
-            <li><b>One file</b>, about 30 KB</li>
+            <li><b>One file</b>, about 36 KB</li>
             <li><b>No dependencies</b></li>
             <li><b>Works from disk</b></li>
           </ul>

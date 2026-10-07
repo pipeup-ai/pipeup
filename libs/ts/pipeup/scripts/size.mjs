@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
-const BUDGETS = { "dist/pipeup.min.js": 32 * 1024, "dist/pipeup.esm.js": 32 * 1024, "dist/pipeup.core.js": 12 * 1024 };
+const BUDGETS = { "dist/pipeup.min.js": 36 * 1024, "dist/pipeup.esm.js": 36 * 1024, "dist/pipeup.core.js": 12 * 1024 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 let over = false;
 for (const [file, limit] of Object.entries(BUDGETS)) {
@@ -17,7 +17,7 @@ if (over) process.exit(1);
 
 const code = readFileSync("dist/pipeup.min.js", "utf8");
 const Pipeup = new Function(`${code}; return Pipeup;`)();
-for (const name of ["PipeupDocument", "newDocumentAttribute", "copyAll", "mount"]) {
+for (const name of ["PipeupDocument", "newDocumentAttribute", "copyAll", "mount", "setViewState", "onReveal"]) {
   if (typeof Pipeup[name] !== "function") {
     console.error(`pipeup: the Pipeup global is missing ${name}`);
     process.exit(1);

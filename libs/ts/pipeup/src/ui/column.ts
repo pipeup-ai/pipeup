@@ -1,10 +1,11 @@
 import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
-import { h, inert } from "./dom";
+import { clip, h, inert, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
-import { threadView, type ThreadView } from "./thread-view";
+import { byPage } from "./order";
+import { plural, threadView, type ThreadView } from "./thread-view";
 
 /** Free width needed beside the content before comments get their own column. */
 export const COLUMN_MIN = 300;
@@ -128,7 +129,14 @@ export function createColumn(ctx: Ctx): View {
   function create(t: Thread): Item {
     const lost = isLost(t);
     const view = threadView(t, ctx.actions, { variant: "column", lost: lost ? t.anchor.snapshot : null });
-    const el = h("div", { class: "th", "data-thread": t.id }, view.element);
+    // A closed thread opens from the keyboard with its button, which has no box of its own (the thread shows its
+    // focus); `data-thread`: Esc in the open thread comes back to it.
+    const el = h(
+      "div",
+      { class: "th", "data-thread": t.id },
+      h("button", { class: "opn sr", type: "button", "data-thread": t.id }),
+      view.element,
+    );
     el.style.transition = "none";
     el.addEventListener("mouseenter", () => ctx.hot(t.id));
     el.addEventListener("mouseleave", () => ctx.hot(null));
@@ -188,12 +196,18 @@ export function createColumn(ctx: Ctx): View {
         fill(item, t);
       }
       const el = item.el;
-      el.classList.toggle("on", ctx.state.active === t.id);
+      const on = ctx.state.active === t.id;
+      el.classList.toggle("on", on);
+      const opn = el.firstElementChild as HTMLElement;
+      const n = t.root.replies.length;
+      opn.setAttribute("aria-label", `Open thread: ${clip(t.root.text, 60)}, ${plural(n)}`);
+      opn.setAttribute("aria-expanded", String(on));
+      inert(opn, on);
       // A closed thread's replies and reply line are folded away, and out of the keyboard's reach.
       const more = el.querySelector<HTMLElement>(".more");
-      if (more) inert(more, ctx.state.active !== t.id);
-      el.classList.toggle("dim", focused && ctx.state.active !== t.id);
-      el.classList.toggle("hot", ctx.state.hot === t.id && ctx.state.active !== t.id);
+      if (more) inert(more, !on);
+      el.classList.toggle("dim", focused && !on);
+      el.classList.toggle("hot", ctx.state.hot === t.id && !on);
       el.classList.toggle("resolved", t.resolved);
       el.classList.toggle("lost", item.lost);
     }
@@ -205,6 +219,18 @@ export function createColumn(ctx: Ctx): View {
       window.setTimeout(() => item.el.remove(), EXIT_MS);
     }
     syncDraft();
+    // Tab meets the threads in page order, before the draft; moved ones settle before they glide.
+    if (
+      reorder(
+        col,
+        list
+          .filter((t) => live.has(t.id))
+          .sort(byPage(ctx))
+          .map((t) => items.get(t.id)!.el),
+        draft?.el ?? null,
+      )
+    )
+      void col.offsetWidth;
     restack();
     if (draft) fresh.push(draft.el);
     for (const el of fresh) {

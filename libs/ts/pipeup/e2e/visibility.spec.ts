@@ -167,6 +167,10 @@ test("the open panel makes room: the page moves over by its width, and back when
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await settled(panel(page));
   await expect.poll(edge).toBeCloseTo(e0 - 320, 0);
+  // Its width is published for the page's fixed elements (and is gone once the panel closes, below).
+  const panelVar = () =>
+    page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--pipeup-panel").trim());
+  expect(await panelVar()).toBe("320px");
   // The page's DOM and inline styles are untouched: the room comes from Pipeup's own stylesheet.
   expect(await page.evaluate(() => document.documentElement.getAttribute("style"))).toBeNull();
   // The panel covers none of the page's content.
@@ -196,6 +200,7 @@ test("the open panel makes room: the page moves over by its width, and back when
   await expect(panel(page)).toHaveCount(0);
   await expect.poll(edge).toBeCloseTo(e0, 0);
   await expect.poll(right).toBeCloseTo(r0, 0);
+  await expect.poll(panelVar).toBe("");
   // Back exactly as it was.
   await expect.poll(() => bodySnapshot(page)).toBe(before);
 });

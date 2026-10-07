@@ -248,9 +248,11 @@ examples; the document page has its own gutter prototype.
 - **Resolve time budget.** Anchors resolve in passes of at most 40 ms; threads that run out of
   budget get only the exact match first and are shown as unplaced (not lost) until a deferred
   pass (250 ms later) gives them the fuzzy match, so they never flash as lost.
-- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 32 KB
-  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 32 KB) and
-  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B, see below. `scripts/size.mjs` enforces the budgets.
+- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 36 KB
+  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 36 KB) and
+  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B, to 33 KB (min, esm) for 0.4 part 1
+  and to 36 KB for 0.4 part 2 (the keyboard cursor; touch and the drawer moved to 0.5), see §11. `scripts/size.mjs` enforces the
+  budgets.
 
 ### Motion tokens (starting values)
 
@@ -286,7 +288,7 @@ only when the *target* changes. Direct drags have no transition.
 
 ### Copy for AI
 
-There is no copy-format option. The menu has two rows: Copy all (`'ai'`, Markdown) and Copy all as text
+There is no copy-format option. The menu has two rows: Copy as Markdown (`'ai'`) and Copy as Text
 (`'text'`); the core `copyAll`/`copyThread` keep their `CopyAs` parameter for tools. Copy on a thread always
 copies the whole thread, as Markdown. Markdown output for one thread:
 
@@ -301,7 +303,7 @@ copies the whole thread, as Markdown. Markdown output for one thread:
 - **Amy** (10m ago): Already is — maybe darken the label?
 ```
 
-Copy all prefixes `# Review comments: <title>`, page URL, export time, open count (resolved
+Copy as Markdown (`copyAll('ai')`) prefixes `# Review comments: <title>`, page URL, export time, open count (resolved
 excluded) and a one-line instruction, then `## Thread N` blocks in page/slide order.
 
 ### Plan 2B (built)
@@ -316,6 +318,10 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
   pointer events and opens its thread on click. Clicking a highlight, bubble or preview always
   opens (`ctx.open(id)`, never `active === id ? null : id`); Esc, a click on the page outside
   Pipeup, or opening another thread closes.
+- **Room for All comments.** While the panel is open the same adopted stylesheet gives `html` a right
+  margin of the panel's width (easing in and out) and publishes it as `--pipeup-panel`. A margin moves
+  normal content but not fixed elements or sizes in `vw`, so pages with fixed bars offset them with
+  `var(--pipeup-panel,0px)`; the site's Try bar and slide controls do.
 - **Reserved gutter (opt-in).** A page opts in with `<html data-pipeup-reserve>`.
   Pipeup then publishes the gutter width as a custom property from its document-adopted
   stylesheet — `:root{--pipeup-gutter:320px}` while the column shows, `0px` otherwise — and never
@@ -478,8 +484,103 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
     panel.
   - Sizes after this change: `pipeup.min.js` 31.6 KB, `pipeup.esm.js` 31.3 KB, core 8.6 KB gzip (budgets 32 /
     32 / 12).
+- **Menu and picking fixes (2026-10-06).** This updates the menu and picking details above.
+  - *Labels.* The copy rows read Copy as Markdown and Copy as Text (same `copyAll('ai' | 'text')`).
+  - *Menu stays open.* Start commenting only calls `setCommenting`; render no longer closes the menu when
+    comment mode starts, so the shortcut with the menu open keeps it open too (with it closed, it never
+    opens it). The menu closes on Esc (capture phase, as before), a click outside the menu and button
+    (`onAnyClick`), or when the pointer stays away for 3 s: window capture `pointerover` outside the menu
+    and button (or `pointerout` with no `relatedTarget`, leaving the window) starts one timer, `pointerover`
+    back inside clears it. Touch pointers are ignored (no hover), and the timer never closes the menu while
+    the name is being edited. Copy rows and All comments still close it. In comment mode the outside click
+    is consumed: the launcher `claim`s it, prevents and stops it, and comment mode's swallow skips `onPick`
+    while `UiState.menu` is set or the click is `claimed` (so either listener order works).
+  - *Name in place.* Choosing the identity row swaps that row (not the whole menu) for `.ed`: a copy of the
+    avatar and an `input` ("Your name", 80 characters), focused at once. Enter or `blur` saves through
+    `menu.rename` (empty or unchanged keeps the name), Esc cancels; both put `idRow` back (Enter and Esc
+    focus it). `endEdit` guards against ending twice (removal can blur) and makes the menu's Esc listener
+    stand aside, while the field's keydown stops propagation so neither the menu's arrows nor the app's
+    Esc see its keys. Closing the menu mid-edit saves. The old "Your name" box (`.name`) is gone.
+  - *No blocks over a selection.* Comment mode's `onMove`, and a `selectionchange` listener, hide the
+    hover outline while the document has a non-empty selection (its comment icon is the offer); hover
+    resumes on the next move once it is cleared. The naming bar only follows a chosen block, so it is
+    unaffected.
+  - *Picking reaches more.* `OBVIOUS` adds `figcaption`, lists (`ul, ol, dl, dt, dd`), HTML5 containers
+    (`section, article, aside, nav, header, footer, main, form, fieldset`) and a short list of ARIA roles
+    (widgets, landmarks, structure). `Look.grouped(el)` (computed `display` flex/grid, inline or not)
+    makes any element with more than one element child a block, except inside a control (`a`, `button`,
+    `label`, `summary`, button/link/tab/option/menuitem roles), whose inner layout is part of it. Innermost
+    wins, `data-pipeup-id` wins, the 60 % cap, `data-pipeup-ignore` and same-box wrappers are unchanged.
+  - *Site showcase.* The carousel's frame (`.viewport`) is `data-pipeup-id="showcase"` with a label, its
+    controls are `data-pipeup-ignore` (they keep working in comment mode), and the moving `.track` has
+    `pointer-events:none`, so a pointer anywhere in the stage targets the frame and picks it whole. The
+    frame keeps its own swipe listeners.
 - **Open question:** when comments are hidden, the comment control still sits over the page's bottom-right
   corner. Not decided in 2B.
+
+### 0.4 part 1 — slides and hidden views (built)
+
+- *Here* (`ui/here.ts`). Page state (`setViewState`), reveal handlers (`onReveal`) and the deck hook
+  (`mount({ slides })`) live at module level, so a page may register before Pipeup mounts. The current slide:
+  the hook, else `window.Reveal.getIndices()` mapped to the marked slide (or the n-th `.slides > section`), else
+  `pickSlide` — the marked slide that is shown (`checkVisibility` with opacity and visibility) and covers most of
+  the window; equal areas (a cross-fade) go to the more opaque, a full tie keeps the current one. Checks run on
+  `scroll`, `resize`, `keyup`, `click`, `transitionend`, `slidechanged` and slide attribute mutations, one per
+  frame; `navigate` polls frames for at most 1 s. New comments take the marked slide holding their content,
+  else the current slide.
+- *Here or elsewhere* (`app.ts` `classify()`, every render and every re-check). Elsewhere threads are not
+  `visible` and are left out of the highlights, so bubbles, pins and the column fade them out as before; an
+  open thread that leaves closes. Gone (detached) threads stay here, under "No longer on the page". On non-slide
+  pages a thread whose content the page hides is elsewhere too, listed under its view's name or "Hidden on the
+  page".
+- *Size.* The size pass shortened the stylesheet's internal tokens (`--eo`, `--in`, `--su`, …; only
+  `--pu-accent`, `--pu-font`, `--pu-panel`, `--pu-pop` keep the prefix, as the host writes them) and turned on
+  esbuild `mangleProps` for internal UI property names (list in `scripts/build.mjs`): −0.43 KB gzip. Budgets
+  33 KB (min, esm), 12 KB (core).
+
+### 0.4 part 2, step 1 — keyboard and screen-reader cursor (built)
+
+The design is [keyboard.md](keyboard.md). In short:
+
+- *The block cursor* is the comment-mode outline plus two focus markers in the layer (`.km`, `tabindex=-1`,
+  `role=button`) that take turns, so each move is a real focus change. A marker's name is "<kind>, <n> of
+  <m>, has <c> comment(s)" plus the block's own words through `ariaLabelledByElements` (short blocks) or
+  `ariaDescribedByElements` (long ones); nothing is written to the page.
+- *Starts* only when comment mode is turned on from the keyboard (`setCommenting(on, keys)`); lands on the
+  focused element's block or the first block in view. Tab/Shift+Tab move through a **row**: the blocks at the
+  current level or below whose parent is above it (`blockTree`, `row` in `pick.ts`, with `isBlock` pulled out
+  of `pickBlock`). ↑/↓ are parent/child, only while a marker has focus; the naming bar gains Inside it and Pin
+  (`commentOn(el, point)` at the centre) and becomes `role=group`.
+- *Esc* on a marker runs the app's step (`ctx.back()`): open draft, open thread, chosen block, then put the
+  cursor away with focus returned where it was. Moving the cursor off the draft's block lets go of it, so the
+  draft waits there and Esc and ↑ are the cursor's. Keys the marker takes (Tab, ↑, ↓, Enter, Space, Esc) are stopped there, so
+  bubble-phase page listeners such as reveal.js's never see them; ←/→ always pass.
+- *After a comment* focus returns to the marker on the same block (`CommentMode.cursor()`/`refocus()`);
+  without the cursor, the sent thread's reply line gets focus (fixes `busy` counting the draft's own words).
+  Bubbles keep page order and name their block; closed column threads get an `.opn` button; Esc in a thread
+  returns to its opener by id and kind.
+- *Selections* show their icon once `selectionchange` settles (250 ms), and Enter comments on them.
+  *Announcements* go to a hidden polite region (`ctx.say`), separate from the toast; the hint follows the
+  input used and the control's name says comment mode is on.
+- *Shift+Enter* on a marker opens the block's threads in page order, one per press; the shortcut brings a
+  put-away cursor back (`modeView.away()`/`resume()`); with the cursor not in use, Enter/Space on a page
+  control and the click it makes (`detail === 0` on the same target) pass to the page, as do Enter in a
+  field with a form and the click it makes on that form's submit button.
+- *Size*: budgets 36 KB (min, esm), 12 KB (core); Step 1 measured +3,047 B (min) and +3,077 B (esm)
+  gzip (36,806 B and 36,470 B; core 8,875 B), over the 1.8 KB it was to be held to; the design's cut list saves
+  only 92 B in all, so it was not applied. Step 2 starts with 58 B (min) of headroom.
+- *As built*: `blockTree` is one recursive pass over `children` (not a `TreeWalker`) that never lands on
+  removed blocks; `order.ts` holds the page order shared by the cursor, bubbles and the column (`nodeOf`,
+  `byPage`), and `dom.ts` `reorder` moves elements only when their order changed. New internal names in
+  `mangleProps`: `el`, `up`, `level`, `say`, `hideHint`, `back`, `cursor`, `away`, `resume`, `refocus`,
+  `backToDraft`. The window sees no keyup of a key the cursor took; modifier+↑/↓ pass through; the shortcut
+  leaves the menu open (Esc closes it first) and, with nothing landable, leaves comment mode. Resolve returns
+  focus to the cursor, or to the Comment control when there is none; Send keeps focus in the reply line. A
+  paused mouse drag is not a settled selection; Enter on a focused page control wins over a settled selection.
+  Chrome keeps its sequential-focus starting point on a marker that is blurred, so after Esc puts the cursor
+  away the next Tab continues from where the cursor was (Pipeup's corner control first, then the page). A
+  selection made while the cursor is out puts it away, so the selection's own icon shows. All comments and
+  Copy sort with `byPage` too, so every list of comments has the same page order.
 
 ---
 
@@ -495,3 +596,12 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
 - 2026-10-06 — §11: the control's number is hidden at zero and opens All comments (page order, orphaned threads under "No longer on the page", scroll-and-open, side popover for threads with nowhere to show); the menu moves to a "more" button shown on hover or focus; budgets 32 KB.
 - 2026-10-06 — §11: the reply line loses its reply icon (the line is the target; caret to the end); the control's comment and bubble icons draw at stroke 1.4 (the plus at 1.6), the count at weight 500.
 - 2026-10-06 — §11: simpler menu (one-line rows with tooltips, identity row, copy-format button, Start commenting switch); comments shown only in comment mode, All comments, a draft, or a narrow-screen chosen thread (highlight fade via the page sheet); Show resolved in the panel header; the open panel makes room with an adopted-sheet margin on `html`.
+- 2026-10-06 — §11: menu and picking fixes — Copy as Markdown / Copy as Text; Start commenting keeps the menu open (closes on Esc, outside click, 3 s away); name edited in its row; no hover outline over a selection; picking adds HTML5 containers, lists, ARIA roles and flex/grid groups (`Look.grouped`); the site showcase picks as one block.
+- 2026-10-07 — §11: room for All comments is also published as `--pipeup-panel`, for a page's fixed elements.
+- 2026-10-07 — §11: 0.4 part 1 built — `ui/here.ts`, here/elsewhere sorting in the app, the control's dot and label, All comments by slide or view, navigate then open; size pass (short CSS tokens, `mangleProps`); budgets 33 KB.
+- 2026-10-07 — §2: bundle budgets read 33 KB (min, esm) for 0.4, as in `scripts/size.mjs`.
+- 2026-10-07 — §11: 0.4 part 2, step 1 designed — keyboard and screen-reader block cursor ([keyboard.md](keyboard.md)); budgets 36 KB (min, esm) for part 2, 12 KB (core).
+- 2026-10-07 — §11: keyboard follow-ups — Shift+Enter opens a block's threads, the shortcut brings the cursor back, page controls take Enter/Space with the cursor away.
+- 2026-10-07 — §11: 0.4 part 2, step 1 built — the block cursor as designed in [keyboard.md](keyboard.md); +3.05 KB gzip (over the 1.8 KB target, within the 36 KB budgets); "As built" notes.
+- 2026-10-07 — §11: keyboard final-review fixes — the cursor lets go of a draft's block when it moves off it; Enter in a page form field submits with the cursor not in use; All comments and Copy share `byPage`; doc corrections (no `TreeWalker`, `pinAt` folded into `commentOn`, name wording, Esc steps); 36,765 B (min) / 36,419 B (esm) gzip.
+- 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.

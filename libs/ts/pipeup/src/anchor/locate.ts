@@ -40,19 +40,31 @@ const KIND: Record<string, string> = {
 /** Most characters of an element's own words in its label; longer words are cut short with an ellipsis. */
 const SHORT = 40;
 
-/** innerText, where there is layout, keeps separate blocks apart ("Offline first Everything…"). */
+/** What kind of block `el` is ("Paragraph", "Heading", else "Block"), or the author's own name for it. */
+export function kindOf(el: Element): string {
+  return el.getAttribute("data-pipeup-label") || KIND[el.tagName.toUpperCase()] || "Block";
+}
+
+/** Its own words, cut short. innerText, where there is layout, keeps separate blocks apart ("Offline first Everything…"). */
+export function wordsOf(el: Element): string {
+  return clip(
+    normalizeText(
+      el.getAttribute("aria-label") ??
+        el.getAttribute("alt") ??
+        (el as HTMLElement).innerText ??
+        el.textContent ??
+        "",
+    ),
+    SHORT,
+  );
+}
+
+/** "Paragraph · We will launch…": its kind and its own words, or the author's own name for it. */
 export function labelOf(el: Element): string {
   const own = el.getAttribute("data-pipeup-label");
   if (own) return own;
-  const kind = KIND[el.tagName.toUpperCase()] ?? "Block";
-  const text = normalizeText(
-    el.getAttribute("aria-label") ??
-      el.getAttribute("alt") ??
-      (el as HTMLElement).innerText ??
-      el.textContent ??
-      "",
-  );
-  return text ? `${kind} · ${clip(text, SHORT)}` : kind;
+  const text = wordsOf(el);
+  return text ? `${kindOf(el)} · ${text}` : kindOf(el);
 }
 
 export function locate(anchor: Anchor, resolved: Resolved, root: Element): Location {
@@ -77,6 +89,9 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
     const title = el.closest("[data-pipeup-slide]")?.querySelector("h1,h2,h3")?.textContent;
     parts.push(`Slide ${slide}` + (title ? ` "${clip(normalizeText(title))}"` : ""));
   } else {
+    // A view the page reported (a tab, a route) comes first, by its readable name.
+    const view = viewName(anchor.view);
+    if (view) parts.push(view);
     const heading = headingBefore(el, root);
     if (heading) parts.push(`Section "${clip(normalizeText(heading.textContent ?? ""))}"`);
   }
@@ -85,12 +100,24 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
   return { where: parts.join(" › "), element: label, id, quote, pin };
 }
 
+/** A view's readable name: its label, else its values joined with " · " (the slide left out); "" for none. */
+export function viewName(view: Record<string, string> | undefined): string {
+  if (!view) return "";
+  return (
+    view.label ||
+    Object.entries(view)
+      .filter(([k, v]) => v && k !== "slide")
+      .map(([, v]) => v)
+      .join(" · ")
+  );
+}
+
 /** The last h1–h3 that comes before `el` in the page (not `el` itself or one containing it). */
 function headingBefore(el: Element, root: Element): Element | null {
   let found: Element | null = null;
   for (const h of root.querySelectorAll("h1,h2,h3")) {
     if (h === el || h.contains(el)) break;
-    if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) found = h;
+    if (h.compareDocumentPosition(el) & 4 /* FOLLOWING */) found = h;
     else break;
   }
   return found;

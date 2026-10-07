@@ -21,13 +21,14 @@ format may still change; the README says the project is in alpha until 1.0.
 | 0.1 | Headless core (signed comments, anchoring, storage) |
 | 0.2 | First UI (bubbles, column, selection, menu) |
 | **0.3.0** | **First public release**: comment mode, pins, one-button control, All comments, animal identities |
-| 0.4 | Slides, narrow-page drawer, keyboard and touch for blocks |
-| 0.5 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
-| 0.6+ | Shared rooms (relay) and presence |
+| **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
+| 0.5 | Touch and the narrow-page drawer |
+| 0.6 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
+| 0.7 | Sharing add-ons: share, then voice, then live |
 | 1.0 | Stable API and stored format |
 
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.
-- Pre-releases (`0.4.0-beta.1`, `-beta.2`, …) let a milestone be tried for real before it reaches
+- Pre-releases (`0.5.0-beta.1`, `-beta.2`, …) let a milestone be tried for real before it reaches
   everyone. They go to the npm `next` tag and never move `latest`. See
   [the pre-release design](design/prerelease.md).
 - Every release has: a `vX.Y.Z` git tag on GitHub, a CHANGELOG entry, a GitHub Release with the
@@ -144,3 +145,4 @@ are fictional; there are no personal names or addresses.
 - 2026-10-06 — Workflows run on Node 24 actions and a pinned `ubuntu-24.04` runner.
 - 2026-10-06 — The release process spelled out: one-time setup, stable steps, pre-releases (designed, see `design/prerelease.md`), promotion, fixes during a pre-release cycle, checks after a release and known failures.
 - 2026-10-06 — The `next` channel is built: `tools/set-version.sh`, the sync script picks the branch from the version, the site builds per channel, Pages deploys both after a release, `tools/smoke-release.sh`.
+- 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.

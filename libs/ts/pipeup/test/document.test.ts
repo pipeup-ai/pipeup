@@ -164,9 +164,9 @@ describe("PipeupDocument", () => {
 
   it("uses the current name on new comments", async () => {
     const d = await reviewer("Sam", "doc", null);
-    d.name = "Kev";
+    d.name = "Robin";
     await d.comment(ANCHOR, "hi");
-    expect(d.threads()[0]?.root.name).toBe("Kev");
+    expect(d.threads()[0]?.root.name).toBe("Robin");
     expect(() => {
       d.name = "  ";
     }).toThrow(/a name/);

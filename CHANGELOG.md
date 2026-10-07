@@ -7,6 +7,67 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-07
+
+Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
+
+### Added
+- **Slides and hidden views.** Pipeup follows a deck's current slide by itself (slides marked
+  `data-pipeup-slide`, or reveal.js) and shows only that slide's comments; they ease out and in as the slide
+  changes. New comments remember their slide and the page's view.
+- `Pipeup.setViewState({ tab, label })` lets a page report its view (a tab, a route); comments made there show
+  only there. `Pipeup.onReveal(fn)` lets the page go to a view or slide when a reviewer chooses a comment there.
+- `mount({ slides: { current, go } })` for decks that drive Pipeup themselves.
+- All comments groups threads by slide in deck order ("Slide 3 · 2 open", this slide marked) or by view.
+- Copy as Markdown names a non-slide view in each thread's "Where" line.
+- **Keyboard and screen-reader block cursor.** Turning comment mode on from the keyboard (⇧⌥C or Shift+Alt+C,
+  or Start commenting chosen with Enter) puts a cursor on the page: Tab and Shift+Tab move between blocks at one
+  level, ↑ and ↓ go to the block around it or inside it (Modifier+↑/↓ pass through), Enter comments, Shift+Enter
+  opens the comments already there one at a time, and Esc puts the cursor away. The shortcut brings a put-away
+  cursor back, and leaves comment mode when it is in use or nothing is landable. Screen readers hear the kind of
+  block, its place, its comments and its own words; Pipeup writes nothing into the page. After each comment, and
+  after Resolve, focus is back on the same block (or on the Comment control when there is no cursor).
+- The naming bar's **Inside it** and **Pin** (a pin at the block's centre, from any input).
+- Words selected with caret browsing (F7) or a screen reader show the comment icon once the selection settles,
+  and Enter comments on them.
+- Closed threads in the column open from their own button. Screen readers are told what Pipeup does in a hidden
+  live region (separate from the toast).
+- `--pipeup-panel`: while All comments is open, its width is published so a page's fixed bars can move
+  clear of it (the rest of the page is already moved over).
+- `pipeup/package.json` can be imported (it is in the package's `exports`).
+
+### Changed
+- The control's number counts the open threads here; a small dot and its label ("2 here · 5 on other
+  slides") say how many are elsewhere. Its name says when comment mode is on.
+- Choosing a thread on another slide or view in All comments goes there first, then opens it; if it can't, it
+  opens beside the panel with a snapshot.
+- The menu's copy rows are called **Copy as Markdown** and **Copy as Text**.
+- Flipping **Start commenting** leaves the menu open so you see the switch move (chosen from the keyboard, it
+  closes the menu); the menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
+- Your name is edited right in the menu's identity row; Esc cancels and keeps the menu open.
+- Comment mode picks more of a page: sections, articles, navigation, forms, lists, captions, elements
+  with an accessible role, and boxes that lay out several things in a row or grid. No block is outlined while
+  text is selected.
+- The naming bar's expand button is named "Around it" and the bar is a group; bubbles are named after their block
+  ("Comment on Paragraph · …: …") and come in page order.
+- All comments and Copy list comments in the same page order as the bubbles, the column and Shift+Enter, which
+  also orders several comments on one element by where their words start (pins top to bottom).
+- While the block cursor isn't in use, Enter and Space on the page's own controls do what the page does in
+  comment mode (clicks are still only for commenting), and Enter in a page's form field submits the form.
+- `pipeup.min.js` and `pipeup.esm.js` may be up to 36 KB gzip (was 32 KB).
+- Pre-releases have their own channel (the npm `next` tag and a marked copy of the site at `/next/`). The site
+  is deployed after a release is published, so it never points at a version npm doesn't have yet. Release
+  tooling sets the version everywhere and smoke-tests npm, the GitHub Release, the CDNs and the site.
+
+### Fixed
+- A comment being written on a slide or view that has gone is no longer lost or stuck: opening another thread,
+  choosing one in All comments, or commenting on selected words goes back to it.
+- A deck's hook that reports no slide number, or a saved slide that is not a plain slide number, is ignored.
+- Focus is no longer lost after sending a comment, and Esc in a thread opened from a bubble or the column
+  returns there.
+- In forced colours, Pipeup's buttons and the cursor's outline show a Highlight focus ring.
+- The empty draft's hidden Send button no longer takes a Tab stop.
+
 ## [0.3.2] - 2026-10-06
 
 ### Changed
@@ -67,11 +128,12 @@ The first public release.
 
 ### Known limitations
 
-- Slide-aware comments, the narrow-page drawer, and keyboard and touch for blocks come in 0.4.
-- The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
+- Slide-aware comments and keyboard use for blocks come in 0.4; touch and the narrow-page drawer in 0.5.
+- The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/pipeup-ai/pipeup/releases/tag/v0.3.0

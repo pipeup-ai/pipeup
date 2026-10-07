@@ -24,6 +24,16 @@ export function inert(el: HTMLElement, on: boolean): void {
   el.inert = on;
 }
 
+/** Puts `els` in this order before `ref` (at the end without one) in `parent`, moving only what is out of place and keeping focus; true when any moved. */
+export function reorder(parent: Element, els: readonly Element[], ref: Node | null = null): boolean {
+  const a = (parent.getRootNode() as Document | ShadowRoot).activeElement as HTMLElement | null;
+  let moved = false;
+  for (let i = els.length; i--; ref = els[i]!)
+    if (els[i]!.nextSibling !== ref) moved = !!parent.insertBefore(els[i]!, ref);
+  if (moved && a && els.some((el) => el.contains(a))) a.focus({ preventScroll: true });
+  return moved;
+}
+
 export function clip(text: string, n: number): string {
   return text.length > n ? text.slice(0, n - 1) + "…" : text;
 }

@@ -24,6 +24,11 @@ const common = {
   sourcemap: "external",
   minify: true,
   plugins: [minifyStyles],
+  // The UI's internal property names (never public API, never stored or sent) are shortened in the bundles.
+  // `navigate` here is Here.navigate; never use it for the Navigation API (window.navigation.navigate).
+  // Add a name here only if no public type, stored op or DOM API uses a property of that name.
+  mangleProps:
+    /^(showResolved|commenting|listing|reading|draft|quoteAt|readsAt|owns|claim|claimed|focusReply|startDraft|moveDraft|draftEmpty|keepCaret|postDraft|cancelDraft|setCommenting|dismiss|registerDraft|toast|report|pulse|render|frame|layer|pending|actions|visible|hideLabel|setLabel|isEmpty|caret|onSend|onCancel|want|toggleResolved|picking|gutter|fade|room|drawn|grouped|viewport|box|popovers|variant|active|hot|menu|here|holds|navigate|elsewhere|recheck|el|up|level|say|hideHint|back|cursor|away|resume|refocus|backToDraft)$/,
 };
 
 // Classic script for <script> tags (also works from file://): core + UI + auto-mount.

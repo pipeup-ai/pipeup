@@ -19,15 +19,18 @@ export interface Composer {
 /** A writing line: no placeholder, Enter sends, Shift+Enter breaks, Esc cancels, a paper plane appears with text. */
 export function composer(o: ComposerOptions): Composer {
   const input = h("textarea", { class: "input", rows: "1", "aria-label": o.label });
+  // Hidden while the line is empty, and out of Tab's reach.
   const send = h(
     "button",
-    { class: "send", type: "button", "aria-label": "Send", title: "Send" },
+    { class: "send", type: "button", "aria-label": "Send", title: "Send", inert: true },
     icon("send"),
   );
   const element = h("div", { class: "row" }, o.before, input, send);
   let busy = false;
   const sync = () => {
-    send.classList.toggle("show", input.value.trim() !== "");
+    const words = input.value.trim() !== "";
+    send.classList.toggle("show", words);
+    send.inert = !words;
     input.style.height = "auto";
     input.style.height = `${Math.max(27, input.scrollHeight)}px`;
   };
@@ -37,6 +40,7 @@ export function composer(o: ComposerOptions): Composer {
     busy = true;
     try {
       await o.onSend(text);
+      if (send.matches(":focus")) input.focus();
       input.value = "";
       sync();
     } catch {
