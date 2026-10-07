@@ -133,3 +133,4 @@ site's light look), a title and a description. The pre-release copy's previews u
 - 2026-10-07 — The first screen says plainly there is nothing to install and that comments stay in the reviewer's browser until they copy and send them; the footer adds "Stays on your device"; the Markdown page and llms.txt say the same.
 - 2026-10-07 — A fourth showcase scene, Keyboard: no pointer, the block cursor moves through a page while each key and its action show as on-screen captions.
 - 2026-10-07 — The privacy point lives only in the footer: "Stays on your device" with a lock, and a short note on hover, focus or tap ("Private by design…"); the first screen stays as it was.
+- 2026-10-07 — The link-preview image is only the mark and the name, centred so a square thumbnail crop keeps all of it.
