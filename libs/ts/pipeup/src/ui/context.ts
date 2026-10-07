@@ -94,14 +94,22 @@ export interface Ctx {
   draftEmpty(): boolean;
   /** Runs `fn`, then puts focus and the caret back in the open draft as they were. */
   keepCaret(fn: () => void): void;
+  /** Goes back to the open draft: to its slide or view if that has gone, then focus and the caret into it. */
+  backToDraft(): void;
   postDraft(text: string): Promise<void>;
   cancelDraft(): void;
-  /** Turns comment mode on or off; comments show while it is on. */
-  setCommenting(on: boolean): void;
+  /** Turns comment mode on or off; comments show while it is on. `keys`: from the keyboard (the block cursor starts). */
+  setCommenting(on: boolean, keys?: boolean): void;
   /** What a click on the page does: cancels an empty draft (back to one with words), else closes the open thread. */
   dismiss(): void;
   registerDraft(box: DraftBox | null): void;
   toast(message: string): void;
+  /** Tells screen readers (a polite live region), once. */
+  say(text: string): void;
+  /** Comment mode's hint goes, if it is showing. */
+  hideHint(): void;
+  /** Escape's step back: the draft, the open thread, then comment mode's own, then comment mode. */
+  back(): void;
   /** Tells the reviewer what went wrong. */
   report(e: unknown): void;
   pulse(id: string): void;

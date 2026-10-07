@@ -40,6 +40,9 @@ test("the shortcut enters comment mode and Escape leaves; the menu's Comment ite
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
   await expect(page.locator(".toast.show")).toContainText("Esc to finish");
+  // The first Escape puts the keyboard's block cursor away; the next one leaves comment mode.
+  await page.keyboard.press("Escape");
+  await commenting(page);
   await page.keyboard.press("Escape");
   await commenting(page, false);
   await toggleCommenting(page);
@@ -390,6 +393,10 @@ test("the shortcut on a focused menu item enters comment mode and keeps the menu
     "aria-checked",
     "true",
   );
+  // Escape closes the menu first and leaves focus on the control.
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(control(page)).toBeFocused();
 });
 
 test("in comment mode a click outside the open menu only closes it", async ({ page }) => {

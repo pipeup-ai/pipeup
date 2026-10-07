@@ -2,6 +2,7 @@ import { describeRange } from "../anchor/describe";
 import type { Ctx, View } from "./context";
 import { clip, h } from "./dom";
 import { icon } from "./icons";
+import { ACTIVATES } from "./comment-mode";
 import { placeBar } from "./layout";
 
 const NOT_HERE = "[data-pipeup-ignore],input,textarea,select,[contenteditable]:not([contenteditable=false])";
@@ -18,6 +19,8 @@ export function createSelection(ctx: Ctx): View {
   bar.inert = true;
   ctx.layer.append(bar);
   let range: Range | null = null;
+  let settle = 0;
+  let held = false; // a mouse button is down
 
   const allowed = (node: Node | null) => {
     const el = node && (node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement);
@@ -42,7 +45,8 @@ export function createSelection(ctx: Ctx): View {
     bar.classList.remove("show");
   }
 
-  function check(): void {
+  /** `mouse`: the selection was made with the mouse. */
+  function check(mouse = false): void {
     const sel = window.getSelection();
     if (
       !ctx.state.commenting ||
@@ -56,6 +60,8 @@ export function createSelection(ctx: Ctx): View {
       hide();
       return;
     }
+    // Said once for a selection not made with the mouse, not on every extension.
+    if (!range && !mouse) ctx.say("Enter comments on the selected words");
     range = sel.getRangeAt(0).cloneRange();
     position();
     bar.inert = false;
@@ -90,6 +96,8 @@ export function createSelection(ctx: Ctx): View {
 
   // The icon goes as soon as the selection does: a click elsewhere, Escape, or the page clearing it.
   const onSelectionChange = () => {
+    window.clearTimeout(settle);
+    settle = window.setTimeout(() => held || check(), 250);
     if (!range) return;
     const sel = window.getSelection();
     if (!sel || sel.isCollapsed || !sel.toString().trim()) hide();
@@ -97,11 +105,27 @@ export function createSelection(ctx: Ctx): View {
   document.addEventListener("selectionchange", onSelectionChange);
 
   const onUp = (e: Event) => {
-    if (ctx.owns(e)) return;
-    window.setTimeout(check, 0);
+    if (e.type !== "keyup") held = e.type === "mousedown";
+    if (held || ctx.owns(e)) return;
+    window.setTimeout(() => check(e.type === "mouseup"), 0);
   };
+  window.addEventListener("mousedown", onUp, true);
   window.addEventListener("mouseup", onUp, true);
   window.addEventListener("keyup", onUp, true);
+  // While the icon shows, Enter on the page (not in a field, an ignored area or Pipeup) runs it.
+  const onEnter = (e: KeyboardEvent) => {
+    if (
+      e.key !== "Enter" ||
+      !range ||
+      ctx.owns(e) ||
+      (e.target instanceof Element && e.target.closest(`${NOT_HERE},${ACTIVATES}`))
+    )
+      return;
+    e.preventDefault();
+    e.stopPropagation();
+    button.click();
+  };
+  window.addEventListener("keydown", onEnter, true);
 
   return {
     render() {
@@ -111,8 +135,11 @@ export function createSelection(ctx: Ctx): View {
       if (range) position();
     },
     destroy() {
+      window.removeEventListener("mousedown", onUp, true);
       window.removeEventListener("mouseup", onUp, true);
       window.removeEventListener("keyup", onUp, true);
+      window.removeEventListener("keydown", onEnter, true);
+      window.clearTimeout(settle);
       document.removeEventListener("selectionchange", onSelectionChange);
       bar.remove();
     },

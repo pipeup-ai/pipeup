@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from "vitest";
-import { parentBlock, pickBlock, type Look } from "../../src/ui/pick";
+import { blockTree, childBlocks, isBlock, parentBlock, pickBlock, row, type Look } from "../../src/ui/pick";
 
 /**
  * Boxes come from data-box="left,top,width,height"; data-drawn marks elements with a background or border,
@@ -106,5 +106,98 @@ describe("parentBlock", () => {
     expect(parentBlock($("go"), document.body, look)?.id).toBe("hero");
     expect(parentBlock($("img"), document.body, look)?.id).toBe("tiles");
     expect(parentBlock($("hero"), document.body, look)).toBeNull();
+  });
+});
+
+const ids = (blocks: readonly { el: Element }[]) => blocks.map((b) => b.el.id);
+
+describe("isBlock", () => {
+  it("is the rule pickBlock stops at", () => {
+    expect(
+      ["hero", "title", "go", "tiles", "tile", "card", "chart", "img", "inside"].every((id) =>
+        isBlock($(id), look),
+      ),
+    ).toBe(true);
+    expect(["main", "em", "go-text", "mrr", "wrap", "ghost", "big"].some((id) => isBlock($(id), look))).toBe(
+      false,
+    );
+  });
+});
+
+describe("blockTree", () => {
+  it("lists every block in page order with its level; marked wrappers win, ignored areas are left out", () => {
+    const tree = blockTree(document.body, look);
+    expect(ids(tree)).toEqual(["hero", "title", "go", "tiles", "tile", "card", "chart", "inside"]);
+    expect(tree.map((b) => b.level)).toEqual([1, 0, 0, 1, 0, 0, 0, 0]);
+    expect(tree.map((b) => b.up?.el.id ?? null)).toEqual([
+      null,
+      "hero",
+      "hero",
+      null,
+      "tiles",
+      "tiles",
+      "tiles",
+      "tiles",
+    ]);
+  });
+
+  it("folds a same-size wrapper into the block inside it, as parentBlock skips it", () => {
+    document.body.innerHTML = `
+    <section id="s" data-box="0,0,800,300">
+      <div id="card" data-drawn data-box="0,0,400,100"><p id="cp" data-box="0,0,400,100">Same box</p></div>
+      <div id="m" data-pipeup-id="m" data-box="0,120,400,100"><p id="mp" data-box="0,120,400,100">Marked</p></div>
+      <li id="li" data-box="0,240,400,40"><a id="la" data-box="10,250,50,20">Link</a></li>
+    </section>`;
+    const tree = blockTree(document.body, look);
+    expect(ids(tree)).toEqual(["s", "cp", "m", "li", "la"]);
+    expect(tree.map((b) => b.level)).toEqual([2, 0, 0, 1, 0]);
+    expect(parentBlock($("cp"), document.body, look)?.id).toBe("s");
+    expect(pickBlock($("mp"), document.body, look)?.id).toBe("m");
+    expect(ids(blockTree(document.body, look, (el) => el.id !== "li"))).toEqual(["s", "cp", "m"]);
+  });
+});
+
+describe("row and childBlocks", () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+    <section id="s" data-box="0,0,800,300">
+      <h2 id="h" data-box="0,0,400,30">Heading</h2>
+      <div id="card" data-drawn data-box="0,40,400,100"><p id="cp" data-box="10,50,300,20">One</p><p id="cq" data-box="10,80,300,20">Two</p></div>
+      <li id="li" data-box="0,240,400,40"><a id="la" data-box="10,250,50,20">Link</a></li>
+    </section>
+    <p id="after" data-box="0,320,400,20">After</p>`;
+  });
+
+  it("covers the page at every level, each leaf exactly once", () => {
+    const tree = blockTree(document.body, look);
+    expect(ids(row(tree, 0))).toEqual(["h", "cp", "cq", "la", "after"]);
+    expect(ids(row(tree, 1))).toEqual(["h", "card", "li", "after"]);
+    expect(ids(row(tree, 2))).toEqual(["s", "after"]);
+    for (const k of [0, 1, 2, 3]) {
+      const covered = tree
+        .filter((b) => b.level === 0)
+        .map((leaf) => row(tree, k).filter((b) => b.el.contains(leaf.el)).length);
+      expect(covered.every((n) => n === 1)).toBe(true);
+    }
+  });
+
+  it("finds the blocks directly inside a block", () => {
+    const tree = blockTree(document.body, look);
+    expect(
+      ids(
+        childBlocks(
+          tree,
+          tree.find((b) => b.el.id === "s")!,
+        ),
+      ),
+    ).toEqual(["h", "card", "li"]);
+    expect(
+      ids(
+        childBlocks(
+          tree,
+          tree.find((b) => b.el.id === "cp")!,
+        ),
+      ),
+    ).toEqual([]);
   });
 });

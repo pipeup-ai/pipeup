@@ -54,7 +54,10 @@ Choose the layout by page type, then follow the Steps for markup.
     table, chart, list, section, form, anything with an ARIA role), a card with its own background or
     border, or a flex/grid box holding several things, and skips containers covering most of the
     window. Clear blocks with ids make this precise. Clicking a block opens its comment box at
-    once; the bar's expand icon moves the box to the block around it. Option-click drops a pin.
+    once; the bar's Around it and Inside it move the box to the block around it or inside it, and
+    Pin makes it a pin at the block's centre. Option-click drops a pin exactly there. From the
+    keyboard the shortcut starts a block cursor (Tab between blocks, ↑ ↓ to change level, Enter to
+    comment) that screen readers can follow: real headings, paragraphs and labelled images read well.
 - **Deck** (slides):
   - One element per slide, marked with `data-pipeup-slide` (Step 5); one slide visible at a time.
   - Mark the slide controls `data-pipeup-ignore` (Step 6).
@@ -73,7 +76,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.3/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -154,7 +157,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.3/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.

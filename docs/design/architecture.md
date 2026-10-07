@@ -248,9 +248,11 @@ examples; the document page has its own gutter prototype.
 - **Resolve time budget.** Anchors resolve in passes of at most 40 ms; threads that run out of
   budget get only the exact match first and are shown as unplaced (not lost) until a deferred
   pass (250 ms later) gives them the fuzzy match, so they never flash as lost.
-- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 33 KB
-  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 33 KB) and
-  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B and again to 33 KB (min, esm) for 0.4, see §11. `scripts/size.mjs` enforces the budgets.
+- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 36 KB
+  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 36 KB) and
+  `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B, to 33 KB (min, esm) for 0.4 part 1
+  and to 36 KB for 0.4 part 2 (keyboard, touch and the drawer), see §11. `scripts/size.mjs` enforces the
+  budgets.
 
 ### Motion tokens (starting values)
 
@@ -536,6 +538,50 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
   esbuild `mangleProps` for internal UI property names (list in `scripts/build.mjs`): −0.43 KB gzip. Budgets
   33 KB (min, esm), 12 KB (core).
 
+### 0.4 part 2, step 1 — keyboard and screen-reader cursor (built)
+
+The design is [keyboard.md](keyboard.md). In short:
+
+- *The block cursor* is the comment-mode outline plus two focus markers in the layer (`.km`, `tabindex=-1`,
+  `role=button`) that take turns, so each move is a real focus change. A marker's name is "<kind>, <n> of
+  <m>, has <c> comment(s)" plus the block's own words through `ariaLabelledByElements` (short blocks) or
+  `ariaDescribedByElements` (long ones); nothing is written to the page.
+- *Starts* only when comment mode is turned on from the keyboard (`setCommenting(on, keys)`); lands on the
+  focused element's block or the first block in view. Tab/Shift+Tab move through a **row**: the blocks at the
+  current level or below whose parent is above it (`blockTree`, `row` in `pick.ts`, with `isBlock` pulled out
+  of `pickBlock`). ↑/↓ are parent/child, only while a marker has focus; the naming bar gains Inside it and Pin
+  (`commentOn(el, point)` at the centre) and becomes `role=group`.
+- *Esc* on a marker runs the app's step (`ctx.back()`): open draft, open thread, chosen block, then put the
+  cursor away with focus returned where it was. Moving the cursor off the draft's block lets go of it, so the
+  draft waits there and Esc and ↑ are the cursor's. Keys the marker takes (Tab, ↑, ↓, Enter, Space, Esc) are stopped there, so
+  bubble-phase page listeners such as reveal.js's never see them; ←/→ always pass.
+- *After a comment* focus returns to the marker on the same block (`CommentMode.cursor()`/`refocus()`);
+  without the cursor, the sent thread's reply line gets focus (fixes `busy` counting the draft's own words).
+  Bubbles keep page order and name their block; closed column threads get an `.opn` button; Esc in a thread
+  returns to its opener by id and kind.
+- *Selections* show their icon once `selectionchange` settles (250 ms), and Enter comments on them.
+  *Announcements* go to a hidden polite region (`ctx.say`), separate from the toast; the hint follows the
+  input used and the control's name says comment mode is on.
+- *Shift+Enter* on a marker opens the block's threads in page order, one per press; the shortcut brings a
+  put-away cursor back (`modeView.away()`/`resume()`); with the cursor not in use, Enter/Space on a page
+  control and the click it makes (`detail === 0` on the same target) pass to the page, as do Enter in a
+  field with a form and the click it makes on that form's submit button.
+- *Size*: budgets 36 KB (min, esm), 12 KB (core); Step 1 measured +3,047 B (min) and +3,077 B (esm)
+  gzip (36,806 B and 36,470 B; core 8,875 B), over the 1.8 KB it was to be held to; the design's cut list saves
+  only 92 B in all, so it was not applied. Step 2 starts with 58 B (min) of headroom.
+- *As built*: `blockTree` is one recursive pass over `children` (not a `TreeWalker`) that never lands on
+  removed blocks; `order.ts` holds the page order shared by the cursor, bubbles and the column (`nodeOf`,
+  `byPage`), and `dom.ts` `reorder` moves elements only when their order changed. New internal names in
+  `mangleProps`: `el`, `up`, `level`, `say`, `hideHint`, `back`, `cursor`, `away`, `resume`, `refocus`,
+  `backToDraft`. The window sees no keyup of a key the cursor took; modifier+↑/↓ pass through; the shortcut
+  leaves the menu open (Esc closes it first) and, with nothing landable, leaves comment mode. Resolve returns
+  focus to the cursor, or to the Comment control when there is none; Send keeps focus in the reply line. A
+  paused mouse drag is not a settled selection; Enter on a focused page control wins over a settled selection.
+  Chrome keeps its sequential-focus starting point on a marker that is blurred, so after Esc puts the cursor
+  away the next Tab continues from where the cursor was (Pipeup's corner control first, then the page). A
+  selection made while the cursor is out puts it away, so the selection's own icon shows. All comments and
+  Copy sort with `byPage` too, so every list of comments has the same page order.
+
 ---
 
 ## Change log
@@ -554,3 +600,7 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
 - 2026-10-07 — §11: room for All comments is also published as `--pipeup-panel`, for a page's fixed elements.
 - 2026-10-07 — §11: 0.4 part 1 built — `ui/here.ts`, here/elsewhere sorting in the app, the control's dot and label, All comments by slide or view, navigate then open; size pass (short CSS tokens, `mangleProps`); budgets 33 KB.
 - 2026-10-07 — §2: bundle budgets read 33 KB (min, esm) for 0.4, as in `scripts/size.mjs`.
+- 2026-10-07 — §11: 0.4 part 2, step 1 designed — keyboard and screen-reader block cursor ([keyboard.md](keyboard.md)); budgets 36 KB (min, esm) for part 2, 12 KB (core).
+- 2026-10-07 — §11: keyboard follow-ups — Shift+Enter opens a block's threads, the shortcut brings the cursor back, page controls take Enter/Space with the cursor away.
+- 2026-10-07 — §11: 0.4 part 2, step 1 built — the block cursor as designed in [keyboard.md](keyboard.md); +3.05 KB gzip (over the 1.8 KB target, within the 36 KB budgets); "As built" notes.
+- 2026-10-07 — §11: keyboard final-review fixes — the cursor lets go of a draft's block when it moves off it; Enter in a page form field submits with the cursor not in use; All comments and Copy share `byPage`; doc corrections (no `TreeWalker`, `pinAt` folded into `commentOn`, name wording, Esc steps); 36,765 B (min) / 36,419 B (esm) gzip.

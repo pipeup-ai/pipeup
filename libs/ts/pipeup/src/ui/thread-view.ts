@@ -25,7 +25,7 @@ export interface ThreadViewOptions {
   now?: () => number;
 }
 
-const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
+export const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
 
 export interface ThreadView {
   readonly element: HTMLElement;

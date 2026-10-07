@@ -333,7 +333,13 @@ export function createLauncher(ctx: Ctx): View {
    * eases in on hover and keyboard focus, and is the row's description for screen readers. A switch row shows
    * its state with a switch.
    */
-  function row(lead: Node, label: string, run: () => void, sw = false, ...end: Node[]): HTMLButtonElement {
+  function row(
+    lead: Node,
+    label: string,
+    run: (e: MouseEvent) => void,
+    sw = false,
+    ...end: Node[]
+  ): HTMLButtonElement {
     const b = h(
       "button",
       // A switch row is a menu's own checkbox item (valid inside role="menu"), drawn as a switch.
@@ -346,7 +352,7 @@ export function createLauncher(ctx: Ctx): View {
     );
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      run();
+      run(e);
     });
     return b;
   }
@@ -386,11 +392,17 @@ export function createLauncher(ctx: Ctx): View {
     count,
   );
   // Nearest the button: comment mode, with its shortcut and a switch that shows it is on. The menu stays open
-  // so the switch is seen to move.
+  // so the switch is seen to move, except that turning it on from the keyboard (no pointer, so detail is 0)
+  // closes the menu as the switch moves and puts the block cursor on the page: the cursor takes focus first,
+  // so closing the menu never takes it back.
   const startRow = row(
     icon("comment"),
     "Start commenting",
-    () => ctx.setCommenting(!ctx.state.commenting),
+    (e) => {
+      const keys = !ctx.state.commenting && e.detail === 0;
+      ctx.setCommenting(!ctx.state.commenting, keys);
+      if (keys) setMenu(false);
+    },
     true,
     h("span", { class: "kc", "aria-hidden": "true" }, SHORTCUT_LABEL),
   );
@@ -555,7 +567,7 @@ export function createLauncher(ctx: Ctx): View {
         ? `${n} here · ${m} ${ctx.here.slide() !== null ? "on other slides" : "in other views"}`
         : "";
       btn.classList.toggle("else", m > 0);
-      const aria = label ? `Comment, ${label}` : n ? `Comment, ${n} open` : "Comment";
+      const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}`;
       if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
       if (tipWords.data !== (label || "Comment")) tipWords.data = label || "Comment";
       btn.classList.toggle("on", ctx.state.commenting);

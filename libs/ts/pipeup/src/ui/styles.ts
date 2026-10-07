@@ -120,6 +120,8 @@ transition:transform var(--mv) var(--eio),box-shadow var(--in) var(--eo),opacity
 .th.lost .ctx{white-space:normal}
 .th.wait{opacity:0!important;pointer-events:none}
 .th.out{opacity:0!important;pointer-events:none;transition:opacity var(--out) var(--ei)}
+/* A closed thread's button has no box of its own: the thread shows its focus. */
+.th:has(.opn:focus-visible){box-shadow:inset 2px 0 0 var(--ln);outline:2px solid var(--pu-accent);outline-offset:2px;border-radius:4px}
 
 /* Selection bar. */
 .selbar{position:fixed;display:flex;border-radius:10px;padding:2px;opacity:0;transform:translateY(4px);pointer-events:none;
@@ -130,10 +132,15 @@ transition:opacity var(--in) var(--eo),transform .3s var(--eo)}
 
 /* Comment mode's outline: glides between blocks; solid accent once chosen. */
 .pick{position:fixed;left:0;top:0;border:2px solid color-mix(in srgb,var(--pu-accent) 70%,transparent);background:color-mix(in srgb,var(--pu-accent) 6%,transparent);
-border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) var(--ei),border-color var(--out) var(--ei)}
+border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) var(--ei),border-color var(--out) var(--ei),border-width var(--out) var(--ei),box-shadow var(--out) var(--ei)}
 .pick.show{opacity:1;transition-duration:var(--in);transition-timing-function:var(--eo)}
 .pick.show.glide{transition-property:all;transition-duration:var(--mv);transition-timing-function:var(--eio)}
 .pick.on{border-color:var(--pu-accent)}
+/* The block cursor: its focus is drawn on the outline (3px accent with a surface halo, 3:1 on any page); the
+markers that hold focus are invisible. */
+.pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}
+.km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
 white-space:nowrap;background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh);pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
@@ -217,6 +224,11 @@ transition:background-color .2s var(--eo)}
 .toast{position:fixed;left:50%;bottom:28px;border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translate(-50%,6px);
 transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (forced-colors: active){
+.pick.kf{border:3px solid Highlight}
+.layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button):focus-visible{outline:2px solid Highlight}
+}
 
 @media (prefers-reduced-motion: reduce){
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.ttip,.tt,.toast{transform:none!important}

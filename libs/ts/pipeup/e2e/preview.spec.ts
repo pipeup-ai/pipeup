@@ -118,8 +118,8 @@ test("Escape, a click elsewhere, or opening another thread closes the open one",
   await showComments(page);
   await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
   await seedElement(page, "[data-pipeup-id=tile-mrr]", "Use a fake number");
-  const cta = page.getByRole("button", { name: "Comment: Match the nav?" });
-  const tile = page.getByRole("button", { name: "Comment: Use a fake number" });
+  const cta = page.getByRole("button", { name: "Comment on Link · Start free trial: Match the nav?" });
+  const tile = page.getByRole("button", { name: "Comment on MRR tile: Use a fake number" });
   await cta.click();
   await page.keyboard.press("Escape");
   await expect(page.locator(".pop.show")).toHaveCount(0);

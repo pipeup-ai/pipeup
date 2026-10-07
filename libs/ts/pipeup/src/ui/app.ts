@@ -8,9 +8,10 @@ import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
 import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
 import { createBubbles } from "./bubbles";
-import { createCommentMode, type CommentMode } from "./comment-mode";
+import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
 import { narrow, PANEL } from "./layout";
+import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
 import { createLauncher } from "./launcher";
@@ -27,6 +28,8 @@ const DEFERRED_RESOLVE_MS = 250;
 const MUTATION_DEBOUNCE_MS = 120;
 const TOAST_MS = 2400;
 const HINT_MS = 4000;
+/** The keyboard's hint is read, then used: it stays longer (until the cursor first moves or a draft opens). */
+const KEYS_HINT_MS = 10000;
 
 export interface AppOptions {
   doc: PipeupDocument;
@@ -82,7 +85,9 @@ export function startApp(o: AppOptions): App {
     menu: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
-  host.layer.append(toastEl);
+  // What screen readers are told, separate from the toast: visually hidden, never inert.
+  const sr = h("div", { class: "sr", "aria-live": "polite" });
+  host.layer.append(toastEl, sr);
   let openBox: DraftBox | null = null;
   let views: View[] = [];
   let modeView: CommentMode | null = null;
@@ -103,11 +108,15 @@ export function startApp(o: AppOptions): App {
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS. */
   let hint = false;
+  let sayRaf = 0;
 
-  function toast(text: string, ms = TOAST_MS): void {
+  /** `isHint`: comment mode's hint, which goes early; `quiet`: screen readers hear it some other way. */
+  function toast(text: string, ms = TOAST_MS, isHint = false, quiet = false): void {
     if (destroyed) return;
-    hint = ms === HINT_MS;
+    hint = isHint;
     toastEl.textContent = text;
+    if (quiet) toastEl.setAttribute("aria-hidden", "true");
+    else toastEl.removeAttribute("aria-hidden");
     toastEl.classList.add("show");
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => toastEl.classList.remove("show"), ms);
@@ -118,6 +127,13 @@ export function startApp(o: AppOptions): App {
     hint = false;
     window.clearTimeout(toastTimer);
     toastEl.classList.remove("show");
+  }
+
+  /** Tells screen readers, once: emptied now and written on the next frame, so the same words can be said again. */
+  function say(text: string): void {
+    sr.textContent = "";
+    cancelAnimationFrame(sayRaf);
+    sayRaf = requestAnimationFrame(() => (sr.textContent = text));
   }
 
   /** Tells the reviewer. */
@@ -136,6 +152,14 @@ export function startApp(o: AppOptions): App {
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
   });
 
+  /** A resolved thread leaves: focus goes to the cursor, else the Comment control. */
+  const gone = (id: string): boolean => {
+    if (state.active !== id || state.showResolved) return false;
+    if (modeView?.cursor()) modeView.refocus();
+    else host.layer.querySelector<HTMLElement>(".launch .mode")?.focus({ preventScroll: true });
+    return true;
+  };
+
   const actions: ThreadActions = {
     reply: async (parentId, text) => {
       try {
@@ -148,11 +172,11 @@ export function startApp(o: AppOptions): App {
     resolve: async (id) => {
       try {
         await o.doc.resolve(id);
-        if (state.active === id && !state.showResolved) state.active = null;
+        if (gone(id)) state.active = null;
         toast("Resolved · Show resolved brings it back");
       } catch (e) {
         if (e instanceof UnsavedChangeError) {
-          if (state.active === id && !state.showResolved) state.active = null;
+          if (gone(id)) state.active = null;
           toast(`Resolved · ${UNSAVED_NOTE}`);
         } else toast(message(e));
       }
@@ -167,7 +191,9 @@ export function startApp(o: AppOptions): App {
     },
     close: () => {
       open(null);
-      if (back) row(back)?.focus({ preventScroll: true });
+      const opener = back && host.layer.querySelector<HTMLElement>(back);
+      if (opener) opener.focus({ preventScroll: true });
+      else modeView?.refocus();
       back = "";
     },
     copy: (id) => {
@@ -184,17 +210,6 @@ export function startApp(o: AppOptions): App {
       }
     },
   };
-
-  function inPageOrder(threads: readonly Thread[]): Thread[] {
-    const el = (t: Thread) => resolved.get(t.id)?.element ?? null;
-    return [...threads].sort((a, b) => {
-      const ea = el(a);
-      const eb = el(b);
-      if (!ea || !eb) return ea ? -1 : eb ? 1 : 0;
-      if (ea === eb) return 0;
-      return ea.compareDocumentPosition(eb) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
-    });
-  }
 
   const menu: MenuActions = {
     copyAll: async (as) => {
@@ -228,7 +243,7 @@ export function startApp(o: AppOptions): App {
       }
     },
     name: () => o.doc.name,
-    all: () => inPageOrder(o.doc.threads()).map(exportItem),
+    all: () => [...o.doc.threads()].sort(byPage(ctx)).map(exportItem),
   };
 
   const ctx: Ctx = {
@@ -269,6 +284,12 @@ export function startApp(o: AppOptions): App {
       fn();
       restore?.();
     },
+    backToDraft: () => {
+      const v = state.draft?.anchor.view;
+      const restore = openBox?.caret();
+      // Its slide or view may have gone: back there first (the box is inert while away), then into the box.
+      void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
+    },
     postDraft,
     cancelDraft,
     setCommenting,
@@ -277,9 +298,12 @@ export function startApp(o: AppOptions): App {
       openBox = box;
     },
     toast,
+    say,
+    hideHint,
     report,
     pulse,
     render,
+    back: stepBack,
   };
 
   function resolveAll(only?: Set<string>): void {
@@ -418,23 +442,30 @@ export function startApp(o: AppOptions): App {
     modeView?.render(threads);
   }
 
-  /** The panel row (by thread; the panel rebuilds its rows) a thread was chosen from: Esc in its reply line gives focus back there. */
+  /**
+   * What opened the thread, found again by kind and thread (the panel rebuilds its rows): an All comments row, a
+   * bubble or a column thread's button. Esc in the reply line gives focus back there.
+   */
   let back = "";
-  const row = (id: string) => host.layer.querySelector<HTMLElement>(`.all .mi[data-thread="${id}"]`);
+  const focusedIn = () => (host.layer.getRootNode() as ShadowRoot).activeElement;
   const FIELD = "input,textarea,select,[contenteditable]:not([contenteditable=false])";
   /** The reader has words in a Pipeup line, or is in a field of the page. */
   const writing = () => {
-    const a = (host.layer.getRootNode() as ShadowRoot).activeElement;
+    const a = focusedIn();
     return (a instanceof HTMLTextAreaElement && a.value !== "") || !!document.activeElement?.matches(FIELD);
   };
 
-  /** Opening a thread puts the cursor in its reply line, synchronously (no timer), unless the reader is writing. */
-  function focusReply(id: string, busy = writing()): void {
+  /**
+   * Opening a thread puts the cursor in its reply line, synchronously (no timer), unless the reader is writing.
+   * `from`: what had focus when it was opened.
+   */
+  function focusReply(id: string, busy = writing(), from = focusedIn()): void {
     const line = [...host.layer.querySelectorAll<HTMLElement>(`[data-thread="${id}"] .rbox textarea`)].find(
       (l) => !l.closest("[inert]"),
     );
+    const t = from?.getAttribute("data-thread");
+    back = t ? `.${from!.classList[0]}[data-thread="${t}"]` : "";
     if (busy || !line) return;
-    back = (host.layer.getRootNode() as ShadowRoot).activeElement?.getAttribute("data-thread") ?? "";
     line.focus({ preventScroll: true });
   }
 
@@ -446,11 +477,14 @@ export function startApp(o: AppOptions): App {
     return true;
   }
 
-  function open(id: string | null): void {
+  /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
+  function open(id: string | null, sent = false): void {
     // Words being written are never dropped: another thread waits (comment mode follows the same rule).
     if (id && held()) return;
     if (state.active === id && !state.draft) return id ? focusReply(id) : undefined;
-    const busy = writing();
+    const busy = !sent && writing();
+    // Read before the views change: a column thread's button goes inert as its thread opens.
+    const from = focusedIn();
     // A thread read from All comments on a narrow screen has closed: the comments go with it.
     if (!id) state.reading = false;
     state.active = id;
@@ -468,7 +502,9 @@ export function startApp(o: AppOptions): App {
         line.dispatchEvent(new Event("input", { bubbles: true }));
       }
       unsent.delete(id);
-      focusReply(id, busy);
+      // With the block cursor in use, focus goes back to it, on the same block, instead of the reply line.
+      if (sent && modeView?.cursor()) modeView.refocus();
+      else focusReply(id, busy, from);
     }
   }
 
@@ -501,24 +537,40 @@ export function startApp(o: AppOptions): App {
     render();
   }
 
-  function setCommenting(on: boolean): void {
+  function setCommenting(on: boolean, keys = false): void {
     if (state.commenting === on) return;
     state.commenting = on;
     sheet.picking(on);
     if (on) {
       state.active = null;
       state.listing = false;
-      toast(
-        `Click anything to comment · Option-click (Alt-click) to pin · ${SHORTCUT_LABEL} or Esc to finish`,
-        HINT_MS,
-      );
       modeView = createCommentMode(ctx);
     } else {
       hideHint();
       modeView?.destroy();
       modeView = null;
+      say("Comment mode off");
     }
     render();
+    if (!modeView) return;
+    // From the keyboard the block cursor starts once the comments show (its name counts them).
+    if (keys) modeView.resume();
+    if (!keys)
+      toast(
+        `Click anything to comment · Option-click (Alt-click) to pin · ${SHORTCUT_LABEL} or Esc to finish`,
+        HINT_MS,
+        true,
+      );
+    else if (modeView.cursor()) toast(KEYS_HINT, KEYS_HINT_MS, true, true);
+    else toast("Nothing here to comment on");
+  }
+
+  /** Escape's step: the draft, then the open thread, then comment mode's own (a chosen block, the cursor), then comment mode. */
+  function stepBack(): void {
+    // A draft with words on a slide that is gone can't be seen: Escape leaves it and steps back past it.
+    if (state.draft && (here.holds(state.draft.anchor.view) || ctx.draftEmpty())) cancelDraft();
+    else if (state.active) open(null);
+    else if (modeView && !modeView.back()) setCommenting(false);
   }
 
   function dismiss(): void {
@@ -550,12 +602,12 @@ export function startApp(o: AppOptions): App {
       const id = await o.doc.comment(d.anchor, text);
       state.draft = null;
       resolveAll(new Set([id]));
-      open(id);
+      open(id, true);
     } catch (e) {
       if (e instanceof UnsavedChangeError) {
         state.draft = null;
         resolveAll(new Set([e.id]));
-        open(e.id);
+        open(e.id, true);
         toast(UNSAVED_NOTE);
         return;
       }
@@ -594,21 +646,18 @@ export function startApp(o: AppOptions): App {
     const t = e.composedPath()[0];
     return t instanceof Element && t.closest(FIELD) !== null;
   };
-  // Escape steps back one level at a time: the draft, then the open thread, then the chosen block, then
-  // comment mode. The menu (capture phase) and Pipeup's own fields stop Escape before it gets here.
+  // Escape steps back one level at a time (stepBack). The menu (capture phase), Pipeup's own fields and the
+  // block cursor stop Escape before it gets here.
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      // A draft with words on a slide that is gone can't be seen: Escape leaves it and steps back past it.
-      if (state.draft && (here.holds(state.draft.anchor.view) || ctx.draftEmpty())) cancelDraft();
-      else if (state.active) open(null);
-      else if (modeView && !modeView.back()) setCommenting(false);
-      return;
-    }
-    // Shift+Option+C (Shift+Alt+C) toggles comment mode (matched on the key's code: Option changes its
-    // character on a Mac), unless the page's own shortcut (defaultPrevented) or an IME already took it.
+    if (e.key === "Escape") return stepBack();
+    // Shift+Option+C (Shift+Alt+C) (matched on the key's code: Option changes its character on a Mac), unless
+    // the page's own shortcut (defaultPrevented) or an IME already took it: comment mode off → on with the
+    // block cursor; the cursor put away → back; otherwise off.
     if (isShortcut(e) && !e.isComposing && !e.defaultPrevented && !typing(e)) {
       e.preventDefault();
-      setCommenting(!state.commenting);
+      // Put away with nothing left to land on: the shortcut still turns comment mode off.
+      if (modeView?.away() && modeView.resume()) return;
+      setCommenting(!state.commenting, true);
     }
   };
   const onClick = (e: MouseEvent) => {
@@ -662,6 +711,7 @@ export function startApp(o: AppOptions): App {
       destroyed = true;
       cancelAnimationFrame(raf);
       cancelAnimationFrame(fadeRaf);
+      cancelAnimationFrame(sayRaf);
       here.destroy();
       window.clearTimeout(reflowTimer);
       window.clearTimeout(toastTimer);

@@ -70,7 +70,8 @@ test("dropping a feedback file on the page does nothing", async ({ browser }) =>
   // Nothing listens for drops any more; flushing proves no import was queued.
   await page.evaluate(() => (window as any).pu.flush());
   await expect(page.locator(".th")).toHaveCount(0);
-  await expect(page.locator(".toast.show")).toHaveCount(0);
+  // The only toast is still comment mode's keyboard hint.
+  await expect(page.locator(".toast.show")).toContainText("Tab moves between blocks");
   expect(await page.evaluate(() => (window as any).pu.document.threads().length)).toBe(0);
 });
 

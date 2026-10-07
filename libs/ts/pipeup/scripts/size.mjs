@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
-const BUDGETS = { "dist/pipeup.min.js": 33 * 1024, "dist/pipeup.esm.js": 33 * 1024, "dist/pipeup.core.js": 12 * 1024 };
+const BUDGETS = { "dist/pipeup.min.js": 36 * 1024, "dist/pipeup.esm.js": 36 * 1024, "dist/pipeup.core.js": 12 * 1024 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 let over = false;
 for (const [file, limit] of Object.entries(BUDGETS)) {

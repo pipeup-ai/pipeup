@@ -7,6 +7,50 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.0-beta.3] - 2026-10-07
+
+### Added
+- **Keyboard and screen-reader block cursor.** Turning comment mode on from the keyboard (⇧⌥C or Shift+Alt+C,
+  or Start commenting chosen with Enter) puts a cursor on the page: Tab and Shift+Tab move between blocks at one
+  level, ↑ and ↓ go to the block around it or inside it (Modifier+↑/↓ pass through), Enter comments, Shift+Enter
+  opens the comments already there one at a time, and Esc puts the cursor away. The shortcut brings a put-away
+  cursor back, and leaves comment mode when it is in use or nothing is landable (it leaves the menu open; Esc
+  closes it first). Screen readers hear the kind of block, its place, its comments and its own words; Pipeup
+  writes nothing into the page. Tab, ↑ and ↓ never land on removed blocks; the page never hears the keys the
+  cursor took, including their keyup. After each comment, and after Resolve, focus is back on the same block
+  (or on the Comment control when there is no cursor).
+- The naming bar's **Inside it** and **Pin** (a pin at the block's centre, from any input).
+- Words selected with caret browsing (F7) or a screen reader show the comment icon once the selection settles
+  (a paused mouse drag does not count), and Enter comments on them. Selecting words while the cursor is out puts
+  it away.
+- Closed threads in the column open from their own button. Screen readers are told what Pipeup does in a hidden
+  live region (separate from the toast).
+- With the block cursor not in use, Enter in a page's form field submits the form, as the page expects, and
+  opens no comment box.
+
+### Changed
+- `pipeup.min.js` and `pipeup.esm.js` may be up to 36 KB gzip (0.4 part 2: keyboard, touch and the narrow-page
+  drawer).
+- The naming bar's expand button is named "Around it" and the bar is a group; bubbles are named after their block
+  ("Comment on Paragraph · …: …") and come in page order; the control's name says when comment mode is on.
+- Start commenting chosen from the keyboard closes the menu.
+- All comments and Copy list comments in the same page order as the bubbles, the column and Shift+Enter, which
+  also orders several comments on one element by where their words start (pins top to bottom).
+- While the block cursor isn't in use, Enter and Space on the page's own controls do what the page does in
+  comment mode (clicks are still only for commenting); Enter on a focused page control wins over a settled
+  selection.
+
+### Fixed
+- Focus is no longer lost after sending a comment: with no block cursor it goes to the new thread's reply line,
+  else back to the block cursor; the Send button keeps focus in the reply line. Esc in a thread opened from a bubble or a column thread
+  returns there.
+- Moving the block cursor off a comment box's block lets go of it: the box waits with its words, ↑ moves the
+  cursor (not the box), Esc puts the cursor away, and Enter returns to the box.
+- A key's release lost on the way (focus left the window) no longer hides a later release from the page.
+- In forced colours the comment box's "add your name" link shows its focus.
+- The empty draft's hidden Send button no longer takes a Tab stop.
+- In forced colours, Pipeup's buttons and the cursor's outline show a Highlight focus ring.
+
 ## [0.4.0-beta.2] - 2026-10-07
 
 ### Added
@@ -125,7 +169,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.3...HEAD
+[0.4.0-beta.3]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.0...v0.4.0-beta.1
 [0.4.0-beta.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0-beta.0

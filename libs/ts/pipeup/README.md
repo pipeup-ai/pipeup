@@ -2,13 +2,13 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.4.0-beta.2).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.4.0-beta.3).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
 local storage, sealed feedback files, copy for AI, and the UI: comments in a column beside documents or as
 bubbles, comment mode for blocks and pins on any page, and an opt-in reserved gutter. It is one file
-(at most 33 KB gzip) so it works from `file://` with nothing else to load.
+(at most 36 KB gzip) so it works from `file://` with nothing else to load.
 
 Nobody has to give a name. Each reviewer is an animal in a colour ("Red Fox": 5 animals, 10 colours),
 picked from their identity so it is the same on every page, shown as a squircle avatar (the animal drawn in its
@@ -21,7 +21,7 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.3/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value
@@ -69,20 +69,28 @@ has nowhere to show); the panel closes with its close button, Esc or a click on 
 fixes to the window don't move over with the page.
 
 Comment mode (press **Shift+Alt+C**, or **⇧⌥C** on a Mac, or switch on Start commenting in the control's menu) lets reviewers comment on blocks and drop pins
-(Option-click, or Alt-click) on any page. While it is on, clicks, submits, and Enter or Space on the page's own controls do
+(Option-click, Alt-click, or the naming bar's Pin) on any page. While it is on, clicks and submits on the page do
 nothing, and selecting text offers a comment icon, clicking a highlight opens its thread, and
-clicking a block opens its comment box at once (a bar names the block, and its expand icon moves the box to the
-block around it, keeping what you typed). Esc steps back: the box and its block together, then comment mode (or an open
+clicking a block opens its comment box at once (a bar names the block; Around it and Inside it move the box to the
+block around it or inside it, keeping what you typed, and Pin makes it a pin at the block's centre). Esc steps back: the box and its block together, then comment mode (or an open
 comment, then comment mode). It is a quiet page, not a
 sandbox:
 
 - CSS `:hover` styles still apply.
 - A page's own capture-phase listeners on `window`, added before Pipeup, can still hear events.
-- Esc also reaches the page's own key handlers.
+- Esc also reaches the page's own key handlers, except while the block cursor has focus.
 - The browser's own right-click menu is switched off in comment mode.
 
-Not built yet: using comment mode from the keyboard (Tab between blocks, ↑ parent, ↓ child, Enter to
-comment). Blocks and pins are mouse-only for now.
+From the keyboard, comment mode started with the shortcut (or Start commenting chosen with Enter) puts a **block
+cursor** on the block that has focus, or the first block in view. Tab and Shift+Tab move between blocks at one
+level, ↑ goes to the block around it and ↓ to a block inside it, Enter comments, Shift+Enter opens the comments
+already there one at a time, and Esc puts the cursor away (focus goes back where it was; the shortcut brings it
+back), then leaves comment mode. Screen readers hear "Paragraph, 3 of 12, has 1 comment" and the block's own words;
+Pipeup never writes `tabindex`, ids or ARIA into the page. After each comment, focus is back on the same block.
+While the cursor is not in use, Enter and Space on the page's own controls do what the page expects, and Enter in
+a form field submits the form. Words
+selected with caret browsing (F7) or a screen reader show the comment icon once the selection settles, and Enter
+comments on them.
 
 `pipeup/core` is the headless core only, for tools that never draw UI:
 

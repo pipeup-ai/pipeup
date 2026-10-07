@@ -1,5 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
-import { fixture, open, savedViews, selectWords, showComments } from "./helpers";
+import {
+  fixture,
+  leaveReply,
+  open,
+  savedViews,
+  selectWords,
+  showComments,
+  toggleCommenting,
+} from "./helpers";
 
 /** Comment mode is on: clicks a block and writes a comment on it. */
 async function commentOn(page: Page, selector: string, text: string): Promise<void> {
@@ -16,6 +24,8 @@ test("on a class-toggled deck, a new comment saves the slide showing, and the de
   await open(page, "deck.html");
   await showComments(page);
   await commentOn(page, "#s1box", "Title box");
+  // Sending leaves the cursor in the new thread's reply line, whose keys are its own.
+  await leaveReply(page);
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("#count")).toHaveText("2 / 3");
   await commentOn(page, "[data-pipeup-id=s2-q4]", "Label the Q4 bar");
@@ -25,7 +35,7 @@ test("on a class-toggled deck, a new comment saves the slide showing, and the de
 test("on a scrolling deck, the slide covering most of the window is the one saved", async ({ page }) => {
   await open(page, "scroll-deck.html");
   await page.evaluate(() => document.querySelector("#s3p")!.scrollIntoView({ block: "center" }));
-  await showComments(page);
+  await toggleCommenting(page);
   await selectWords(page, "#s3p", "third slide");
   await page.locator(".selbar.show button").click();
   await page.locator(".pop.show .draft").getByRole("textbox", { name: "Comment" }).fill("Which third?");
@@ -46,8 +56,10 @@ test("a page's reported view is saved with new comments, including state reporte
   page,
 }) => {
   await open(page, "tabs.html");
-  await showComments(page);
+  // Started with the mouse (no block cursor), the shortcut leaves comment mode.
+  await toggleCommenting(page);
   await commentOn(page, "#pro", "Too cheap?");
+  await leaveReply(page);
   await page.keyboard.press("Shift+Alt+KeyC");
   await page.locator("#tab-faq").click();
   await showComments(page);

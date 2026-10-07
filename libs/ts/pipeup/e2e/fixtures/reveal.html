@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- A reveal.js-shaped deck: window.Reveal with getIndices, slide and a slidechanged event. The stub shows
      every section stacked, so only Reveal can say which slide is current. Calls to slide() are kept in
-     window.slid. -->
+     window.slid, keys that reach the deck in window.heard. -->
 <html
   lang="en"
   data-pipeup-doc="rEvEaLsTuB000001:RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR"
@@ -61,6 +61,10 @@
       addEventListener("keydown", (e) => {
         if (e.key === "ArrowRight") Reveal.slide(Math.min(2, h + 1));
       });
+      // Keys that reach the deck, on window and on document (where reveal.js listens).
+      window.heard = [];
+      addEventListener("keydown", (e) => window.heard.push(`window ${e.key}`));
+      document.addEventListener("keydown", (e) => window.heard.push(`document ${e.key}`));
     </script>
   </body>
 </html>

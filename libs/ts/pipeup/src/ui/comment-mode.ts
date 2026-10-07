@@ -1,13 +1,16 @@
 import { describeElement } from "../anchor/describe";
-import { labelOf } from "../anchor/locate";
+import { kindOf, labelOf, wordsOf } from "../anchor/locate";
+import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
 import { fit, h, inert } from "./dom";
-import { icon } from "./icons";
+import { icon, type IconName } from "./icons";
 import { placeBar } from "./layout";
-import { pageLook, parentBlock, pickBlock, type Look } from "./pick";
+import { byPage, nodeOf } from "./order";
+import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block, type Look } from "./pick";
+import { SHORTCUT_LABEL } from "./shortcut";
 
 /** Page controls Enter or Space would activate. */
-const ACTIVATES =
+export const ACTIVATES =
   "a,button,summary,[role=button],[role=link],[role=switch],[role=tab],[role=checkbox],input[type=checkbox],input[type=radio],input[type=submit],input[type=button],input[type=reset]";
 /**
  * Page controls a press would focus, open or toggle. Not wrappers that merely hold text: a `tabindex="-1"`
@@ -30,10 +33,24 @@ const MUTED = [
 ];
 /** How long a move counts as a glide: must cover `--mv` (0.34 s), the glide's duration in the stylesheet. */
 const GLIDE_MS = 400;
+/** The keyboard's hint: shown as a toast, and read with the block cursor's first landing. */
+export const KEYS_HINT =
+  "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Esc to finish · F7 selects text";
+/** A block with at most this many characters is read whole as the cursor's name; a longer one as its description. */
+const SHORT_BLOCK = 150;
 
-/** Comment mode's view; `back()` is Escape's step for it: clears a chosen block, false when none was chosen. */
+/** Comment mode's view. */
 export interface CommentMode extends View {
+  /** Escape's step: clears a chosen block, else puts the block cursor away; false when there was neither. */
   back(): boolean;
+  /** The keyboard's block cursor is in use (started, and not put away). */
+  cursor(): boolean;
+  /** The block cursor was put away: the shortcut brings it back. */
+  away(): boolean;
+  /** Starts the block cursor, or brings it back: on its last block if still here, else where focus is, else the first block in view. */
+  resume(): boolean;
+  /** Focuses the block cursor on its block again, as a move, so its name is read afresh. */
+  refocus(): void;
 }
 
 /**
@@ -45,29 +62,59 @@ export interface CommentMode extends View {
  * added before comment mode started still hear events; Escape still reaches the page's own handlers.
  */
 export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMode {
-  const outline = h("div", { class: "pick" });
-  ctx.layer.append(outline);
+  // The hint, read once as part of the cursor's first landing.
+  const hintText = h("span", { hidden: true }, KEYS_HINT);
+  const outline = h("div", { class: "pick" }, hintText);
+  // The keyboard's block cursor: two invisible markers over the outlined block take turns to hold focus, so
+  // every move is a real focus change that screen readers announce and magnifiers follow. Never in Tab's order.
+  const markers = [0, 1].map(() => {
+    const m = h(
+      "div",
+      { class: "km", tabindex: "-1", role: "button" },
+      h("span", { hidden: true }),
+      h("span", { hidden: true }),
+    );
+    m.inert = true;
+    m.addEventListener("keydown", onMarkerKey);
+    // A screen reader's activate.
+    m.addEventListener("click", (e) => {
+      e.stopPropagation();
+      act();
+    });
+    m.addEventListener("focus", () => outline.classList.add("kf"));
+    m.addEventListener("blur", () => outline.classList.remove("kf"));
+    return m;
+  });
   const label = h("span", { class: "lbl" });
-  const up = h(
-    "button",
-    {
-      class: "nb",
-      type: "button",
-      "aria-label": "Select the block around it",
-      title: "Select the block around it",
-    },
-    icon("expand", 16),
+  /** A naming-bar button: an icon, with a name for screen readers and a tooltip. */
+  const nb = (name: string, tip: string, ic: IconName, run: () => void) => {
+    const b = h("button", { class: "nb", type: "button", "aria-label": name, title: tip }, icon(ic, 16));
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      run();
+    });
+    return b;
+  };
+  const up = nb("Around it", "Select the block around it", "expand", around);
+  const down = nb("Inside it", "Select a block inside it", "shrink", inside);
+  const pinner = nb("Pin", "Pin its centre", "pin", () =>
+    ctx.keepCaret(() => commentOn((chosen ?? cur)!, { x: 0.5, y: 0.5 })),
   );
-  const bar = h("div", { class: "namebar", role: "toolbar", "aria-label": "Chosen block" }, label, up);
+  // A group, not a toolbar: it has no arrow keys of its own.
+  const bar = h(
+    "div",
+    { class: "namebar", role: "group", "aria-label": "Chosen block" },
+    label,
+    up,
+    down,
+    pinner,
+  );
   bar.inert = true;
-  ctx.layer.append(bar);
+  // Before the control, so Tab from a draft reaches the bar before the corner control.
+  const launch = ctx.layer.querySelector(".launch");
+  for (const el of [outline, ...markers, bar]) ctx.layer.insertBefore(el, launch);
   // Pressing the bar must not move the page's focus or drop its selection.
   bar.addEventListener("mousedown", (e) => e.preventDefault());
-  up.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const p = chosen && parentBlock(chosen, ctx.root, look);
-    if (p) moveDraftTo(p);
-  });
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   /** The block outlined now (under the pointer, or chosen), the chosen one, and where the outline is drawn. */
   let target: Element | null = null;
@@ -80,6 +127,25 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   /** Where the bar is drawn (it stays on the old block while fading out), and a pending reveal to cancel. */
   let barAt: Element | null = null;
   let stopBar = () => {};
+  /** The block cursor: the block it is on (null while not in use), its row's level, the marker holding focus. */
+  let cur: Element | null = null;
+  let lvl = 0;
+  let turn = 0;
+  /** It has been in use (so it was put away, not never started), and the block it was on then. */
+  let had = false;
+  let was: Element | null = null;
+  /** Where focus was when it started: it goes back there when the cursor is put away. */
+  let before: Element | null = null;
+  /** The block the cursor last came up from (↓ goes back towards it). */
+  let from: Element | null = null;
+  /** Shift+Enter: the block's thread opened last (-1: none yet on this block). */
+  let nth = -1;
+  /** The hint is still to be read with the first landing. */
+  let first = true;
+  /** The page's blocks as the keyboard sees them; null when the page may have changed (rebuilt when next needed). */
+  let tree: Block[] | null = null;
+  /** The page control Enter or Space was pressed on while the cursor wasn't in use: its click is the page's. */
+  let passed: EventTarget | null = null;
 
   /** The event is the page's, outside the areas the author asked Pipeup to leave alone. */
   const onPage = (e: Event) =>
@@ -163,6 +229,11 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     chosen = el;
     outline.classList.toggle("on", el !== null);
     show(el);
+    barTo(el);
+  }
+
+  /** The naming bar goes to `el` (or fades out with none). */
+  function barTo(el: Element | null): void {
     stopBar();
     bar.inert = !el;
     if (!el) {
@@ -178,8 +249,9 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   /** Names `el` in the bar and puts the bar beside it: gliding there if already shown, else fading in in place. */
   function reveal(el: Element): void {
     label.textContent = label.title = labelOf(el);
-    const top = parentBlock(el, ctx.root, look) === null;
-    up.hidden = top;
+    up.hidden = parentBlock(el, ctx.root, look) === null;
+    // Only the cursor has read the whole page; a mouse user's check looks inside the block alone.
+    down.hidden = (cur ? kids(el).length : blockTree(el, look, keep).length) === 0;
     const showing = bar.classList.contains("show");
     barAt = el;
     positionBar();
@@ -192,27 +264,34 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   /**
    * Chooses a block and opens the comment box on it, or moves the open one there (its words and focus kept).
+   * With a `point` (fractions of its box) the comment is a pin there, and no block stays chosen.
    * `drafted` is the box that belongs to the chosen block, so comment mode clears with it.
    */
-  function commentOn(el: Element): void {
+  function commentOn(el: Element, point?: { x: number; y: number }): void {
     let anchor;
     try {
-      anchor = describeElement(el, ctx.root, undefined, ctx.here.view(el));
+      anchor = describeElement(el, ctx.root, point, ctx.here.view(el));
     } catch (err) {
       ctx.report(err);
       return;
     }
     const next = {
       anchor,
-      label: labelOf(el),
+      label: point ? `Pin on ${labelOf(el).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase())}` : labelOf(el),
       ranges: [],
       resolved: { state: "attached", element: el, range: null },
     } as const;
-    const cur = ctx.state.draft;
-    choose(el);
-    drafted = cur ?? { ...next, ranges: [] };
-    if (cur) ctx.moveDraft({ ...next, ranges: [] });
+    const open = ctx.state.draft;
+    // The cursor follows the draft's block, so it comes back there.
+    if (cur) {
+      cur = el;
+      nth = -1;
+    }
+    choose(point ? null : el);
+    drafted = open ?? { ...next, ranges: [] };
+    if (open) ctx.moveDraft({ ...next, ranges: [] });
     else ctx.startDraft(drafted);
+    ctx.say(point ? next.label : `Commenting on ${next.label}`);
   }
 
   /** The expand icon: the draft moves to the surrounding block and the caret stays where it was. */
@@ -224,24 +303,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   function pin(e: MouseEvent): void {
     const el = (e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null) ?? ctx.root;
     const r = el.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    const point = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
-    let anchor;
-    try {
-      anchor = describeElement(el, ctx.root, point, ctx.here.view(el));
-    } catch (err) {
-      ctx.report(err);
-      return;
-    }
-    const name = labelOf(el).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase());
-    choose(null);
-    show(null);
-    ctx.startDraft({
-      anchor,
-      label: `Pin on ${name}`,
-      ranges: [],
-      resolved: { state: "attached", element: el, range: null },
-    });
+    if (r.width && r.height)
+      commentOn(el, { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
   }
 
   function onPick(e: MouseEvent): void {
@@ -256,6 +319,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     // A click on a highlight reads its thread (the comment views open it), never picks the block under it.
     if (!e.altKey && ctx.readsAt(e.clientX, e.clientY)) return;
     if (ctx.state.active) ctx.open(null);
+    // A pointer's click puts the block cursor away; a screen reader's activate (no pointer) moves it there.
+    if (cur && e.detail) stow();
     if (e.altKey) {
       pin(e);
       return;
@@ -275,7 +340,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       return;
     }
     e.stopPropagation();
-    if (chosen || ctx.state.draft) return;
+    if (chosen || ctx.state.draft || cur) return;
     show(!selecting() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null);
   };
   /** Selected words have their own comment icon: no block is offered while they are, wherever the pointer goes. */
@@ -284,7 +349,10 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     return !!sel && !sel.isCollapsed && sel.toString().trim() !== "";
   };
   const onSelect = () => {
-    if (!chosen && selecting()) show(null);
+    if (!selecting()) return;
+    // Words selected while the block cursor is out: it is put away, so the selection's own icon shows.
+    if (cur) stow();
+    if (!chosen) show(null);
   };
 
   const mute = (e: Event) => {
@@ -301,6 +369,16 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   const swallow = (e: Event) => {
     if (!onPage(e)) return;
+    // The click a key made on a page control while the cursor isn't in use is the page's, and so is the submit;
+    // Enter in a form's field clicks its submit button.
+    const t = e.target as HTMLButtonElement;
+    if (
+      (t === passed || (t.form && t.form === (passed as HTMLInputElement | null)?.form)) &&
+      (e.type === "submit" || (e.type === "click" && !(e as MouseEvent).detail))
+    ) {
+      passed = e.type === "click" && t.type === "submit" ? t.form : null;
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     // A click that closes the open menu does only that (whichever of the two hears it first).
@@ -308,18 +386,222 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   };
 
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
+  // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
-    if (
-      (e.key === "Enter" || e.key === " ") &&
-      onPage(e) &&
-      e.target instanceof Element &&
-      e.target.closest(ACTIVATES)
-    ) {
+    passed = null;
+    // A keyup lost on the way (focus left the window) never swallows a later one.
+    taken = "";
+    if (!onPage(e) || !(e.target instanceof Element)) return;
+    if ((e.key === "Enter" || e.key === " ") && e.target.closest(ACTIVATES)) {
+      if (!cur) {
+        passed = e.target;
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
-    }
+      // Enter in a page field with a form submits it, as the page expects.
+    } else if (e.key === "Enter" && !cur && (e.target as HTMLInputElement).form) passed = e.target;
   };
 
+  /** Pipeup's own element with focus, if any; a marker has it. */
+  const focused = () => (ctx.layer.getRootNode() as ShadowRoot).activeElement;
+  const onMarker = () => markers.some((m) => m === focused());
+  /** Only what the reviewer can see here: shown, and on the current slide (a `display: contents` box has none). */
+  const keep = (el: Element) =>
+    (el.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false ||
+      getComputedStyle(el).display === "contents") &&
+    ctx.here.holds(ctx.here.view(el));
+  /** The blocks; read afresh when one of them has left the page, so the cursor never lands on a removed element. */
+  const blocks = () => {
+    if (tree?.some((b) => !b.el.isConnected)) tree = null;
+    return (tree ??= blockTree(ctx.root, look, keep));
+  };
+  const blockOf = (el: Element | null) => blocks().find((b) => b.el === el);
+
+  /** Some of `el` is in the window; `top`: its top edge is. */
+  const inView = (el: Element, top = false) => {
+    const r = el.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight && (!top || r.top >= 0);
+  };
+  /** The first block of the smallest level in the window: its top edge in it, else the one covering the top. */
+  const firstInView = (): Block | undefined => {
+    const r = row(blocks(), 0);
+    return r.find((b) => inView(b.el, true)) ?? r.find((b) => inView(b.el)) ?? r[0];
+  };
+
+  /** Threads shown here on `el` or inside it (element, pin and text), in page order. */
+  const threadsOn = (el: Element): Thread[] =>
+    ctx.doc
+      .threads()
+      .filter((t) => ctx.visible(t) && el.contains(nodeOf(ctx, t)))
+      .sort(byPage(ctx));
+
+  /**
+   * Names marker `m` for block `el`: "Paragraph, 3 of 12, has 1 comment", then the block's own words. A short
+   * block is read whole as part of the name; a long one by its first words, the whole block as the description.
+   */
+  function name(m: HTMLElement, el: Element): void {
+    const [lab, words] = m.children as unknown as [HTMLElement, HTMLElement];
+    const r = row(blocks(), lvl);
+    const n = threadsOn(el).length;
+    lab.textContent = `${kindOf(el)}, ${r.findIndex((b) => b.el === el) + 1} of ${r.length}${n ? `, has ${n} comment${n === 1 ? "" : "s"}` : ""}`;
+    const short = ((el as HTMLElement).innerText ?? el.textContent ?? "").length <= SHORT_BLOCK;
+    words.textContent = wordsOf(el);
+    const hint = first ? [hintText] : [];
+    first = false;
+    // Element references from the shadow root out to the page; where they are missing, the words as a string.
+    if (m.ariaLabelledByElements !== undefined) {
+      m.ariaLabelledByElements = short ? [lab, el] : [lab, words];
+      m.ariaDescribedByElements = short ? hint : [...hint, el];
+    } else m.setAttribute("aria-label", `${lab.textContent}, ${words.textContent}`);
+  }
+
+  /** Moves the cursor to `el`: the outline and bar go there, and the idle marker, named for it, takes focus. */
+  function go(el: Element, focus = true): void {
+    const t = blocks();
+    const b = t.find((x) => x.el === el);
+    // A block outside the row it was in: the row becomes its level.
+    if (b && !row(t, lvl).includes(b)) lvl = b.level;
+    if (el !== cur) nth = -1;
+    // Off the draft's block, the cursor lets go of it: the draft waits there, and Esc or ↑ are the cursor's.
+    if (el !== chosen) chosen = null;
+    cur = el;
+    show(el);
+    barTo(el);
+    el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
+    if (!focus) return;
+    ctx.hideHint();
+    const m = markers[(turn ^= 1)]!;
+    name(m, el);
+    fit(m, el.getBoundingClientRect(), 4);
+    m.inert = false;
+    m.focus({ preventScroll: true });
+    markers[turn ^ 1]!.inert = true;
+  }
+
+  function resume(): boolean {
+    // The page may have changed since the blocks were last read.
+    tree = null;
+    const page = document.activeElement;
+    before = focused() ?? page;
+    const back = blockOf(was);
+    const b =
+      back ??
+      (page && page !== document.body && ctx.root.contains(page) && !page.closest("[data-pipeup-ignore]")
+        ? blocks()
+            .filter((x) => x.el.contains(page))
+            .pop()
+        : undefined) ??
+      firstInView();
+    if (!b) return false;
+    // A fresh landing starts at its block's level; coming back to the last block keeps the row if it is in it.
+    if (!back) lvl = b.level;
+    had = true;
+    go(b.el);
+    return true;
+  }
+
+  /** The cursor stops being in use: the outline and bar fade out where they are, and the markers go quiet. */
+  function stow(): boolean {
+    const held = onMarker();
+    was = cur;
+    cur = null;
+    show(null);
+    barTo(null);
+    for (const m of markers) inert(m, true);
+    return held;
+  }
+
+  /** Focus goes back where it was: a page element still there, the control for the menu that is gone, else the page. */
+  function giveBack(): void {
+    const b = before as HTMLElement | null;
+    b?.focus?.({ preventScroll: true });
+    if (b && ctx.layer.contains(b) && focused() !== b)
+      ctx.layer.querySelector<HTMLElement>(".launch .mode")?.focus({ preventScroll: true });
+  }
+
+  /** The blocks directly inside `el`. */
+  function kids(el: Element): Block[] {
+    const b = blockOf(el);
+    return b ? childBlocks(blocks(), b) : [];
+  }
+
+  /** Tab and Shift+Tab: the next or previous block in the cursor's row, wrapping at the ends. */
+  function step(by: number): void {
+    const r = row(blocks(), lvl);
+    const i = r.findIndex((b) => b.el === cur);
+    // The cursor's own block is gone: it is before the first, so Tab goes to the first and Shift+Tab the last.
+    const to = r[i < 0 ? (by > 0 ? 0 : r.length - 1) : (i + by + r.length) % r.length];
+    if (to) go(to.el);
+  }
+
+  /** ↑ and Around it: the block around the cursor's, or the draft moves to the block around its own. */
+  function around(): void {
+    const el = chosen ?? cur;
+    const p = el && parentBlock(el, ctx.root, look);
+    if (!p) return ctx.say("Nothing around it");
+    if (!from || !el.contains(from)) from = el;
+    if (chosen) return moveDraftTo(p);
+    go(p);
+  }
+
+  /** ↓ and Inside it: the block it last came up from, else the first inside it in view, else the first. */
+  function inside(): void {
+    const el = chosen ?? cur;
+    const l = el ? kids(el) : [];
+    const k = l.find((c) => from && c.el.contains(from)) ?? l.find((c) => inView(c.el)) ?? l[0];
+    if (!k) return ctx.say("Nothing inside it");
+    if (chosen) moveDraftTo(k.el);
+    else go(k.el);
+  }
+
+  /**
+   * Enter, Space or a screen reader's activate on the cursor: a comment on its block; Shift+Enter (`more`): its
+   * threads, one at a time, in page order, wrapping. A draft with words holds the reviewer: they go back to it.
+   */
+  function act(more = false): void {
+    if (!cur) return;
+    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
+    if (!more) return commentOn(cur);
+    const l = threadsOn(cur);
+    if (!l.length) return ctx.say("No comments on this block");
+    nth = (nth + 1) % l.length;
+    ctx.open(l[nth]!.id);
+    if (l.length > 1) ctx.say(`Comment ${nth + 1} of ${l.length} on this block`);
+  }
+
+  /** The keys the cursor takes while a marker has focus: stopped, so the page (and a deck) never hears them. */
+  function onMarkerKey(e: KeyboardEvent): void {
+    if (!["Tab", "ArrowUp", "ArrowDown", "Enter", " ", "Escape"].includes(e.key)) return;
+    // ⌘↑, Ctrl↑ and Alt↑ are the page's (top, bottom).
+    if (e.key.startsWith("Arrow") && (e.metaKey || e.ctrlKey || e.altKey)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    taken = e.key;
+    if (e.key === "Escape") return void ctx.back();
+    if (e.key === "Enter" || e.key === " ") return act(e.shiftKey && e.key === "Enter");
+    // Moving on closes an open thread, as a click elsewhere does.
+    if (ctx.state.active) ctx.open(null);
+    if (e.key === "Tab") step(e.shiftKey ? -1 : 1);
+    else if (e.key === "ArrowUp") around();
+    else inside();
+  }
+
+  /** Focus is nowhere: on the page's body, or on Pipeup's own element that has gone inert. */
+  const lost = () => {
+    const a = focused();
+    return a ? !!a.closest("[inert]") : !document.activeElement || document.activeElement === document.body;
+  };
+
+  /** The key the cursor took on keydown: its keyup is the cursor's too, wherever focus has gone by then. */
+  let taken = "";
+  const onKeyUp = (e: KeyboardEvent) => {
+    if (e.key !== taken) return;
+    taken = "";
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  window.addEventListener("keyup", onKeyUp, true);
   window.addEventListener("pointermove", onMove, true);
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
@@ -328,25 +610,53 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   return {
     back() {
-      if (!chosen) return false;
-      choose(null);
+      if (chosen) choose(null);
+      else if (!cur) return false;
+      else {
+        if (stow()) giveBack();
+        ctx.say(`Cursor put away · ${SHORTCUT_LABEL} brings it back`);
+      }
       return true;
     },
+    cursor: () => cur !== null,
+    away: () => had && !cur,
+    resume,
+    refocus() {
+      if (cur && !onMarker()) go(cur);
+    },
     render() {
+      tree = null;
+      // The cursor's block left (removed, hidden, or on a slide that isn't here): it lands again in view.
+      if (cur && !(cur.isConnected && keep(cur))) {
+        const b = firstInView();
+        if (b) go(b.el, onMarker() || lost());
+        else stow();
+      }
+      // The views were rebuilt (a new control): the outline, markers and bar go back before it, unless in use.
+      const l = ctx.layer.querySelector(".launch");
+      if (l && bar.nextElementSibling !== l && !onMarker() && !bar.contains(focused()))
+        for (const el of [outline, ...markers, bar]) ctx.layer.insertBefore(el, l);
       const d = ctx.state.draft;
       // The box closed (Esc, sent, dropped) or another one took over: the block lets go with it.
       if (drafted && d !== drafted) {
         drafted = null;
         choose(null);
+        // With the cursor in use it comes back on its block, and takes focus back if the draft left it nowhere.
+        if (cur) go(cur, lost());
       } else if (d && !drafted && (target || chosen)) choose(null);
     },
     frame() {
       place();
       positionBar();
+      if (cur) fit(markers[turn]!, cur.getBoundingClientRect(), 4);
     },
     destroy() {
+      // Focus on the cursor goes back where it was before the markers leave.
+      if (stow()) giveBack();
+      for (const m of markers) m.remove();
       stopFade();
       stopBar();
+      window.removeEventListener("keyup", onKeyUp, true);
       window.removeEventListener("pointermove", onMove, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);

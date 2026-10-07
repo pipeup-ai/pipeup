@@ -58,9 +58,11 @@ fade paths (eased; cross-fade with reduced motion).
 
 ## Size
 
-Budgets are 33 KB (min and esm) and 12 KB (core). The size pass came first and freed 0.43 KB gzip with no
+Budgets were 33 KB (min and esm) and 12 KB (core) for this part. The size pass came first and freed 0.43 KB gzip with no
 change in behaviour (shorter internal style tokens and property names); 2.5 KB was not there to be had without
 dropping behaviour, and slides and views need about 1.9 KB, so the min and esm budgets went up by 1 KB.
+For part 2 (keyboard, touch and the drawer) the budgets are **36 KB** (min and esm) and 12 KB (core); see
+[keyboard.md](keyboard.md).
 
 ## Testing
 
@@ -92,3 +94,4 @@ or tabs for the page.
   menu's All comments count every open thread, the control only those here; reveal.js vertical slides are
   followed by their horizontal index only.
 - 2026-10-07 — Here or elsewhere: detached content counts as here ("No longer on the page"); hidden content with no other view is "Hidden on the page".
+- 2026-10-07 — Size: budgets 36 KB (min, esm) and 12 KB (core) from part 2.

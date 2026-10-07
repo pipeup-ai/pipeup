@@ -67,11 +67,13 @@ test("plain C, Meta+Shift+C and Ctrl+Alt+C do nothing, and the shortcut does not
   await off(page);
 });
 
-test("Escape still leaves comment mode", async ({ page }) => {
+test("Escape puts the block cursor away, then leaves comment mode", async ({ page }) => {
   await open(page, "controls.html");
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await on(page);
-  await expect(page.locator(".toast.show")).toContainText(/⇧⌥C|Shift\+Alt\+C/);
+  await expect(page.locator(".toast.show")).toContainText("Esc to finish");
+  await page.keyboard.press("Escape");
+  await on(page);
   await page.keyboard.press("Escape");
   await off(page);
 });
@@ -85,7 +87,7 @@ test("the naming bar has an expand icon, not the word Parent, and it still selec
   await page.locator("#go").click();
   const bar = page.locator(".namebar");
   await expect(bar).not.toContainText("Parent");
-  const up = bar.getByRole("button", { name: "Select the block around it" });
+  const up = bar.getByRole("button", { name: "Around it" });
   await expect(up).toHaveAttribute("title", "Select the block around it");
   await expect(up.locator("svg")).toHaveCount(1);
   await up.click();

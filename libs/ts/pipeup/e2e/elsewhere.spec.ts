@@ -97,7 +97,10 @@ test("on a reveal.js deck, Reveal decides what is here", async ({ page }) => {
   await showComments(page);
   await expect(page.locator(".bub.in")).toHaveCount(1);
   await page.keyboard.press("ArrowRight");
-  await expect(control(page)).toHaveAttribute("aria-label", "Comment, 1 here · 1 on other slides");
+  await expect(control(page)).toHaveAttribute(
+    "aria-label",
+    "Comment, comment mode on, 1 here · 1 on other slides",
+  );
   await settled(page.locator(".bub.in"));
   await page.locator(".bub.in").click();
   await expect(page.locator(".pop.show")).toContainText("On two");
