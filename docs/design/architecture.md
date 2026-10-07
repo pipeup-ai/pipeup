@@ -286,7 +286,7 @@ only when the *target* changes. Direct drags have no transition.
 
 ### Copy for AI
 
-There is no copy-format option. The menu has two rows: Copy all (`'ai'`, Markdown) and Copy all as text
+There is no copy-format option. The menu has two rows: Copy as Markdown (`'ai'`) and Copy as Text
 (`'text'`); the core `copyAll`/`copyThread` keep their `CopyAs` parameter for tools. Copy on a thread always
 copies the whole thread, as Markdown. Markdown output for one thread:
 
@@ -301,7 +301,7 @@ copies the whole thread, as Markdown. Markdown output for one thread:
 - **Amy** (10m ago): Already is — maybe darken the label?
 ```
 
-Copy all prefixes `# Review comments: <title>`, page URL, export time, open count (resolved
+Copy as Markdown (`copyAll('ai')`) prefixes `# Review comments: <title>`, page URL, export time, open count (resolved
 excluded) and a one-line instruction, then `## Thread N` blocks in page/slide order.
 
 ### Plan 2B (built)
@@ -316,6 +316,10 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
   pointer events and opens its thread on click. Clicking a highlight, bubble or preview always
   opens (`ctx.open(id)`, never `active === id ? null : id`); Esc, a click on the page outside
   Pipeup, or opening another thread closes.
+- **Room for All comments.** While the panel is open the same adopted stylesheet gives `html` a right
+  margin of the panel's width (easing in and out) and publishes it as `--pipeup-panel`. A margin moves
+  normal content but not fixed elements or sizes in `vw`, so pages with fixed bars offset them with
+  `var(--pipeup-panel,0px)`; the site's Try bar and slide controls do.
 - **Reserved gutter (opt-in).** A page opts in with `<html data-pipeup-reserve>`.
   Pipeup then publishes the gutter width as a custom property from its document-adopted
   stylesheet — `:root{--pipeup-gutter:320px}` while the column shows, `0px` otherwise — and never
@@ -478,6 +482,37 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
     panel.
   - Sizes after this change: `pipeup.min.js` 31.6 KB, `pipeup.esm.js` 31.3 KB, core 8.6 KB gzip (budgets 32 /
     32 / 12).
+- **Menu and picking fixes (2026-10-06).** This updates the menu and picking details above.
+  - *Labels.* The copy rows read Copy as Markdown and Copy as Text (same `copyAll('ai' | 'text')`).
+  - *Menu stays open.* Start commenting only calls `setCommenting`; render no longer closes the menu when
+    comment mode starts, so the shortcut with the menu open keeps it open too (with it closed, it never
+    opens it). The menu closes on Esc (capture phase, as before), a click outside the menu and button
+    (`onAnyClick`), or when the pointer stays away for 3 s: window capture `pointerover` outside the menu
+    and button (or `pointerout` with no `relatedTarget`, leaving the window) starts one timer, `pointerover`
+    back inside clears it. Touch pointers are ignored (no hover), and the timer never closes the menu while
+    the name is being edited. Copy rows and All comments still close it. In comment mode the outside click
+    is consumed: the launcher `claim`s it, prevents and stops it, and comment mode's swallow skips `onPick`
+    while `UiState.menu` is set or the click is `claimed` (so either listener order works).
+  - *Name in place.* Choosing the identity row swaps that row (not the whole menu) for `.ed`: a copy of the
+    avatar and an `input` ("Your name", 80 characters), focused at once. Enter or `blur` saves through
+    `menu.rename` (empty or unchanged keeps the name), Esc cancels; both put `idRow` back (Enter and Esc
+    focus it). `endEdit` guards against ending twice (removal can blur) and makes the menu's Esc listener
+    stand aside, while the field's keydown stops propagation so neither the menu's arrows nor the app's
+    Esc see its keys. Closing the menu mid-edit saves. The old "Your name" box (`.name`) is gone.
+  - *No blocks over a selection.* Comment mode's `onMove`, and a `selectionchange` listener, hide the
+    hover outline while the document has a non-empty selection (its comment icon is the offer); hover
+    resumes on the next move once it is cleared. The naming bar only follows a chosen block, so it is
+    unaffected.
+  - *Picking reaches more.* `OBVIOUS` adds `figcaption`, lists (`ul, ol, dl, dt, dd`), HTML5 containers
+    (`section, article, aside, nav, header, footer, main, form, fieldset`) and a short list of ARIA roles
+    (widgets, landmarks, structure). `Look.grouped(el)` (computed `display` flex/grid, inline or not)
+    makes any element with more than one element child a block, except inside a control (`a`, `button`,
+    `label`, `summary`, button/link/tab/option/menuitem roles), whose inner layout is part of it. Innermost
+    wins, `data-pipeup-id` wins, the 60 % cap, `data-pipeup-ignore` and same-box wrappers are unchanged.
+  - *Site showcase.* The carousel's frame (`.viewport`) is `data-pipeup-id="showcase"` with a label, its
+    controls are `data-pipeup-ignore` (they keep working in comment mode), and the moving `.track` has
+    `pointer-events:none`, so a pointer anywhere in the stage targets the frame and picks it whole. The
+    frame keeps its own swipe listeners.
 - **Open question:** when comments are hidden, the comment control still sits over the page's bottom-right
   corner. Not decided in 2B.
 
@@ -495,3 +530,5 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
 - 2026-10-06 — §11: the control's number is hidden at zero and opens All comments (page order, orphaned threads under "No longer on the page", scroll-and-open, side popover for threads with nowhere to show); the menu moves to a "more" button shown on hover or focus; budgets 32 KB.
 - 2026-10-06 — §11: the reply line loses its reply icon (the line is the target; caret to the end); the control's comment and bubble icons draw at stroke 1.4 (the plus at 1.6), the count at weight 500.
 - 2026-10-06 — §11: simpler menu (one-line rows with tooltips, identity row, copy-format button, Start commenting switch); comments shown only in comment mode, All comments, a draft, or a narrow-screen chosen thread (highlight fade via the page sheet); Show resolved in the panel header; the open panel makes room with an adopted-sheet margin on `html`.
+- 2026-10-06 — §11: menu and picking fixes — Copy as Markdown / Copy as Text; Start commenting keeps the menu open (closes on Esc, outside click, 3 s away); name edited in its row; no hover outline over a selection; picking adds HTML5 containers, lists, ARIA roles and flex/grid groups (`Look.grouped`); the site showcase picks as one block.
+- 2026-10-07 — §11: room for All comments is also published as `--pipeup-panel`, for a page's fixed elements.

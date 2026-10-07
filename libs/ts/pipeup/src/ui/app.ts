@@ -78,6 +78,7 @@ export function startApp(o: AppOptions): App {
     commenting: false,
     listing: false,
     reading: false,
+    menu: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   host.layer.append(toastEl);
@@ -242,6 +243,7 @@ export function startApp(o: AppOptions): App {
     readsAt: (x, y) => (ctx.draftEmpty() ? ctx.quoteAt(x, y) : null),
     owns: (e) => e.composedPath().includes(host.element),
     claim: (e) => void claimed.add(e),
+    claimed: (e) => claimed.has(e),
     open,
     focusReply: (id) => focusReply(id),
     hot,

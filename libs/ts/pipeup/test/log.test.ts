@@ -12,12 +12,12 @@ describe("OpLog", () => {
   it("appends signed ops and folds them", async () => {
     const me = await createIdentity();
     const log = new OpLog("doc");
-    const create = await log.append(me, "Kev", {
+    const create = await log.append(me, "Sam", {
       kind: "create",
       text: "hi",
       anchor: ANCHOR,
     });
-    const reply = await log.append(me, "Kev", {
+    const reply = await log.append(me, "Sam", {
       kind: "reply",
       thread: create.body.id,
       target: create.body.id,
@@ -76,7 +76,7 @@ describe("OpLog", () => {
     expect(await log.add([sane])).toHaveLength(1);
     const fresh = new OpLog("doc");
     expect(await fresh.add([hostile])).toEqual([]);
-    const next = await fresh.append(me, "Kev", { kind: "create", text: "hi", anchor: ANCHOR });
+    const next = await fresh.append(me, "Sam", { kind: "create", text: "hi", anchor: ANCHOR });
     expect(next.body.clock).toBe(1);
   });
 
@@ -86,7 +86,7 @@ describe("OpLog", () => {
     const saturated = await createSignedBy(eve, { text: "x", clock: MAX_CLOCK });
     const log = new OpLog("doc");
     expect(await log.add([saturated])).toHaveLength(1);
-    const next = await log.append(me, "Kev", { kind: "create", text: "hi", anchor: ANCHOR });
+    const next = await log.append(me, "Sam", { kind: "create", text: "hi", anchor: ANCHOR });
     expect(next.body.clock).toBe(MAX_CLOCK);
     expect(log.size).toBe(2);
   });
@@ -99,7 +99,7 @@ describe("OpLog", () => {
     expect(await log.add([await createSignedBy(eve, { text: "x", clock: 1, at: future })])).toHaveLength(1);
     const ats: number[] = [];
     for (let i = 0; i < 20; i++) {
-      ats.push((await log.append(me, "Kev", { kind: "create", text: "same", anchor: ANCHOR })).body.at);
+      ats.push((await log.append(me, "Sam", { kind: "create", text: "same", anchor: ANCHOR })).body.at);
     }
     for (let i = 1; i < ats.length; i++) expect(ats[i]!).toBeGreaterThan(ats[i - 1]!);
     expect(ats.at(-1)!).toBeLessThan(future);
@@ -110,20 +110,20 @@ describe("OpLog", () => {
     const log = new OpLog("doc");
     const ahead = Date.now() + 60_000;
     expect(await log.add([await createSignedBy(me, { text: "x", clock: 1, at: ahead })])).toHaveLength(1);
-    const next = await log.append(me, "Kev", { kind: "create", text: "y", anchor: ANCHOR });
+    const next = await log.append(me, "Sam", { kind: "create", text: "y", anchor: ANCHOR });
     expect(next.body.at).toBe(ahead + 1);
   });
 
   it("derives each op's id from its content", async () => {
     const me = await createIdentity();
     const log = new OpLog("doc");
-    const create = await log.append(me, "Kev", { kind: "create", text: "same", anchor: ANCHOR });
-    const again = await log.append(me, "Kev", { kind: "create", text: "same", anchor: ANCHOR });
+    const create = await log.append(me, "Sam", { kind: "create", text: "same", anchor: ANCHOR });
+    const again = await log.append(me, "Sam", { kind: "create", text: "same", anchor: ANCHOR });
     expect(create.body.id).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(create.body.thread).toBe(create.body.id);
     expect(create.body.id).toBe(await computeOpId(create.body));
     expect(again.body.id).not.toBe(create.body.id);
-    const reply = await log.append(me, "Kev", {
+    const reply = await log.append(me, "Sam", {
       kind: "reply",
       thread: create.body.id,
       target: create.body.id,
@@ -155,8 +155,8 @@ describe("OpLog", () => {
   it("drops an authentic op whose id was swapped for another, even when re-signed by its author", async () => {
     const me = await createIdentity();
     const log = new OpLog("doc");
-    const create = await log.append(me, "Kev", { kind: "create", text: "hi", anchor: ANCHOR });
-    const reply = await log.append(me, "Kev", {
+    const create = await log.append(me, "Sam", { kind: "create", text: "hi", anchor: ANCHOR });
+    const reply = await log.append(me, "Sam", {
       kind: "reply",
       thread: create.body.id,
       target: create.body.id,

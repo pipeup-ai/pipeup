@@ -45,7 +45,7 @@ Principles:
 
 1. *I made an HTML deck and want feedback.* I add Pipeup to it, send the file or link, and get
    comments pinned to the exact slide and spot.
-2. *Several people reviewed my file separately.* Each copies their comments (Copy all) and sends
+2. *Several people reviewed my file separately.* Each copies their comments (Copy as Markdown) and sends
    them to me; I paste them into my AI agent, which knows exactly where each comment is.
 3. *I want a live review session.* I create a room on my own relay, share an invite link, and
    everyone sees who is here, which slide they are on and where their cursor is.
@@ -57,7 +57,7 @@ Principles:
 5. *Someone sent me an HTML file.* I open it, choose "Comment", select a sentence and type. I
    don't need an account.
 6. *I'm reviewing a deck.* I click anywhere on a slide to drop a pin and comment, Figma style.
-7. *I'm done.* I press "Copy all" and send what I copied back however I like — or, in a
+7. *I'm done.* I press "Copy as Markdown" and send what I copied back however I like — or, in a
    room, my comments are already shared.
 
 **Agents**
@@ -128,6 +128,15 @@ any of them off.
   bar uses icons, not words.
 - Pipeup skips invisible wrappers and very large containers when choosing the obvious block, and
   prefers anything the author marked with a stable identifier.
+- Besides paragraphs, headings, images, tables and controls, the obvious blocks include page
+  sections (sections, articles, asides, navigation, headers, footers, forms and field groups),
+  lists and their items, captions, anything the page marks with an accessible role (a button, a
+  tab, a region, a dialog and so on), and any box that visibly lays out several things in a row
+  or grid. The innermost such block under the pointer wins; something covering most of the window
+  is still the page, not a block.
+- **While text is selected in comment mode**, no block is outlined or named on hover, wherever the
+  pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
+  selection is cleared or its comment is started or cancelled.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: type and press **Enter** to send (**Shift+Enter** for a new line, **Esc** to
@@ -223,16 +232,26 @@ any of them off.
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
-    **Add name** or an edit mark at the end; choosing it edits your name in place;
-  - **Copy all** — every open thread as Markdown for AI, in order, with where each one is (§7a);
-  - **Copy all as text** — the same threads as plain text: where it is, then just the names and
+    **Add name** or an edit mark at the end; choosing it turns that row into a name field in place
+    (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
+    and leaves the menu open; the row then shows the name and avatar again. The menu never closes
+    while the name is being edited;
+  - **Copy as Markdown** — every open thread as Markdown for AI, in order, with where each one is (§7a);
+  - **Copy as Text** — the same threads as plain text: where it is, then just the names and
     words (§7a). Each copy row has a one-line tooltip. There is no copy-format setting;
   - **All comments**, with the number of open threads;
   - nearest the button, **Start commenting**, with its shortcut and a **switch** that shows whether
-    comment mode is on. Toggling it starts or stops comment mode and closes the menu.
+    comment mode is on. Toggling it starts or stops comment mode and **leaves the menu open**, so
+    the switch is seen to move.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
   switch; Esc closes the menu) and by touch
   with no hover needed. Switches ease between their states.
+- Choosing a copy row or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
+  click or tap anywhere outside the menu and the button, or once the pointer has been away from
+  both for **3 seconds** (coming back sooner keeps it open). On touch screens, where there is no
+  hover, only a tap outside or Esc closes it. In comment mode, a click outside the menu only closes
+  it: it doesn't choose a block, drop a pin or reach the page. The comment mode shortcut toggles comment mode
+  without opening the menu; with the menu open it leaves the menu open.
 - **All comments** opens a **panel on the right** listing every thread, including ones in hidden
   views and ones whose content is gone (§8), with each author's avatar.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
@@ -250,15 +269,15 @@ any of them off.
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy all** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
+- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
   for each one: where it is (slide or section, then the element), the element's stable identifier,
   the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copy all adds the page title and address, the export time, the number of open threads
+  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
   (noting resolved ones are left out) and a one-line instruction to work through them and say what
   changed.
-- **Copy all as text** gives **plain text** — where it is, then just the names and words.
+- **Copy as Text** gives **plain text** — where it is, then just the names and words.
 - There is no copy-format setting.
-- Resolved threads are left out of Copy all.
+- Resolved threads are left out of both copy rows.
 
 ## 8. Staying attached on changing pages
 
@@ -331,7 +350,7 @@ any of them off.
 
 **Returning feedback (for now)**
 
-- A reviewer sends feedback back to the author by pressing **Copy all** and sending what they copied
+- A reviewer sends feedback back to the author by pressing **Copy as Markdown** and sending what they copied
   any way they like: a message, an email, or pasted straight into a conversation with an AI
   assistant.
 - **Sealed feedback files** remain part of the design for sharing later: a single small file of the
@@ -407,7 +426,7 @@ any of them off.
   - colour contrast and keyboard reachability of Pipeup's UI.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy all); later they will also read and write feedback
+- Agents read comments a reviewer copied (Copy as Markdown); later they will also read and write feedback
   files and, with an invite, take part in rooms.
 
 ## 16. Distribution
@@ -514,3 +533,4 @@ any of them off.
 - 2026-10-06 — Simplified copying and feedback: the menu has two plain rows, Copy all (Markdown for AI) and Copy all as text, with no copy-format setting and no `copyAs` option; Send feedback and Add feedback and dropping files are removed for now (feedback comes back by copying it), with sealed feedback files kept in the design for sharing later.
 - 2026-10-06 — First public release prepared (0.3.0, alpha): open source under MIT, published on npm and public CDNs, with the website, Try pages and agent skills at a public address and a link to the source from the site. Phase 1's comments on this machine ship before rooms. The licence question is closed. Sample names in examples and tests are fictional.
 - 2026-10-06 — Pre-releases: tried by exact version or the `next` tag, with their own marked copy of the website at a separate address; stable installs and the stable site are never changed by one.
+- 2026-10-06 — Menu and picking fixes: the copy rows are named Copy as Markdown and Copy as Text; toggling Start commenting leaves the menu open, which closes on Esc, a click outside, or after the pointer has been away for 3 seconds; your name is edited in its own row, in place; no block is outlined while text is selected in comment mode; picking also finds page sections, lists, elements with accessible roles and boxes that lay out several things, and the website's showcase is commented on as one whole block.

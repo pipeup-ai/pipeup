@@ -17,7 +17,7 @@ const stores: Array<[string, () => Promise<OpStore>]> = [
 describe.each(stores)("%s", (_name, make) => {
   it("stores ops per document, without duplicates", async () => {
     const store = await make();
-    const profile = await loadOrCreateProfile(store, "Kev");
+    const profile = await loadOrCreateProfile(store, "Sam");
     const log = new OpLog("doc-a");
     const op = await log.append(profile.identity, profile.name, {
       kind: "create",
@@ -32,9 +32,9 @@ describe.each(stores)("%s", (_name, make) => {
 
   it("creates a profile once and keeps a working, private signing key", async () => {
     const store = await make();
-    const first = await loadOrCreateProfile(store, "Kev");
+    const first = await loadOrCreateProfile(store, "Sam");
     const again = await loadOrCreateProfile(store, "Someone else");
-    expect(again.name).toBe("Kev");
+    expect(again.name).toBe("Sam");
     expect(again.identity.publicKey).toBe(first.identity.publicKey);
     expect(again.identity.privateKey.extractable).toBe(false);
     const sig = await sign(again.identity, utf8("x"));
@@ -76,9 +76,9 @@ describe("IndexedDbStore", () => {
 
   it("aborts the whole write when one op cannot be stored", async () => {
     const store = await IndexedDbStore.open(`pipeup-test-abort-${++n}`);
-    const profile = await loadOrCreateProfile(store, "Kev");
+    const profile = await loadOrCreateProfile(store, "Sam");
     const log = new OpLog("doc");
-    const good = await log.append(profile.identity, "Kev", {
+    const good = await log.append(profile.identity, "Sam", {
       kind: "create",
       text: "hi",
       anchor: ANCHOR,
@@ -97,9 +97,9 @@ describe("IndexedDbStore", () => {
   it("persists across reopening", async () => {
     const name = `pipeup-test-persist-${++n}`;
     const first = await IndexedDbStore.open(name);
-    const profile = await loadOrCreateProfile(first, "Kev");
+    const profile = await loadOrCreateProfile(first, "Sam");
     const log = new OpLog("doc");
-    const op = await log.append(profile.identity, "Kev", {
+    const op = await log.append(profile.identity, "Sam", {
       kind: "create",
       text: "hi",
       anchor: ANCHOR,

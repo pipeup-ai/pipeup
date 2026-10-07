@@ -22,9 +22,9 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toContain("Copy all as text");
+  expect((await focusInPipeup(page)).text).toContain("Copy as Text");
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toMatch(/^Copy all(?! as)/);
+  expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Add name");
   await page.keyboard.press("Home");
@@ -47,7 +47,7 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toMatch(/^Copy all(?! as)/);
+  expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
   await page.keyboard.press("Enter");
   await expect(page.locator(".menu.show")).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mode");
@@ -71,7 +71,7 @@ test("after editing the name, focus returns to the identity row", async ({ page 
   await page.keyboard.press("Home");
   expect((await focusInPipeup(page)).text).toContain("Sam");
   await page.keyboard.press("Enter");
-  await expect.poll(async () => (await focusInPipeup(page)).tag).toBe("TEXTAREA");
+  await expect.poll(async () => (await focusInPipeup(page)).tag).toBe("INPUT");
   await page.keyboard.press("Escape");
   await expect(page.locator(".menu.show")).toHaveCount(1);
   expect((await focusInPipeup(page)).text).toContain("Sam");
@@ -91,7 +91,7 @@ test("choosing Your name from the keyboard puts focus in the name field at once"
   expect((await focusInPipeup(page)).text).toContain("Sam");
   await page.keyboard.press("Enter");
   await page.keyboard.type(" Lee");
-  expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA", value: "Sam Lee" });
+  expect(await focusInPipeup(page)).toMatchObject({ tag: "INPUT", value: "Sam Lee" });
 });
 
 /**

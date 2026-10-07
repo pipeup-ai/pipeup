@@ -2,7 +2,7 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.4.0-beta.0).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.4.0-beta.1).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
@@ -21,7 +21,7 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value
@@ -38,7 +38,8 @@ pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 ```
 
 Pages designed for review can reserve a comment gutter: add `data-pipeup-reserve` to `<html>` and lay the
-page out with `var(--pipeup-gutter, 0px)` — see [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html).
+page out with `var(--pipeup-gutter, 0px)`. While All comments is open the page is moved over for it and its
+width is published as `--pipeup-panel`, so fixed bars can use `right: var(--pipeup-panel, 0px)` — see [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html).
 
 Examples in the source repository, one per kind of page, each following the agent skill's guidance (open from disk after `npm run build`):
 
@@ -53,7 +54,7 @@ counts the open threads.
 The comment control is one round button in the corner: the comment icon, or the number of open threads inside
 a comment bubble. Hovering it shows a tooltip with its shortcut; clicking (or tapping) it opens its menu of
 one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
-Add name), Copy all (Markdown for AI), Copy all as text, All comments, and nearest the button **Start commenting** with its shortcut and a switch.
+Add name, edited in place in that row), Copy as Markdown (for AI), Copy as Text, All comments, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
 **All comments** is a panel on the right that moves the page over to make room: every thread in page order with
 where it is, threads whose content is gone under "No longer on the page", and a Show resolved switch in its
 header. Choosing one scrolls to it and opens it while the panel stays open (or opens it beside the panel when it

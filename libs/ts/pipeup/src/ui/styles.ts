@@ -51,8 +51,8 @@ svg{display:block}
 font:inherit;font-size:14px;line-height:1.5;padding:3px 0;color:var(--pu-ink);background:transparent;transition:border-color var(--pu-enter) var(--pu-eo)}
 .row:hover .input,.input:hover{border-bottom-color:var(--pu-muted)}
 .input:focus{border-bottom-color:var(--pu-accent)}
-.name{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--pu-faint);padding-top:6px}
-.name .input{font-size:13px;height:24px}
+.ed{display:flex;gap:10px;align-items:center;min-height:34px;padding:6px 10px}
+.ed .input{font-size:13px;height:22px}
 
 /* Avatars: a squircle with the writer's animal (or initial) on a soft colour. Each comment keeps a fixed area
 at its top right for one, so its words are the same width with or without it. */

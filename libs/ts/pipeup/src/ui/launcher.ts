@@ -11,6 +11,9 @@ import { icon } from "./icons";
 import { narrow, placePopover, POPOVER, room } from "./layout";
 import { threadView, type ThreadView } from "./thread-view";
 
+/** How long the pointer may be away from the open menu (and its button) before the menu closes. */
+const AWAY_MS = 3000;
+
 /**
  * The comment control: one round button in the corner (the comment icon, or the open count inside a comment
  * bubble) that opens a menu, Comment nearest it. All comments is a panel on the right that stays open while
@@ -66,21 +69,20 @@ export function createLauncher(ctx: Ctx): View {
   // The panel comes last: open, it covers the control (its own close button and Esc take its place).
   ctx.layer.append(menu, launch, all);
   let menuOpen = false;
-  let editingName = false;
+  /** Ends editing your name in place (saving, or not), when it is being edited. */
+  let endEdit: ((save: boolean) => void) | null = null;
+  /** The pointer has been away from the menu and the button since this timer started; it closes the menu. */
+  let away = 0;
   let latest: readonly Thread[] = [];
-  let commenting = false;
   let shown = 0;
   let sideView: { id: string; view: ThreadView } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
   const setMenu = (on: boolean) => {
-    menuOpen = on;
-    if (!on) {
-      if (editingName) {
-        editingName = false;
-        build();
-      }
-    }
+    menuOpen = ctx.state.menu = on;
+    window.clearTimeout(away);
+    away = 0;
+    if (!on) endEdit?.(true);
     menu.classList.toggle("show", on);
     inert(menu, !on);
     btn.setAttribute("aria-expanded", String(on));
@@ -100,12 +102,6 @@ export function createLauncher(ctx: Ctx): View {
   const closeToControl = () => {
     setMenu(false);
     btn.focus({ preventScroll: true });
-  };
-  /** After editing the name, the menu comes back with focus on Your name. */
-  const backToName = () => {
-    editingName = false;
-    build();
-    idRow.focus({ preventScroll: true });
   };
   // Arrow keys, Home and End move between items, as in any menu.
   const nav = (e: KeyboardEvent) => {
@@ -289,22 +285,13 @@ export function createLauncher(ctx: Ctx): View {
   const face = h("span", { class: "ma" });
   const nameEnd = h("span", { class: "kc" });
   let faceKey = "";
-  const idRow = row(
-    face,
-    "",
-    () => {
-      editingName = true;
-      build();
-    },
-    false,
-    nameEnd,
-  );
+  const idRow = row(face, "", editName, false, nameEnd);
   idRow.dataset.item = "name";
-  const copyRow = row(icon("copy"), "Copy all", () => {
+  const copyRow = row(icon("copy"), "Copy as Markdown", () => {
     closeToControl();
     void ctx.menu.copyAll("ai");
   });
-  const textRow = row(icon("lines"), "Copy all as text", () => {
+  const textRow = row(icon("lines"), "Copy as Text", () => {
     closeToControl();
     void ctx.menu.copyAll("text");
   });
@@ -319,14 +306,12 @@ export function createLauncher(ctx: Ctx): View {
     false,
     count,
   );
-  // Nearest the button: comment mode, with its shortcut and a switch that shows it is on.
+  // Nearest the button: comment mode, with its shortcut and a switch that shows it is on. The menu stays open
+  // so the switch is seen to move.
   const startRow = row(
     icon("comment"),
     "Start commenting",
-    () => {
-      closeToControl();
-      ctx.setCommenting(!ctx.state.commenting);
-    },
+    () => ctx.setCommenting(!ctx.state.commenting),
     true,
     h("span", { class: "kc", "aria-hidden": "true" }, SHORTCUT_LABEL),
   );
@@ -349,8 +334,8 @@ export function createLauncher(ctx: Ctx): View {
       av.classList.add("in");
       face.replaceChildren(av);
     }
-    set(copyRow, "Copy all", "Markdown, with where each thread is");
-    set(textRow, "Copy all as text", "Just the words");
+    set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
+    set(textRow, "Copy as Text", "Just the words");
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
     set(
@@ -363,28 +348,41 @@ export function createLauncher(ctx: Ctx): View {
     );
   }
 
-  /** The rows, or the name field in their place while you edit your name. */
+  /** Brings the rows up to date and puts them in the menu. */
   function build(): void {
-    if (editingName) {
-      const input = h("textarea", { class: "input", rows: "1", "aria-label": "Your name" });
-      input.value = ctx.menu.name();
-      input.addEventListener("keydown", (e) => {
-        e.stopPropagation();
-        if (e.key === "Enter") {
-          e.preventDefault();
-          const value = input.value.trim();
-          if (value) void ctx.menu.rename(value).then(backToName);
-        } else if (e.key === "Escape") {
-          backToName();
-        }
-      });
-      menu.replaceChildren(h("label", { class: "name" }, "Your name", input));
-      // At once, not on a timer: keys typed (or Escape) right after choosing your name belong to the field.
-      input.focus({ preventScroll: true });
-      return;
-    }
     sync();
     if (menu.firstChild !== idRow) menu.replaceChildren(...rows);
+  }
+
+  /**
+   * Your name, edited in its own row: a field takes the row's place. Enter or leaving the field saves (an empty
+   * one keeps the name), Escape cancels; either way the row comes back and the menu stays open.
+   */
+  function editName(): void {
+    const input = h("input", { class: "input", type: "text", maxlength: "80", "aria-label": "Your name" });
+    input.value = ctx.menu.name();
+    const ed = h("div", { class: "ed" }, face.cloneNode(true), input);
+    const end = (save: boolean, back = false) => {
+      if (endEdit !== end) return;
+      endEdit = null;
+      const value = input.value.trim();
+      if (save && value && value !== ctx.menu.name()) void ctx.menu.rename(value).then(sync);
+      ed.replaceWith(idRow);
+      if (back) idRow.focus({ preventScroll: true });
+    };
+    endEdit = end;
+    input.addEventListener("keydown", (e) => {
+      // The field's keys are its own: never the menu's arrows, nor Escape for the menu or the page.
+      e.stopPropagation();
+      if (e.key === "Enter" || e.key === "Escape") {
+        e.preventDefault();
+        end(e.key === "Enter", true);
+      }
+    });
+    input.addEventListener("blur", () => end(true));
+    idRow.replaceWith(ed);
+    // At once, not on a timer: keys typed right after choosing your name belong to the field.
+    input.focus({ preventScroll: true });
   }
 
   btn.addEventListener("click", (e) => {
@@ -405,19 +403,46 @@ export function createLauncher(ctx: Ctx): View {
   };
   const onAnyClick = (e: Event) => {
     const path = e.composedPath();
-    if (menuOpen && !path.includes(menu) && !path.includes(btn)) setMenu(false);
+    if (menuOpen && !path.includes(menu) && !path.includes(btn)) {
+      setMenu(false);
+      // In comment mode that click only closes the menu: it picks nothing and the page never hears it.
+      if (ctx.state.commenting && !ctx.owns(e)) {
+        ctx.claim(e);
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
     // Only a click on the page itself closes the panel: Pipeup's own threads and bubbles leave it open.
     // Focus that was in the panel and went nowhere (empty page) comes back to the button; a page field keeps it.
     if (ctx.state.listing && !ctx.owns(e))
       setList(false, wasInPanel && (!document.activeElement || document.activeElement === document.body));
     if (!path.includes(side) && !path.includes(all)) closeSide(true);
   };
+  /**
+   * A pointer away from the menu and the button for 3 s closes the menu; coming back sooner keeps it open. Never
+   * while your name is being edited, and not for touch, which has no hover (a tap outside closes it instead).
+   */
+  const onPointer = (e: PointerEvent) => {
+    if (!menuOpen || e.pointerType === "touch" || (e.type === "pointerout" && e.relatedTarget)) return;
+    const path = e.composedPath();
+    if (e.type === "pointerover" && (path.includes(menu) || path.includes(btn))) {
+      window.clearTimeout(away);
+      away = 0;
+    } else if (!away)
+      away = window.setTimeout(() => {
+        away = 0;
+        if (!endEdit) setMenu(false);
+      }, AWAY_MS);
+  };
   window.addEventListener("pointerdown", onDown, true);
   window.addEventListener("click", onAnyClick, true);
+  // Over: the pointer arrived somewhere. Out with nowhere to go: it left the window.
+  window.addEventListener("pointerover", onPointer, true);
+  window.addEventListener("pointerout", onPointer, true);
   // Capture phase + stopPropagation: Escape closes the menu, then the panel, then the side thread, one at a
   // time, and never also an open thread. A reply line outside the panel keeps its own Escape.
   const onEscape = (e: KeyboardEvent) => {
-    if (e.key !== "Escape" || editingName) return;
+    if (e.key !== "Escape" || endEdit) return;
     const at = e.composedPath()[0];
     if (menuOpen) closeToControl();
     else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at)))
@@ -447,11 +472,8 @@ export function createLauncher(ctx: Ctx): View {
         btn.setAttribute("aria-label", n ? `Comment, ${n} open` : "Comment");
         shown = n;
       }
-      // Comment mode starting (its shortcut on a menu item, say) closes the menu.
-      if (ctx.state.commenting && !commenting && menuOpen) closeToControl();
-      commenting = ctx.state.commenting;
-      btn.classList.toggle("on", commenting);
-      if (menuOpen && !editingName) sync();
+      btn.classList.toggle("on", ctx.state.commenting);
+      if (menuOpen) sync();
       const listing = ctx.state.listing;
       // On a narrow screen the panel is the whole width, so a chosen thread needs it out of the way.
       all.classList.toggle("full", narrow());
@@ -470,6 +492,9 @@ export function createLauncher(ctx: Ctx): View {
     destroy() {
       window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("click", onAnyClick, true);
+      window.removeEventListener("pointerover", onPointer, true);
+      window.removeEventListener("pointerout", onPointer, true);
+      window.clearTimeout(away);
       window.removeEventListener("keydown", onEscape, true);
       menu.remove();
       all.remove();

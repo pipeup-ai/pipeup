@@ -276,7 +276,15 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     }
     e.stopPropagation();
     if (chosen || ctx.state.draft) return;
-    show(e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null);
+    show(!selecting() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null);
+  };
+  /** Selected words have their own comment icon: no block is offered while they are, wherever the pointer goes. */
+  const selecting = () => {
+    const sel = window.getSelection();
+    return !!sel && !sel.isCollapsed && sel.toString().trim() !== "";
+  };
+  const onSelect = () => {
+    if (!chosen && selecting()) show(null);
   };
 
   const mute = (e: Event) => {
@@ -295,7 +303,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     if (!onPage(e)) return;
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "click") onPick(e as MouseEvent);
+    // A click that closes the open menu does only that (whichever of the two hears it first).
+    if (e.type === "click" && !ctx.state.menu && !ctx.claimed(e)) onPick(e as MouseEvent);
   };
 
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
@@ -312,6 +321,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   };
 
   window.addEventListener("pointermove", onMove, true);
+  document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
   window.addEventListener("keydown", onKey, true);
@@ -338,6 +348,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       stopFade();
       stopBar();
       window.removeEventListener("pointermove", onMove, true);
+      document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);
       window.removeEventListener("keydown", onKey, true);

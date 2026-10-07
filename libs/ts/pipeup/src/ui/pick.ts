@@ -3,12 +3,28 @@ export interface Look {
   box(el: Element): { left: number; top: number; width: number; height: number };
   /** The element draws something of its own — a background, border or shadow — so it reads as a block. */
   drawn(el: Element): boolean;
+  /** The element lays out its children as flex or grid, so with several children it visibly groups them. */
+  grouped(el: Element): boolean;
   viewport(): { width: number; height: number };
 }
 
+/** Accessible roles that make an element "a thing" (widgets, landmarks and structure). */
+const ROLES = (
+  "button link img figure region list listitem tab tabpanel article navigation complementary banner " +
+  "contentinfo form search group dialog menu menuitem checkbox switch radio slider textbox combobox option " +
+  "row cell heading table"
+)
+  .split(" ")
+  .map((r) => `[role=${r}]`);
 /** Things that are obviously "a thing" to comment on. */
-const OBVIOUS =
-  "button,a,input,select,textarea,label,summary,details,img,svg,canvas,video,picture,figure,table,th,td,li,p,h1,h2,h3,h4,h5,h6,blockquote,pre";
+const OBVIOUS = [
+  "button,a,input,select,textarea,label,summary,details,img,svg,canvas,video,picture,figure,figcaption,table,th,td",
+  "li,ul,ol,dl,dt,dd,p,h1,h2,h3,h4,h5,h6,blockquote,pre",
+  "section,article,aside,nav,header,footer,main,form,fieldset",
+  ...ROLES,
+].join(",");
+/** Controls whose own layout wrappers are part of them, never blocks of their own. */
+const CONTROL = "a,button,label,summary,[role=button],[role=link],[role=tab],[role=option],[role=menuitem]";
 /** Containers covering more of the window than this are the page, not a block. */
 const LARGE = 0.6;
 /** Boxes within this many pixels of each other are the same block. */
@@ -35,7 +51,12 @@ export function pickBlock(from: Element, root: Element, look: Look): Element | n
       break;
     }
     if (b.width * b.height > large) continue;
-    if (el.matches(OBVIOUS) || look.drawn(el)) {
+    if (
+      el.matches(OBVIOUS) ||
+      look.drawn(el) ||
+      // A flex or grid box holding several things groups them, unless it is a control's own inner layout.
+      (el.childElementCount > 1 && !el.parentElement?.closest(CONTROL) && look.grouped(el))
+    ) {
       found = el;
       break;
     }
@@ -60,7 +81,7 @@ export function parentBlock(el: Element, root: Element, look: Look): Element | n
   return null;
 }
 
-/** The real page: boxes from layout, "drawn" from computed backgrounds, borders and shadows. */
+/** The real page: boxes from layout, "drawn" and "grouped" from computed styles. */
 export function pageLook(win: Window = window): Look {
   return {
     box: (el) => el.getBoundingClientRect(),
@@ -72,6 +93,7 @@ export function pageLook(win: Window = window): Look {
       );
       return painted || bordered || s.backgroundImage !== "none" || s.boxShadow !== "none";
     },
+    grouped: (el) => /^(inline-)?(flex|grid)$/.test(win.getComputedStyle(el).display),
     viewport: () => ({ width: win.innerWidth, height: win.innerHeight }),
   };
 }

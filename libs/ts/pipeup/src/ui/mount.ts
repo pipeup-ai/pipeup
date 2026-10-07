@@ -93,7 +93,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   });
   if (ephemeral)
     app.ctx.toast(
-      "This browser can't keep comments for this page — copy the comments (Copy all) to keep them",
+      "This browser can't keep comments for this page — copy the comments (Copy as Markdown) to keep them",
     );
   const onHide = () => void doc.flush().catch((e: unknown) => globalThis.reportError?.(e));
   let unmounted = false;

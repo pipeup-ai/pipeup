@@ -7,6 +7,29 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.0-beta.1] - 2026-10-07
+
+### Changed
+- The menu's copy rows are called **Copy as Markdown** and **Copy as Text**.
+- Flipping **Start commenting** leaves the menu open so you see the switch move; the menu closes on Esc,
+  a click outside, or 3 seconds after the pointer leaves it.
+- Your name is edited right in the menu's identity row; Esc cancels and keeps the menu open.
+- Comment mode picks more of a page: sections, articles, navigation, forms, lists, captions, elements
+  with an accessible role, and boxes that lay out several things in a row or grid.
+
+### Added
+- `--pipeup-panel`: while All comments is open, its width is published so a page's fixed bars can move
+  clear of it (the rest of the page is already moved over).
+
+### Fixed
+- The site's Try bar and slide controls no longer sit under the All comments panel.
+- In comment mode no block is outlined while text is selected.
+- On the website, the showcase can be commented on as one block, and every button, link and navigation
+  bar can be commented on too, except the Try pages' top bar, whose example links are now a Try menu.
+- The Try pages' top bar keeps its links on one line on phones; the GitHub link shows just its icon
+  there, and the pre-release label shortens to "Beta".
+- `pipeup/package.json` can be imported (it is in the package's `exports`).
+
 ## [0.4.0-beta.0] - 2026-10-06
 
 A pre-release to try out the pre-release channel itself: the same library as 0.3.2, published
@@ -77,7 +100,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.5.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.1...HEAD
+[0.4.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0-beta.0...v0.4.0-beta.1
 [0.4.0-beta.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0-beta.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1

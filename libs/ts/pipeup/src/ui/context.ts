@@ -29,6 +29,8 @@ export interface UiState {
   listing: boolean;
   /** A thread chosen from All comments on a narrow screen is open: comments show until it closes. */
   reading: boolean;
+  /** The comment control's menu is open: in comment mode a click outside it only closes it. */
+  menu: boolean;
 }
 
 /** Something that draws: rebuilt on render, repositioned every frame. */
@@ -72,6 +74,8 @@ export interface Ctx {
   owns(e: Event): boolean;
   /** A view handled this page event; the app won't treat it as a click elsewhere. */
   claim(e: Event): void;
+  /** A view already handled this event. */
+  claimed(e: Event): boolean;
   open(id: string | null): void;
   /** Puts the cursor in thread `id`'s reply line, unless the reader is typing elsewhere. */
   focusReply(id: string): void;

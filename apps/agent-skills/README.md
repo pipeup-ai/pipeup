@@ -26,7 +26,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | Item | Meaning | Status |
 |---|---|---|
 | `<html data-pipeup-doc="<id>:<key>">` | Document identity and key. Generated once, never changed. | Format exists (core `newDocumentAttribute`); auto-detection — **done in 0.3.0** |
-| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 32 KB gzip; on npm from 0.3.0 |
+| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 32 KB gzip; on npm from 0.3.0 |
 | Auto-mount when `data-pipeup-doc` is present | No inline script needed, so strict CSP pages work | **Done in 0.3.0** |
 | `Pipeup.mount(options)` | Manual mount; options below | **Done in 0.3.0** (`root`, `name`, `store`) |
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |
@@ -35,6 +35,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `data-pipeup-ignore` | Chrome that is never a comment target and keeps working in comment mode | **Done** — never a comment target; keeps working in comment mode (0.3.0) |
 | `<html data-pipeup-layout="column\|bubbles">` | Authors set it to force the column or bubbles; Pipeup reads it and never sets it | **Done in 0.3.0** |
 | `Pipeup.onReveal(view => …)` / `Pipeup.setViewState({...})` | Reopen tabs/routes; record chart filters | **Planned for 0.4** |
+| `var(--pipeup-panel, 0px)` | Width of the open All comments panel, for a page's fixed bars (the rest of the page is moved over for it) | **Done** (0.4) |
 | `<html data-pipeup-reserve>` | The page reserves a 320 px gutter and consumes `var(--pipeup-gutter, 0px)`; Pipeup publishes `320px` while its column shows, `0px` otherwise | **Done in 0.3.0** |
 | Comment mode (**C**, the control's Comment button; Option-click pins) | Blocks and pins on any page; the page's controls never fire while it is on | **Done in 0.3.0** |
 

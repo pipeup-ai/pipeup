@@ -9,7 +9,7 @@ const ANCHOR = { path: "", fingerprint: "00000000", snapshot: "x" };
 async function someOps(doc: string) {
   const me = await createIdentity();
   const log = new OpLog(doc);
-  await log.append(me, "Kev", {
+  await log.append(me, "Sam", {
     kind: "create",
     text: "secret words",
     anchor: ANCHOR,

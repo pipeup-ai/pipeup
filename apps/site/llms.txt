@@ -4,7 +4,7 @@
 
 ## Add Pipeup to an HTML page
 
-1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file. Or load the pinned release from a CDN instead of steps 1 and 3: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.0/dist/pipeup.min.js"></script>`.
+1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file. Or load the pinned release from a CDN instead of steps 1 and 3: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js"></script>`.
 2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented.
 3. Add `<script src="pipeup.min.js"></script>` just before `</body>`.
 4. Mark stable blocks with short `data-pipeup-id` names, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.

@@ -129,10 +129,13 @@ export async function openMenu(page: Page): Promise<void> {
   await expect(page.locator(".menu.show")).toHaveCount(1);
 }
 
-/** Turns comment mode on or off from the menu's Start commenting switch. */
+/** Turns comment mode on or off from the menu's Start commenting switch, then closes the menu with Esc. */
 export async function toggleCommenting(page: Page): Promise<void> {
   await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
+  // The menu stays open so the switch is seen to move.
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
 }
 
 /** Turns comment mode on with its shortcut (comments only show in comment mode), and waits for it. */

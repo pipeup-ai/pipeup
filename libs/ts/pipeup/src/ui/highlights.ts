@@ -43,7 +43,8 @@ export interface PageSheet {
   fade(k: number): void;
   /**
    * Makes room for the All comments panel: a right margin of `px` on the page, easing in and out unless
-   * `still`; 0 takes it away (the page eases back, then the rule goes).
+   * `still`; 0 takes it away (the page eases back, then the rule goes). The width is also published as
+   * --pipeup-panel, so a page's fixed elements can move clear of the panel too.
    */
   room(px: number, still: boolean): void;
   remove(): void;
@@ -73,7 +74,9 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
       paintRules(dark, k) +
         (current === null ? "" : `:root{--pipeup-gutter:${current}px}`) +
         (pick ? PICKING : "") +
-        (margin || ease ? `html{${margin ? `margin-right:${margin}px!important;` : ""}${ease}}` : ""),
+        (margin || ease
+          ? `html{--pipeup-panel:${margin}px;${margin ? `margin-right:${margin}px!important;` : ""}${ease}}`
+          : ""),
     );
   write();
   doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];

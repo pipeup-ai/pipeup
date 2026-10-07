@@ -51,8 +51,9 @@ Choose the layout by page type, then follow the Steps for markup.
   - Give charts, images and icons a `data-pipeup-label` (Step 4).
   - Reviewers press **⇧⌥C** on a Mac or **Shift+Alt+C** elsewhere (or the control's Comment button) to comment on blocks: the outline picks
     the nearest element with a data-pipeup-id, an obvious element (button, link, image, paragraph,
-    table, chart) or a card with its own background or border, and skips containers covering most
-    of the window. Clear blocks with ids make this precise. Clicking a block opens its comment box at
+    table, chart, list, section, form, anything with an ARIA role), a card with its own background or
+    border, or a flex/grid box holding several things, and skips containers covering most of the
+    window. Clear blocks with ids make this precise. Clicking a block opens its comment box at
     once; the bar's expand icon moves the box to the block around it. Option-click drops a pin.
 - **Deck** (slides):
   - One element per slide, marked with `data-pipeup-slide` (Step 5); one slide visible at a time.
@@ -72,7 +73,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.0/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -133,7 +134,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.0/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.0-beta.1/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -146,6 +147,7 @@ Markup on the page:
 |---|---|---|
 | `data-pipeup-doc` | `<html>` | The document's identity and key. Added by `pipeup init`; never change it. |
 | `data-pipeup-reserve` | `<html>` | The page reserves a 320 px comment gutter on the right and lays itself out with `var(--pipeup-gutter, 0px)` (documents you create). |
+| `--pipeup-panel` (read it, don't set it) | page CSS | While All comments is open, Pipeup moves the page over by the panel's width and publishes that width here. Normal content moves by itself; give fixed or sticky bars `right: var(--pipeup-panel, 0px)` (or offset centred ones by half of it) and size things in `%`, not `vw`, so nothing sits under the panel. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |

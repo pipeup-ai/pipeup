@@ -9,7 +9,7 @@ This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-appl
 
 ## 1. Read the feedback
 
-The input is the Markdown a reviewer copied with **Copy all** and pasted into the conversation. Each
+The input is the Markdown a reviewer copied with **Copy as Markdown** and pasted into the conversation. Each
 thread has a `- **Thread:** <id>` line — you need it to refer to the thread. (**Later:** feedback
 files read with `npx pipeup read page.html feedback/*.pipeup.json --as ai`; the page has no controls
 for producing them yet.)

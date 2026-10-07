@@ -27,7 +27,7 @@ People comment right on your page: documents, decks or whole sites. No accounts,
 
 - Select words and click the comment icon, or press Shift+Option+C and click any block. Option-click (Alt-click) drops a pin.
 - Comments stay attached to what they're about when the page changes.
-- Comments are kept in the reviewer's browser. **Copy all** copies them as Markdown that says exactly where each one is, ready to send to the author or paste into an AI agent; **Copy all as text** gives just the words.
+- Comments are kept in the reviewer's browser. **Copy as Markdown** copies them as Markdown that says exactly where each one is, ready to send to the author or paste into an AI agent; **Copy as Text** gives just the words.
 
 ## For agents
 

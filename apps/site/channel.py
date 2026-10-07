@@ -39,10 +39,22 @@ text = index.read_text()
 assert "<body>" in text
 index.write_text(text.replace("<body>", "<body>" + BAR, 1))
 
-LABEL = f'<a class="pre" href="{STABLE}" style="color:#5c4b16;background:#fbf3db;border-radius:999px;padding:4px 10px" title="Go to the stable site">Pre-release {v}</a>\n      <a class="gh"'
+# The label stays on one line, and on phones
+# the label shortens to "Beta".
+GH = '<a class="gh"'
+LABEL = (
+    f'<a class="pre" href="{STABLE}" title="Pre-release {v}: go to the stable site">'
+    f'<span class="pre-v">Pre-release {v}</span><span class="pre-s">Beta</span></a>\n      ' + GH
+)
+END_OF_STYLE = "    </style>\n    <div class=\"pu-try\""
+STYLE = """      .pu-try .pre { white-space: nowrap; color: #5c4b16; background: #fbf3db; border-radius: 999px; padding: 4px 10px; }
+      .pu-try .pre:hover { color: #111; }
+      .pu-try .pre-s { display: none; }
+      @media (max-width: 520px) { .pu-try .pre-v { display: none; } .pu-try .pre-s { display: inline; } }
+""" + END_OF_STYLE
 for f in (out / "try").glob("*.html"):
     text = f.read_text()
-    assert '<a class="gh"' in text, f
-    f.write_text(text.replace('<a class="gh"', LABEL, 1))
+    assert GH in text and END_OF_STYLE in text, f
+    f.write_text(text.replace(GH, LABEL, 1).replace(END_OF_STYLE, STYLE, 1))
 
 print(f"Marked {out} as pre-release {version} at {NEXT}")
