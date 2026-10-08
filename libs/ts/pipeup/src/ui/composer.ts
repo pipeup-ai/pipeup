@@ -58,15 +58,15 @@ export interface ComposerTool {
 export interface ComposerSource {
   tools(): ComposerTool[];
   note(): string | null;
-  subscribe(fn: () => void): () => void;
 }
 let source: ComposerSource | null = null;
 export const setComposerSource = (s: ComposerSource | null): void => {
   source = s;
 };
-/** The one quiet line add-ons may show above the new-comment box, and a way to hear it change. */
+/** The one quiet line add-ons may show above the new-comment box. */
 export const composerNote = (): string | null => source?.note() ?? null;
-export const onComposerNote = (fn: () => void): (() => void) => source?.subscribe(fn) ?? (() => {});
+/** Sent to a writing line or a new-comment box when what add-ons put in it changes. */
+export const SOURCE_CHANGED = "pu-source";
 
 /** A writing line: no placeholder, Enter sends, Shift+Enter breaks, Esc cancels, a paper plane appears with text. */
 export function composer(o: ComposerOptions): Composer {
@@ -163,14 +163,7 @@ export function composer(o: ComposerOptions): Composer {
     slot.hidden = tools.size === 0;
   };
   syncTools();
-  let seen = false;
-  const off = onComposerNote(() => {
-    // Tools come and go with add-ons; a line that was on screen and is gone stops listening.
-    if (element.isConnected) {
-      seen = true;
-      syncTools();
-    } else if (seen) off();
-  });
+  element.addEventListener(SOURCE_CHANGED, syncTools);
   const submit = async () => {
     const text = input.value.trim();
     if (!text || busy) return;

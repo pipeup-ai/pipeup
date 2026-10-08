@@ -29,7 +29,7 @@ change the API and the stored comment format.
 - Ops are stored and exported as `{ body, sig }` only, and each is bounded in size. A saved change that can't be
   read is kept, left out and counted in one console warning.
 - A second copy of Pipeup on a page warns and hands over to the first.
-- The bundle is about 41.5 KB gzip: add-on support cost 3.8 KB and the min and esm budgets are now 44 KB.
+- The bundle is 41.1 KB gzip (36.8 KB in 0.4.1): add-on support cost 4.4 KB, and the min and esm budgets are now 44 KB.
 
 ## [0.4.1] - 2026-10-07
 

@@ -3,7 +3,7 @@
 // add-on API's names (PUBLIC_NAMES) out of it: an add-on built separately would write `menu` where the core reads `a`.
 // `navigate` here is Here.navigate; never use it for the Navigation API (window.navigation.navigate).
 const INTERNAL =
-  "menuRows|rev|notes|statuses|frames|uis|subs|sheets|overlays|panels|queue|uiKey|statusText|rowFor|setNote|addTool|heard|pump|uiState|putStatus|notice|addSay|ovFor|addSheet|onTick|onSnap|panel|isWriting|showResolved|commenting|listing|reading|draft|quoteAt|readsAt|owns|claim|claimed|focusReply|startDraft|moveDraft|draftEmpty|keepCaret|postDraft|cancelDraft|setCommenting|dismiss|registerDraft|toast|report|pulse|render|frame|layer|pending|actions|visible|hideLabel|setLabel|isEmpty|caret|onSend|onCancel|want|toggleResolved|picking|gutter|fade|room|drawn|grouped|viewport|box|popovers|variant|active|hot|menu|here|holds|navigate|elsewhere|recheck|el|up|level|say|hideHint|back|cursor|away|resume|refocus|backToDraft";
+  "menuRows|rev|notes|statuses|toolList|frames|uis|subs|overlays|undo|queue|uiKey|statusText|rowFor|setIn|addTool|addTo|own|heard|pump|uiState|notice|addSay|ovFor|addSheet|onTick|onSnap|panel|isWriting|showResolved|commenting|listing|reading|draft|quoteAt|readsAt|owns|claim|claimed|focusReply|startDraft|moveDraft|draftEmpty|keepCaret|postDraft|cancelDraft|setCommenting|dismiss|registerDraft|toast|report|pulse|render|frame|layer|pending|actions|visible|hideLabel|setLabel|isEmpty|caret|onSend|onCancel|want|toggleResolved|picking|gutter|fade|room|drawn|grouped|viewport|box|popovers|variant|active|hot|menu|here|holds|navigate|elsewhere|recheck|el|up|level|say|hideHint|back|cursor|away|resume|refocus|backToDraft";
 
 export const MANGLED = new RegExp(`^(${INTERNAL})$`);
 

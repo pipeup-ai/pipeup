@@ -1477,11 +1477,13 @@ they are re-measured when stage 0 is built.
 | **All stages** | | **~1.9 KB** | |
 
 **Decision 1 (recorded 2026-10-07, revised 2026-10-08).** The estimates above proved light. As built, all
-stages together cost **+3.8 KB gzip** over 0.4.1's 37.7 KB (not ~2.0 KB): the registry, host and surface
-about 2.6 KB, composer tools and dictation about 0.4 KB, menu rows 0.4 KB, styles 0.3 KB. Property mangling
-of the surface's internals saved nothing worth keeping, and no stage could be cut without dropping a slot an
-add-on needs. So the **min and esm budgets are 44 KB** (measured 41.5 KB min, 41.0 KB esm), stated in the
-release notes, for the maintainer to confirm or to send back for a size pass. The original reasoning, kept
+stages together cost **+4.4 KB gzip** (4,415 B: 37,707 B in 0.4.1, 42,122 B now), not ~2.0 KB. It is all API,
+none of it add-on code: per file, minified, the registry, host and surface are 7.9 KB, composer tools and
+dictation +1.3 KB, styles +1.3 KB, launcher rows +1.0 KB, the data slots in the document and log +0.7 KB, and
+mount, app and the views +1.0 KB. A size pass (below) took 0.2 KB back; no stage could be cut without dropping a
+slot an add-on needs. So the **min and esm budgets are 44 KB** (measured 41.1 KB min, 40.7 KB esm), stated in
+the release notes, for the maintainer to confirm or to send back for another size pass. An earlier version of
+this paragraph said +3.8 KB; it compared figures in two different units. The original reasoning, kept
 for the record: the min and esm budgets were 40 KB, so every stage fitted: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
 about 2.0 KB of the 3,253 B headroom. That leaves the 0.5 touch and drawer work about 1.2 KB before it
 needs size work of its own. The rules:
@@ -1727,3 +1729,11 @@ gets into the core").
   count). Share rechecks the Web Lock per send (it holds it 10 s) so each tab can post its own comments. Tested
   by hand from `file://` and `http://localhost` in Chrome, Firefox and Safari at once: three browsers meet
   through a relay and Safari sees two others.
+- 2026-10-08 — Size pass on the core, 42,350 B → 42,122 B gzip (−228 B): the surface keeps one record of what
+  each add-on added (so removing an add-on is one loop), writing lines and new-comment boxes hear a single event
+  instead of each subscribing, one guard helper for the host's methods after teardown, one validation warning.
+  Looked for and not found: dead code (no unused locals or parameters; every exported name nothing else uses is
+  already tree-shaken; every CSS class is used), anything worth a stronger CSS minifier (lightningcss: −21 B), a
+  gain from mangling every non-reserved property name (±0 B), and a browser-coverage view of what never runs (10%
+  of the bundle, almost all fallbacks, error paths and the add-on slots, which only the add-on tests use). The
+  rest is the API itself. Correction: the cost of the API is +4.4 KB, not +3.8 KB (two units were mixed).

@@ -2,7 +2,7 @@ import type { Listener, PipeupDocument } from "../document";
 import { animalName } from "../model/animals";
 import type { SignedOp, Thread } from "../model/types";
 import { avatar } from "./animals";
-import { setComposerSource, type ComposerTool } from "./composer";
+import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
 import type { ViewState } from "./here";
@@ -174,11 +174,6 @@ const ID = /^[a-z][a-z0-9-]{1,23}$/;
 const RESERVED = new Set(["local", "file", "page", "user", "pipeup", "presence", "sync"]);
 const ANNOUNCE_MS = 10_000;
 
-interface Item {
-  id: string;
-  item: MenuItem;
-}
-
 /**
  * Everything add-ons put on the page, held by the app (not by the views) so it survives layout rebuilds. Each
  * thing belongs to one add-on and is removed with it.
@@ -186,17 +181,17 @@ interface Item {
 export class Surface {
   /** Bumped when the set of menu rows changes. */
   rev = 0;
-  readonly menuRows: Item[] = [];
-  private readonly notes = new Map<string, string>();
-  private readonly statuses = new Map<string, Status>();
-  private readonly tools: { id: string; tool: ComposerTool }[] = [];
-  private readonly frames = new Set<{ id: string; fn: () => void }>();
-  private readonly uis = new Set<{ id: string; fn: (ui: UiSnapshot) => void }>();
+  readonly menuRows: MenuItem[] = [];
+  readonly notes = new Map<string, string>();
+  readonly statuses = new Map<string, Status>();
+  private readonly toolList: ComposerTool[] = [];
+  private readonly frames = new Set<() => void>();
+  private readonly uis = new Set<(ui: UiSnapshot) => void>();
   private readonly subs = new Set<(structure: boolean) => void>();
-  private readonly sheets = new Map<string, Set<HTMLElement | CSSStyleSheet>>();
   private readonly overlays = new Map<string, HTMLElement>();
   private readonly pending = new Map<string, string>();
-  private readonly panels = new Set<{ id: string; close(): void }>();
+  /** How to take away each thing an add-on added, so everything one add-on added goes with it. */
+  private readonly undo = new Map<string, Set<Off>>();
   private remote = { n: 0, who: new Set<string>() };
   private last = 0;
   private timer = 0;
@@ -208,23 +203,30 @@ export class Surface {
     private readonly after: Node,
   ) {
     setComposerSource({
-      tools: () => this.tools.map((t) => t.tool),
+      tools: () => this.toolList,
       note: () => [...this.notes.values()].at(-1) ?? null,
-      subscribe: (fn) => {
-        this.subs.add(fn);
-        return () => this.subs.delete(fn);
-      },
     });
   }
 
   subscribe(fn: (structure: boolean) => void): Off {
     this.subs.add(fn);
-    return () => this.subs.delete(fn);
+    return () => void this.subs.delete(fn);
   }
 
   private changed(structure: boolean): void {
     if (structure) this.rev++;
     for (const fn of [...this.subs]) fn(structure);
+    // Writing lines and new-comment boxes already on screen pick up new tools and notes.
+    for (const el of this.ctx.layer.querySelectorAll(".row, .draft"))
+      el.dispatchEvent(new Event(SOURCE_CHANGED));
+  }
+
+  /** Remembers how to remove something an add-on added; returns the add-on's own `Off` for it. */
+  private own(id: string, remove: Off): Off {
+    const set = this.undo.get(id) ?? this.undo.set(id, new Set()).get(id)!;
+    const off = () => void (set.delete(off) && remove());
+    set.add(off);
+    return off;
   }
 
   /** The add-ons' statuses, one line. */
@@ -233,41 +235,31 @@ export class Surface {
   }
 
   rowFor(id: string, item: MenuItem): ItemHandle {
-    const entry = { id, item };
-    this.menuRows.push(entry);
+    this.menuRows.push(item);
     this.changed(true);
     return {
       update: () => this.changed(false),
-      remove: () => {
-        const at = this.menuRows.indexOf(entry);
-        if (at < 0) return;
-        this.menuRows.splice(at, 1);
+      remove: this.own(id, () => {
+        this.menuRows.splice(this.menuRows.indexOf(item), 1);
         this.changed(true);
-      },
+      }),
     };
   }
 
-  setNote(id: string, text: string | null): void {
-    if (text) this.notes.set(id, text);
-    else this.notes.delete(id);
-    this.changed(false);
-  }
-
-  putStatus(id: string, status: Status | null): void {
-    if (status) this.statuses.set(id, status);
-    else this.statuses.delete(id);
+  /** Sets (or, with null, removes) one add-on's note or status. */
+  setIn<T>(map: Map<string, T>, id: string, value: T | null): void {
+    if (value) map.set(id, value);
+    else map.delete(id);
     this.changed(false);
   }
 
   addTool(id: string, tool: ComposerTool): Off {
-    const entry = { id, tool };
-    this.tools.push(entry);
+    this.toolList.push(tool);
     this.changed(false);
-    return () => {
-      const at = this.tools.indexOf(entry);
-      if (at >= 0) this.tools.splice(at, 1);
+    return this.own(id, () => {
+      this.toolList.splice(this.toolList.indexOf(tool), 1);
       this.changed(false);
-    };
+    });
   }
 
   /** Comments are closed: only the control shows, so a notice waits for the reviewer to open Pipeup. */
@@ -290,9 +282,10 @@ export class Surface {
 
   /** A reviewer is writing: a Pipeup line has words or focus. */
   private isWriting(): boolean {
-    const a = this.shadow.activeElement;
-    if (a instanceof HTMLTextAreaElement) return true;
-    return [...this.ctx.layer.querySelectorAll("textarea")].some((t) => t.value.trim() !== "");
+    return (
+      this.shadow.activeElement instanceof HTMLTextAreaElement ||
+      [...this.ctx.layer.querySelectorAll("textarea")].some((t) => t.value.trim() !== "")
+    );
   }
 
   /**
@@ -314,19 +307,12 @@ export class Surface {
     this.pump();
   }
 
-  private pump(): void {
-    if (this.timer || this.remote.n === 0) return;
-    const wait = Math.max(0, this.last + ANNOUNCE_MS - Date.now());
+  private pump(wait = Math.max(0, this.last + ANNOUNCE_MS - Date.now())): void {
+    if (this.timer || !this.remote.n) return;
     this.timer = window.setTimeout(() => {
       this.timer = 0;
       // Nothing is announced while comments are closed or while the reviewer writes: it waits.
-      if (this.ctx.state.hidden || this.isWriting()) {
-        this.timer = window.setTimeout(() => {
-          this.timer = 0;
-          this.pump();
-        }, 1000);
-        return;
-      }
+      if (this.ctx.state.hidden || this.isWriting()) return this.pump(1000);
       const { n, who } = this.remote;
       this.remote = { n: 0, who: new Set() };
       this.last = Date.now();
@@ -348,80 +334,69 @@ export class Surface {
 
   addSheet(id: string, css: string): Off {
     const Sheet = this.ctx.host.ownerDocument.defaultView?.CSSStyleSheet;
-    let node: HTMLElement | CSSStyleSheet;
-    if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in this.shadow) {
-      const sheet = new Sheet();
+    // A constructed sheet works under a strict CSP; a <style> is the fallback for older browsers.
+    const sheet =
+      Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in this.shadow ? new Sheet() : null;
+    if (sheet) {
       sheet.replaceSync(css);
       this.shadow.adoptedStyleSheets = [...this.shadow.adoptedStyleSheets, sheet];
-      node = sheet;
-    } else {
-      node = h("style", {}, css);
-      this.shadow.append(node);
     }
-    const set = this.sheets.get(id) ?? new Set();
-    set.add(node);
-    this.sheets.set(id, set);
-    return () => {
-      if (!set.delete(node)) return;
-      if (node instanceof HTMLElement) node.remove();
-      else this.shadow.adoptedStyleSheets = this.shadow.adoptedStyleSheets.filter((s) => s !== node);
-    };
+    const node = sheet ?? this.shadow.appendChild(h("style", {}, css));
+    return this.own(id, () =>
+      sheet
+        ? (this.shadow.adoptedStyleSheets = this.shadow.adoptedStyleSheets.filter((x) => x !== sheet))
+        : (node as HTMLElement).remove(),
+    );
+  }
+
+  /** Adds a callback to one of the sets; the add-on's `Off` takes it away. */
+  addTo<T>(id: string, set: Set<T>, fn: T): Off {
+    set.add(fn);
+    return this.own(id, () => set.delete(fn));
   }
 
   onTick(id: string, fn: () => void): Off {
-    const entry = { id, fn };
-    this.frames.add(entry);
-    return () => this.frames.delete(entry);
+    return this.addTo(id, this.frames, fn);
   }
 
   onSnap(id: string, fn: (ui: UiSnapshot) => void): Off {
-    const entry = { id, fn };
-    this.uis.add(entry);
-    this.safe(() => fn(this.uiState()));
-    return () => this.uis.delete(entry);
+    const off = this.addTo(id, this.uis, fn);
+    this.call(this.uis, fn, this.uiState());
+    return off;
   }
 
   uiState(): UiSnapshot {
     const { state } = this.ctx;
     const a = this.shadow.activeElement;
-    let writing: string | null = null;
-    if (a instanceof HTMLTextAreaElement) {
-      const row = a.closest<HTMLElement>("[data-thread]");
-      writing = row ? row.dataset.thread! : "";
-    }
     return {
       shown: !state.hidden,
       commentMode: state.commenting,
       allOpen: state.listing,
       dark: this.ctx.layer.classList.contains("dark"),
       view: this.ctx.here.view(),
-      writing,
+      writing:
+        a instanceof HTMLTextAreaElement
+          ? (a.closest<HTMLElement>("[data-thread]")?.dataset.thread ?? "")
+          : null,
     };
   }
 
   /** Runs once per animation frame, after the views; a callback that throws is removed. */
   frame(): void {
-    for (const entry of [...this.frames]) {
-      try {
-        entry.fn();
-      } catch (e) {
-        this.frames.delete(entry);
-        globalThis.reportError?.(e);
-      }
-    }
+    for (const fn of [...this.frames]) this.call(this.frames, fn);
     if (this.uis.size === 0) return;
     const ui = this.uiState();
     const key = JSON.stringify(ui);
     if (key === this.uiKey) return;
     this.uiKey = key;
-    for (const entry of [...this.uis]) this.safe(() => entry.fn(ui), entry);
+    for (const fn of [...this.uis]) this.call(this.uis, fn, ui);
   }
 
-  private safe(fn: () => void, entry?: { id: string }): void {
+  private call<A extends unknown[]>(set: Set<(...a: A) => void>, fn: (...a: A) => void, ...args: A): void {
     try {
-      fn();
+      fn(...args);
     } catch (e) {
-      if (entry) this.uis.delete(entry as never);
+      set.delete(fn);
       globalThis.reportError?.(e);
     }
   }
@@ -446,18 +421,15 @@ export class Surface {
     layer.append(panel);
     void panel.offsetWidth;
     panel.classList.add("show");
-    let done = false;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       e.stopPropagation();
       e.preventDefault();
       end();
     };
-    const end = () => {
-      if (done) return;
-      done = true;
+    // Closing is once-only: through the handle, Escape, the button or the add-on going away.
+    const end: Off = this.own(id, () => {
       window.removeEventListener("keydown", onKey, true);
-      this.panels.delete(entry);
       for (const c of others) c.inert = false;
       panel.classList.remove("show");
       panel.inert = true;
@@ -468,9 +440,7 @@ export class Surface {
       } catch (e) {
         globalThis.reportError?.(e);
       }
-    };
-    const entry = { id, close: end };
-    this.panels.add(entry);
+    });
     close.addEventListener("click", end);
     window.addEventListener("keydown", onKey, true);
     (panel.querySelector<HTMLElement>("button, input, textarea, select, a[href]") ?? panel).focus?.({
@@ -481,21 +451,11 @@ export class Surface {
 
   /** Removes everything one add-on added. */
   clear(id: string): void {
-    for (const p of [...this.panels]) if (p.id === id) p.close();
-    for (let i = this.menuRows.length; i--;) if (this.menuRows[i]!.id === id) this.menuRows.splice(i, 1);
-    for (let i = this.tools.length; i--;) if (this.tools[i]!.id === id) this.tools.splice(i, 1);
-    for (const e of [...this.frames]) if (e.id === id) this.frames.delete(e);
-    for (const e of [...this.uis]) if (e.id === id) this.uis.delete(e);
-    for (const node of this.sheets.get(id) ?? []) {
-      if (node instanceof HTMLElement) node.remove();
-      else this.shadow.adoptedStyleSheets = this.shadow.adoptedStyleSheets.filter((s) => s !== node);
-    }
-    this.sheets.delete(id);
+    for (const off of [...(this.undo.get(id) ?? [])]) off();
+    this.undo.delete(id);
     this.overlays.get(id)?.remove();
     this.overlays.delete(id);
-    this.notes.delete(id);
-    this.statuses.delete(id);
-    this.pending.delete(id);
+    for (const m of [this.notes, this.statuses, this.pending]) m.delete(id);
     this.changed(true);
   }
 
@@ -550,11 +510,19 @@ export function use(addon: PipeupAddon): void {
   if (firstCore) return firstCore.use(addon);
   const warn = (text: string) => console.warn(`pipeup: ${text}`);
   const a = addon as Partial<PipeupAddon> | null;
-  if (!a || typeof a !== "object" || typeof a.id !== "string" || !ID.test(a.id) || RESERVED.has(a.id))
-    return warn("an add-on needs an id of 2 to 24 lowercase letters, digits and dashes, not a reserved one");
+  if (
+    !a ||
+    typeof a !== "object" ||
+    typeof a.id !== "string" ||
+    !ID.test(a.id) ||
+    RESERVED.has(a.id) ||
+    typeof a.setup !== "function" ||
+    typeof a.network?.says !== "string"
+  )
+    return warn(
+      "an add-on needs an id of 2 to 24 lowercase letters, digits and dashes (not a reserved one), a setup function and a network statement",
+    );
   if (entries.has(a.id)) return warn(`the add-on "${a.id}" is already registered; the second is ignored`);
-  if (typeof a.setup !== "function" || !a.network || typeof a.network.says !== "string")
-    return warn(`the add-on "${a.id}" needs a setup function and a network statement`);
   const info: AddonInfo = {
     id: a.id,
     version: String(a.version ?? ""),
@@ -598,11 +566,12 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
   const offs = new Set<Off>();
   const { surface, doc } = l;
   const alive = () => !ac.signal.aborted;
-  /** After teardown, a host method does nothing. */
-  const g =
-    <A extends unknown[], R>(fn: (...args: A) => R, none: R) =>
-    (...args: A): R =>
-      alive() ? fn(...args) : none;
+  // After teardown, a host method does nothing, and what it returns does nothing either.
+  const nothing = Object.assign(() => {}, { update() {}, remove() {}, close() {} });
+  const live =
+    <A extends unknown[], R>(f: (...a: A) => R) =>
+    (...a: A) =>
+      (alive() ? f(...a) : nothing) as R;
   const view: AddonDocument = {
     id: doc.id,
     me: doc.me,
@@ -630,35 +599,20 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       offReason = String(reason);
     },
     merge: (ops) => (alive() ? doc.merge(ops, id) : Promise.resolve(0)),
-    addMenuItem: (item) => {
-      if (!alive()) return { update() {}, remove() {} };
-      return surface.rowFor(id, item);
-    },
-    notify: g((text: string) => surface.notice(id, text), undefined),
-    announce: g((text: string) => surface.addSay(text), undefined),
-    setComposerNote: g((text: string | null) => surface.setNote(id, text), undefined),
-    addComposerTool: g(
-      (tool: ComposerTool) => surface.addTool(id, tool),
-      () => {},
-    ),
-    openPanel: (content, o) => (alive() ? surface.panel(id, content, o) : { close() {} }),
-    addStyles: g(
-      (css: string) => surface.addSheet(id, css),
-      () => {},
-    ),
-    setStatus: g((s: Status | null) => surface.putStatus(id, s), undefined),
+    addMenuItem: live((item) => surface.rowFor(id, item)),
+    notify: live((text) => surface.notice(id, text)),
+    announce: live((text) => surface.addSay(text)),
+    setComposerNote: live((text) => surface.setIn(surface.notes, id, text)),
+    addComposerTool: live((tool) => surface.addTool(id, tool)),
+    openPanel: live((content, o) => surface.panel(id, content, o)),
+    addStyles: live((css) => surface.addSheet(id, css)),
+    setStatus: live((status) => surface.setIn(surface.statuses, id, status)),
     overlay: () => surface.ovFor(id),
-    onFrame: g(
-      (fn: () => void) => surface.onTick(id, fn),
-      () => {},
-    ),
+    onFrame: live((fn) => surface.onTick(id, fn)),
     where: (at) => surface.ctx.here.view(at),
     isHere: (v) => surface.ctx.here.holds(v),
     go: (v) => surface.ctx.here.navigate(v),
-    onUi: g(
-      (fn: (ui: UiSnapshot) => void) => surface.onSnap(id, fn),
-      () => {},
-    ),
+    onUi: live((fn) => surface.onSnap(id, fn)),
     avatar: (key, name) => {
       const el = avatar(key, name);
       el.classList.add("in");

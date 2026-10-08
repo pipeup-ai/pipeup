@@ -208,18 +208,15 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .note{display:block;padding:0 0 4px;font-size:12px;color:var(--fa)}
 .note[hidden]{display:none}
 .ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-/* An add-on's panel: the same full-height panel as All comments, with its own body. */
-.xp{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
-transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
-.xp.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
+/* An add-on's panel (.xp) is the same full-height panel as All comments (.all), with its own body. */
 .xb{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 16px;font-size:13px}
 .xb p{margin:0 0 10px}
 .xb button.go{padding:6px 12px;border:1px solid var(--ln);border-radius:8px;transition:background-color .2s var(--eo)}
 .xb button.go:hover,.xb button.go:focus-visible{background:var(--ho);outline:none}
 /* All comments: a full-height panel on the right that slides in (fades, with reduced motion). */
-.all{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
+.all,.xp{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
 transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
-.all.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
+.all.show,.xp.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
 .all.full{width:100%}
 .hd{display:flex;align-items:center;gap:8px;padding:12px 10px 8px 16px;font-weight:600}
 .pn{font-weight:400;color:var(--fa)}

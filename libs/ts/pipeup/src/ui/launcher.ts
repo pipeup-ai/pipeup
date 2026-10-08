@@ -444,7 +444,7 @@ export function createLauncher(ctx: Ctx): View {
     copyRow,
     textRow,
     allRow,
-    ...ctx.addons.menuRows.map((r) => extraRow(r.item)),
+    ...ctx.addons.menuRows.map(extraRow),
     sepB,
     startRow,
   ];
@@ -481,7 +481,7 @@ export function createLauncher(ctx: Ctx): View {
     statusRow.textContent = status;
     if (!status) statusRow.remove();
     else if (!statusRow.isConnected && menu.contains(idRow)) menu.prepend(statusRow);
-    for (const { item } of ctx.addons.menuRows) {
+    for (const item of ctx.addons.menuRows) {
       const b = extra.get(item);
       if (!b) continue;
       let on: boolean | undefined;

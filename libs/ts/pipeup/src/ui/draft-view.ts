@@ -1,6 +1,6 @@
 import { animalName } from "../model/animals";
 import { avatar, easeIn, retire } from "./animals";
-import { composer, composerNote, onComposerNote } from "./composer";
+import { composer, composerNote, SOURCE_CHANGED } from "./composer";
 import type { Ctx, Draft } from "./context";
 import { h, inert } from "./dom";
 
@@ -53,12 +53,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
     note.hidden = !text;
   };
   syncNote();
-  let seen = false;
-  const offNote = onComposerNote(() => {
-    if (note.isConnected) seen = true;
-    else if (seen) return offNote();
-    syncNote();
-  });
+
   const say = h("div", { class: "say" });
   // One line: a pasted newline can't split the name.
   const field = h("input", { class: "input", type: "text", maxlength: "80", "aria-label": "Your name" });
@@ -134,6 +129,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   setNaming(false);
   const ctxLine = h("div", { class: "ctx" }, o.label);
   const element = h("div", { class: "draft" }, ctxLine, note, comp.element, you);
+  element.addEventListener(SOURCE_CHANGED, syncNote);
   return {
     element,
     caret: () => {
