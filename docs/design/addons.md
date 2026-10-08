@@ -1481,7 +1481,7 @@ they are re-measured when stage 0 is built.
 | **All stages** | | **~1.9 KB** | |
 
 **Decision 1 (recorded 2026-10-07, revised 2026-10-08).** The estimates above proved light. As built, all
-stages together cost **+3.8 KB gzip** (3,799 B: 37,707 B in 0.4.1, 41,506 B now), not ~2.0 KB, after two size
+stages together cost **+3.8 KB gzip** (3,772 B: 37,707 B in 0.4.1, 41,479 B now), not ~2.0 KB, after two size
 passes took back 0.9 KB. It is all API, none of it add-on code (breakdown below). No stage could be cut without
 dropping a slot an add-on needs. So the **min and esm budgets are 42 KB** (measured 40.5 KB min, 40.1 KB esm),
 stated in the release notes, for the maintainer to confirm or to send back for another pass. The original reasoning, kept
