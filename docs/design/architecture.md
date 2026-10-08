@@ -204,7 +204,7 @@ A wrong-hash control was refused in all three browsers, so the SRI check ran. A 
 meaning; `pipeup+<id>.min.js` doesn't end that way, and an existing `.min.js` is served unchanged. The
 fallback name `pipeup-with-<id>.min.js` isn't needed.
 
-### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): private address passed, TLS and public host to do
+### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
 A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
 Mac, reached from a `file://` page at `127.0.0.1` (loopback) and at the Mac's LAN address (a private
@@ -224,12 +224,17 @@ no cookies. Requests to the LAN address carried no `Sec-Fetch-*` headers, becaus
 isn't a trustworthy origin. Chrome 154 neither prompted nor sent a private-network preflight for a
 `file://` page reaching a private address.
 
+**Public host over TLS.** The same checks against a Cloudflare Worker on `workers.dev` (HTTPS, HTTP/2),
+deployed for the test and deleted straight after. Chrome 154, Chromium 153, Firefox 157 and Safari 27
+all passed every row above: no preflight, the 429 readable, the `keepalive` POST at `pagehide` arrived,
+`Origin: null` and no cookies. A brand-new `workers.dev` subdomain took about two minutes to get its
+certificate.
+
 **Harness note.** macOS `open` drops the `?query` and `#fragment` from `file://` addresses; the Safari
 and Chrome runs passed the address through AppleScript instead.
 
 **Still to do for S6:**
 
-- The same checks over **TLS on a public host** (needs a host the maintainer chooses).
 - The same checks over **TLS on a private address**, with a certificate the browsers trust (an
   intranet's own CA). Local-network rules may treat secure and plain requests differently.
 
@@ -656,3 +661,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §11: 0.4.1 budgets 40 KB (min, esm), 12 KB (core): Tab in comment mode and the cursor's stops cost about +0.9 KB gzip (36,759 B before).
 - 2026-10-07 — §6: no third-party Ed25519 fallback (no runtime dependencies in Pipeup or its add-ons). §7: add-ons spike S5 passed — jsDelivr and unpkg serve `+` file names with SRI from `file://` in Chrome, Firefox and Safari.
 - 2026-10-07 — §7: add-ons spike S6, first half — the mailbox works from `file://` on loopback and a private address in Chrome, Firefox and Safari: no preflight, 429 readable, `keepalive` at `pagehide` arrives, no local-network prompt. TLS and a public host still to test.
+- 2026-10-07 — §7: S6 public half passed — a Cloudflare Worker over HTTPS, from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
