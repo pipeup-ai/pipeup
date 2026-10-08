@@ -201,10 +201,16 @@
       .s4 .cbox .txt::after { display: none; }
       .cbox .send { position: absolute; right: 12px; bottom: 15px; opacity: 0; transition: opacity 0.2s var(--ease); }
       .typing .cbox .send { opacity: 1; }
+      .cbox .send { transition: opacity 0.3s var(--ease), transform 0.35s var(--ease); }
+      .press .cbox .send { transform: scale(0.78); }
+      .s4 .cbox .send { opacity: 0; transform: translate(7px, -7px) scale(0.8); }
+      .cbox { transition: opacity 0.3s var(--ease) 0.3s, transform 0.4s var(--ease) 0.3s, box-shadow 0.5s var(--ease); }
+      .s4 .cbox { box-shadow: 0 0 0 4px rgba(83, 74, 183, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04); }
       .cbox .line { position: absolute; left: -1px; top: 10px; bottom: 10px; width: 2px; background: var(--violet); opacity: 0; transition: opacity 0.3s var(--ease); }
       .s4 .cbox .line { opacity: 1; }
       @keyframes blink { 50% { opacity: 0; } }
-      .cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; transition: transform 0.7s var(--move); }
+      .cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; transition: transform 0.7s var(--move), opacity 0.3s var(--ease); }
+      .cursor.hide { opacity: 0; }
       .cursor svg { display: block; transition: transform 0.12s var(--ease); transform-origin: 2px 2px; }
       .cursor.down svg { transform: scale(0.82); }
       .cursor::before { content: ""; position: absolute; left: -9px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: rgba(83, 74, 183, 0.22); transform: scale(0.3); opacity: 0; transition: transform 0.3s var(--ease), opacity 0.4s var(--ease); }
@@ -550,7 +556,7 @@
         const pauseBtn = document.querySelector(".pause");
         // When each step happens, in ms into the scene: chosen, marked, comment opens (the view slides over), posted.
         // `still`: the moment shown with reduced motion (the end, unless a scene says otherwise).
-        const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]], typeFrom: 4300, typeTo: 6700 };
+        const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7800, "s4"]], typeFrom: 4300, typeTo: 6700 };
         const KEYBOARD = { steps: [[6000, "s3"], [8200, "s4"]], typeFrom: 6500, typeTo: 7900, still: 8700 };
         const TIMES = [POINTER, POINTER, POINTER, KEYBOARD];
         // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: comment mode off)].
@@ -566,12 +572,14 @@
         ];
         const KEYS_END = 9800; // The last caption eases out before the next scene slides in.
         // The cursor: [ms, target, x, y, flags]. It only moves to act, and holds still while the comment is typed.
-        const SEND = [[6800, ".send", 0.5, 0.5, ""], [7150, ".send", 0.5, 0.5, "down"], [7300, ".send", 0.5, 0.5, ""]];
+        const SEND = [[6800, ".send", 0.5, 0.5, ""], [7600, ".send", 0.5, 0.5, "down"], [7800, ".send", 0.5, 0.5, ""], [8800, ".send", 0.5, 0.5, "hide"]];
+        // While the comment is typed the pointer hides where it was left, then shows again from that same spot to move on.
+        const QUIET = (sel, fx, fy) => [[4200, sel, fx, fy, "hide"], [6700, sel, fx, fy, ""]];
         const PATHS = [
           [[0, ".hl", 0.1, 2.4, ""], [400, ".hl", 0.02, 0.6, ""], [900, ".hl", 0.02, 0.6, "down"], [1150, ".hl", 0.98, 0.6, "down drag"],
-           [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...SEND],
-          [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...SEND],
-          [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...SEND],
+           [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...QUIET(".selicon", 0.5, 0.55), ...SEND],
+          [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...QUIET(".q4", 0.5, 0.18), ...SEND],
+          [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...QUIET(".cta", 0.6, 0.55), ...SEND],
           null, // Keyboard: no pointer at all.
         ];
         const kbScene = scenes[3];
@@ -601,6 +609,7 @@
             c.dataset.at = to;
           }
           c.className = "cursor " + flags;
+          scene.classList.toggle("press", flags.includes("down") && sel === ".send");
         }
         // The keyboard scene's block cursor: the outline wraps the block, the naming bar sits centred above it.
         function moveBlockCursor(scene, t) {
