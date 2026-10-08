@@ -34,6 +34,12 @@ export function reorder(parent: Element, els: readonly Element[], ref: Node | nu
   return moved;
 }
 
+/** The page's selection when it holds words (not collapsed, not only spaces). */
+export const selected = (): Selection | null => {
+  const sel = window.getSelection();
+  return sel && !sel.isCollapsed && sel.toString().trim() ? sel : null;
+};
+
 export function clip(text: string, n: number): string {
   return text.length > n ? text.slice(0, n - 1) + "…" : text;
 }

@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
-// 44 KB while add-on support is in (it measured +4.4 KB over 0.4.1's 36.8 KB); see add-ons design §15.
+// 42 KB while add-on support is in (it measured +3.8 KB over 0.4.1's 36.8 KB); see add-ons design §15.
 const BUDGETS = {
-  "dist/pipeup.min.js": 44 * 1024,
-  "dist/pipeup.esm.js": 44 * 1024,
+  "dist/pipeup.min.js": 42 * 1024,
+  "dist/pipeup.esm.js": 42 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

@@ -135,9 +135,11 @@ export function createLauncher(ctx: Ctx): View {
 
   const lost = (t: Thread) => lostIn(ctx, t);
   /** Open threads: here (the control's number), elsewhere (its dot), and all of them (All comments). */
-  const open = () => latest.filter((t) => !t.resolved && !ctx.elsewhere(t)).length;
-  const others = () => latest.filter((t) => !t.resolved && ctx.elsewhere(t)).length;
-  const allOpen = () => latest.filter((t) => !t.resolved).length;
+  const tally = (where?: boolean) =>
+    latest.filter((t) => !t.resolved && (where === undefined || ctx.elsewhere(t) === where)).length;
+  const open = () => tally(false);
+  const others = () => tally(true);
+  const allOpen = () => tally();
 
   /** Where a thread that can't be shown lives: "On slide 3", "In Pricing tab", or hidden on the page. */
   const placeOf = (t: Thread) => {
@@ -335,19 +337,13 @@ export function createLauncher(ctx: Ctx): View {
    * eases in on hover and keyboard focus, and is the row's description for screen readers. A switch row shows
    * its state with a switch.
    */
-  function row(
-    lead: Node,
-    label: string,
-    run: (e: MouseEvent) => void,
-    sw = false,
-    ...end: Node[]
-  ): HTMLButtonElement {
+  function row(lead: Node, run: (e: MouseEvent) => void, sw = false, ...end: Node[]): HTMLButtonElement {
     const b = h(
       "button",
       // A switch row is a menu's own checkbox item (valid inside role="menu"), drawn as a switch.
       { class: "mi", type: "button", role: sw ? "menuitemcheckbox" : "menuitem" },
       lead,
-      h("span", { class: "lb" }, label),
+      h("span", { class: "lb" }),
       ...end,
       sw && h("span", { class: "sw", "aria-hidden": "true" }),
       h("span", { class: "tt", "aria-hidden": "true" }),
@@ -372,20 +368,19 @@ export function createLauncher(ctx: Ctx): View {
   const face = h("span", { class: "ma" });
   const nameEnd = h("span", { class: "kc" });
   let faceKey = "";
-  const idRow = row(face, "", editName, false, nameEnd);
+  const idRow = row(face, editName, false, nameEnd);
   idRow.dataset.item = "name";
-  const copyRow = row(icon("copy"), "Copy as Markdown", () => {
+  const copyRow = row(icon("copy"), () => {
     closeToControl();
     void ctx.menu.copyAll("ai");
   });
-  const textRow = row(icon("lines"), "Copy as Text", () => {
+  const textRow = row(icon("lines"), () => {
     closeToControl();
     void ctx.menu.copyAll("text");
   });
   const count = h("span", { class: "kc" });
   const allRow = row(
     icon("list"),
-    "All comments",
     () => {
       setMenu(false);
       setList(true);
@@ -399,7 +394,6 @@ export function createLauncher(ctx: Ctx): View {
   // so closing the menu never takes it back.
   const startRow = row(
     icon("comment"),
-    "Start commenting",
     (e) => {
       const keys = !ctx.state.commenting && e.detail === 0;
       ctx.setCommenting(!ctx.state.commenting, keys);
@@ -421,7 +415,6 @@ export function createLauncher(ctx: Ctx): View {
     if (!b) {
       b = row(
         draw(item.icon, 15),
-        "",
         () => {
           // An action closes the menu; a switch stays, so it is seen to move.
           if (!item.checked) closeToControl();

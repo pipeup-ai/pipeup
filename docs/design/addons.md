@@ -1481,13 +1481,10 @@ they are re-measured when stage 0 is built.
 | **All stages** | | **~1.9 KB** | |
 
 **Decision 1 (recorded 2026-10-07, revised 2026-10-08).** The estimates above proved light. As built, all
-stages together cost **+4.4 KB gzip** (4,415 B: 37,707 B in 0.4.1, 42,122 B now), not ~2.0 KB. It is all API,
-none of it add-on code: per file, minified, the registry, host and surface are 7.9 KB, composer tools and
-dictation +1.3 KB, styles +1.3 KB, launcher rows +1.0 KB, the data slots in the document and log +0.7 KB, and
-mount, app and the views +1.0 KB. A size pass (below) took 0.2 KB back; no stage could be cut without dropping a
-slot an add-on needs. So the **min and esm budgets are 44 KB** (measured 41.1 KB min, 40.7 KB esm), stated in
-the release notes, for the maintainer to confirm or to send back for another size pass. An earlier version of
-this paragraph said +3.8 KB; it compared figures in two different units. The original reasoning, kept
+stages together cost **+3.8 KB gzip** (3,799 B: 37,707 B in 0.4.1, 41,506 B now), not ~2.0 KB, after two size
+passes took back 0.9 KB. It is all API, none of it add-on code (breakdown below). No stage could be cut without
+dropping a slot an add-on needs. So the **min and esm budgets are 42 KB** (measured 40.5 KB min, 40.1 KB esm),
+stated in the release notes, for the maintainer to confirm or to send back for another pass. The original reasoning, kept
 for the record: the min and esm budgets were 40 KB, so every stage fitted: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
 about 2.0 KB of the 3,253 B headroom. That leaves the 0.5 touch and drawer work about 1.2 KB before it
 needs size work of its own. The rules:
@@ -1497,7 +1494,7 @@ needs size work of its own. The rules:
   maintainer can choose.
 - Each stage is re-measured with `scripts/size.mjs` before merge. A stage that costs more than its
   estimate here cuts in the order below before any budget changes.
-- No budget rise beyond 44 KB for add-on support without a new decision, stated in the release notes.
+- No budget rise beyond 42 KB for add-on support without a new decision, stated in the release notes.
 - The core-only budget stays 12 KB.
 
 **If a stage is short, cut in this order:** the select-error toast, the `reason` strings in `addons()`
@@ -1746,3 +1743,12 @@ gets into the core").
   Found by running S1 against privatebin.net, which asks for 60 s, silently caps "never" at about an hour, and
   allows `file://` reads, writes and deletes.
 - 2026-10-08 — Spike S1 on a public instance, privatebin.net, passed in Chromium, Firefox and Safari from `file://`: create, comment, read back and delete work; the instance allows one post per 60 s and keeps "never" for about an hour (see §7.2 and architecture §7).
+- 2026-10-08 — Second size pass, by area (a reviewer per area read the code, applied each candidate in a scratch copy,
+  and kept only what built, passed all 259 unit and 316 browser tests and saved at least 15 B): 42,122 B → 41,506 B
+  (−616 B): comment mode and picking −206 B (the shortcut table, a repeated selection test, copies of rects,
+  parameters nothing passes), model, anchoring and storage −262 B (one table fill for two edit-distance loops, a loop
+  that could not run, a reused transaction helper, one validation helper), views and menu −119 B (one glide helper,
+  one leave helper, one tally, rows' labels stored once, an unused `Composer.clear`), stylesheet and highlights −79 B (an
+  unused rule, a loop, a shared surface rule). The App shell, avatars and icons, copy-out and the add-on API
+  itself had nothing worth taking. Several "tidier" refactors made the bundle larger because gzip already folds repeats.
+  Budgets: min and esm 42 KB (was 44 KB).

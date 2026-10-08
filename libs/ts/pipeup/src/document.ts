@@ -57,11 +57,7 @@ export class PipeupDocument {
       throw new Error(`pipeup: the document id must be 1 to ${LIMITS.doc} characters`);
     const log = new OpLog(options.doc);
     const saved = await options.store.load(options.doc);
-    await log.add(saved);
-    // Nothing saved is ever deleted by loading; what can't be read is kept, left out, and counted in words.
-    const unread = saved.filter(
-      (op) => !log.has((op as { body?: { id?: unknown } } | null)?.body?.id),
-    ).length;
+    const unread = saved.length - (await log.add(saved)).length;
     if (unread)
       console.warn(
         `pipeup: ${unread} saved change${unread === 1 ? "" : "s"} on this page couldn't be read; kept as saved`,

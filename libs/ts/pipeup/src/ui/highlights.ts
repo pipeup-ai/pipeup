@@ -118,9 +118,7 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
 
 export function paintHighlights(g: { quote: Range[]; on: Range[]; done: Range[] }): void {
   if (!highlightsSupported()) return;
-  CSS.highlights.set("pipeup-quote", new Highlight(...g.quote));
-  CSS.highlights.set("pipeup-on", new Highlight(...g.on));
-  CSS.highlights.set("pipeup-done", new Highlight(...g.done));
+  for (const n of NAMES) CSS.highlights.set(n, new Highlight(...g[n.slice(7) as keyof typeof g]));
 }
 
 export function clearHighlights(): void {

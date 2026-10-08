@@ -16,7 +16,6 @@ export interface Composer {
   element: HTMLElement;
   input: HTMLTextAreaElement;
   focus(): void;
-  clear(): void;
 }
 
 /** One live insertion at the caret: words in progress, then final words. */
@@ -210,10 +209,5 @@ export function composer(o: ComposerOptions): Composer {
     element,
     input,
     focus: () => input.focus({ preventScroll: true }),
-    clear: () => {
-      input.value = "";
-      sync();
-      ended();
-    },
   };
 }

@@ -35,15 +35,7 @@ export function rangeFromOffsets(index: TextIndex, start: number, end: number): 
   return range;
 }
 
-function locate(index: TextIndex, pos: number, isEnd: boolean): { node: Text; offset: number } | null {
-  for (const entry of index.nodes) {
-    const endOfNode = entry.start + entry.node.data.length;
-    if (pos >= entry.start && (pos < endOfNode || (isEnd && pos === endOfNode))) {
-      return { node: entry.node, offset: pos - entry.start };
-    }
-  }
-  const last = index.nodes[index.nodes.length - 1];
-  return last && pos === last.start + last.node.data.length
-    ? { node: last.node, offset: last.node.data.length }
-    : null;
+function locate(index: TextIndex, pos: number, isEnd: boolean): { node: Text; offset: number } | undefined {
+  const entry = index.nodes.find((n) => pos >= n.start && pos < n.start + n.node.data.length + Number(isEnd));
+  return entry && { node: entry.node, offset: pos - entry.start };
 }

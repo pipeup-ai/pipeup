@@ -23,10 +23,6 @@ export class OpLog {
 
   constructor(readonly doc: string) {}
 
-  has(id: unknown): boolean {
-    return typeof id === "string" && this.ops.has(id);
-  }
-
   get size(): number {
     return this.ops.size;
   }
@@ -87,16 +83,8 @@ export class OpLog {
         MAX_AT,
       ),
     };
-    // Safety net: identical changes would share an id, so nudge the time (below the cap) until the
-    // id is new. Unreachable through PipeupDocument below the caps: its writes are serialised and
-    // `at` strictly increases within each thread and across each writer's creates.
-    for (let tries = 0; ; tries++) {
-      if (tries === 1000) throw new Error("pipeup: could not record this change");
-      body.id = await computeOpId(body);
-      if (!this.ops.has(body.id) || body.at >= MAX_AT) break;
-      body.at += 1;
-    }
     // Same id means the same change is already recorded (e.g. resolving twice at both caps).
+    body.id = await computeOpId(body);
     const existing = this.ops.get(body.id);
     if (existing) return existing;
     if (body.kind === "create") body.thread = body.id;
