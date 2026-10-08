@@ -8,7 +8,8 @@ import type { Ctx, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
-import { icon } from "./icons";
+import type { MenuItem } from "./addons";
+import { draw, icon } from "./icons";
 import { narrow, placePopover, POPOVER, room } from "./layout";
 import { threadView, type ThreadView } from "./thread-view";
 
@@ -86,6 +87,7 @@ export function createLauncher(ctx: Ctx): View {
 
   const setMenu = (on: boolean) => {
     menuOpen = ctx.state.menu = on;
+    if (on) ctx.addons.flush();
     window.clearTimeout(away);
     away = 0;
     if (!on) endEdit?.(true);
@@ -408,8 +410,54 @@ export function createLauncher(ctx: Ctx): View {
   );
   startRow.dataset.item = "comment";
   startRow.setAttribute("aria-keyshortcuts", SHORTCUT_ARIA);
+  /** Add-ons' status, one quiet line at the top of the menu. */
+  const statusRow = h("div", { class: "sec", role: "presentation" });
+  const sepA = sep();
+  const sepB = sep();
+  /** Rows add-ons added, kept by item so a rebuilt menu reuses them. */
+  const extra = new Map<MenuItem, HTMLButtonElement>();
+  const extraRow = (item: MenuItem) => {
+    let b = extra.get(item);
+    if (!b) {
+      b = row(
+        draw(item.icon, 15),
+        "",
+        () => {
+          // An action closes the menu; a switch stays, so it is seen to move.
+          if (!item.checked) closeToControl();
+          void Promise.resolve()
+            .then(() => item.select())
+            .catch((e: unknown) => ctx.report(e))
+            .finally(() => menuOpen && sync());
+        },
+        Boolean(item.checked),
+        h("span", { class: "kc" }),
+      );
+      extra.set(item, b);
+    }
+    return b;
+  };
   /** The menu rises above the button, so it is built top down: who you are first, Start commenting last. */
-  const rows = [idRow, sep(), copyRow, textRow, allRow, sep(), startRow];
+  const rows = (): Node[] => [
+    idRow,
+    sepA,
+    copyRow,
+    textRow,
+    allRow,
+    ...ctx.addons.rows.map((r) => extraRow(r.item)),
+    sepB,
+    startRow,
+  ];
+  let built = -1;
+  /** An add-on's own getters can fail; its row then shows nothing rather than breaking the menu. */
+  const word = (fn: () => string): string => {
+    try {
+      return fn();
+    } catch (e) {
+      globalThis.reportError?.(e);
+      return "";
+    }
+  };
 
   /** Brings every row up to date in place. */
   function sync(): void {
@@ -429,6 +477,22 @@ export function createLauncher(ctx: Ctx): View {
     set(textRow, "Copy as Text", "Just the words");
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
+    const status = ctx.addons.statusText();
+    statusRow.textContent = status;
+    if (!status) statusRow.remove();
+    else if (!statusRow.isConnected && menu.contains(idRow)) menu.prepend(statusRow);
+    for (const { item } of ctx.addons.rows) {
+      const b = extra.get(item);
+      if (!b) continue;
+      let on: boolean | undefined;
+      try {
+        on = item.checked?.();
+      } catch (e) {
+        globalThis.reportError?.(e);
+      }
+      set(b, word(item.label), word(item.hint), on);
+      (b.querySelector(".kc") as HTMLElement).textContent = item.count ? word(item.count) : "";
+    }
     set(
       startRow,
       "Start commenting",
@@ -442,7 +506,11 @@ export function createLauncher(ctx: Ctx): View {
   /** Brings the rows up to date and puts them in the menu. */
   function build(): void {
     sync();
-    if (menu.firstChild !== idRow) menu.replaceChildren(...rows);
+    if (built !== ctx.addons.version || !menu.contains(idRow)) {
+      menu.replaceChildren(...rows());
+      built = ctx.addons.version;
+      sync();
+    }
   }
 
   /**
@@ -525,6 +593,12 @@ export function createLauncher(ctx: Ctx): View {
         if (!endEdit) setMenu(false);
       }, AWAY_MS);
   };
+  // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
+  const offAddons = ctx.addons.subscribe((structure) => {
+    if (!menuOpen || endEdit) return;
+    if (structure) build();
+    else sync();
+  });
   window.addEventListener("pointerdown", onDown, true);
   window.addEventListener("click", onAnyClick, true);
   // Over: the pointer arrived somewhere. Out with nowhere to go: it left the window.
@@ -567,9 +641,11 @@ export function createLauncher(ctx: Ctx): View {
         ? `${n} here · ${m} ${ctx.here.slide() !== null ? "on other slides" : "in other views"}`
         : "";
       btn.classList.toggle("else", m > 0);
-      const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}`;
+      const status = ctx.addons.statusText();
+      const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
       if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
-      if (tipWords.data !== (label || "Comment")) tipWords.data = label || "Comment";
+      const tipText = (label || "Comment") + (status ? ` · ${status}` : "");
+      if (tipWords.data !== tipText) tipWords.data = tipText;
       btn.classList.toggle("on", ctx.state.commenting);
       // Closed from elsewhere (Tab in comment mode moves to the page's blocks).
       if (menuOpen && !ctx.state.menu) setMenu(false);
@@ -590,6 +666,7 @@ export function createLauncher(ctx: Ctx): View {
     },
     frame() {},
     destroy() {
+      offAddons();
       window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("click", onAnyClick, true);
       window.removeEventListener("pointerover", onPointer, true);

@@ -4,6 +4,8 @@ import type { OpBody, SignedOp } from "./types";
 
 /** Lengths are UTF-16 code units (JavaScript string length). */
 export const MAX_TEXT = 10_000;
+/** The longest an op may be, as JSON, so one op can never be a way to fill someone's storage. */
+export const MAX_OP = 2 ** 18;
 /** Far beyond any real log, far below where clock arithmetic could overflow. */
 export const MAX_CLOCK = 2 ** 40;
 /** Latest valid `at` in ms (about the year 6400); new ops stay at it rather than fail. */
@@ -63,6 +65,7 @@ export function isWellFormed(op: unknown): op is SignedOp {
   if (!op || typeof op !== "object") return false;
   const { body, sig } = op as Partial<SignedOp>;
   if (typeof sig !== "string" || !body || typeof body !== "object") return false;
+  if (JSON.stringify({ body, sig }).length > MAX_OP) return false;
   const b = body as Partial<OpBody>;
   if (b.v !== 1 || typeof b.id !== "string" || !ID.test(b.id)) return false;
   if (typeof b.kind !== "string" || !KINDS.has(b.kind)) return false;

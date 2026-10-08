@@ -10,7 +10,8 @@ svg{display:block}
 --as:color-mix(in srgb,var(--pu-accent,#534AB7) 12%,transparent);
 --sh:0 8px 28px rgba(44,44,42,.10);
 --in:.26s;--mv:.34s;--out:.2s;--pl:1.2s;
---eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1)}
+--eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1);
+--pu-text:var(--k);--pu-muted:var(--mu);--pu-faint:var(--fa);--pu-line:var(--ln);--pu-surface:var(--su);--pu-soft:var(--so);--pu-hover:var(--ho);--pu-shadow:var(--sh);--pu-ease:var(--eo)}
 .layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#8D8B84;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
 
@@ -94,7 +95,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .bub.in:hover,.bub.on{transform:scale(1.18)}
 .bub.done{background:var(--fa)}
 .bub.ghost{pointer-events:none}
-.tip,.pop,.menu,.all,.toast,.selbar{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
+.tip,.pop,.menu,.all,.xp,.toast,.selbar{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
 .tip{position:fixed;max-width:260px;border-radius:10px;padding:7px 10px;opacity:0;transform:translateY(3px);
 transition:opacity .22s var(--eo),transform .26s var(--eo)}
 .tip.show{opacity:1;transform:none;pointer-events:auto;cursor:pointer;
@@ -201,6 +202,20 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .sw::before{opacity:0;transform:translateX(10px)}
 [aria-checked=true]>.sw{background:var(--pu-accent)}
 [aria-checked=true]>.sw::after{transform:translateX(10px)}
+.tools{display:flex;flex:none;gap:2px}
+.tools[hidden]{display:none}
+.tool[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
+.note{padding:0 0 4px;font-size:12px;color:var(--fa)}
+.note[hidden]{display:none}
+.ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+/* An add-on's panel: the same full-height panel as All comments, with its own body. */
+.xp{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
+transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
+.xp.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
+.xb{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 16px;font-size:13px}
+.xb p{margin:0 0 10px}
+.xb button.go{padding:6px 12px;border:1px solid var(--ln);border-radius:8px;transition:background-color .2s var(--eo)}
+.xb button.go:hover,.xb button.go:focus-visible{background:var(--ho);outline:none}
 /* All comments: a full-height panel on the right that slides in (fades, with reduced motion). */
 .all{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
 transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
@@ -227,18 +242,18 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}
-.layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button):focus-visible{outline:2px solid Highlight}
+.layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button,.xb button):focus-visible{outline:2px solid Highlight}
 }
 
 @media (prefers-reduced-motion: reduce){
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.ttip,.tt,.toast{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}
 .th{transition-property:opacity,box-shadow}
 .tip.show{transition-property:opacity}
 .pick,.pick.show{transition:opacity .16s ease-in-out}
-.all,.all.show{transition-property:opacity}
+.all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}
 .av,.nf{transform:none!important}
 @keyframes pu-pulse{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}

@@ -41,9 +41,11 @@ export class OpLog {
    */
   async add(incoming: unknown[]): Promise<SignedOp[]> {
     const added: SignedOp[] = [];
-    for (const op of incoming) {
-      if (!isWellFormed(op) || op.body.doc !== this.doc || this.ops.has(op.body.id)) continue;
-      if (op.body.id !== (await computeOpId(op.body)) || !(await isAuthentic(op))) continue;
+    for (const raw of incoming) {
+      if (!isWellFormed(raw) || raw.body.doc !== this.doc || this.ops.has(raw.body.id)) continue;
+      if (raw.body.id !== (await computeOpId(raw.body)) || !(await isAuthentic(raw))) continue;
+      // What was signed, nothing else: an unsigned extra field is never stored or sent on.
+      const op: SignedOp = { body: raw.body, sig: raw.sig };
       this.ops.set(op.body.id, op);
       this.clock = Math.max(this.clock, op.body.clock);
       if (op.body.kind === "create")

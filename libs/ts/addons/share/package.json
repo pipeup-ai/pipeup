@@ -1,0 +1,48 @@
+{
+  "name": "@pipeup/share",
+  "version": "0.4.1",
+  "description": "Share Pipeup comments through an encrypted service (PrivateBin or your own HTTP mailbox).",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/share"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/share.esm.js",
+  "module": "./dist/share.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/share.min.js",
+  "unpkg": "dist/share.min.js",
+  "bin": {
+    "share": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.4.1"
+  },
+  "pipeup": {
+    "network": {
+      "when": "page-configured",
+      "to": [
+        "page"
+      ],
+      "says": "Sends the comments you choose to share, sealed so only people with this page can read them, to the sharing service the page names. That service sees when and how much is sent, and your network address."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

@@ -23,4 +23,4 @@ export {
   type ExportMeta,
 } from "./export/format";
 export { ANIMALS, COLOURS, animalName, nameOf, type Animal } from "./model/animals";
-export type { Anchor, Comment, Thread } from "./model/types";
+export type { Anchor, Comment, OpBody, SignedOp, Thread } from "./model/types";

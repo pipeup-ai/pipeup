@@ -7,6 +7,7 @@ import type { Ctx, Draft, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
 import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
+import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
@@ -246,7 +247,12 @@ export function startApp(o: AppOptions): App {
     all: () => [...o.doc.threads()].sort(byPage(ctx)).map(exportItem),
   };
 
+  // The surface needs the context, and the context hands it out: a holder breaks the loop.
+  const slot: { surface?: Surface } = {};
   const ctx: Ctx = {
+    get addons() {
+      return slot.surface!;
+    },
     doc: o.doc,
     root: o.root,
     layer: host.layer,
@@ -305,6 +311,8 @@ export function startApp(o: AppOptions): App {
     render,
     back: stepBack,
   };
+
+  const addons = (slot.surface = new Surface(ctx, host.shadow, sr));
 
   function resolveAll(only?: Set<string>): void {
     const start = performance.now();
@@ -440,6 +448,7 @@ export function startApp(o: AppOptions): App {
     paint(threads);
     for (const v of views) v.render(threads);
     modeView?.render(threads);
+    if (!state.hidden) addons.flush();
   }
 
   /**
@@ -638,6 +647,7 @@ export function startApp(o: AppOptions): App {
     if (destroyed) return;
     for (const v of views) v.frame();
     modeView?.frame();
+    addons.frame();
     raf = requestAnimationFrame(frame);
   };
 
@@ -696,7 +706,8 @@ export function startApp(o: AppOptions): App {
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
   const sizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleReplace);
   sizeObserver?.observe(o.root);
-  const offChange = o.doc.onChange(() => {
+  const offChange = o.doc.onChange((_threads, added, source) => {
+    addons.heard(added, source);
     resolveAll();
     render();
   });
@@ -725,6 +736,7 @@ export function startApp(o: AppOptions): App {
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();
+      addons.destroy();
       sheet.remove();
       host.destroy();
     },

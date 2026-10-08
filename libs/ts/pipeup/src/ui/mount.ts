@@ -3,8 +3,10 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
+import { attachAddons, drainQueue } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
+import { VERSION } from "../core";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -28,6 +30,13 @@ const STORE_OPEN_TIMEOUT_MS = 4000;
 
 /** Adds Pipeup to the page. Calling it again returns the same instance. */
 export function mount(options: MountOptions = {}): Promise<PipeupInstance> {
+  const other = (globalThis as { Pipeup?: { VERSION?: string; mount?: unknown } }).Pipeup;
+  // A second copy of Pipeup on the page hands over to the first, which owns the add-ons.
+  if (other?.VERSION && other.mount && other.mount !== mount) return (other.mount as typeof mount)(options);
+  if (!drainQueue())
+    return Promise.reject(
+      new Error("pipeup: another copy of Pipeup owns the add-on queue. Remove one script."),
+    );
   if (current) return current;
   const p: Promise<PipeupInstance> = start(options, () => p).catch((e: unknown) => {
     if (current === p) current = null;
@@ -107,6 +116,14 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       "This browser can't keep comments for this page — copy the comments (Copy as Markdown) to keep them",
     );
   const onHide = () => void doc.flush().catch((e: unknown) => globalThis.reportError?.(e));
+  // Add-ons set up now, after the "can't keep comments" notice, in registration order.
+  const detach = attachAddons({
+    surface: app.ctx.addons,
+    doc,
+    root: o.root ?? document.body,
+    ephemeral,
+    version: VERSION,
+  });
   let unmounted = false;
   window.addEventListener("pagehide", onHide);
   return {
@@ -116,6 +133,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       if (unmounted) return;
       unmounted = true;
       window.removeEventListener("pagehide", onHide);
+      detach();
       app.destroy();
       setSlideHook(null);
       if (current === self()) current = null;

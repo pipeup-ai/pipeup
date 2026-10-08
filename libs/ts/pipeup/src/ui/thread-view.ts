@@ -46,8 +46,13 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     h(
       "div",
       {},
-      composer({ label: "Reply", onSend: (text) => actions.reply(id, text), onCancel: actions.close })
-        .element,
+      composer({
+        label: "Reply",
+        kind: "reply",
+        thread: () => id,
+        onSend: (text) => actions.reply(id, text),
+        onCancel: actions.close,
+      }).element,
     ),
   );
   const inner = h("div", {});

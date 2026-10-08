@@ -3,6 +3,18 @@ import { STYLES } from "../../src/ui/styles";
 
 /** The custom properties Pipeup's host writes onto its layer from script (theme.ts, host.ts). */
 const SET_BY_SCRIPT = ["--pu-accent", "--pu-font", "--pu-panel", "--pu-pop"];
+/** The public tokens add-ons may use: aliases of the short internal ones (add-ons design §3.4). */
+const PUBLIC = [
+  "--pu-ease",
+  "--pu-faint",
+  "--pu-hover",
+  "--pu-line",
+  "--pu-muted",
+  "--pu-shadow",
+  "--pu-soft",
+  "--pu-surface",
+  "--pu-text",
+];
 
 describe("the stylesheet", () => {
   it("uses only custom properties it defines, or that the host sets", () => {
@@ -11,7 +23,7 @@ describe("the stylesheet", () => {
     expect(used.filter((v) => !defined.has(v) && !SET_BY_SCRIPT.includes(v))).toEqual([]);
   });
 
-  it("keeps its own tokens short: only the host's four carry the --pu- prefix", () => {
-    expect([...new Set(STYLES.match(/--pu-[\w-]+/g))].sort()).toEqual(SET_BY_SCRIPT);
+  it("keeps its own tokens short: only the host's four and the public set carry the --pu- prefix", () => {
+    expect([...new Set(STYLES.match(/--pu-[\w-]+/g))].sort()).toEqual([...SET_BY_SCRIPT, ...PUBLIC].sort());
   });
 });
