@@ -264,7 +264,7 @@ microphone and answering the browsers' prompts.
   started"), and one started straight after fails at once with "No speech detected".
 - Edge wasn't installed and wasn't tried; it uses Chrome's engine.
 
-### S2: Nostr and STUN from `file://` (add-ons spike, 2026-10-08): own relay and signer passed; public relays and other networks to do
+### S2: Nostr and STUN from `file://` (add-ons spike, 2026-10-08): signer, own relay and public relays passed; other networks to do
 
 **The kit's own BIP-340 signer** ([add-ons design](addons.md) §6, §9.1): about 70 lines over WebCrypto
 SHA-256 and `BigInt`, signing only.
@@ -294,12 +294,38 @@ reached at `ws://127.0.0.1` from a `file://` page in Chrome 154, Chromium 153, F
 The two peers were on the same machine, so this proves the signalling path and the browsers' WebRTC
 from `file://`, not connection rates across networks.
 
+**Public relays** (with the maintainer's agreement; about three events each, from throwaway keys, with
+random sealed-looking content). Their published limits (NIP-11), then one `file://` run each in
+Chromium:
+
+| Relay | Software | Auth, proof of work or payment declared | Max message | Event accepted | Delivered | Two peers met |
+|---|---|---|---|---|---|---|
+| `relay.damus.io` | strfry 1.1.0 | none | 1 MB | yes | 39 ms | 0.55 s |
+| `nos.lol` | strfry 1.1.3 | none | 128 KiB | yes | 281 ms | 0.81 s |
+| `relay.primal.net` | strfry | none | 1 MB | yes | 276 ms | 0.75 s |
+| `offchain.pub` (spare, limits only) | strfry 1.1.0 | none | 128 KiB | — | — | — |
+
+- **All four run the same software (strfry),** so a change in strfry's defaults would reach all of them
+  at once.
+- **Ephemeral isn't unstored on strfry.** Unlike nostr-rs-relay, all three returned the event to a new
+  subscription afterwards. strfry's defaults keep ephemeral events for 300 s and refuse ones whose
+  `created_at` is more than 60 s old. So meeting-point messages can be read for about five minutes by
+  anyone who knows the topic. The topic is an opaque address and the content is sealed, so this
+  exposes timing and network addresses to the relays, not comments. Live must ignore offers older
+  than about 30 s, and must stamp events with a clock within 60 s of the relay's.
+- In one of the hosted-page checks, Chrome 154 couldn't open a WebSocket to `relay.damus.io` at all;
+  it worked on the next try. One relay is never enough; the design's 3–5 stands.
+
+**Hosted two-device check.** A test page on a `workers.dev` Worker (deleted afterwards) had two devices
+meet through `relay.damus.io`, with offers and answers sealed under a key carried in the link's
+`#fragment`. On this Mac, Chrome (offering) and Safari (answering) connected directly over UDP in
+0.17–3.3 s. The phone runs, on mobile data and on the same Wi-Fi, were postponed.
+
 **Still to do for S2:**
 
-- Events accepted and delivered by **at least 3 public relays**, without NIP-42 auth or NIP-13 proof of
-  work, and their stated rate limits.
-- **STUN-only connection rates** between different networks: home, mobile and one office network.
-- Pick the ephemeral kind for live.
+- **STUN-only connection rates** between different networks: a phone on mobile data, home Wi-Fi, and
+  one office network.
+- Pick the ephemeral kind for live (the spike used 25800).
 
 ### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
@@ -762,3 +788,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §7: add-ons spike S1 on an own PrivateBin 2.0.6 passed in Chrome, Firefox and Safari from `file://`: simple requests, the §7.2 comment mapping, JSON reads, `time_to_live`, Web Locks; "please wait" is HTTP 200 with `status: 1`. Volunteer instances still to test.
 - 2026-10-08 — §7: add-ons spike S3 passed: dictation from `file://` in Chrome (service and on device) and Safari; the microphone is asked for on every load; Safari can't say where it listens.
 - 2026-10-08 — §7: add-ons spike S2, first half: the kit's own BIP-340 signer passes the BIP-340 vectors and a 2,000-key cross-check against noble (1,041 B gzip); a local nostr-rs-relay accepts, delivers and doesn't store its ephemeral events from `file://` in Chrome, Firefox and Safari, and two peers meet through it and open a data channel. Public relays and other networks still to test.
+- 2026-10-08 — §7: S2 public relays — damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work; all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s. Cross-network rates still to test.
