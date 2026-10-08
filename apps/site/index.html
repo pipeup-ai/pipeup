@@ -44,8 +44,8 @@
       @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
       @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
       :root {
-        --ink: #2f3437; --strong: #111111; --muted: #787774; --faint: #a8a7a2;
-        --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
+        --ink: #2f3437; --strong: #111111; --muted: #55544f; --faint: #7d7c76;
+        --line: #d2d0c8; --bone: #eeede7; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
         --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
         --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
         --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -104,6 +104,8 @@
         transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
       }
       .btn:hover { background: var(--bone); }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
       .btn:active { transform: scale(0.98); }
       .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
       .btn.primary:hover { background: #2a2a2a; }
@@ -164,11 +166,11 @@
       .facts b { font-weight: 500; color: var(--ink); }
 
       /* ---------- The showcase: Document → Slides → Website ---------- */
-      .viewport { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--bone); touch-action: pan-y; }
+      .viewport { overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; touch-action: pan-y; }
       /* The moving demo is never a target itself: pointing anywhere in it picks the whole showcase to comment on. */
       .track { display: flex; transition: transform 0.7s var(--move); pointer-events: none; }
       .scene { flex: 0 0 100%; aspect-ratio: 4 / 3.2; position: relative; }
-      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid #c4c2b9; box-shadow: 0 6px 20px rgba(40, 38, 30, 0.10); border-radius: 10px; overflow: hidden; }
       .bar-dots { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2; }
       .bar-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
       /* The page and its comment share one wide canvas; when the comment opens, the view slides over to it. */

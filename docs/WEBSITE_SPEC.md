@@ -158,3 +158,4 @@ use. The page:
 - 2026-10-07 — 0.4.1: the size is stated as about 37 KB.
 - 2026-10-08 — An Add-ons page (Share, Voice, Live) reached from the footer; the home page and Copy prompt stay core only. The Copy prompt and llms.txt no longer ask an agent to download a file: they add the pinned CDN tag.
 - 2026-10-08 — The Add-ons page gets an animated demo and a Copy prompt for each add-on, and uses the full width.
+- 2026-10-08 — More contrast on the home and Add-ons pages (not the Try pages): darker borders and secondary text, a darker frame behind the showcase with a soft shadow under its window, and firmer outlines on the secondary buttons.
