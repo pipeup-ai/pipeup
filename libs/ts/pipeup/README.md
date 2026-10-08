@@ -2,13 +2,13 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.4.0).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.4.1-beta.1).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
 local storage, sealed feedback files, copy for AI, and the UI: comments in a column beside documents or as
 bubbles, comment mode for blocks and pins on any page, and an opt-in reserved gutter. It is one file
-(at most 36 KB gzip) so it works from `file://` with nothing else to load.
+(at most 40 KB gzip) so it works from `file://` with nothing else to load.
 
 Nobody has to give a name. Each reviewer is an animal in a colour ("Red Fox": 5 animals, 10 colours),
 picked from their identity so it is the same on every page, shown as a squircle avatar (the animal drawn in its
@@ -21,7 +21,7 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.1-beta.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value

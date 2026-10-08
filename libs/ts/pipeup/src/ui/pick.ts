@@ -6,7 +6,23 @@ export interface Look {
   /** The element lays out its children as flex or grid, so with several children it visibly groups them. */
   grouped(el: Element): boolean;
   viewport(): { width: number; height: number };
+  /**
+   * How the element sits in the page, for the keyboard's tree: its computed `display` and `position`, whether it
+   * clips what overflows it (hidden or clip, never a scroll box), and whether it is set not to respond to the
+   * pointer. Optional: without it every block counts.
+   */
+  flow?(el: Element): Flow;
 }
+
+export interface Flow {
+  display: string;
+  position: string;
+  clips: boolean;
+  off: boolean;
+}
+const FLOWING: Flow = { display: "block", position: "static", clips: false, off: false };
+/** An inline-level box taller than this is a block in its own right (an inline-block card), not words in a line. */
+const LINE = 48;
 
 /** Accessible roles that make an element "a thing" (widgets, landmarks and structure). */
 const ROLES = (
@@ -25,6 +41,10 @@ const OBVIOUS = [
 ].join(",");
 /** Controls whose own layout wrappers are part of them, never blocks of their own. */
 const CONTROL = "a,button,label,summary,[role=button],[role=link],[role=tab],[role=option],[role=menuitem]";
+/** What the keyboard still stops on inside a line of text, or when tiny: controls and pictures. */
+const STANDS = `${CONTROL},input,select,textarea,img,svg,canvas,video,picture,[role=img]`;
+/** A block this size or smaller both ways is a decoration to the keyboard, unless it is a control or marked. */
+const TINY = 24;
 /** Containers covering more of the window than this are the page, not a block. */
 const LARGE = 0.6;
 /** Boxes within this many pixels of each other are the same block. */
@@ -91,6 +111,21 @@ export function pageLook(win: Window = window): Look {
       return painted || bordered || s.backgroundImage !== "none" || s.boxShadow !== "none";
     },
     grouped: (el) => /^(inline-)?(flex|grid)$/.test(win.getComputedStyle(el).display),
+    flow: (el) => {
+      const s = win.getComputedStyle(el);
+      const axes = [s.overflowX, s.overflowY];
+      return {
+        display: s.display,
+        position: s.position,
+        // A box that scrolls on either axis can bring what overflows it into view: it never hides it.
+        clips:
+          axes.some((o) => o === "hidden" || o === "clip") &&
+          !axes.some((o) => o === "auto" || o === "scroll") &&
+          el !== win.document.documentElement &&
+          el !== win.document.body,
+        off: s.pointerEvents === "none",
+      };
+    },
     viewport: () => ({ width: win.innerWidth, height: win.innerHeight }),
   };
 }
@@ -102,26 +137,85 @@ export interface Block {
   level: number;
 }
 
+const meets = (a: Box, b: Box) =>
+  a.left < b.left + b.width &&
+  b.left < a.left + a.width &&
+  a.top < b.top + b.height &&
+  b.top < a.top + a.height;
+const within = (a: Box, b: Box): Box => {
+  const left = Math.max(a.left, b.left);
+  const top = Math.max(a.top, b.top);
+  return {
+    left,
+    top,
+    width: Math.max(0, Math.min(a.left + a.width, b.left + b.width) - left),
+    height: Math.max(0, Math.min(a.top + a.height, b.top + b.height) - top),
+  };
+};
+
 /**
  * Every block under `root` in page order, each with the block around it as `parentBlock` finds it: wrappers the
  * same size fold into the innermost, unless the outer one is marked (`data-pipeup-id`) and the inner one isn't.
- * Ignored areas, and subtrees `keep` rejects (hidden, on another slide), are left out.
+ * Ignored areas, subtrees hidden from screen readers or clipped out of sight, and subtrees `keep` rejects
+ * (hidden, on another slide), are left out. The keyboard stops only where a reviewer would click: never on what
+ * doesn't take the pointer, on the parts inside a control (the control is the stop), on words styled inside a
+ * line of text, or on tiny decorations; what the author marked always counts.
  */
 export function blockTree(root: Element, look: Look, keep: (el: Element) => boolean = () => true): Block[] {
   const all: Block[] = [];
-  const visit = (parent: Element, up: Block | null): void => {
+  /**
+   * `clip`: the box the nearest clipping ancestor (`clipper`) shows; `inControl`: inside a link or button;
+   * `inLine`: laid out in a line of text by its parent (an inline-flex or inline-grid box, or a flex or grid box
+   * that is itself in a line: their items are blockified, so their own display can't tell).
+   */
+  const visit = (
+    parent: Element,
+    up: Block | null,
+    clip: Box | null,
+    clipper: Element | null,
+    inControl: boolean,
+    inLine: boolean,
+  ): void => {
     for (const el of parent.children) {
-      if (el.hasAttribute("data-pipeup-ignore") || !keep(el)) continue;
+      if (el.hasAttribute("data-pipeup-ignore") || el.getAttribute("aria-hidden") === "true" || !keep(el))
+        continue;
+      const f = look.flow?.(el) ?? FLOWING;
+      // Fixed boxes, and absolute ones placed against something outside the clipper, aren't clipped by it.
+      const offParent = (el as HTMLElement).offsetParent;
+      const escapes =
+        f.position === "fixed" ||
+        (f.position === "absolute" && !!clipper && !(offParent && clipper.contains(offParent)));
+      const shown = escapes ? null : clip;
+      const box = look.box(el);
+      const sized = box.width > 0 && box.height > 0;
+      if (shown && sized && !meets(box, shown)) continue;
+      const control = el.matches(CONTROL);
+      const inline = f.display.startsWith("inline");
+      // Words in a line: an inline-level box that isn't a control or a picture, or a box its parent lays in a line,
+      // unless it is an atomic inline (inline-block, inline-flex…) tall enough to be a block of its own.
+      const words =
+        (inline || inLine) && !el.matches(STANDS) && (f.display === "inline" || box.height <= LINE);
+      const tiny = box.width <= TINY && box.height <= TINY;
+      const stops =
+        el.hasAttribute("data-pipeup-id") || (!inControl && !f.off && !words && !(tiny && !control));
       let at = up;
-      if (isBlock(el, look)) {
-        if (up && sameBox(look.box(up.el), look.box(el))) {
+      if (stops && isBlock(el, look)) {
+        if (up && sameBox(look.box(up.el), box)) {
           if (el.hasAttribute("data-pipeup-id") || !up.el.hasAttribute("data-pipeup-id")) up.el = el;
         } else all.push((at = { el, up, level: 0 }));
       }
-      visit(el, at);
+      const clips = f.clips && sized;
+      visit(
+        el,
+        at,
+        clips ? (shown ? within(shown, box) : box) : shown,
+        clips ? el : escapes ? null : clipper,
+        inControl || control,
+        /^inline-(flex|grid)$/.test(f.display) || (inLine && /(flex|grid)$/.test(f.display)),
+      );
     }
   };
-  visit(root, null);
+  visit(root, null, null, null, false, false);
   // Children come after their parent, so from the end each block's level is final before its parent's is set.
   for (let i = all.length - 1; i >= 0; i--) {
     const b = all[i]!;

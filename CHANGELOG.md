@@ -7,6 +7,22 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.4.1-beta.1] - 2026-10-07
+
+### Fixed
+- **Tab in comment mode always moves between blocks**, including when comment mode was turned on with the mouse
+  and after clicking a block. The first Tab carries on from the block last clicked, commented on or under the
+  pointer (Shift+Tab goes back from it); from the Comment control's open menu it closes the menu first.
+- The keyboard's block cursor no longer stops on tiny or decorative parts: icons inside links and buttons, keys
+  and words styled inside a line of text, hidden or clipped parts, and parts set not to respond to the pointer
+  (such as a moving demo). What the author marked with `data-pipeup-id` still counts.
+- Moving the mouse onto another block while the keyboard's cursor is out hands the outline to the mouse.
+
+### Changed
+- **Esc on the block cursor leaves comment mode** (after a comment box and an open thread), with focus back
+  where it was, or on the Comment control. It no longer puts the cursor away and gives Tab back to the page.
+- The mouse hint mentions Tab. The bundle is about 37 KB gzip (budget 40 KB).
+
 ## [0.4.0] - 2026-10-07
 
 Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
@@ -132,7 +148,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1-beta.1...HEAD
+[0.4.1-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...v0.4.1-beta.1
 [0.4.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/pipeup-ai/pipeup/compare/v0.3.0...v0.3.1

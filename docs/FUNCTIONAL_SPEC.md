@@ -2,7 +2,7 @@
 
 **Status:** Draft for review
 **Owner:** Pipeup maintainers
-**Last updated:** 2026-10-07 (keyboard and screen-reader cursor)
+**Last updated:** 2026-10-07 (Tab always moves between blocks in comment mode)
 
 This document describes *what* Pipeup does. It is **functional only** — it does not prescribe
 languages, frameworks, protocols, ciphers or hosting internals. Those live in the dev design
@@ -156,7 +156,22 @@ any of them off.
 
 - Turning comment mode on **from the keyboard** (the shortcut, or Start commenting chosen with the
   keyboard) starts the **block cursor**: an outline on the block that has focus, or else the first block
-  in view. Mouse users never see it.
+  in view. Mouse users never see it until they press Tab.
+- The block cursor only stops on blocks a reviewer can see and click: never on what is hidden, see-through,
+  clipped out of view, hidden from screen readers, or set not to respond to the pointer (such as a
+  moving demo); never on icons and other parts inside a link or button (the link or button is the stop);
+  and never on words styled inside a line of text (keys, code, emphasis), or on tiny decorations, unless
+  the author marked them with a stable identifier.
+- **In comment mode, Tab and Shift+Tab always move between blocks**, however comment mode was turned on.
+  With the block cursor not out (comment mode turned on with the mouse, or after a click, a selection or
+  a mouse move took over), the first Tab starts it after the block last clicked, commented on or
+  outlined under the pointer, and Shift+Tab before it; with none of those, both start on the first block
+  in view. This holds from the page and from the Comment control and its menu (the menu closes). Inside
+  a comment box, a thread, the name field and All comments, Tab moves through their own buttons as usual.
+  Tab never reaches the page's own links and fields in comment mode; turning comment mode off gives them
+  back. The mouse hint says Tab moves between blocks.
+- Moving the mouse onto another block while the block cursor is out hands the outline to the mouse; the
+  next Tab carries on from the block under it.
 - While the block cursor is in use: **Tab** and **Shift+Tab** move between blocks at the same level as
   the current one, starting with the smallest blocks a click would choose; **↑** chooses the block
   around it and **↓** a block inside it, after which Tab moves between blocks at that new level, so no
@@ -170,10 +185,11 @@ any of them off.
   page to do this.
 - After a comment is sent or cancelled, the block cursor is back on the same block, so a reviewer can
   comment on block after block. Moving it closes an open thread, as a click elsewhere does.
-- **Esc** steps back as with the mouse (a comment being written, then an open thread), then puts the
-  block cursor away and gives Tab back to the page, with focus where it was before; one more Esc leaves
-  comment mode. While the block cursor is put away, the comment mode shortcut brings it back; pressing
-  the shortcut while it is in use leaves comment mode. How to move and how to leave are said when it starts.
+- **Esc** steps back as with the mouse (a comment being written, then an open thread), then leaves
+  comment mode, with focus back where it was before the block cursor started (the Comment control when
+  that was nowhere on the page). Esc always gets a keyboard user out. After a click, a selection or a
+  mouse move took the block cursor's place, the comment mode shortcut brings it back; otherwise the
+  shortcut leaves comment mode. How to move and how to leave are said when it starts.
 - Words can be selected with the browser's caret browsing (F7) or a screen reader's own selection. The
   comment icon appears once the selection stops changing, and **Enter** comments on it. A mouse drag that is still going is not a settled selection, and selecting words
   while the block cursor is out puts it away.
@@ -195,8 +211,8 @@ any of them off.
   Pipeup how to go to a slide.
 - Moving between slides is never blocked by Pipeup, including in comment mode, with one exception:
   while the keyboard's block cursor is in use, ↑ and ↓ choose the block around it and a block inside it,
-  so decks that use ↑ and ↓ for vertical slides wait until it is put away (Esc). ← and → always reach
-  the deck.
+  so decks that use ↑ and ↓ for vertical slides wait while it is out (a click hands them back). ← and →
+  always reach the deck.
 - The comment control's number counts the open threads **here** (on this slide); a small mark on the
   control shows when other slides have open threads, and its label says how many ("2 here · 5 on
   other slides").
@@ -626,3 +642,8 @@ any of them off.
   isn't in use; moving the block cursor off a comment box's block leaves the box waiting; All comments and
   Copy use the same page order as the comments on the page.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
+- 2026-10-07 — Tab in comment mode (0.4.1): Tab and Shift+Tab always move between blocks in comment mode,
+  including when it was turned on with the mouse and after a click; the first Tab carries on from the block
+  last clicked, commented on or under the pointer. Esc no longer puts the block cursor away: after a comment
+  box and an open thread it leaves comment mode. The block cursor skips what can't be seen or clicked, the
+  parts inside links and buttons, words styled inside a line of text, and tiny decorations.

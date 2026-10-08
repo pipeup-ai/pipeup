@@ -96,14 +96,14 @@ comment mode), with the cursor as the chosen-block step:
 | The draft (composer) | Clears and cancels it (`composer.ts`); focus returns to the marker, same block |
 | A reply line | Closes the thread; focus returns to what opened it (below) |
 | The marker, a draft or thread open | Cancels the draft (an empty one, or one whose view is here) or closes the thread; focus stays on the marker |
-| The marker, nothing open | **Puts the cursor away**: outline and bar fade out, focus returns to `before` |
-| Anywhere else, cursor away | The steps as today, ending by leaving comment mode |
+| The marker, nothing open | **Leaves comment mode** (0.4.1; it put the cursor away in 0.4.0): focus returns to `before`, or the Comment control when that was `body` |
+| Anywhere else | The steps as today, ending by leaving comment mode |
 
 Esc on the marker is handled on the marker and stopped there (reveal.js's Esc opens its overview), so it
 calls the app's own step directly: `ctx.back()`, the function `onKey` already runs, exposed on `Ctx`.
-`CommentMode.back()` becomes: clear the chosen block, else put the cursor away, else false.
+`CommentMode.back()` becomes: clear the chosen block, else false (0.4.1: Esc no longer puts the cursor away).
 
-**Where focus goes when the cursor is put away.** Back to `before` if it is a page element still in the
+**Where focus goes when the cursor is put away** (by a click, a selection or the mouse since 0.4.1; Tab is then still the cursor's, see "Tab in comment mode"). Back to `before` if it is a page element still in the
 page and focusable; to `body` (by blurring the marker) if that is where it was, so the next Tab starts at
 the top of the page's own order; and to the corner control if it came from the menu, which is gone. Tab
 then belongs to the page again: its links, the deck's ignored buttons, then Pipeup's bubbles and control,
@@ -147,6 +147,54 @@ a click when Enter is pressed in browse mode) chooses that block **and moves the
 loop below still works for screen reader users who arrow through the page. Whether every screen reader's
 click arrives with `detail === 0` is checked by hand (Testing); where it doesn't, it counts as a pointer
 click, which still comments and only loses the return to the cursor.
+
+## Tab in comment mode (0.4.1)
+
+0.4.0 started the cursor only from the keyboard and let a put-away cursor hand Tab back to the page. In use
+that read as broken: after a click, or with comment mode turned on with the mouse, Tab walked the page's
+links and Pipeup's control, and only the shortcut brought the cursor back. From 0.4.1:
+
+- **Tab and Shift+Tab are the cursor's whenever comment mode is on.** Comment mode's capture-phase `onKey`
+  takes Tab (no Ctrl, ⌘ or Alt; not composing) when its target is on the page outside ignored areas, or is
+  the Comment control or its menu (not the name field); the markers' own Tab is untouched. It closes an
+  open thread, closes the menu (`state.menu = false`, then `render()`; the launcher closes a menu the state
+  says is closed), swallows the keyup, and calls `land(±1)`.
+- **`land(by)`**: with the cursor out, a step from its block. Otherwise from `was`, the block it carries on
+  from: where the cursor was, the block last clicked or Option-clicked, or the block last outlined under
+  the pointer. A block in the tree moves `by` in its row; one the keyboard doesn't stop on is placed by
+  page order in row 0 (the first block after it, or the last before it, never one around it). With nothing
+  to carry on from, the first block in view. `before` is remembered as at a start.
+- **The mouse takes over.** With the cursor out, a pointer move with movement (`movementX/Y`, so the move
+  Chrome makes up after a scroll doesn't count) onto another block puts the cursor away and the outline
+  follows the pointer, as without the cursor.
+- **Esc** never puts the cursor away: after the draft and the open thread it leaves comment mode (above).
+  Esc's keyup is still swallowed after the markers go (the keyup listener stays for that key only).
+- **The shortcut** is unchanged: with the cursor put away (by the mouse or a selection) it brings it back
+  on `was`; otherwise it toggles comment mode.
+- **Hints**: the mouse hint reads "Click anything to comment, or Tab between blocks · …".
+
+**Stops** (`blockTree`, so the keyboard and the mouse's Inside it check agree). A block a click could choose
+is a stop unless, and only if not marked with `data-pipeup-id`:
+
+- it, or an ancestor, is `aria-hidden="true"` (the subtree is left out);
+- its box lies wholly outside what the nearest clipping ancestor shows (the subtree is left out). A clipper
+  has `overflow` hidden or clip and scrolls on neither axis (`overflow-x: hidden` with `overflow-y: auto` is
+  a scroll box: what overflows it can be scrolled to); the page's `html` and `body` never clip. A
+  `position: fixed` box, or an absolute one whose offset parent is outside the clipper, escapes it;
+- it doesn't take the pointer (`pointer-events: none`, so a moving demo's parts);
+- it is inside a control (`a`, `button`, `label`, `summary`, roles button, link, tab, option, menuitem):
+  the control is the stop;
+- it is words in a line and isn't a control or a picture: an inline-level box (an atomic inline such as an
+  inline-block card taller than 48 px is a block of its own), or an item its parent lays out in a line (an
+  inline-flex or inline-grid box, or a flex or grid box that is itself such an item: items are blockified,
+  so the parent decides). A plain `display: inline` wrapper (an unstyled custom element) doesn't make its
+  children words;
+- it is at most 24 px both ways and isn't a control.
+
+`Look.flow(el)` gives `display`, `position`, `clips` and `off` from one `getComputedStyle`; it is optional, so
+fakes without it keep every block. The mouse takes the outline from the cursor only after more than 4 px of
+movement onto another block, so a trackpad nudged while typing doesn't. Cost: +0.9 KB gzip in all for
+0.4.1; budgets 40 KB (min, esm).
 
 ## Tab order and levels
 
@@ -334,8 +382,8 @@ selection.
     moves it ("Pin on <label>");
   - "Nothing around it" / "Nothing inside it" when ↑ or ↓ has nowhere to go;
   - "Comment 1 of 3 on this block" / "No comments on this block" for Shift+Enter (above);
-  - "Comment mode off" when comment mode ends, and "Cursor put away · ⇧⌥C brings it back" when Esc puts
-    it away (focus going back to `body` is otherwise silent);
+  - "Comment mode off" when comment mode ends (0.4.0 also said "Cursor put away · ⇧⌥C brings it back"
+    when Esc put it away; since 0.4.1 Esc leaves comment mode instead);
   - the selection line above.
 - **Not said**: cursor moves (the focus change says them), hovering, or anything a mouse-only session
   does besides the above. One message per action, no repeats.
@@ -356,9 +404,10 @@ listeners in the capture phase still hear them, as for every comment-mode event 
 | Enter, Space | marker has focus | Comment on the block | No |
 | Shift+Enter | marker has focus | Open the block's next thread (or say there are none) | No |
 | Enter, Space | a page control, cursor not in use | What the page does (Pipeup nothing) | Yes |
-| Esc | marker has focus | The app's step (a draft, an open thread), else put the cursor away | No |
+| Tab / Shift+Tab | comment mode on, the page, the control or its menu | Start the cursor (`land`) | No |
+| Esc | marker has focus | The app's step (a draft, an open thread), else leave comment mode | No |
 | ← / →, Page Up/Down, Home/End, letters | marker has focus | Nothing (Pipeup) | Yes |
-| Shift+Alt+C | anywhere but a field | Off → on with the cursor; cursor away → back; else off | As today |
+| Shift+Alt+C | anywhere but a field | Off → on with the cursor; cursor put away by the mouse → back; else off | As today |
 | Enter | page, a selection's icon showing | Comment on the selection | No |
 | everything | a draft, reply line or Pipeup button | As today | As today |
 
@@ -506,3 +555,8 @@ cut keeps the behaviour working, only less helpful. The size pass's tools (short
   noted as about 15–25 ms on very large pages (to be improved). Size after the fixes: 36,765 B (min) and
   36,419 B (esm) gzip, core 8,875 B (99 B of headroom on the classic build).
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
+- 2026-10-07 — 0.4.1, Tab in comment mode: Tab and Shift+Tab start or move the cursor whenever comment mode is on
+  (from the page, the control and its menu), carrying on from the block last clicked, outlined or left; the
+  mouse moving onto another block takes the outline; Esc leaves comment mode instead of putting the cursor
+  away. Stops: no hidden, clipped or pointer-less parts, nothing inside a control, no words inside a line,
+  no tiny decorations, unless marked. Budgets 40 KB (min, esm).
