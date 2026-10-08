@@ -18,7 +18,7 @@ semver='[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?'
 sed -i.bak -E "s/^export const VERSION = \"$semver\";/export const VERSION = \"$version\";/" "$lib/src/core.ts"
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
-  apps/agent-skills/pipeup-integrate/SKILL.md apps/site/llms.txt apps/site/index.html)
+  apps/agent-skills/pipeup-integrate/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md)
 for f in "${pinned[@]}"; do
   sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g" "$root/$f"
 done
