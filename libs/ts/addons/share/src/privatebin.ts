@@ -40,13 +40,19 @@ export const commentBody = (paste: string, sealed: Uint8Array) => ({
   parentid: paste,
 });
 
-/** PrivateBin answers HTTP 200 with `status: 1` for "please wait" (never a 429); the sentence is never parsed. */
+/**
+ * PrivateBin answers HTTP 200 with `status: 1` for "please wait" (never a 429), in the instance's language ("Please
+ * wait 60 seconds between each post."). Instances set their own limit (the default is 10 s, privatebin.net asks for
+ * 60 s), so the sentence's number is the wait; with no usable number, 30 s. It is also the instance's standing rule,
+ * so later posts keep at least that gap.
+ */
 async function answer(res: Response): Promise<Record<string, unknown>> {
   if (res.status === 429) throw new RetryAfter(retryAfter(res));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const [j] = await json(res);
   if (j.status === 0) return j;
-  throw new RetryAfter(10);
+  const n = Number(/\d+/.exec(String(j.message ?? ""))?.[0]);
+  throw new RetryAfter(n >= 1 && n <= 3600 ? n : 30, true);
 }
 
 /** Creates a paste with discussion on, burn-after-reading off, holding an empty sealed batch. */

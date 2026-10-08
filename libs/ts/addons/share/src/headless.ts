@@ -69,7 +69,7 @@ export async function connectShare(doc: PipeupDocument, o: ConnectOptions): Prom
     sendable,
     signal,
     delay: o.delay ?? 0,
-    gap: o.gap ?? 10_000,
+    gap: () => t.gap,
   });
   await engine.start();
   return {

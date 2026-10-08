@@ -18,3 +18,38 @@ describe("polling cadence (add-ons design §7.2)", () => {
     expect(interval(0, false, 10, 0)).toBe(5 * MIN);
   });
 });
+
+describe("a service's own rule for how often to post", () => {
+  it("is learned from 'please wait 60 seconds' and kept as the least gap from then on", async () => {
+    const { RetryAfter } = await import("@pipeup/kit");
+    const { ShareTransport } = await import("../src/transport");
+    const op = { body: { v: 1, id: "a".repeat(43) }, sig: "s" } as never;
+    const backend = {
+      ids: new Set<string>(),
+      expires: null,
+      moved: false,
+      big: false,
+      read: async () => [],
+      req: async () => ["", {}] as [string, RequestInit],
+      post: async () => {
+        throw new RetryAfter(60, true);
+      },
+    };
+    const t = new ShareTransport(backend as never, {
+      signal: new AbortController().signal,
+      gap: 10_000,
+      lock: false,
+      allowed: () => [],
+      changed() {},
+    });
+    expect(t.gap).toBe(10_000);
+    await expect(t.send([op])).rejects.toMatchObject({ seconds: 60 });
+    expect(t.gap).toBe(60_000);
+    // A plain 429 with a Retry-After is patience for now, not a standing rule: the gap stays as it was.
+    backend.post = async () => {
+      throw new RetryAfter(5);
+    };
+    await expect(t.send([op])).rejects.toMatchObject({ seconds: 5 });
+    expect(t.gap).toBe(60_000);
+  });
+});

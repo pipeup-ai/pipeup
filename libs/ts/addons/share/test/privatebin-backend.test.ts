@@ -85,13 +85,16 @@ describe("PrivateBin wire format (spike S1)", () => {
     expect(await backend().read()).toEqual([]);
   });
 
-  it("'please wait' (HTTP 200, status 1) and a 429 both mean wait; neither is parsed for a number", async () => {
+  it("'please wait' (HTTP 200, status 1) means wait as long as the sentence says; a 429 means wait too", async () => {
     const { mock, backend } = await setup();
     const sam = await reviewer("Sam");
     await sam.comment(anchor, "hello");
     const b = backend();
     mock.pleaseWait(1);
-    await expect(b.post(sam.ops())).rejects.toMatchObject({ seconds: 10 });
+    await expect(b.post(sam.ops())).rejects.toMatchObject({ seconds: 10, limit: true });
+    // privatebin.net asks for 60 s between posts, and it is the instance's standing rule.
+    mock.pleaseWait(1, 60);
+    await expect(b.post(sam.ops())).rejects.toMatchObject({ seconds: 60, limit: true });
     mock.tooMany(1);
     await expect(b.post(sam.ops())).rejects.toBeInstanceOf(RetryAfter);
     mock.tooMany(1);
@@ -193,5 +196,29 @@ describe("rollover", () => {
     await a.read();
     expect(a.big).toBe(true);
     void openBatch;
+  });
+});
+
+describe("how long 'please wait' asks for", () => {
+  const ask = async (message: unknown) => {
+    const res = new Response(JSON.stringify({ status: 1, message }), {
+      headers: { "content-type": "application/json" },
+    });
+    const { createPaste } = await import("../src/privatebin");
+    const f = (async () => res) as never;
+    return createPaste(f, BASE, L).catch((e: unknown) => e);
+  };
+  it("takes the number in the sentence, in any language", async () => {
+    expect(await ask("Please wait 60 seconds between each post.")).toMatchObject({
+      seconds: 60,
+      limit: true,
+    });
+    expect(await ask("Veuillez patienter 45 secondes entre chaque envoi.")).toMatchObject({ seconds: 45 });
+  });
+  it("falls back to 30 s with no number, and never trusts a silly one", async () => {
+    expect(await ask("Slow down.")).toMatchObject({ seconds: 30, limit: true });
+    expect(await ask(undefined)).toMatchObject({ seconds: 30 });
+    expect(await ask("Please wait 0 seconds")).toMatchObject({ seconds: 30 });
+    expect(await ask("Please wait 99999 seconds")).toMatchObject({ seconds: 30 });
   });
 });

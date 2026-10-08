@@ -103,7 +103,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
         },
         signal: host.signal,
         delay: 2000,
-        gap: 10_000,
+        gap: () => t.gap,
       });
       let prep: ReturnType<typeof setTimeout>;
       engine.onState(() => {

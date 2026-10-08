@@ -144,3 +144,30 @@ describe("id digests", () => {
     expect((await idDigest(["a", "b"])).startsWith("2.")).toBe(true);
   });
 });
+
+describe("a gap that can change", () => {
+  it("is read each time, so a limit learned later spaces the next send", async () => {
+    const doc = fakeDoc();
+    const t = fakeTransport();
+    let gap = 1000;
+    const e = new SyncEngine({
+      id: "share",
+      document: doc,
+      merge: (o) => doc.merge(o),
+      transport: t,
+      sendable: () => true,
+      signal: new AbortController().signal,
+      gap: () => gap,
+    });
+    await e.start();
+    doc.write(op("a"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(t.sent).toHaveLength(1);
+    gap = 60_000;
+    doc.write(op("b"));
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(t.sent).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(31_000);
+    expect(t.sent).toHaveLength(2);
+  });
+});

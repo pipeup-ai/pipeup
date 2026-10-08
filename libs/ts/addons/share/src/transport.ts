@@ -42,6 +42,8 @@ export class ShareTransport implements Transport {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private busy: Promise<void> | null = null;
   private again = false;
+  /** The least time (ms) between posts the service has asked for, if it has. */
+  private limit = 0;
   private rolling = false;
   private ready: [string, RequestInit] | null = null;
   private stopped = false;
@@ -159,13 +161,22 @@ export class ShareTransport implements Transport {
     });
   }
 
+  /** The least time between posts: ours, or the service's own if it asks for more. */
+  get gap(): number {
+    return Math.max(this.o.gap, this.limit);
+  }
+
   /** Posts as the one sender, turning a refusal into a problem and a delay. */
   private async guarded(post: () => Promise<void>): Promise<void> {
     try {
-      await this.lock(post, this.o.gap);
+      await this.lock(post, this.gap);
       this.offline = false;
     } catch (e) {
-      if (e instanceof RetryAfter) throw e;
+      if (e instanceof RetryAfter) {
+        // A service's own rule ("one post per 60 s") is learned: later posts keep that gap instead of being refused.
+        if (e.limit) this.limit = Math.max(this.limit, e.seconds * 1000);
+        throw e;
+      }
       if (e instanceof Problem) {
         this.problem = e.kind;
         this.o.changed();

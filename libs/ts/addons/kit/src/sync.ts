@@ -13,8 +13,8 @@ export interface SyncOptions {
   signal: AbortSignal;
   /** Wait this long (ms) after a change before sending. Default 0. */
   delay?: number;
-  /** The least time (ms) between sends. Default 0. */
-  gap?: number;
+  /** The least time (ms) between sends, or a function giving it now (a service may teach us its own). Default 0. */
+  gap?: number | (() => number);
   /** Most ops in one send. Default 500. */
   batch?: number;
 }
@@ -143,7 +143,8 @@ export class SyncEngine {
 
   private schedule(delay = this.o.delay ?? 0): void {
     if (this.stopped || this.sendTimer || this.outbox.size === 0) return;
-    const wait = Math.max(delay, this.lastSend + (this.o.gap ?? 0) - Date.now(), this.backoff);
+    const gap = typeof this.o.gap === "function" ? this.o.gap() : (this.o.gap ?? 0);
+    const wait = Math.max(delay, this.lastSend + gap - Date.now(), this.backoff);
     this.sendTimer = setTimeout(() => void this.send(), wait) as unknown as number;
   }
 

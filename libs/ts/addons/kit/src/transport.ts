@@ -15,7 +15,11 @@ export interface Transport {
 
 /** A transport answer meaning "later": the service asked for patience. */
 export class RetryAfter extends Error {
-  constructor(readonly seconds: number) {
+  /** `limit`: the service's standing rule (one post per this long), so later sends keep at least this gap. */
+  constructor(
+    readonly seconds: number,
+    readonly limit = false,
+  ) {
     super(`try again in ${seconds} s`);
     this.name = "RetryAfter";
   }

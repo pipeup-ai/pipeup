@@ -35,6 +35,7 @@ export function createPrivateBinMock(options: { offered?: string[]; defaultExpir
   const pastes = new Map<string, Paste>();
   const log: { method: string; url: string; headers: Record<string, string>; body: string }[] = [];
   let waits = 0;
+  let wait = 10;
   let status429 = 0;
   const json = (obj: unknown, status = 200): Reply => ({
     status,
@@ -101,7 +102,7 @@ export function createPrivateBinMock(options: { offered?: string[]; defaultExpir
     }
     if (waits > 0) {
       waits--;
-      return json({ status: 1, message: "Please wait 10 seconds between each post." });
+      return json({ status: 1, message: `Please wait ${wait} seconds between each post.` });
     }
     let d: Record<string, unknown>;
     try {
@@ -156,7 +157,10 @@ export function createPrivateBinMock(options: { offered?: string[]; defaultExpir
     pastes,
     log,
     /** The next n posts get "please wait" (HTTP 200, status 1). */
-    pleaseWait: (n = 1) => (waits = n),
+    pleaseWait: (n = 1, seconds = 10) => {
+      waits = n;
+      wait = seconds;
+    },
     /** The next n posts get HTTP 429 with Retry-After: 2. */
     tooMany: (n = 1) => (status429 = n),
     /** All comment texts across pastes, for asserting what was sent. */

@@ -777,9 +777,13 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
 - **Rate limits.** PrivateBin limits posts per IP (10 s by default), so an office behind one address
   shares that limit. PrivateBin itself answers HTTP 200 with `status: 1` and a sentence ("Please wait
   10 seconds between each post."), never a 429 (S1); a proxy in front of an instance may still send
-  429. Both retry after 10 s, or the 429's `Retry-After`, plus jitter, with more ops per batch. The
-  sentence is never parsed for a number. Tens of people behind one address still fit: one post every 10 s carries up to
-  1,000 ops.
+  429. A 429 retries after its `Retry-After` plus jitter. **"Please wait" waits as long as the sentence says**:
+  instances set their own limit (privatebin.net asks for 60 s, found when S1 ran against it), so the first
+  number in the sentence is the wait, in any language, between 1 and 3,600 s; with no usable number, 30 s. It is
+  also the instance's standing rule, so the sender then keeps at least that gap between posts (the Web Lock is
+  held that long too) instead of being refused again, and more ops go in each batch. A plain 429 is patience for
+  now, not a rule. Tens of people behind one address still fit at 10 s (up to 1,000 ops a post), and at 60 s a
+  post still carries them.
 
 The polling table and the one-sender lock apply to the mailbox too (§7.7).
 
@@ -1737,3 +1741,7 @@ gets into the core").
   gain from mangling every non-reserved property name (±0 B), and a browser-coverage view of what never runs (10%
   of the bundle, almost all fallbacks, error paths and the add-on slots, which only the add-on tests use). The
   rest is the API itself. Correction: the cost of the API is +4.4 KB, not +3.8 KB (two units were mixed).
+- 2026-10-08 — Share backs off as a service asks: "please wait N seconds" waits N (the first number in the
+  sentence, 1 to 3,600; else 30 s) and teaches the sender that instance's gap (the engine's gap may now be a function).
+  Found by running S1 against privatebin.net, which asks for 60 s, silently caps "never" at about an hour, and
+  allows `file://` reads, writes and deletes.
