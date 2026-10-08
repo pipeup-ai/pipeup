@@ -34,6 +34,20 @@
       .card dl { margin: 14px 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 15px; }
       .card dt { color: var(--muted); }
       .card dd { margin: 0; }
+      .card { display: grid; grid-template-columns: 1fr; grid-auto-rows: min-content; align-content: start; gap: 4px 28px; }
+      .card h2, .card p { margin-bottom: 8px; }
+      .art { border-radius: 14px; background: var(--bone); padding: 18px; display: grid; place-items: center; }
+      .art svg { width: 100%; max-width: 420px; height: auto; display: block; }
+      .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+      .copy { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--strong); font: 500 14px/1 var(--sans); cursor: pointer; transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease); }
+      .copy:hover { background: var(--bone); border-color: #d9d8d3; }
+      .copy:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .copy svg { width: 16px; height: 16px; }
+      .copy .ok { display: none; }
+      .copy.done .ok { display: block; }
+      .copy.done .cp { display: none; }
+      .note { font-size: 13px; color: var(--muted); margin: 0; }
+      @media (min-width: 720px) { .card { grid-template-columns: 1fr 300px; align-items: start; gap: 4px 28px; } .card .art { grid-column: 2; grid-row: 1 / span 8; } .card > :not(.art) { grid-column: 1; } }
       pre { margin: 14px 0 0; padding: 12px 14px; background: var(--bone); border-radius: 10px; overflow-x: auto; font: 13px/1.6 var(--mono); color: var(--strong); }
       footer { border-top: 1px solid var(--line); margin-top: auto; padding: 22px 0 28px; font-size: 13px; color: var(--muted); }
       footer a { color: inherit; transition: color 0.2s var(--ease); }
@@ -58,6 +72,13 @@
 
       <section class="card" data-pipeup-id="share">
         <h2>Share</h2>
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="8" y="26" width="92" height="82" rx="10" fill="#fff"/><path d="M8 44h92"/><rect x="20" y="56" width="52" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="20" y="70" width="36" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
+  <rect x="200" y="26" width="92" height="82" rx="10" fill="#fff"/><path d="M200 44h92"/><rect x="212" y="56" width="52" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="212" y="70" width="44" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
+  <path d="M104 67h28M168 67h28" stroke-dasharray="2 5"/>
+  <rect x="132" y="48" width="36" height="38" rx="8" fill="#fff"/><rect x="141" y="64" width="18" height="14" rx="3" fill="#534ab7" stroke="none"/><path d="M144 64v-5a6 6 0 0 1 12 0v5"/>
+  <text x="150" y="132" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">sealed before it leaves</text>
+</svg></div>
         <p>Comments reach everyone who has the page, not only the browser they were written in.</p>
         <dl>
           <dt>Sends</dt><dd>Comments, sealed in the reviewer's browser with a key that is only in the page's link, to a service the author picks: a PrivateBin or their own small mailbox server. The service never sees the words.</dd>
@@ -66,31 +87,91 @@
         </dl>
         <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/share@next/dist/share.min.js"&gt;&lt;/script&gt;
 &lt;html data-pipeup-share="https://…#…"&gt;</pre>
+        <div class="row"><button type="button" class="copy" data-prompt="share"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open. It will ask you for the sharing address.</p></div>
       </section>
 
       <section class="card" data-pipeup-id="voice">
         <h2>Voice</h2>
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="40" y="34" width="30" height="52" rx="15" fill="#fff"/><path d="M28 68a27 27 0 0 0 54 0M55 95v14M43 109h24"/>
+  <path d="M92 52c6 6 6 22 0 28M104 44c10 10 10 34 0 44M116 36c14 14 14 46 0 60" stroke="#534ab7"/>
+  <rect x="146" y="40" width="140" height="54" rx="12" fill="#fff"/><path d="M168 94l-8 14 22-14"/>
+  <rect x="160" y="54" width="104" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="160" y="68" width="72" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
+  <text x="150" y="136" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">say it, then check the words</text>
+</svg></div>
         <p>Dictate a comment instead of typing it.</p>
         <dl>
           <dt>Sends</dt><dd>Nothing of its own. Speech is turned into words by the browser's own engine, which in some browsers sends the audio to its maker.</dd>
           <dt>Asked first</dt><dd>A short note before the first use, then the browser's own microphone prompt.</dd>
         </dl>
         <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@next/dist/voice.min.js"&gt;&lt;/script&gt;</pre>
+        <div class="row"><button type="button" class="copy" data-prompt="voice"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open.</p></div>
       </section>
 
       <section class="card" data-pipeup-id="live">
         <h2>Live</h2>
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="10" y="14" width="280" height="108" rx="12" fill="#fff"/>
+  <rect x="28" y="34" width="160" height="7" rx="3.5" fill="#eaeaea" stroke="none"/><rect x="28" y="50" width="220" height="7" rx="3.5" fill="#eaeaea" stroke="none"/><rect x="28" y="66" width="120" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
+  <path d="M96 56l11 5-4.6 1.6L100.8 68z" fill="#3b82c4" stroke="#fff"/><rect x="108" y="64" width="62" height="17" rx="5" fill="#3b82c4" stroke="none"/><text x="139" y="76" text-anchor="middle" font-family="Geist, sans-serif" font-size="9.5" font-weight="600" fill="#fff" stroke="none">Blue Fox</text>
+  <path d="M196 88l11 5-4.6 1.6L200.8 100z" fill="#d97a1e" stroke="#fff"/><rect x="208" y="96" width="70" height="17" rx="5" fill="#d97a1e" stroke="none"/><text x="243" y="108" text-anchor="middle" font-family="Geist, sans-serif" font-size="9.5" font-weight="600" fill="#fff" stroke="none">Orange Owl</text>
+  <text x="150" y="141" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">see who is here, and where</text>
+</svg></div>
         <p>See comments arrive as people write them, who else is on the page, and where they are looking.</p>
         <dl>
           <dt>Sends</dt><dd>Presence and comments straight between the reviewers' browsers. Public relays are used only to introduce them to each other, and see addresses, not words.</dd>
           <dt>Asked first</dt><dd>Each reviewer is asked before connecting. Nothing is opened until they agree.</dd>
         </dl>
         <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/live@next/dist/live.min.js"&gt;&lt;/script&gt;</pre>
+        <div class="row"><button type="button" class="copy" data-prompt="live"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open.</p></div>
       </section>
     </main>
     <footer>
       <main style="flex:none;padding:0"><a href="./">Pipeup</a> · <a href="llms.txt">For agents</a></main>
     </footer>
+    <script>
+      const CDN = "https://cdn.jsdelivr.net/npm/";
+      const tag = (pkg, file) => `<script src="${CDN}${pkg}@next/dist/${file}"><\/script>`;
+      const OPEN = "Edit only the HTML file: this is a text change, so there is nothing to download, run or look up. If my page already has data-pipeup-doc on the <html> element, leave it exactly as it is.";
+      const prompts = {
+        share: () => [
+          "My HTML page already uses Pipeup for comments. I want to let reviewers see each other's comments. Please add the Pipeup Share add-on.",
+          "",
+          OPEN,
+          "",
+          `1. Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/share", "share.min.js")}`,
+          "2. Share needs a sharing address that I choose (a PrivateBin link or my own mailbox). I will give it to you: ask me for it. Do not make one up, do not pick a service, and do not try the address. When I give it, put it on the <html> element as data-pipeup-share=\"<address>\", exactly as I wrote it.",
+          "",
+          "Leave everything else on the page as it is.",
+        ].join("\n"),
+        voice: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Voice add-on, so reviewers can dictate a comment.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/voice", "voice.min.js")}`,
+          "",
+          "Leave everything else on the page as it is.",
+        ].join("\n"),
+        live: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Live add-on, so reviewers can see who else is on the page.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/live", "live.min.js")}`,
+          "",
+          "Leave everything else on the page as it is. Each reviewer is asked before Live does anything, so no other setting is needed.",
+        ].join("\n"),
+      };
+      for (const b of document.querySelectorAll(".copy")) {
+        b.addEventListener("click", async () => {
+          const text = prompts[b.dataset.prompt]();
+          try { await navigator.clipboard.writeText(text); } catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
+          b.classList.add("done"); b.querySelector("span").textContent = "Copied";
+          setTimeout(() => { b.classList.remove("done"); b.querySelector("span").textContent = "Copy prompt"; }, 2200);
+        });
+      }
+    </script>
     <script src="pipeup.min.js"></script>
   </body>
 </html>
