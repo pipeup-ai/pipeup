@@ -10,7 +10,7 @@
 
 ## Add Pipeup to an HTML page
 
-1. Add the script tag just before `</body>`, pinned to a release: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.1/dist/pipeup.min.js"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
+1. Add the script tag just before `</body>`, pinned to a release: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.5.0/dist/pipeup.min.js"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
 2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented.
 3. Only if the page must work offline or from a file: tell the user to save https://pipeup-ai.github.io/pipeup/pipeup.min.js next to the HTML file themselves, then use `<script src="pipeup.min.js"></script>` instead of the CDN tag. Don't download it for them.
 4. Mark stable blocks with short `data-pipeup-id` names, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
@@ -26,6 +26,7 @@ The site is https://pipeup-ai.github.io/pipeup/; the source is https://github.co
 
 - [Everything in one file](https://pipeup-ai.github.io/pipeup/llms-full.txt): this guide plus all three skills.
 - [This site as Markdown](https://pipeup-ai.github.io/pipeup/index.html.md): the home page's content.
+- [Add-ons as Markdown](https://pipeup-ai.github.io/pipeup/addons.html.md): what each add-on sends, and how to add it.
 
 - [Integration skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md): how to add Pipeup to a page, by page type, with every option.
 - [Summarise skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md): summarise feedback by theme, section and status.

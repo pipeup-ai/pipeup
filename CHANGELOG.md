@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-08
+
 ### Added
 - **Add-ons.** One core plus optional add-ons, each one more script (or one combined file such as
   `pipeup+share.min.js`), working from a page opened from disk in any script order:
@@ -23,8 +25,10 @@ change the API and the stored comment format.
 - `PipeupDocument.ops()`, `merge(ops, source)` and `sign(purpose, data)`, and `onChange` now also hears the added
   ops and where they came from. Ops from elsewhere go through exactly the checks a feedback file's do.
 - Public `--pu-*` style tokens for add-ons.
+- A website page for the add-ons (what each sends, a short animated demo and a Copy prompt for each), linked from the footer. The home page and its Copy prompt stay core only.
 
 ### Changed
+- Tab on the page closes an empty comment box left open, as a click elsewhere does.
 - A resolved thread stays open, with a sentence saying so, while words are half-written in its reply line.
 - Ops are stored and exported as `{ body, sig }` only, and each is bounded in size. A saved change that can't be
   read is kept, left out and counted in one console warning.
@@ -177,7 +181,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/pipeup-ai/pipeup/compare/v0.3.1...v0.3.2
