@@ -204,6 +204,35 @@ A wrong-hash control was refused in all three browsers, so the SRI check ran. A 
 meaning; `pipeup+<id>.min.js` doesn't end that way, and an existing `.min.js` is served unchanged. The
 fallback name `pipeup-with-<id>.min.js` isn't needed.
 
+### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): private address passed, TLS and public host to do
+
+A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
+Mac, reached from a `file://` page at `127.0.0.1` (loopback) and at the Mac's LAN address (a private
+address), over plain `http:`.
+
+| Check | Chrome 154 | Chromium 153 (Playwright) | Firefox 157 | Safari 27 |
+|---|---|---|---|---|
+| `GET …/ops?since=` with `Accept: application/json` | 200 | 200 | 200 | 200 |
+| `POST …/ops`, `text/plain` body; the same POST again | 201, then 200 | 201, then 200 | 201, then 200 | 201, then 200 |
+| 429: status, exposed `Retry-After` and `retryAfter` in the body readable | yes | yes | yes | yes |
+| `keepalive` POST at `pagehide` arrives | yes | yes | yes | yes |
+| Preflight (`OPTIONS`) sent | none | none | none | none |
+| Local-network prompt or `Access-Control-Request-Private-Network` | none | none | none | none |
+
+The same results came from both loopback and the LAN address. Every request carried `Origin: null` and
+no cookies. Requests to the LAN address carried no `Sec-Fetch-*` headers, because plain `http:` to it
+isn't a trustworthy origin. Chrome 154 neither prompted nor sent a private-network preflight for a
+`file://` page reaching a private address.
+
+**Harness note.** macOS `open` drops the `?query` and `#fragment` from `file://` addresses; the Safari
+and Chrome runs passed the address through AppleScript instead.
+
+**Still to do for S6:**
+
+- The same checks over **TLS on a public host** (needs a host the maintainer chooses).
+- The same checks over **TLS on a private address**, with a certificate the browsers trust (an
+  intranet's own CA). Local-network rules may treat secure and plain requests differently.
+
 ### Peer to peer (deferred)
 
 ![Peer to peer from file://](images/p2p-file-protocol.svg)
@@ -626,3 +655,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
 - 2026-10-07 — §11: 0.4.1 budgets 40 KB (min, esm), 12 KB (core): Tab in comment mode and the cursor's stops cost about +0.9 KB gzip (36,759 B before).
 - 2026-10-07 — §6: no third-party Ed25519 fallback (no runtime dependencies in Pipeup or its add-ons). §7: add-ons spike S5 passed — jsDelivr and unpkg serve `+` file names with SRI from `file://` in Chrome, Firefox and Safari.
+- 2026-10-07 — §7: add-ons spike S6, first half — the mailbox works from `file://` on loopback and a private address in Chrome, Firefox and Safari: no preflight, 429 readable, `keepalive` at `pagehide` arrives, no local-network prompt. TLS and a public host still to test.

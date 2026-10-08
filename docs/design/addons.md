@@ -1574,7 +1574,7 @@ gets into the core").
 | S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. |
 | S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. **Passed 2026-10-07** in Chrome, Firefox and Safari ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
-| S6 Mailbox | 0.7 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). |
+| S6 Mailbox | 0.7 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). **Private address over `http:` passed 2026-10-07** in Chrome, Firefox and Safari; TLS and the public host still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 
 **What 0.5 should do now.** None of these adds visible behaviour; most save bytes later.
 
@@ -1676,3 +1676,4 @@ gets into the core").
 - 2026-10-07 — Spike S5 passed: jsDelivr and unpkg serve `+` file names byte for byte with SRI, from
   `file://` in Chrome, Firefox and Safari; `pipeup+<id>.min.js` stays.
 - 2026-10-07 — §17: the kit's `schnorr` signer is tested against the BIP-340 vectors and cross-checked against `@noble/secp256k1` as a test-only dev dependency.
+- 2026-10-07 — Spike S6, first half: from `file://`, the mailbox on loopback and a private address works in Chrome, Firefox and Safari with no preflight and no local-network prompt; TLS and the public host remain.
