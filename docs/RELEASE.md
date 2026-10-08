@@ -1,15 +1,18 @@
 # Releasing Pipeup
 
-Pipeup is developed in the maintainers' private repository and published here as an open source
-project. The private repository is the source of truth; GitHub receives one commit per release, so
-this repository's history is the list of releases.
+Pipeup is developed in the open here, on GitHub: pull requests, CI, releases and the website all
+happen in this repository.
 
 | Where | What |
 |---|---|
-| The maintainers' private repository | Day-to-day development and full history |
-| GitHub, `github.com/pipeup-ai/pipeup` | The public repo: one commit per release, issues, CI, Releases |
+| GitHub, `github.com/pipeup-ai/pipeup` | The code, its history, issues, pull requests, CI and Releases |
 | GitHub Pages, `https://pipeup-ai.github.io/pipeup/` | The website, its Try pages, llms.txt and the agent skills |
 | npm, `pipeup` | The package; CDNs (jsDelivr, unpkg) serve it from npm |
+
+**Branches.** `main` is the stable line: bug fixes and website changes for the current version go into
+it. `next` holds the next milestone's work and its pre-releases. Every change reaches either through a
+pull request with CI green; nobody pushes to them directly. After a stable release, `main` is merged into
+`next` so fixes reach the milestone too.
 
 ## Versioning
 
@@ -46,70 +49,59 @@ format may still change; the README says the project is in alpha until 1.0.
 
 ## Releasing a stable version
 
-Work happens in the private repository; steps 1–2 are there, 3–6 against GitHub.
-
-1. **Prepare, on a release branch.**
+1. **Prepare, on a release branch** from `main` (for a promotion, from `next`).
    - Set the version everywhere it is pinned with `tools/set-version.sh X.Y.Z`: `package.json`,
      `package-lock.json`, `VERSION` in `src/core.ts`, the `pipeup@X.Y.Z` CDN addresses in both
      READMEs, the agent-skills README, the integrate skill and `apps/site/llms.txt`, and the alpha
      line in both READMEs.
-   - Add the CHANGELOG section `## [X.Y.Z] - YYYY-MM-DD` and its compare link at the bottom. The
-     release notes are taken from this section, so the release fails without it.
+   - Add the CHANGELOG section `## [X.Y.Z] - YYYY-MM-DD` and its compare link at the bottom (fold the
+     milestone's pre-release sections into it). The release notes are taken from this section, so the
+     release fails without it.
    - Run `npm run check` in `libs/ts/pipeup` (types, lint, unit and browser tests, build, size
      budgets) and build the site with `apps/site/build.sh`.
-2. **Review and merge** the release branch.
-3. **Sync** from the merged main branch: run the sync script without `--yes` to see the dry run,
-   then with `--yes`. It copies the public files into the local working copy of
-   `github.com/pipeup-ai/pipeup`, puts it on `main` (the version decides the branch), refuses if
-   personal information is found, commits once as `Release vX.Y.Z` and tags `vX.Y.Z`. It never
-   pushes; it prints the push commands.
-4. **Push `main`** and wait for CI to pass.
-5. **Push the tag.** The Release workflow re-runs the full check, publishes to npm through trusted
-   publishing (with provenance), and creates the GitHub Release with the CHANGELOG notes, install
-   lines and SRI hash. If the check fails, nothing is published. When it succeeds, the Pages
-   workflow deploys the site, so the site never points at a version npm doesn't have yet.
-6. **Check it landed:** `tools/smoke-release.sh X.Y.Z` (see *After a release*).
+2. **Open a pull request into `main`**, wait for CI, and merge it.
+3. **Tag the merge commit** on `main` and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. The
+   Release workflow re-runs the full check, publishes to npm through trusted publishing (with
+   provenance), and creates the GitHub Release with the CHANGELOG notes, install lines and SRI hash. If
+   the check fails, nothing is published. When it succeeds, the Pages workflow deploys the site, so the
+   site never points at a version npm doesn't have yet.
+4. **Check it landed:** `tools/smoke-release.sh X.Y.Z` (see *After a release*).
+5. **After a promotion**, point npm's `next` tag at the stable version so it doesn't linger on the beta:
+   `npm dist-tag add pipeup@X.Y.Z next` (a maintainer, with 2FA). Pages redirects `/next/` to the stable
+   site on its own. Merge `main` into `next`.
 
 ## Pre-releases
 
-The `next` channel: npm tag `next`, public branch `next`, site at
-`https://pipeup-ai.github.io/pipeup/next/`. The stable site, `npm i pipeup` and the stable CDN
-address are untouched ([design](design/prerelease.md)).
+The `next` channel: npm tag `next`, branch `next`, site at `https://pipeup-ai.github.io/pipeup/next/`.
+The stable site, `npm i pipeup` and the stable CDN address are untouched
+([design](design/prerelease.md)).
 
-1. Prepare as for a stable release with version `X.Y.Z-beta.N` and a CHANGELOG section for it.
-2. Review and merge.
-3. Sync: the script sees the hyphen and commits to the public `next` branch, starting it afresh from
-   `main` when the previous pre-release cycle is finished (it then prints a `--force-with-lease`
-   push for `next`, since the old cycle's branch is replaced).
-4. Push `next` (the script prints the command) and wait for CI.
-5. Push the tag. The Release workflow publishes to npm under `next` and marks the GitHub Release as a
-   pre-release; Pages then rebuilds both channels, with the beta at `/next/`.
-6. Run `tools/smoke-release.sh X.Y.Z-beta.N`, then test by hand:
+1. At the start of a milestone, start `next` afresh from `main` if its last cycle is finished (its version
+   is not newer than `main`'s).
+2. Feature work goes into `next` through pull requests.
+3. To release a beta, open a pull request into `next` that sets version `X.Y.Z-beta.N` with
+   `tools/set-version.sh` and adds its CHANGELOG section; merge it.
+4. Tag the merge commit on `next` (`vX.Y.Z-beta.N`) and push the tag. The Release workflow publishes to
+   npm under `next` and marks the GitHub Release as a pre-release; Pages then rebuilds both channels,
+   with the beta at `/next/`.
+5. Run `tools/smoke-release.sh X.Y.Z-beta.N`, then test by hand:
    - `/next/` and its Try pages show the pre-release bar with this version, and Pipeup works on them;
    - `npm i pipeup@next` (or `pipeup@X.Y.Z-beta.N`) in a blank page works;
    - the CDN tag with the SRI from the release notes loads;
    - the stable site, its `llms.txt` and `npm view pipeup dist-tags` still show the stable version.
-7. Fix problems in `beta.N+1`.
+6. Fix problems in `beta.N+1`. Promote with a stable release from `next` (above).
 
-**Promoting to stable:** release `X.Y.Z` as a normal stable version from the private repository
-(the code is already there). Then point npm's `next` tag at it so it doesn't linger on the beta:
-`npm dist-tag add pipeup@X.Y.Z next` (a maintainer, with 2FA). Pages redirects `/next/` to the
-stable site on its own.
-
-**A stable fix during a pre-release cycle:** branch from the last stable release commit in the
-private repository, release `X.Y.(Z+1)` as a normal stable version, then bring the fix into the
-main line.
+**A stable fix during a pre-release cycle:** branch from `main`, release `X.Y.(Z+1)` as a normal stable
+version, then merge `main` into `next`.
 
 ## Website-only updates
 
 Site and doc changes for the current stable version ship without a new library version:
 
-1. Merge the change in the private repository.
-2. Run the sync script with `--yes --site`. It commits "Site update for vX.Y.Z" to `main` with no tag, so
-   nothing is published to npm and the GitHub Releases are unchanged. It refuses a pre-release version
-   and a version that hasn't been released yet.
-3. Push `main`, wait for CI, then run the Pages workflow by hand (`gh workflow run pages.yml --ref main`).
-   The next stable release includes the commit as usual.
+1. Merge the change into `main` through a pull request. Nothing is published to npm and the GitHub
+   Releases are unchanged; keep library changes out of such a pull request, since the site is built
+   from `main` and runs its library.
+2. Run the Pages workflow by hand: `gh workflow run pages.yml --ref main`.
 
 ## After a release
 
@@ -128,7 +120,7 @@ and the site to catch up, and exits non-zero on any failure. By hand:
 | Symptom | Cause and fix |
 |---|---|
 | Release fails at *Publish to npm* with `EOTP` or `ENEEDAUTH` | The trusted publisher on npm doesn't match (org, repo, workflow file name) or doesn't allow `npm publish`. Fix it on npm, then re-run the failed job: the tag stays the same. |
-| Release fails at the tag check | The tag doesn't match `package.json`. Delete the tag on GitHub and locally, fix the version, sync again. |
+| Release fails at the tag check | The tag doesn't match `package.json`. Delete the tag on GitHub and locally, fix the version in a pull request, tag again. |
 | Release fails at *Release notes* | No CHANGELOG section for the version. |
 | npm still shows the old version | The registry lags a minute or two; ask with `--prefer-online`. |
 | jsDelivr says "Couldn't find the requested release version" | It cached a miss from before the publish. Purge: `curl https://purge.jsdelivr.net/npm/pipeup@X.Y.Z/dist/pipeup.min.js`. |
@@ -139,9 +131,8 @@ and the site to catch up, and exits non-zero on any failure. By hand:
 
 ## What is public
 
-Everything in this repository is the whole project except the maintainers' internal working notes,
-implementation plans, exploratory mock-ups and the sync script. Sample names in code, tests and docs
-are fictional; there are no personal names or addresses.
+Everything: the code, docs, designs, tests and history are in this repository. Sample names in code,
+tests and docs are fictional; there are no personal names or addresses.
 
 ---
 
@@ -158,3 +149,4 @@ are fictional; there are no personal names or addresses.
 - 2026-10-06 — The `next` channel is built: `tools/set-version.sh`, the sync script picks the branch from the version, the site builds per channel, Pages deploys both after a release, `tools/smoke-release.sh`.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
 - 2026-10-07 — Website-only updates: the sync script's `--site` mode commits to `main` without a tag; the Pages workflow is run by hand.
+- 2026-10-07 — GitHub is the project's only home: development, pull requests and releases happen here; the private repository and its sync script are retired. Stable work and website changes go into `main`, milestone work and pre-releases into `next`; releases are tagged on the merged commit.

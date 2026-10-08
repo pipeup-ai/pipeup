@@ -26,6 +26,8 @@ Build the website with `apps/site/build.sh`, then serve `apps/site/_site` with a
 
 ## Pull requests
 
+- Bug fixes and website changes for the current version go into `main`; work for the next milestone
+  goes into `next` ([RELEASE.md](docs/RELEASE.md)).
 - `npm run check` must be green. CI runs the same command.
 - Keep each pull request to one change, with tests for new behaviour and fixed bugs.
 - Say what changed for people using Pipeup; add a line under **Unreleased** in `CHANGELOG.md`.

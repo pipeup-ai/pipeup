@@ -2,8 +2,7 @@
 # Builds the website into apps/site/_site: the page, fonts, favicon, link-preview image (og.png), skills, llms.txt,
 # llms-full.txt, robots.txt, the Markdown page, the Try pages and the current pipeup.min.js.
 #
-# Works from any directory: paths are relative to the project root (two levels up from here),
-# which is projects/pipeup/ in the monorepo and the repository root on GitHub.
+# Works from any directory: paths are relative to the repository root (two levels up from here).
 #
 #   apps/site/build.sh                 build the library, then the site
 #   apps/site/build.sh --no-lib-build  use the library already in libs/ts/pipeup/dist
