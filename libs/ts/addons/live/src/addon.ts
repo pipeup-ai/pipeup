@@ -78,10 +78,15 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
   const offs: (() => void)[] = [host.addStyles(STYLES)];
   const names = new Map<string, string>();
   /** The name someone gave, "" while they show as their animal. */
+  const reals = new Map<string, string>();
   const realName = (key: string): string => {
     if (key === host.document.me) return host.document.name;
-    let n = "";
-    for (const o of host.document.ops()) if (o.body.author === key && o.body.name) n = o.body.name;
+    let n = reals.get(key);
+    if (n === undefined) {
+      n = "";
+      for (const o of host.document.ops()) if (o.body.author === key && o.body.name) n = o.body.name;
+      reals.set(key, n);
+    }
     return n;
   };
   const nameOf = (key: string): string => {
@@ -92,10 +97,11 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
   offs.push(
     host.document.onChange(() => {
       names.clear();
+      reals.clear();
       renderPeople();
     }),
   );
-  const cursors = new Cursors(host, nameOf);
+  const cursors = new Cursors(host, nameOf, realName);
   const save = () => st.set(docId, { on: want, seen });
   const others = () => [...(session?.people.values() ?? [])];
   const withN = (none = "") => {

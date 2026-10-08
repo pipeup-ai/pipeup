@@ -37,7 +37,8 @@ export const STYLES = `
 .live-c{left:0;top:0}
 .live-c.on{opacity:1}
 .live-c svg{display:block;width:16px;height:16px;fill:var(--c);stroke:#fff;stroke-width:1.5}
-.live-c span{position:absolute;left:13px;top:13px;padding:2px 6px;border-radius:6px;white-space:nowrap;font:600 11px/1.3 var(--pu-font,system-ui,sans-serif);color:#fff;background:var(--c)}
+.live-c span{position:absolute;left:13px;top:13px;display:flex;align-items:center;gap:4px;padding:2px 6px 2px 2px;border-radius:6px;white-space:nowrap;font:600 11px/1.3 var(--pu-font,system-ui,sans-serif);color:#fff;background:var(--c)}
+.live-c .av{width:16px;height:16px;border-radius:5px;font-size:10px}
 .live-s.on{opacity:.18}
 .live-p{display:flex;align-items:center;gap:10px;padding:8px 0}
 .live-n{flex:1;min-width:0}
@@ -64,6 +65,7 @@ interface Mark {
   ptr?: Found;
   sel?: Found;
   rects: HTMLElement[];
+  face?: string;
 }
 
 const keyOf = (a: Anchor) =>
@@ -78,6 +80,7 @@ export class Cursors {
   constructor(
     private readonly host: AddonHost,
     private readonly name: (key: string) => string,
+    private readonly real: (key: string) => string,
   ) {}
 
   private make(p: Person): Mark {
@@ -136,7 +139,12 @@ export class Cursors {
       const rects = here && p.pres.selection ? this.rects(m, p.pres.selection, now) : [];
       reads.push(() => {
         const name = this.name(p.key);
-        if (name !== m.tag.textContent) m.tag.textContent = name;
+        const face = `${name}|${this.real(p.key)}`;
+        if (face !== m.face) {
+          m.face = face;
+          const av = this.host.avatar(p.key, this.real(p.key));
+          m.tag.replaceChildren(av, name);
+        }
         if (!at) return void m.el.classList.remove("on");
         const far = Math.hypot(at.x - m.x, at.y - m.y);
         if (!m.el.classList.contains("on") || this.reduce.matches) {
