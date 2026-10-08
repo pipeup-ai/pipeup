@@ -28,9 +28,9 @@ for id in share voice live; do (cd "$addons/$id" && npm pkg set "peerDependencie
 sed -i.bak -E "s/^export const VERSION = \"$semver\";/export const VERSION = \"$version\";/" "$lib/src/core.ts"
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
-  apps/agent-skills/pipeup-integrate/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.html)
+  apps/agent-skills/pipeup-integrate/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.html apps/site/addons.html.md)
 for f in "${pinned[@]}"; do
-  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g" "$root/$f"
+  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g; s#(ADDONS_VERSION = \")$semver\"#\1$version\"#g" "$root/$f"
 done
 rm -f "$lib/src/core.ts.bak"
 for f in "${pinned[@]}"; do rm -f "$root/$f.bak"; done

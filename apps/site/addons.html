@@ -8,6 +8,7 @@
     <meta name="description" content="Optional extras for Pipeup: share comments through an encrypted service, dictate comments, and review live together. The core needs none of them." />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/addons.html" />
+    <link rel="alternate" type="text/markdown" href="addons.html.md" title="This page as Markdown" />
     <style>
       @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
       @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
@@ -259,7 +260,7 @@
           <div class="agents-menu" role="menu" aria-label="For agents">
             <a role="menuitem" href="llms.txt" title="A short guide for AI agents">llms.txt</a>
             <a role="menuitem" href="llms-full.txt" title="The guide and every skill, in one file">llms-full.txt</a>
-            <a role="menuitem" href="index.html.md" title="This page as plain Markdown">This page as Markdown</a>
+            <a role="menuitem" href="addons.html.md" title="This page as plain Markdown">This page as Markdown</a>
             <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
           </div>
         </div>
@@ -269,7 +270,8 @@
 
     <script>
       const CDN = "https://cdn.jsdelivr.net/npm/";
-      const tag = (pkg, file) => `<script src="${CDN}${pkg}@next/dist/${file}"><\/script>`;
+      const ADDONS_VERSION = "0.5.0"; // tools/set-version.sh keeps this in step with the release
+      const tag = (pkg, file) => `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"><\/script>`;
       const OPEN = "Edit only the HTML file: this is a text change, so there is nothing to download, run or look up. If my page already has data-pipeup-doc on the <html> element, leave it exactly as it is.";
       const prompts = {
         share: () => [

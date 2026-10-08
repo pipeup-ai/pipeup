@@ -25,11 +25,9 @@ format may still change; the README says the project is in alpha until 1.0.
 | 0.2 | First UI (bubbles, column, selection, menu) |
 | **0.3.0** | **First public release**: comment mode, pins, one-button control, All comments, animal identities |
 | **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
-| 0.5 | Touch and the narrow-page drawer |
-| 0.6 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
-| 0.7 | Add-on support and the `share` add-on: comments shared through an encrypted service |
-| 0.8 | The `voice` add-on: dictating comments |
-| 0.9 | The `live` add-on: live review and presence, peer to peer |
+| **0.5** | **Add-ons**: add-on support, `share` (comments shared through an encrypted service), `voice` (dictating comments) and `live` (live review and presence, peer to peer), and the mailbox server |
+| 0.6 | Touch and the narrow-page drawer |
+| 0.7 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
 | 1.0 | Stable API and stored format |
 
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.

@@ -726,13 +726,13 @@ which Pipeup discards. It also can't tell when something is missing.
    placement and motion (§9); check; agent skills.
 2. **Public release** (shipped: 0.3.0): npm and CDN publication, verification guidance, open-source
    licence.
-3. **Touch and narrow pages** (0.5).
-4. **The command-line tool** (0.6).
-5. **Add-ons**, each only once tests with real services show it works from a page opened from disk,
-   and each in its own release so one add-on's delay never holds back another:
-   - shared comments through a free service the author picks (0.7);
-   - dictation (0.8);
-   - live review and presence (0.9).
+3. **Add-ons** (shipped together in 0.5, after tests with real services showed they work from a page opened from
+   disk):
+   - shared comments through a free service the author picks;
+   - dictation;
+   - live review and presence.
+4. **Touch and narrow pages** (0.6).
+5. **The command-line tool** (0.7).
 6. **The author's relay** (later):
    - rooms on a relay the author owns;
    - invites shared separately;
@@ -864,3 +864,4 @@ which Pipeup discards. It also can't tell when something is missing.
   stays open, with a sentence saying so, while words are half-written in its reply line (§11); an add-on that
   can't work on a page (no speech engine, nothing configured) stays off and says why (§11a); an add-on's own
   spoken words ("Listening") are heard at once, while comments show.
+- 2026-10-08 — Add-ons ship together in 0.5 (not in separate releases); touch and narrow pages move to 0.6 and the command-line tool to 0.7.

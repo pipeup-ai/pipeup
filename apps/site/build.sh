@@ -34,7 +34,7 @@ rm -rf "$out"
 mkdir -p "$out/skills"
 cp -R "$site/index.html" "$site/addons.html" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
-cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
+cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 
