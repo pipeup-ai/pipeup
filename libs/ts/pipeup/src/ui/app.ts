@@ -177,14 +177,11 @@ export function startApp(o: AppOptions): App {
     resolve: async (id) => {
       try {
         await o.doc.resolve(id);
-        if (gone(id)) state.active = null;
         toast("Resolved · Show resolved brings it back");
       } catch (e) {
-        if (e instanceof UnsavedChangeError) {
-          if (gone(id)) state.active = null;
-          toast(`Resolved · ${UNSAVED_NOTE}`);
-        } else toast(message(e));
+        toast(e instanceof UnsavedChangeError ? `Resolved · ${UNSAVED_NOTE}` : message(e));
       }
+      if (gone(id)) state.active = null;
     },
     reopen: async (id) => {
       try {
@@ -710,8 +707,8 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("resize", onResize);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
-  const sizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleReplace);
-  sizeObserver?.observe(o.root);
+  const sizeObserver = new ResizeObserver(scheduleReplace);
+  sizeObserver.observe(o.root);
   const offChange = o.doc.onChange((_threads, added, source) => {
     addons.heard(added, source);
     resolveAll();
@@ -735,7 +732,7 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(mutationTimer);
       window.clearTimeout(deferredTimer);
       observer.disconnect();
-      sizeObserver?.disconnect();
+      sizeObserver.disconnect();
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
