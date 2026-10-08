@@ -27,7 +27,9 @@ format may still change; the README says the project is in alpha until 1.0.
 | **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
 | 0.5 | Touch and the narrow-page drawer |
 | 0.6 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
-| 0.7 | Sharing add-ons: share, then voice, then live |
+| 0.7 | Add-on support and the `share` add-on: comments shared through an encrypted service |
+| 0.8 | The `voice` add-on: dictating comments |
+| 0.9 | The `live` add-on: live review and presence, peer to peer |
 | 1.0 | Stable API and stored format |
 
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.
