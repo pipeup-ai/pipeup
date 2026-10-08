@@ -77,16 +77,24 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
   let renderPeople = () => {};
   const offs: (() => void)[] = [host.addStyles(STYLES)];
   const names = new Map<string, string>();
-  const nameOf = (key: string): string => {
-    let n = names.get(key);
-    if (n === undefined) {
-      n = "";
-      for (const o of host.document.ops()) if (o.body.author === key && o.body.name) n = o.body.name;
-      names.set(key, (n ||= core().animalName?.(key) ?? "Someone"));
-    }
+  /** The name someone gave, "" while they show as their animal. */
+  const realName = (key: string): string => {
+    if (key === host.document.me) return host.document.name;
+    let n = "";
+    for (const o of host.document.ops()) if (o.body.author === key && o.body.name) n = o.body.name;
     return n;
   };
-  offs.push(host.document.onChange(() => names.clear()));
+  const nameOf = (key: string): string => {
+    let n = names.get(key);
+    if (n === undefined) names.set(key, (n = realName(key) || core().animalName?.(key) || "Someone"));
+    return n;
+  };
+  offs.push(
+    host.document.onChange(() => {
+      names.clear();
+      renderPeople();
+    }),
+  );
   const cursors = new Cursors(host, nameOf);
   const save = () => st.set(docId, { on: want, seen });
   const others = () => [...(session?.people.values() ?? [])];
@@ -186,13 +194,20 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
     renderPeople = () => {
       const list = others();
       const names = list.map((p) => nameOf(p.key));
+      const me = host.document.me;
       node.replaceChildren(
+        h(
+          "div",
+          { className: "live-p" },
+          host.avatar(me, realName(me)),
+          h("div", { className: "live-n", textContent: `You (${nameOf(me)})` }),
+        ),
         ...(list.length ? [] : [h("p", { textContent: "Nobody else is live here." })]),
         ...list.map((p, i) =>
           h(
             "div",
             { className: "live-p" },
-            host.avatar(p.key, names[i]!),
+            host.avatar(p.key, realName(p.key)),
             h(
               "div",
               { className: "live-n", textContent: names[i] },

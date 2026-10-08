@@ -1526,7 +1526,7 @@ The mailbox transport adds nothing to the core: it is share's code, behind the s
 |---|---|---|
 | `share.min.js` | 7.5 KB | kit sync, envelope, ladder, settings, PrivateBin client, rollover, consent rows; mailbox client ~0.5 KB (estimate: address parse, two requests, cursor paging, error codes, `Retry-After`). If S1 fails and PrivateBin is left out (~1.5 KB with rollover), the budget returns to 7 KB. |
 | `voice.min.js` | 4 KB | Web Speech, consent panel, language |
-| `live.min.js` | 10.5 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
+| `live.min.js` | 11 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
 | `pipeup+<id>.min.js` | core + add-on budgets | checked separately |
 
 Run-time downloads made by the browser itself (a speech pack) are declared on the add-on page and in
@@ -1752,3 +1752,7 @@ gets into the core").
   unused rule, a loop, a shared surface rule). The App shell, avatars and icons, copy-out and the add-on API
   itself had nothing worth taking. Several "tidier" refactors made the bundle larger because gzip already folds repeats.
   Budgets: min and esm 42 KB (was 44 KB).
+
+- 2026-10-08: first by-hand test of live. The People panel now lists "You (name)" first and shows each person's animal
+  and colour (the avatar is drawn from the name they gave, not from their display name, so unnamed people show their
+  animal instead of a letter). `AddonDocument` gains a read-only `name`. The live budget is 11 KB (was 10.5 KB).

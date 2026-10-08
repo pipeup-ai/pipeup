@@ -80,6 +80,8 @@ export interface AddonDocument {
   readonly id: string;
   /** This reviewer's public key: share sends only ops with author === me. */
   readonly me: string;
+  /** This reviewer's name; "" until they add one (they show as their animal). */
+  readonly name: string;
   threads(): readonly Thread[];
   ops(): readonly SignedOp[];
   onChange(fn: Listener): Off;
@@ -575,6 +577,9 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
   const view: AddonDocument = {
     id: doc.id,
     me: doc.me,
+    get name() {
+      return doc.name;
+    },
     threads: () => doc.threads(),
     ops: () => doc.ops(),
     onChange: (fn) => {

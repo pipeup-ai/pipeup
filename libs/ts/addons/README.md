@@ -30,4 +30,4 @@ npm run demo       # a local mailbox and relay and a try page for all three add-
 
 Each add-on builds to `dist/<id>.min.js` (a classic script that registers itself), `dist/<id>.esm.js`
 (`import share from "@pipeup/share"; use(share())`), and `dist/pipeup+<id>.min.js` (Pipeup and the add-on in
-one file, byte for byte). Gzip budgets: share 7.5 KB, voice 4 KB, live 10.5 KB.
+one file, byte for byte). Gzip budgets: share 7.5 KB, voice 4 KB, live 11 KB.
