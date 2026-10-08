@@ -1089,12 +1089,19 @@ re-sends its own shared comments and those it received from the old copy, as in 
      turned into words. Pipeup doesn't keep it."
 
    The choice is kept in the add-on's settings (not a secret). Where settings don't last (§6), the panel
-   says "This browser won't remember this choice". On `file://` that choice, and Firefox's "remember"
-   for the microphone, may apply to every local file; the docs say so.
-3. The browser asks for the microphone.
+   says "This browser won't remember this choice". On `file://` that choice may apply to every local
+   file; the docs say so.
+   - **Safari can't say where it listens.** It has no `available()` or `processLocally` (S3), so Pipeup
+     can't tell on-device from Apple's service and always shows the service sentence there.
+3. The browser asks for the microphone. **On `file://`, Chrome and Safari ask again on every page load**
+   (S3): the grant lasts only until the page is reloaded. The docs say so, and the consent panel isn't
+   shown again, since that choice is Pipeup's own and is kept.
 4. Words in progress go to `dictation.update()`, final words to `commit()`, so they are in the box from
    the start. `host.announce("Listening")` when it starts.
-5. It stops on a second press, on `onEnd` (send, cancel, clear, box removed) and after 60 s of silence,
+5. Only one recognition runs at a time: in Safari a second `start()` aborts the first, and a new one
+   started straight after an abort fails at once with "No speech detected" (S3). So a press while
+   listening only stops, and a new start waits for the previous `end`.
+6. It stops on a second press, on `onEnd` (send, cancel, clear, box removed) and after 60 s of silence,
    with `host.announce("Stopped listening")`.
 
 The reviewer still sends; voice never writes an op.
@@ -1575,7 +1582,7 @@ gets into the core").
 |---|---|---|---|
 | S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07** in Chrome, Firefox and Safari; volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. |
-| S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. |
+| S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. **Passed 2026-10-08** in Chrome (service and on device) and Safari; Firefox has no engine; Edge not tried ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. |
 | S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. **Passed 2026-10-07** in Chrome, Firefox and Safari ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S6 Mailbox | 0.7 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). **Public host over TLS and a private address over `http:` passed 2026-10-07** in Chrome, Firefox and Safari; TLS on a private address still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
@@ -1683,3 +1690,4 @@ gets into the core").
 - 2026-10-07 — Spike S6, first half: from `file://`, the mailbox on loopback and a private address works in Chrome, Firefox and Safari with no preflight and no local-network prompt; TLS and the public host remain.
 - 2026-10-07 — Spike S6, public half: the mailbox behind TLS on a public host (a Cloudflare Worker) works from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
 - 2026-10-07 — Spike S1 on an own PrivateBin 2.0.6 passed (§7.2 updated): the comment mapping is accepted, comments never carry `meta`, "please wait" is HTTP 200 with `status: 1` and is never parsed, an unoffered expiry silently becomes the default and `time_to_live` shows it. Volunteer instances still to test, with their operators' permission.
+- 2026-10-08 — Spike S3 passed (§8 updated): dictation works from `file://` in Chrome, through its service and on device, and in Safari; Firefox has none. Chrome and Safari ask for the microphone again on every load of a `file://` page. Safari can't say whether it listens on device, so its consent panel always uses the service sentence. One recognition at a time.

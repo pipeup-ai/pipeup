@@ -241,6 +241,29 @@ From the 2.0.6 source (`lib/FormatV2.php`, `lib/Request.php`, `lib/Controller.ph
 **Still to do for S1:** the same checks on one or two volunteer instances, with their operators'
 permission, and over HTTPS on a public instance.
 
+### S3: Web Speech from `file://` (add-ons spike, 2026-10-08): passed in Chrome and Safari
+
+A `file://` page (`lang="en-US"`) in visible windows, with the maintainer speaking into the Mac's
+microphone and answering the browsers' prompts.
+
+| | Chrome 154 | Safari 27 | Firefox 157 |
+|---|---|---|---|
+| API | `SpeechRecognition` | `webkitSpeechRecognition` | none |
+| `available()`, `install()`, `processLocally` | all three | none | — |
+| On device, en-US, before `install()` | `downloadable` | can't be asked | — |
+| Through the browser's service, en-US | `available`; dictation worked, final text about 2.4 s after speech began | dictation worked, the words right, final text about 4.8 s after speech began | — |
+| On device after `install()` | `install()` answered `true` at once (the pack was probably on this Mac already); dictation worked, final about 3.9 s after speech began | — | — |
+| Interim results | 11 to 19 updates per sentence | about 11 | — |
+| Microphone grant after a reload | asked again | asked again | — |
+
+- **The microphone grant doesn't last on `file://`:** both browsers ask again on every page load, and
+  Chrome's `permissions.query` still says `prompt` after a granted run.
+- **Safari can't say where it listens:** with no `available()` or `processLocally`, a page can't tell
+  on-device recognition from Apple's service.
+- **One recognition at a time in Safari:** a second `start()` aborts the first ("Another request is
+  started"), and one started straight after fails at once with "No speech detected".
+- Edge wasn't installed and wasn't tried; it uses Chrome's engine.
+
 ### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
 A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
@@ -700,3 +723,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §7: add-ons spike S6, first half — the mailbox works from `file://` on loopback and a private address in Chrome, Firefox and Safari: no preflight, 429 readable, `keepalive` at `pagehide` arrives, no local-network prompt. TLS and a public host still to test.
 - 2026-10-07 — §7: S6 public half passed — a Cloudflare Worker over HTTPS, from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
 - 2026-10-07 — §7: add-ons spike S1 on an own PrivateBin 2.0.6 passed in Chrome, Firefox and Safari from `file://`: simple requests, the §7.2 comment mapping, JSON reads, `time_to_live`, Web Locks; "please wait" is HTTP 200 with `status: 1`. Volunteer instances still to test.
+- 2026-10-08 — §7: add-ons spike S3 passed: dictation from `file://` in Chrome (service and on device) and Safari; the microphone is asked for on every load; Safari can't say where it listens.
