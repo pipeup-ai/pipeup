@@ -2,6 +2,13 @@
   "name": "@pipeup/mailbox",
   "version": "0.5.0",
   "description": "Reference HTTP mailbox server for Pipeup shared comments (contract pm1), and a checker for any server.",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "author": "Pipeup contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "services/mailbox"
+  },
   "type": "module",
   "license": "MIT",
   "bin": {
