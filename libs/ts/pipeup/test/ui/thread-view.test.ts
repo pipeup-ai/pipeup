@@ -212,14 +212,14 @@ describe("threadView", () => {
     expect(view.element.classList.contains("resolved")).toBe(true);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
     expect(line.value).toBe("half typed");
-    expect((view.element.querySelector(".rbox .ctx") as HTMLElement).hidden).toBe(false);
+    expect((view.element.querySelector(".rbox .note") as HTMLElement).hidden).toBe(false);
     // Once the words are gone, a resolved thread has no reply line.
     line.value = "";
     view.update({ ...newer, resolved: true });
     expect(view.element.querySelector(".rbox.always")).toBeNull();
     line.value = "half typed";
     view.update(newer);
-    expect((view.element.querySelector(".rbox .ctx") as HTMLElement).hidden).toBe(true);
+    expect((view.element.querySelector(".rbox .note") as HTMLElement).hidden).toBe(true);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
   });
 });

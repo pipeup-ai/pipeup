@@ -250,12 +250,13 @@ export type Capability =
 **One core per page.** An author or agent can include both `pipeup.min.js` and `pipeup+share.min.js`,
 or an app bundle can carry the ESM core while the page also loads the classic one.
 
-- The classic build is wrapped so that, when `self.Pipeup` already has a `VERSION`, the second copy
-  defines nothing, doesn't auto-mount, and logs one warning in words: "Pipeup is on this page twice
-  (0.7.0 and 0.7.0); the first one is used. Remove one script." Add-ons in a combined file still
-  register: their `push` reaches the first core's queue, and a duplicate id is ignored.
-- The ESM core's `mount()`, finding a queue owned by another core, rejects with the same sentence and
-  mounts nothing.
+- **As built:** a copy reads `self.Pipeup` once, when it loads (a classic build assigns its global only at
+  the end, so a second copy sees the first). If the first has a `VERSION`, the second doesn't auto-mount,
+  logs one warning in words ("Pipeup is on this page twice (0.7.0 and 0.7.0); the first one is used.
+  Remove one script."), and its `use`, `addons` and `mount` hand over to the first, whose queue and
+  registry own everything. So an add-on in a combined file still registers, a duplicate id is ignored,
+  and `Pipeup.mount()` from the page mounts the first core once, whichever global it called. (The ESM
+  core does the same instead of rejecting, which is kinder to an app that bundles its own copy.)
 - `pipeup check` reports two cores as a failure. Both cases are in the load-order e2e matrix (§11).
 
 **`use` rules**
@@ -279,6 +280,8 @@ export interface AddonHost {
   readonly ephemeral: boolean;           // this browser can't keep comments (the in-memory store)
   readonly signal: AbortSignal;          // aborted at teardown: pass it to fetch, timers, sockets
   has(c: Capability): boolean;
+  /** Says the add-on can't work here (no speech engine, nothing configured): it stays off, with this reason. */
+  off(reason: string): void;
   /** document.merge(ops, this add-on's id): the source can't be set wrongly. */
   merge(ops: readonly unknown[]): Promise<number>;
 
@@ -353,7 +356,10 @@ comment mode. Spec §1 promises the page looks unchanged then; §11a extends tha
     show while closed, because it concerns words the reviewer may be about to lose.
 - **`announce(text)`** puts plain words in Pipeup's polite announcement region (below). Use it for
   changes a screen-reader user can't otherwise notice: "Listening", "Stopped listening", "Red Fox
-  joined". It follows the announcement rules in §3.6.
+  joined". **It is spoken at once while comments are showing** (it answers something the reviewer just did,
+  and dictation always has a box with words in it, so waiting for them to stop writing would mean never)
+  and dropped while comments are closed. The pacing and wait-while-writing rules of §3.6 apply to the
+  summary of other people's new comments, not to an add-on's own words.
 - **`setComposerNote(text)`** sets one quiet line Pipeup shows above the new-comment box while it is
   open (one note per add-on; the latest set wins if two exist). Share uses it to tell a reviewer,
   before their first comment, that comments are shared. `null` removes it.
@@ -1470,8 +1476,13 @@ they are re-measured when stage 0 is built.
 | Same-name fingerprint (core UI, with live) | 3 | ~80 | estimate |
 | **All stages** | | **~1.9 KB** | |
 
-**Decision 1 (recorded 2026-10-07): option A, with the budget already raised.** The min and esm
-budgets are 40 KB, so every stage fits: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
+**Decision 1 (recorded 2026-10-07, revised 2026-10-08).** The estimates above proved light. As built, all
+stages together cost **+3.8 KB gzip** over 0.4.1's 37.7 KB (not ~2.0 KB): the registry, host and surface
+about 2.6 KB, composer tools and dictation about 0.4 KB, menu rows 0.4 KB, styles 0.3 KB. Property mangling
+of the surface's internals saved nothing worth keeping, and no stage could be cut without dropping a slot an
+add-on needs. So the **min and esm budgets are 44 KB** (measured 41.5 KB min, 41.0 KB esm), stated in the
+release notes, for the maintainer to confirm or to send back for a size pass. The original reasoning, kept
+for the record: the min and esm budgets were 40 KB, so every stage fitted: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
 about 2.0 KB of the 3,253 B headroom. That leaves the 0.5 touch and drawer work about 1.2 KB before it
 needs size work of its own. The rules:
 
@@ -1480,7 +1491,7 @@ needs size work of its own. The rules:
   maintainer can choose.
 - Each stage is re-measured with `scripts/size.mjs` before merge. A stage that costs more than its
   estimate here cuts in the order below before any budget changes.
-- No budget rise beyond 40 KB for add-on support without a new decision, stated in the release notes.
+- No budget rise beyond 44 KB for add-on support without a new decision, stated in the release notes.
 - The core-only budget stays 12 KB.
 
 **If a stage is short, cut in this order:** the select-error toast, the `reason` strings in `addons()`
@@ -1700,3 +1711,10 @@ gets into the core").
 - 2026-10-08 — Spike S2, first half: the kit's own signer passes the BIP-340 vectors and matches noble on 2,000 random keys; it measures 1.0 KB gzip. A local nostr-rs-relay accepts and delivers its ephemeral events from `file://` in Chrome, Firefox and Safari without storing them, and two peers meet through it. Public relays and other networks remain.
 - 2026-10-08 — Spike S2, public relays: damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work. They all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s; §9.1 now ignores offers older than 30 s. Cross-network connection rates remain.
 - 2026-10-08 — Spike S4 passed: GitHub Actions runs PrivateBin and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server; integration tests use the image, pinned by digest.
+- 2026-10-08 — Built (branch `feat/addons`): the core slots, the kit, voice, the mailbox server, and then share and
+  live. Changes from the design as built: `host.off(reason)` lets `setup` say "off, because …" (§3); `announce`
+  speaks at once while comments show (§3.2); one core per page hands over to the first instead of rejecting
+  (§2); a resolved thread keeps its reply line while words are half-written in it (§3.6, with a plain sentence;
+  who resolved it isn't known to the model, so no name); unreadable saved ops are counted in one console
+  warning; the min and esm budgets are 44 KB (§15). A test keeps the add-on API's names out of the mangle list
+  (§4), and `size.mjs` checks script tags and that `use` and `addons` exist.

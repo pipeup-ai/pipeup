@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Sets Pipeup's version everywhere it is pinned, so a release can't miss one:
-# package.json and package-lock.json, VERSION in src/core.ts, the pinned CDN addresses
-# (pipeup@X.Y.Z) and the alpha status line in the READMEs, the skills and llms.txt.
+# package.json and package-lock.json (the core, the add-ons and the mailbox), VERSION in src/core.ts, the pinned
+# CDN addresses (pipeup@X.Y.Z, @pipeup/share@X.Y.Z) and the alpha status line in the READMEs, the skills and llms.txt.
 # The CHANGELOG is written by hand.
 #
 #   tools/set-version.sh 0.4.0-beta.1
@@ -15,12 +15,19 @@ lib="$root/libs/ts/pipeup"
 semver='[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?'
 
 (cd "$lib" && npm version "$version" --no-git-tag-version --allow-same-version >/dev/null)
+# The add-ons, their workspace and the mailbox server are released with the core, at the same version.
+addons="$root/libs/ts/addons"
+for dir in "$addons" "$addons/kit" "$addons/test" "$addons/share" "$addons/voice" "$addons/live" "$root/services/mailbox"; do
+  (cd "$dir" && npm version "$version" --no-git-tag-version --allow-same-version >/dev/null)
+done
+for id in share voice live; do (cd "$addons/$id" && npm pkg set "peerDependencies.pipeup=$version" >/dev/null); done
+(cd "$addons" && npm install --package-lock-only --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 || true)
 sed -i.bak -E "s/^export const VERSION = \"$semver\";/export const VERSION = \"$version\";/" "$lib/src/core.ts"
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
   apps/agent-skills/pipeup-integrate/SKILL.md apps/site/llms.txt)
 for f in "${pinned[@]}"; do
-  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g" "$root/$f"
+  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g" "$root/$f"
 done
 rm -f "$lib/src/core.ts.bak"
 for f in "${pinned[@]}"; do rm -f "$root/$f.bak"; done

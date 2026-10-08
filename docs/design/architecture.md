@@ -370,8 +370,13 @@ and Chrome runs passed the address through AppleScript instead.
 
 **Still to do for S6:**
 
-- The same checks over **TLS on a private address**, with a certificate the browsers trust (an
-  intranet's own CA). Local-network rules may treat secure and plain requests differently.
+- **TLS on a private address, Chromium only so far (2026-10-08):** the reference mailbox server behind a
+  self-signed certificate for this Mac's LAN address, reached from a `file://` page in Playwright's Chromium
+  with that certificate's key pinned (`--ignore-certificate-errors-spki-list`; nothing was added to any trust
+  store). The requests went through with no prompt and no preflight, and a 404 answer was readable as JSON,
+  so the CORS headers on errors work over TLS to a private address too. Still to do: the same in Chrome,
+  Firefox and Safari with a certificate they trust (an intranet's own CA), which needs the maintainer to set
+  one up.
 
 ### Peer to peer (deferred)
 

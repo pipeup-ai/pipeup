@@ -205,7 +205,7 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .tools{display:flex;flex:none;gap:2px}
 .tools[hidden]{display:none}
 .tool[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
-.note{padding:0 0 4px;font-size:12px;color:var(--fa)}
+.note{display:block;padding:0 0 4px;font-size:12px;color:var(--fa)}
 .note[hidden]{display:none}
 .ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 /* An add-on's panel: the same full-height panel as All comments, with its own body. */

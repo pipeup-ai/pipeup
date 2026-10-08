@@ -57,8 +57,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   );
   const inner = h("div", {});
   const note = h(
-    "div",
-    { class: "ctx" },
+    "span",
+    { class: "note" },
     "This thread was resolved. Your words are kept until you send or clear them.",
   );
   note.hidden = true;

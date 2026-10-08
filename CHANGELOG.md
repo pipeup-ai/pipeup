@@ -7,6 +7,30 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+- **Add-ons.** One core plus optional add-ons, each one more script (or one combined file such as
+  `pipeup+share.min.js`), working from a page opened from disk in any script order:
+  - `@pipeup/share`: comments shared through an encrypted service the author picks (PrivateBin, or an HTTP
+    mailbox an organisation runs itself), set up from the command line (`npx @pipeup/share create`).
+  - `@pipeup/voice`: a microphone button in the comment box for dictating, with the browser's own speech engine
+    and a plain consent sentence.
+  - `@pipeup/live`: live comments and presence between people on the same page, peer to peer.
+  - `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract (`pm1`) and its `check` command.
+  Each add-on says in one sentence what it sends and to whom. The core still makes no network requests.
+- `Pipeup.use(addon)` and `Pipeup.addons()`, and the add-on host (menu rows, notices, announcements, a note above
+  the new-comment box, composer tools, side panels, styles, status, overlay, frame and UI callbacks), typed and
+  versioned (`ADDON_API` 1).
+- `PipeupDocument.ops()`, `merge(ops, source)` and `sign(purpose, data)`, and `onChange` now also hears the added
+  ops and where they came from. Ops from elsewhere go through exactly the checks a feedback file's do.
+- Public `--pu-*` style tokens for add-ons.
+
+### Changed
+- A resolved thread stays open, with a sentence saying so, while words are half-written in its reply line.
+- Ops are stored and exported as `{ body, sig }` only, and each is bounded in size. A saved change that can't be
+  read is kept, left out and counted in one console warning.
+- A second copy of Pipeup on a page warns and hands over to the first.
+- The bundle is about 41.5 KB gzip: add-on support cost 3.8 KB and the min and esm budgets are now 44 KB.
+
 ## [0.4.1] - 2026-10-07
 
 Shipped first as pre-release 0.4.1-beta.1.

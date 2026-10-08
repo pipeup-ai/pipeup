@@ -2,7 +2,7 @@
 
 **Status:** Draft for review
 **Owner:** Pipeup maintainers
-**Last updated:** 2026-10-07 (add-ons; roadmap renumbered)
+**Last updated:** 2026-10-08 (add-ons built)
 
 This document describes *what* Pipeup does. It is **functional only** — it does not prescribe
 languages, frameworks, protocols, ciphers or hosting internals. Those live in the dev design
@@ -860,3 +860,7 @@ which Pipeup discards. It also can't tell when something is missing.
 - 2026-10-07 — Roadmap renumbered: each add-on gets its own release, so one add-on waiting on its tests
   never holds back another: shared comments 0.7, dictation 0.8, live review 0.9; touch and narrow
   pages stay 0.5 and the command-line tool 0.6.
+- 2026-10-08 — Add-ons built, so the spec now describes what ships on the add-ons branch: a resolved thread
+  stays open, with a sentence saying so, while words are half-written in its reply line (§11); an add-on that
+  can't work on a page (no speech engine, nothing configured) stays off and says why (§11a); an add-on's own
+  spoken words ("Listening") are heard at once, while comments show.

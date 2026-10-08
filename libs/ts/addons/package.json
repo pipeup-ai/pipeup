@@ -21,7 +21,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "e2e": "playwright test",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run e2e"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run e2e",
+    "demo": "node examples/demo.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

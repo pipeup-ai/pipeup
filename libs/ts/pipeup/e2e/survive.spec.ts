@@ -80,6 +80,6 @@ test("a reply being typed keeps its words, and its thread, when someone else res
   }, id);
   await expect(th).toBeVisible();
   await expect(line).toHaveValue("Half a thou");
-  await expect(th.locator(".rbox .ctx")).toContainText("This thread was resolved");
+  await expect(th.locator(".rbox .note")).toContainText("This thread was resolved");
   expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA", value: "Half a thou" });
 });
