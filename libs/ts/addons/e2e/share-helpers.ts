@@ -77,6 +77,11 @@ export async function open(page: Page, address: string | null): Promise<void> {
   await page.evaluate((a) => a && document.documentElement.setAttribute("data-pipeup-share", a), address);
   await load(page, CORE, addon("share"));
   await mount(page);
+  // Setup is asynchronous (it opens the add-on's settings): a comment made before it ends is one "written before
+  // sharing", which is held until the reviewer chooses. People are never that quick; tests are, so wait.
+  await page.waitForFunction(
+    () => (window as any).Pipeup.addons().find((a: any) => a.id === "share")?.state !== "waiting",
+  );
 }
 
 export const comment = (page: Page, text: string) =>
