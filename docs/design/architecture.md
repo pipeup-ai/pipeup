@@ -327,6 +327,18 @@ meet through `relay.damus.io`, with offers and answers sealed under a key carrie
   one office network.
 - Pick the ephemeral kind for live (the spike used 25800).
 
+### S4: integration services in CI (add-ons spike, 2026-10-08): passed
+
+A throwaway workflow on a branch (deleted afterwards) on GitHub's `ubuntu-24.04` runners:
+
+| Job | Setup | Result |
+|---|---|---|
+| Docker | Docker 28.0.4; PrivateBin 2.0.6 (the S1 image, pinned by digest) and nostr-rs-relay 0.10.0 as containers | paste, §7.2 comment and read-back pass; the relay accepts an event signed by the kit's signer |
+| PHP fallback | PHP 8.3.6's built-in server over the PrivateBin 2.0.6 release tarball | paste, §7.2 comment and read-back pass |
+
+Both ways work, so share's integration tests can use the official image, with the PHP fallback kept as a
+second route.
+
 ### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
 A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
@@ -789,3 +801,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-08 — §7: add-ons spike S3 passed: dictation from `file://` in Chrome (service and on device) and Safari; the microphone is asked for on every load; Safari can't say where it listens.
 - 2026-10-08 — §7: add-ons spike S2, first half: the kit's own BIP-340 signer passes the BIP-340 vectors and a 2,000-key cross-check against noble (1,041 B gzip); a local nostr-rs-relay accepts, delivers and doesn't store its ephemeral events from `file://` in Chrome, Firefox and Safari, and two peers meet through it and open a data channel. Public relays and other networks still to test.
 - 2026-10-08 — §7: S2 public relays — damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work; all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s. Cross-network rates still to test.
+- 2026-10-08 — §7: add-ons spike S4 passed: GitHub Actions runs PrivateBin 2.0.6 and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server.
