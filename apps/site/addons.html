@@ -54,7 +54,7 @@
       .mark { text-decoration: none; }
       h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
       .intro { padding: 32px 0 40px; }
-      .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 34em; }
+      .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: none; }
       .lede b { font-weight: 500; color: var(--ink); }
       .btn {
         appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
@@ -80,7 +80,7 @@
       @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
       .copied .ic { display: none; }
       /* One add-on per row, laid out like the home page's first screen: words left, the demo right. */
-      .addon { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 48px; align-items: center; padding: 40px 0; border-top: 1px solid var(--line); }
+      .addon { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 48px; align-items: start; padding: 40px 0; border-top: 1px solid var(--line); }
       .addon h2 { font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; color: var(--strong); margin: 0 0 10px; font-weight: 600; }
       .addon .one { font-size: 18px; color: var(--ink); margin: 0 0 18px; }
       .addon .fact { margin: 0 0 8px; font-size: 15px; color: var(--muted); }
