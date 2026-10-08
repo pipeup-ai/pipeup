@@ -254,11 +254,11 @@ test("an add-on's own announcement is heard at once while comments show, never w
   await load(page, CORE, addon("test"));
   await mount(page);
   await page.evaluate(() => (window as any).__hello.host.announce("Listening"));
-  await expect(page.locator(".sr")).toHaveText("");
+  await expect(page.locator(".layer > .sr")).toHaveText("");
   await openMenu(page);
   await page.locator(".menu.show").getByText("Start commenting").click();
   await page.evaluate(() => (window as any).__hello.host.announce("Listening"));
-  await expect(page.locator(".sr")).toHaveText("Listening");
+  await expect(page.locator(".layer > .sr")).toHaveText("Listening");
 });
 
 test("two copies of Pipeup on one page run once: the second warns and hands over to the first", async ({
@@ -293,4 +293,34 @@ test("the combined file and the separate files are the same code", async ({ page
   expect(readFileSync(combined("test"), "utf8")).toBe(`${core}\n${part}`);
   expect(part.startsWith('"use strict"')).toBe(true);
   void page;
+});
+
+test("other people's new comments are announced as one short sentence, never while comments are closed", async ({
+  page,
+}) => {
+  await blank(page);
+  await load(page, CORE, addon("test"));
+  await mount(page);
+  const bring = (text: string) =>
+    page.evaluate(async (text) => {
+      const w = window as any;
+      const ada = await w.Pipeup.PipeupDocument.open({
+        doc: w.pu.document.id,
+        key: null,
+        store: new w.Pipeup.MemoryStore(),
+        identity: await w.Pipeup.createIdentity(),
+        name: "Ada",
+      });
+      await ada.comment(
+        w.Pipeup.describeElement(document.querySelector("[data-pipeup-id=p1]"), document.body),
+        text,
+      );
+      await w.__hello.host.merge(ada.ops());
+    }, text);
+  // Comments are closed: nothing is said, and the words wait.
+  await bring("While closed");
+  await expect(page.locator(".layer > .sr")).toHaveText("");
+  await openMenu(page);
+  await page.locator(".menu.show").getByText("Start commenting").click();
+  await expect(page.locator(".layer > .sr")).toHaveText("1 new comment from Ada", { timeout: 5000 });
 });

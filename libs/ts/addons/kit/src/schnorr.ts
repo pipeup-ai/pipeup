@@ -1,3 +1,4 @@
+import { toHex } from "./encoding";
 /**
  * Pipeup's own minimal BIP-340 Schnorr signer over secp256k1: signing only, for the throwaway keys that sign
  * Nostr meeting-point events (add-ons design §9.1). WebCrypto does the hashing, BigInt the curve. Not
@@ -13,14 +14,12 @@ const ZERO: Point = [0n, 1n, 0n];
 
 const mod = (a: bigint, m = P) => ((a % m) + m) % m;
 
-/** Modular inverse by extended Euclid. */
+/** Modular inverse by Fermat (the moduli are prime). */
 function inv(a: bigint, m = P): bigint {
-  let [r0, r1, s0, s1] = [mod(a, m), m, 1n, 0n];
-  while (r1) {
-    const q = r0 / r1;
-    [r0, r1, s0, s1] = [r1, r0 - q * r1, s1, s0 - q * s1];
-  }
-  return mod(s0, m);
+  let r = 1n;
+  a = mod(a, m);
+  for (let e = m - 2n; e > 0n; e >>= 1n, a = (a * a) % m) if (e & 1n) r = (r * a) % m;
+  return r;
 }
 
 // Jacobian coordinates; Z = 0 is the point at infinity.
@@ -62,8 +61,7 @@ function mulG(k: bigint): [bigint, bigint] {
   return [mod(r[0] * zi2), mod(r[1] * zi2 * zi)];
 }
 
-const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
-const big = (b: Uint8Array) => BigInt("0x" + (hex(b) || "0"));
+const big = (b: Uint8Array) => BigInt("0x" + (toHex(b) || "0"));
 const bytes = (n: bigint) =>
   Uint8Array.from(n.toString(16).padStart(64, "0").match(/../g)!, (h) => parseInt(h, 16));
 const cat = (...a: Uint8Array[]) => {

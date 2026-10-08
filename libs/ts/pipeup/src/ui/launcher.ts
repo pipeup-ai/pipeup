@@ -593,8 +593,19 @@ export function createLauncher(ctx: Ctx): View {
         if (!endEdit) setMenu(false);
       }, AWAY_MS);
   };
+  /** The control's label and tooltip: its counts, then what add-ons say ("Live with 2 others"). */
+  let words = { n: 0, label: "" };
+  const paintLabel = () => {
+    const { n, label } = words;
+    const status = ctx.addons.statusText();
+    const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
+    if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
+    const tipText = (label || "Comment") + (status ? ` · ${status}` : "");
+    if (tipWords.data !== tipText) tipWords.data = tipText;
+  };
   // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
   const offAddons = ctx.addons.subscribe((structure) => {
+    paintLabel();
     if (!menuOpen || endEdit) return;
     if (structure) build();
     else sync();
@@ -641,11 +652,8 @@ export function createLauncher(ctx: Ctx): View {
         ? `${n} here · ${m} ${ctx.here.slide() !== null ? "on other slides" : "in other views"}`
         : "";
       btn.classList.toggle("else", m > 0);
-      const status = ctx.addons.statusText();
-      const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
-      if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
-      const tipText = (label || "Comment") + (status ? ` · ${status}` : "");
-      if (tipWords.data !== tipText) tipWords.data = tipText;
+      words = { n, label };
+      paintLabel();
       btn.classList.toggle("on", ctx.state.commenting);
       // Closed from elsewhere (Tab in comment mode moves to the page's blocks).
       if (menuOpen && !ctx.state.menu) setMenu(false);

@@ -3,7 +3,9 @@
 // It starts a local mailbox server (for share) and a local Nostr relay (for live's meeting point), writes
 // examples/demo/page.html wired to them with a fresh document key, and prints what to do. Nothing leaves your
 // machine except voice's browser speech engine, if you use it. Stop it with Ctrl+C.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { extname, join, normalize } from "node:path";
 import { createMailboxServer } from "../../../../services/mailbox/src/server.mjs";
 import { newDocumentAttribute } from "../../pipeup/dist/pipeup.core.js";
 import { startRelay } from "../kit/test/relay.mjs";
@@ -48,9 +50,36 @@ const page = `<!doctype html>
 mkdirSync(`${here}demo`, { recursive: true });
 writeFileSync(`${here}demo/page.html`, page);
 
+// A small static server for this folder's parent, so the page can also be opened from http://localhost.
+const root = join(here, "../.."); // libs/ts, so /pipeup/dist and /addons/<id>/dist are both served
+const TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json",
+};
+const site = createServer((req, res) => {
+  const path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(
+    /^(\.\.[/\\])+/,
+    "",
+  );
+  const file = join(root, path);
+  if (!file.startsWith(root) || !/^\/(addons\/examples\/demo|pipeup\/dist|addons\/[a-z]+\/dist)\//.test(path))
+    return void res.writeHead(404).end("Not found");
+  try {
+    res.writeHead(200, {
+      "Content-Type": TYPES[extname(file)] ?? "application/octet-stream",
+      "Cache-Control": "no-store",
+    });
+    res.end(readFileSync(file));
+  } catch {
+    res.writeHead(404).end("Not found");
+  }
+});
+await new Promise((resolve) => site.listen(8860, "127.0.0.1", resolve));
+
 console.log(`
 Pipeup add-ons: local try-out
-  page     file://${here}demo/page.html
+  page     http://localhost:8860/addons/examples/demo/page.html   (or open file://${here}demo/page.html)
   mailbox  http://127.0.0.1:${mailboxPort}   (share's server, in memory: stop this and the shared copy is gone)
   relay    ${relay.url}   (live's meeting point)
 
@@ -63,6 +92,6 @@ Pipeup add-ons: local try-out
 4. Voice: press the microphone in a comment box (Chrome or Safari), allow it, and speak.
 `);
 process.on("SIGINT", async () => {
-  await Promise.allSettled([mailbox.close(), relay.close()]);
+  await Promise.allSettled([mailbox.close(), relay.close(), new Promise((r) => site.close(r))]);
   process.exit(0);
 });

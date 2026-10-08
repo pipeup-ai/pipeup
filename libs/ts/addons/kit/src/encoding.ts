@@ -30,3 +30,7 @@ export const randomBytes = (n: number): Uint8Array<ArrayBuffer> => crypto.getRan
 export async function sha256(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
   return new Uint8Array(await crypto.subtle.digest("SHA-256", data));
 }
+
+/** Lower-case hex. */
+export const toHex = (b: Uint8Array): string =>
+  Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");

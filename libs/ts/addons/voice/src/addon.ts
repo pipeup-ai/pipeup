@@ -344,9 +344,24 @@ export function createAddon(): PipeupAddon {
         })();
       };
 
-      const offTool = host.addComposerTool({ id: "voice", icon: ICON, label: "Dictate", press });
-      // Warm the answers, so a later press can start at once while the click still counts.
-      void loaded.then(() => detect(langNow()));
+      // Warm the answers the first time a comment box appears (not at page load: a page that never opens one never
+      // touches the speech API), so a later press can start at once while the click still counts.
+      let warmed = false;
+      const warm = () => {
+        if (warmed) return;
+        warmed = true;
+        void loaded.then(() => detect(langNow()));
+      };
+      const offTool = host.addComposerTool({
+        id: "voice",
+        icon: ICON,
+        label: "Dictate",
+        available: () => {
+          warm();
+          return true;
+        },
+        press,
+      });
       return () => {
         cur?.abort();
         panel?.close();
