@@ -144,6 +144,8 @@ export interface AddonHost {
   /** Aborted at teardown: pass it to fetch, timers and sockets. */
   readonly signal: AbortSignal;
   has(c: Capability): boolean;
+  /** Says the add-on can't work here (no speech engine, nothing configured): it stays off, with this reason. */
+  off(reason: string): void;
   /** Verifies and merges ops from elsewhere, as a feedback file's are; the source is this add-on's id. */
   merge(ops: readonly unknown[]): Promise<number>;
   addMenuItem(item: MenuItem): ItemHandle;
@@ -183,8 +185,8 @@ interface Item {
  */
 export class Surface {
   /** Bumped when the set of menu rows changes. */
-  version = 0;
-  readonly rows: Item[] = [];
+  rev = 0;
+  readonly menuRows: Item[] = [];
   private readonly notes = new Map<string, string>();
   private readonly statuses = new Map<string, Status>();
   private readonly tools: { id: string; tool: ComposerTool }[] = [];
@@ -195,7 +197,6 @@ export class Surface {
   private readonly overlays = new Map<string, HTMLElement>();
   private readonly pending = new Map<string, string>();
   private readonly panels = new Set<{ id: string; close(): void }>();
-  private queue: string[] = [];
   private remote = { n: 0, who: new Set<string>() };
   private last = 0;
   private timer = 0;
@@ -222,7 +223,7 @@ export class Surface {
   }
 
   private changed(structure: boolean): void {
-    if (structure) this.version++;
+    if (structure) this.rev++;
     for (const fn of [...this.subs]) fn(structure);
   }
 
@@ -233,14 +234,14 @@ export class Surface {
 
   rowFor(id: string, item: MenuItem): ItemHandle {
     const entry = { id, item };
-    this.rows.push(entry);
+    this.menuRows.push(entry);
     this.changed(true);
     return {
       update: () => this.changed(false),
       remove: () => {
-        const at = this.rows.indexOf(entry);
+        const at = this.menuRows.indexOf(entry);
         if (at < 0) return;
-        this.rows.splice(at, 1);
+        this.menuRows.splice(at, 1);
         this.changed(true);
       },
     };
@@ -252,7 +253,7 @@ export class Surface {
     this.changed(false);
   }
 
-  setStatus(id: string, status: Status | null): void {
+  putStatus(id: string, status: Status | null): void {
     if (status) this.statuses.set(id, status);
     else this.statuses.delete(id);
     this.changed(false);
@@ -274,7 +275,7 @@ export class Surface {
     return this.ctx.state.hidden && !this.ctx.state.menu;
   }
 
-  notify(id: string, text: string): void {
+  notice(id: string, text: string): void {
     if (this.closed()) this.pending.set(id, text);
     else this.ctx.toast(text);
   }
@@ -288,15 +289,18 @@ export class Surface {
   }
 
   /** A reviewer is writing: a Pipeup line has words or focus. */
-  private writing(): boolean {
+  private isWriting(): boolean {
     const a = this.shadow.activeElement;
     if (a instanceof HTMLTextAreaElement) return true;
     return [...this.ctx.layer.querySelectorAll("textarea")].some((t) => t.value.trim() !== "");
   }
 
-  announce(text: string): void {
-    this.queue.push(text);
-    this.pump();
+  /**
+   * An add-on's own words (state changes such as "Listening") are heard at once, while comments are showing:
+   * they answer something the reviewer just did, so they don't wait for them to stop writing.
+   */
+  addSay(text: string): void {
+    if (!this.ctx.state.hidden) this.ctx.say(text);
   }
 
   /** Other people's new comments are announced as one coalesced sentence. */
@@ -311,33 +315,28 @@ export class Surface {
   }
 
   private pump(): void {
-    if (this.timer || (this.queue.length === 0 && this.remote.n === 0)) return;
+    if (this.timer || this.remote.n === 0) return;
     const wait = Math.max(0, this.last + ANNOUNCE_MS - Date.now());
     this.timer = window.setTimeout(() => {
       this.timer = 0;
       // Nothing is announced while comments are closed or while the reviewer writes: it waits.
-      if (this.ctx.state.hidden || this.writing()) {
+      if (this.ctx.state.hidden || this.isWriting()) {
         this.timer = window.setTimeout(() => {
           this.timer = 0;
           this.pump();
         }, 1000);
         return;
       }
-      const parts = this.queue.splice(0);
       const { n, who } = this.remote;
-      if (n)
-        parts.push(
-          `${n} new comment${n === 1 ? "" : "s"} from ${who.size === 1 ? [...who][0] : `${who.size} people`}`,
-        );
       this.remote = { n: 0, who: new Set() };
-      if (parts.length) {
-        this.last = Date.now();
-        this.ctx.say(parts.join(". "));
-      }
+      this.last = Date.now();
+      this.ctx.say(
+        `${n} new comment${n === 1 ? "" : "s"} from ${who.size === 1 ? [...who][0] : `${who.size} people`}`,
+      );
     }, wait);
   }
 
-  overlay(id: string): HTMLElement {
+  ovFor(id: string): HTMLElement {
     let el = this.overlays.get(id);
     if (!el) {
       el = h("div", { class: "ov", "aria-hidden": "true", "data-addon": id });
@@ -347,7 +346,7 @@ export class Surface {
     return el;
   }
 
-  addStyles(id: string, css: string): Off {
+  addSheet(id: string, css: string): Off {
     const Sheet = this.ctx.host.ownerDocument.defaultView?.CSSStyleSheet;
     let node: HTMLElement | CSSStyleSheet;
     if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in this.shadow) {
@@ -369,20 +368,20 @@ export class Surface {
     };
   }
 
-  onFrame(id: string, fn: () => void): Off {
+  onTick(id: string, fn: () => void): Off {
     const entry = { id, fn };
     this.frames.add(entry);
     return () => this.frames.delete(entry);
   }
 
-  onUi(id: string, fn: (ui: UiSnapshot) => void): Off {
+  onSnap(id: string, fn: (ui: UiSnapshot) => void): Off {
     const entry = { id, fn };
     this.uis.add(entry);
-    this.safe(() => fn(this.snapshot()));
+    this.safe(() => fn(this.uiState()));
     return () => this.uis.delete(entry);
   }
 
-  snapshot(): UiSnapshot {
+  uiState(): UiSnapshot {
     const { state } = this.ctx;
     const a = this.shadow.activeElement;
     let writing: string | null = null;
@@ -411,7 +410,7 @@ export class Surface {
       }
     }
     if (this.uis.size === 0) return;
-    const ui = this.snapshot();
+    const ui = this.uiState();
     const key = JSON.stringify(ui);
     if (key === this.uiKey) return;
     this.uiKey = key;
@@ -428,7 +427,7 @@ export class Surface {
   }
 
   /** A side panel: the rest of Pipeup's UI is inert while it is open; Escape closes it before anything else. */
-  openPanel(id: string, content: Node, o: PanelOptions): PanelHandle {
+  panel(id: string, content: Node, o: PanelOptions): PanelHandle {
     const layer = this.ctx.layer;
     const was = this.shadow.activeElement as HTMLElement | null;
     const close = h(
@@ -483,7 +482,7 @@ export class Surface {
   /** Removes everything one add-on added. */
   clear(id: string): void {
     for (const p of [...this.panels]) if (p.id === id) p.close();
-    for (let i = this.rows.length; i--;) if (this.rows[i]!.id === id) this.rows.splice(i, 1);
+    for (let i = this.menuRows.length; i--;) if (this.menuRows[i]!.id === id) this.menuRows.splice(i, 1);
     for (let i = this.tools.length; i--;) if (this.tools[i]!.id === id) this.tools.splice(i, 1);
     for (const e of [...this.frames]) if (e.id === id) this.frames.delete(e);
     for (const e of [...this.uis]) if (e.id === id) this.uis.delete(e);
@@ -528,21 +527,27 @@ interface Live {
 const entries = new Map<string, Entry>();
 let live: Live | null = null;
 
-/** The core already on the page, if this one is a second copy: it owns the registry and the queue. */
-const first = (): { use(a: PipeupAddon): void; addons(): readonly AddonInfo[] } | null => {
-  const other = (globalThis as { Pipeup?: { VERSION?: string; use?: unknown; addons?: unknown } }).Pipeup;
-  return other?.VERSION && other.use && other.use !== use ? (other as never) : null;
-};
+/**
+ * A Pipeup already on the page when this copy loaded (the classic build assigns its global only when it ends, so
+ * this is read at load): the first copy owns the registry, the queue and the mount; this one hands over to it.
+ */
+export const firstCore: {
+  VERSION: string;
+  use(a: PipeupAddon): void;
+  addons(): readonly AddonInfo[];
+  mount(o?: unknown): Promise<unknown>;
+} | null = (() => {
+  const p = (globalThis as { Pipeup?: { VERSION?: string } }).Pipeup;
+  return p?.VERSION ? (p as never) : null;
+})();
 
 export function addons(): readonly AddonInfo[] {
-  const other = first();
-  return other ? other.addons() : [...entries.values()].map((e) => ({ ...e.info }));
+  return firstCore ? firstCore.addons() : [...entries.values()].map((e) => ({ ...e.info }));
 }
 
 /** Registers an add-on: it sets up now if Pipeup is mounted, else when it mounts. */
 export function use(addon: PipeupAddon): void {
-  const other = first();
-  if (other) return other.use(addon);
+  if (firstCore) return firstCore.use(addon);
   const warn = (text: string) => console.warn(`pipeup: ${text}`);
   const a = addon as Partial<PipeupAddon> | null;
   if (!a || typeof a !== "object" || typeof a.id !== "string" || !ID.test(a.id) || RESERVED.has(a.id))
@@ -574,7 +579,7 @@ export function use(addon: PipeupAddon): void {
  * returns false when another core owns the queue.
  */
 export function drainQueue(): boolean {
-  if (first()) return true;
+  if (firstCore) return true;
   const g = globalThis as { pipeupAddons?: unknown };
   const q = g.pipeupAddons;
   if (Array.isArray(q)) for (const a of q) use(a as PipeupAddon);
@@ -621,34 +626,37 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     ephemeral: l.ephemeral,
     signal: ac.signal,
     has: (c) => CAPABILITIES.includes(c),
+    off: (reason) => {
+      offReason = String(reason);
+    },
     merge: (ops) => (alive() ? doc.merge(ops, id) : Promise.resolve(0)),
     addMenuItem: (item) => {
       if (!alive()) return { update() {}, remove() {} };
       return surface.rowFor(id, item);
     },
-    notify: g((text: string) => surface.notify(id, text), undefined),
-    announce: g((text: string) => surface.announce(text), undefined),
+    notify: g((text: string) => surface.notice(id, text), undefined),
+    announce: g((text: string) => surface.addSay(text), undefined),
     setComposerNote: g((text: string | null) => surface.setNote(id, text), undefined),
     addComposerTool: g(
       (tool: ComposerTool) => surface.addTool(id, tool),
       () => {},
     ),
-    openPanel: (content, o) => (alive() ? surface.openPanel(id, content, o) : { close() {} }),
+    openPanel: (content, o) => (alive() ? surface.panel(id, content, o) : { close() {} }),
     addStyles: g(
-      (css: string) => surface.addStyles(id, css),
+      (css: string) => surface.addSheet(id, css),
       () => {},
     ),
-    setStatus: g((s: Status | null) => surface.setStatus(id, s), undefined),
-    overlay: () => surface.overlay(id),
+    setStatus: g((s: Status | null) => surface.putStatus(id, s), undefined),
+    overlay: () => surface.ovFor(id),
     onFrame: g(
-      (fn: () => void) => surface.onFrame(id, fn),
+      (fn: () => void) => surface.onTick(id, fn),
       () => {},
     ),
     where: (at) => surface.ctx.here.view(at),
     isHere: (v) => surface.ctx.here.holds(v),
     go: (v) => surface.ctx.here.navigate(v),
     onUi: g(
-      (fn: (ui: UiSnapshot) => void) => surface.onUi(id, fn),
+      (fn: (ui: UiSnapshot) => void) => surface.onSnap(id, fn),
       () => {},
     ),
     avatar: (key, name) => {
@@ -659,6 +667,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     sign: (name, data) => doc.sign(`${id}/${name}`, data),
   };
   let teardown: void | Teardown;
+  let offReason: string | undefined;
   const stop = () => {
     if (!alive()) return;
     ac.abort();
@@ -677,6 +686,12 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     if (!alive()) {
       // Unmounted while setting up: release what it opened.
       teardown?.();
+      return;
+    }
+    if (offReason !== undefined) {
+      stop();
+      info.state = "off";
+      info.reason = offReason;
       return;
     }
     info.state = "on";

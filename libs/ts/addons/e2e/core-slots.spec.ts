@@ -212,3 +212,85 @@ test("unmount runs the teardown and removes everything the add-on added", async 
   await mount(page);
   await expect.poll(() => info(page)).toEqual(["hello:on"]);
 });
+
+test("an add-on that says it can't work here stays off with its reason, and leaves nothing behind", async ({
+  page,
+}) => {
+  await blank(page);
+  await load(page, CORE);
+  await mount(page);
+  await page.evaluate(() =>
+    (window as any).Pipeup.use({
+      id: "quiet",
+      api: 1,
+      version: "1",
+      needs: ["menu"],
+      network: { when: "never", to: [], says: "Sends nothing." },
+      setup(host: any) {
+        host.addMenuItem({
+          id: "x",
+          icon: ["M5 12h14"],
+          label: () => "Should not show",
+          hint: () => "",
+          select() {},
+        });
+        host.off("this browser has no speech engine");
+      },
+    }),
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as any).Pipeup.addons().map((a: any) => `${a.id}:${a.state}:${a.reason}`)),
+    )
+    .toEqual(["quiet:off:this browser has no speech engine"]);
+  await openMenu(page);
+  await expect(page.locator(".menu.show").getByText("Should not show")).toHaveCount(0);
+});
+
+test("an add-on's own announcement is heard at once while comments show, never while they are closed", async ({
+  page,
+}) => {
+  await blank(page);
+  await load(page, CORE, addon("test"));
+  await mount(page);
+  await page.evaluate(() => (window as any).__hello.host.announce("Listening"));
+  await expect(page.locator(".sr")).toHaveText("");
+  await openMenu(page);
+  await page.locator(".menu.show").getByText("Start commenting").click();
+  await page.evaluate(() => (window as any).__hello.host.announce("Listening"));
+  await expect(page.locator(".sr")).toHaveText("Listening");
+});
+
+test("two copies of Pipeup on one page run once: the second warns and hands over to the first", async ({
+  page,
+}) => {
+  const warnings: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && warnings.push(m.text()));
+  await blank(page);
+  await load(page, CORE, addon("test"), CORE);
+  await mount(page);
+  await expect.poll(() => info(page)).toEqual(["hello:on"]);
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  expect(warnings.some((w) => /Pipeup is on this page twice/.test(w))).toBe(true);
+  // An add-on arriving through the second copy's global still reaches the first.
+  await page.evaluate(() =>
+    (window as any).Pipeup.use({
+      id: "late",
+      api: 1,
+      version: "1",
+      needs: [],
+      network: { when: "never", to: [], says: "x" },
+      setup() {},
+    }),
+  );
+  await expect.poll(() => info(page)).toEqual(["hello:on", "late:on"]);
+});
+
+test("the combined file and the separate files are the same code", async ({ page }) => {
+  const { readFileSync } = await import("node:fs");
+  const core = readFileSync(CORE, "utf8");
+  const part = readFileSync(addon("test"), "utf8");
+  expect(readFileSync(combined("test"), "utf8")).toBe(`${core}\n${part}`);
+  expect(part.startsWith('"use strict"')).toBe(true);
+  void page;
+});

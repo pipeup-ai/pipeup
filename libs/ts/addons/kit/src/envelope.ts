@@ -36,12 +36,12 @@ async function pipe(
  * A sealed batch: 0x01 ‖ iv[12] ‖ AES-GCM(key(p), iv, aad, deflate-raw(plaintext)). Once opened, a batch is a
  * valid unsealed feedback file, so the command line can read it.
  */
-export async function seal(
-  l: Ladder,
-  p: Purpose,
-  ops: readonly SignedOp[],
-): Promise<Uint8Array<ArrayBuffer>> {
-  const plain = utf8(JSON.stringify({ pipeup: 1, doc: l.docId, sealed: false, ops }));
+export const seal = (l: Ladder, p: Purpose, ops: readonly SignedOp[]): Promise<Uint8Array<ArrayBuffer>> =>
+  sealJson(l, p, { pipeup: 1, doc: l.docId, sealed: false, ops });
+
+/** Seals any JSON value the same way (a transport's own small records, such as share's `next`). */
+export async function sealJson(l: Ladder, p: Purpose, value: unknown): Promise<Uint8Array<ArrayBuffer>> {
+  const plain = utf8(JSON.stringify(value));
   const iv = randomBytes(12);
   const body = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv, additionalData: utf8(l.aad(p)) },
@@ -62,11 +62,8 @@ export interface Opened {
   newer: number;
 }
 
-/**
- * Opens a sealed batch. Garbage, another document's or another purpose's batch, too big or too many ops: null, as if
- * nothing had come (it behaves like withholding, not an error the reviewer sees).
- */
-export async function open(l: Ladder, p: Purpose, bytes: Uint8Array<ArrayBuffer>): Promise<Opened | null> {
+/** Opens a sealed value (see `sealJson`): null when it isn't ours, is garbage, or inflates past 1 MB. */
+export async function openJson(l: Ladder, p: Purpose, bytes: Uint8Array<ArrayBuffer>): Promise<unknown> {
   try {
     if (bytes.length < 13 + 16 || bytes[0] !== 1) return null;
     const plain = await crypto.subtle.decrypt(
@@ -74,24 +71,31 @@ export async function open(l: Ladder, p: Purpose, bytes: Uint8Array<ArrayBuffer>
       await l.key(p),
       bytes.slice(13),
     );
-    const file = JSON.parse(
-      text(await pipe(new Uint8Array(plain), new DecompressionStream("deflate-raw"), MAX_INFLATED)),
-    ) as {
-      pipeup?: number;
-      doc?: string;
-      ops?: unknown;
-    };
-    if (file.pipeup !== 1 || file.doc !== l.docId || !Array.isArray(file.ops) || file.ops.length > MAX_OPS)
-      return null;
-    let newer = 0;
-    for (const op of file.ops) {
-      const v = (op as { body?: { v?: unknown } } | null)?.body?.v;
-      if (typeof v === "number" && v !== 1) newer++;
-    }
-    return { ops: file.ops, newer };
+    return JSON.parse(text(await pipe(new Uint8Array(plain), new DecompressionStream("deflate-raw"), MAX_INFLATED)));
   } catch {
     return null;
   }
+}
+
+/** A batch from an opened value: for this document, with at most 1,000 ops; else null. */
+export function asBatch(l: Ladder, value: unknown): Opened | null {
+  const file = value as { pipeup?: number; doc?: string; ops?: unknown } | null;
+  if (file?.pipeup !== 1 || file.doc !== l.docId || !Array.isArray(file.ops) || file.ops.length > MAX_OPS)
+    return null;
+  let newer = 0;
+  for (const op of file.ops) {
+    const v = (op as { body?: { v?: unknown } } | null)?.body?.v;
+    if (typeof v === "number" && v !== 1) newer++;
+  }
+  return { ops: file.ops, newer };
+}
+
+/**
+ * Opens a sealed batch. Garbage, another document's or another purpose's batch, too big or too many ops: null, as if
+ * nothing had come (it behaves like withholding, not an error the reviewer sees).
+ */
+export async function open(l: Ladder, p: Purpose, bytes: Uint8Array<ArrayBuffer>): Promise<Opened | null> {
+  return asBatch(l, await openJson(l, p, bytes));
 }
 
 /** The text form of a sealed batch, for live and relay frames: "pu1." + base64url. */

@@ -23,6 +23,10 @@ export class OpLog {
 
   constructor(readonly doc: string) {}
 
+  has(id: unknown): boolean {
+    return typeof id === "string" && this.ops.has(id);
+  }
+
   get size(): number {
     return this.ops.size;
   }

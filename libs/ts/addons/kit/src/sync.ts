@@ -92,8 +92,8 @@ export class SyncEngine {
     if (this.stopped) return;
     this.stopped = true;
     this.off?.();
-    window.clearTimeout(this.inboundTimer);
-    window.clearTimeout(this.sendTimer);
+    clearTimeout(this.inboundTimer);
+    clearTimeout(this.sendTimer);
     this.o.transport.stop();
   }
 
@@ -111,7 +111,7 @@ export class SyncEngine {
 
   private deliver(ops: unknown[]): void {
     this.inbound.push(...ops);
-    if (!this.inboundTimer) this.inboundTimer = window.setTimeout(() => void this.drain(), INBOUND_MS);
+    if (!this.inboundTimer) this.inboundTimer = setTimeout(() => void this.drain(), INBOUND_MS) as unknown as number;
   }
 
   private async drain(): Promise<void> {
@@ -143,7 +143,7 @@ export class SyncEngine {
   private schedule(delay = this.o.delay ?? 0): void {
     if (this.stopped || this.sendTimer || this.outbox.size === 0) return;
     const wait = Math.max(delay, this.lastSend + (this.o.gap ?? 0) - Date.now(), this.backoff);
-    this.sendTimer = window.setTimeout(() => void this.send(), wait);
+    this.sendTimer = setTimeout(() => void this.send(), wait) as unknown as number;
   }
 
   private async send(): Promise<void> {

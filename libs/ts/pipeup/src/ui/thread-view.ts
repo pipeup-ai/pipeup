@@ -56,6 +56,13 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     ),
   );
   const inner = h("div", {});
+  const note = h(
+    "div",
+    { class: "ctx" },
+    "This thread was resolved. Your words are kept until you send or clear them.",
+  );
+  note.hidden = true;
+  line.prepend(note);
   let root: HTMLElement = h("div", {});
   let list: HTMLElement | null = null;
   const element = h("div", {}, root, h("div", { class: "more" }, inner));
@@ -152,7 +159,11 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       : null;
     if (list) inner.prepend(list);
     faces = nextFaces;
-    if (t.resolved) line.remove();
+    // Words half-written in the reply line are never lost: a thread resolved meanwhile (by anyone) keeps its line
+    // until they are sent or cleared, with a plain sentence saying so.
+    const held = line.querySelector("textarea")!.value.trim() !== "";
+    note.hidden = !(t.resolved && held);
+    if (t.resolved && !held) line.remove();
     else if (line.parentNode !== inner) inner.append(line);
 
     element.className = t.resolved ? "thread resolved" : "thread";

@@ -207,10 +207,19 @@ describe("threadView", () => {
     ]);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
     expect(line.value).toBe("half typed");
+    // Resolved by someone meanwhile: the half-typed words keep their line, and a sentence says why.
+    view.update({ ...newer, resolved: true });
+    expect(view.element.classList.contains("resolved")).toBe(true);
+    expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
+    expect(line.value).toBe("half typed");
+    expect((view.element.querySelector(".rbox .ctx") as HTMLElement).hidden).toBe(false);
+    // Once the words are gone, a resolved thread has no reply line.
+    line.value = "";
     view.update({ ...newer, resolved: true });
     expect(view.element.querySelector(".rbox.always")).toBeNull();
-    expect(view.element.classList.contains("resolved")).toBe(true);
+    line.value = "half typed";
     view.update(newer);
+    expect((view.element.querySelector(".rbox .ctx") as HTMLElement).hidden).toBe(true);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
   });
 });

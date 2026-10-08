@@ -1,16 +1,14 @@
-import { drainQueue } from "./ui/addons";
-import { autoMount } from "./ui/mount";
-
 import { VERSION } from "./core";
+import { drainQueue, firstCore } from "./ui/addons";
+import { autoMount } from "./ui/mount";
 
 export * from "./index";
 
 // Node (e.g. the size check) has no document; browsers mount pages that ask for it.
 if (typeof document !== "undefined") {
-  const other = (globalThis as { Pipeup?: { VERSION?: string } }).Pipeup;
-  if (other?.VERSION)
+  if (firstCore)
     console.warn(
-      `pipeup: Pipeup is on this page twice (${other.VERSION} and ${VERSION}); the first one is used. Remove one script.`,
+      `pipeup: Pipeup is on this page twice (${firstCore.VERSION} and ${VERSION}); the first one is used. Remove one script.`,
     );
   else {
     drainQueue();

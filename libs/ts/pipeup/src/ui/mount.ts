@@ -3,7 +3,7 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { attachAddons, drainQueue } from "./addons";
+import { attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { VERSION } from "../core";
@@ -30,9 +30,8 @@ const STORE_OPEN_TIMEOUT_MS = 4000;
 
 /** Adds Pipeup to the page. Calling it again returns the same instance. */
 export function mount(options: MountOptions = {}): Promise<PipeupInstance> {
-  const other = (globalThis as { Pipeup?: { VERSION?: string; mount?: unknown } }).Pipeup;
   // A second copy of Pipeup on the page hands over to the first, which owns the add-ons.
-  if (other?.VERSION && other.mount && other.mount !== mount) return (other.mount as typeof mount)(options);
+  if (firstCore) return firstCore.mount(options) as Promise<PipeupInstance>;
   if (!drainQueue())
     return Promise.reject(
       new Error("pipeup: another copy of Pipeup owns the add-on queue. Remove one script."),

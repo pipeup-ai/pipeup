@@ -153,6 +153,10 @@ export function startApp(o: AppOptions): App {
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
   });
 
+  const writingIn = (id: string): boolean =>
+    (host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`)?.value.trim() ??
+      "") !== "";
+
   /** A resolved thread leaves: focus goes to the cursor, else the Comment control. */
   const gone = (id: string): boolean => {
     if (state.active !== id || state.showResolved) return false;
@@ -267,7 +271,9 @@ export function startApp(o: AppOptions): App {
     recheck: () => {
       if (classify()) render();
     },
-    visible: (t) => !state.hidden && (!t.resolved || state.showResolved) && !elsewhere.has(t.id),
+    // A resolved thread stays while words are half-written in its reply line: they are never lost.
+    visible: (t) =>
+      !state.hidden && (!t.resolved || state.showResolved || writingIn(t.id)) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
       for (const t of o.doc.threads()) {
         const r = resolved.get(t.id);
