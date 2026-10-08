@@ -44,5 +44,15 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/share.esm.js"
+    },
+    "./headless": {
+      "import": "./dist/share.headless.js"
+    },
+    "./package.json": "./package.json"
   }
 }

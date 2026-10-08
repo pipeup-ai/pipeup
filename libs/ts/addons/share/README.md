@@ -92,7 +92,7 @@ need `https:` addresses; the sharing address looks like `https://share.example.c
 ## From code (agents, scripts)
 
 ```js
-import { connectShare } from "@pipeup/share/dist/share.headless.js"; // over `pipeup/core`, Node 22 or later
+import { connectShare } from "@pipeup/share/headless"; // over `pipeup/core`, Node 22 or later
 const conn = await connectShare(doc, { share: pageShareAddress });
 await conn.flush(); // reads what is new and sends everything waiting
 conn.stop();

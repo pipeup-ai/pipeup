@@ -1718,3 +1718,12 @@ gets into the core").
   who resolved it isn't known to the model, so no name); unreadable saved ops are counted in one console
   warning; the min and esm budgets are 44 KB (§15). A test keeps the add-on API's names out of the mangle list
   (§4), and `size.mjs` checks script tags and that `use` and `addons` exist.
+- 2026-10-08 — As built, share and live: share's classic build is 7.9 KB gzip (budget 8.5 KB, was 7.5 KB), live's is
+  10.49 KB (budget 10.5 KB, signer included at 1.0 KB, no third-party code). The shipped bundles accept
+  `http://localhost` and `http://127.0.0.1` for a mailbox, a PrivateBin and a relay (`ws://`), because loopback
+  never leaves the machine and it lets a developer try everything without a certificate (R2 now reads "https:
+  and wss:, except loopback"). Live's Nostr kind is 25800. With `data-pipeup-live="auto"` nothing connects until
+  the reviewer presses Go live and agrees in the panel (stricter than §9.1: opening the menu alone doesn't
+  count). Share rechecks the Web Lock per send (it holds it 10 s) so each tab can post its own comments. Tested
+  by hand from `file://` and `http://localhost` in Chrome, Firefox and Safari at once: three browsers meet
+  through a relay and Safari sees two others.
