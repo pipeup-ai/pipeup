@@ -168,7 +168,7 @@ from disk. The fragment never reaches any server.
 | Malicious host page reads Pipeup data | Out of scope: the page owner controls the page. Pipeup says so in its docs |
 
 Ed25519 in WebCrypto is supported in current Chrome, Safari and Firefox. Verify the minimum
-versions during phase 1. A small audited fallback library is the contingency.
+versions during phase 1. There is no third-party fallback: Pipeup and its add-ons bundle no outside code.
 
 ## 7. Platform findings (spike, 2026-10-05)
 
