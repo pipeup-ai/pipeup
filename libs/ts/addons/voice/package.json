@@ -1,0 +1,43 @@
+{
+  "name": "@pipeup/voice",
+  "version": "0.4.1",
+  "description": "Dictate Pipeup comments with the browser's own speech engine.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/voice"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/voice.esm.js",
+  "module": "./dist/voice.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/voice.min.js",
+  "unpkg": "dist/voice.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.4.1"
+  },
+  "pipeup": {
+    "network": {
+      "when": "after-consent",
+      "to": [
+        "the browser's speech service",
+        "the browser maker's speech pack download"
+      ],
+      "says": "Only when you press the microphone: your browser may download a speech pack once, and, only if it can't work on this device, your voice goes to the browser maker's speech service."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

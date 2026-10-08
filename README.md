@@ -52,6 +52,18 @@ const pipeup = await mount(); // options: root, name, store
 `pipeup/core` is the headless core (signed comments, anchoring, storage, copying all comments) for tools that
 never draw UI. See the [package README](libs/ts/pipeup/README.md).
 
+### Add-ons
+
+Pipeup itself never sends anything anywhere. Optional add-ons do, each one a script you add, each saying in one
+sentence what it sends and to whom (see its README). They work from a page opened from disk, in any script order,
+or as one combined file such as `pipeup+share.min.js`:
+
+| Add-on | What it does | Sends |
+|---|---|---|
+| [`@pipeup/share`](libs/ts/addons/share/README.md) | Comments reach everyone who has the page, through an encrypted service you pick (PrivateBin, or your own [mailbox server](services/mailbox/README.md)) | Sealed comments to the service you name |
+| [`@pipeup/voice`](libs/ts/addons/voice/README.md) | A microphone button for dictating comments | Nothing itself; your browser may use its maker's speech service, after you agree |
+| [`@pipeup/live`](libs/ts/addons/live/README.md) | Comments, who is here and live cursors, peer to peer | Your network address to the others who are live, and to the meeting-point relays |
+
 ### With an AI agent
 
 The website's **Copy prompt** button gives a prompt to paste into Claude, Codex or another coding
@@ -70,6 +82,8 @@ Other agents can read [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt). T
 | Path | What |
 |---|---|
 | `libs/ts/pipeup` | The library: npm package `pipeup` and the CDN build `dist/pipeup.min.js` |
+| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`), the private kit they share and their browser tests |
+| `services/mailbox` | `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract, and its checker |
 | `apps/site` | The website, its Try pages, `llms.txt` and the build script (`apps/site/build.sh`) |
 | `apps/agent-skills` | Agent skills: integrate, summarise and apply |
 | `docs` | Functional spec, website spec, architecture and release process |
@@ -84,6 +98,12 @@ cd libs/ts/pipeup
 npm ci
 npx playwright install chromium   # once, for the browser tests
 npm run check                     # types, lint, unit tests, build, size budget, browser tests
+```
+
+```sh
+cd libs/ts/addons                 # after building the core above
+npm ci
+npm run check                     # types, lint, unit tests, builds and size budgets, browser tests
 ```
 
 Build the website into `apps/site/_site` with `apps/site/build.sh`.

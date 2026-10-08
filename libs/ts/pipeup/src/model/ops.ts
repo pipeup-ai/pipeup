@@ -4,6 +4,8 @@ import type { OpBody, SignedOp } from "./types";
 
 /** Lengths are UTF-16 code units (JavaScript string length). */
 export const MAX_TEXT = 10_000;
+/** The longest an op may be, as JSON, so one op can never be a way to fill someone's storage. */
+export const MAX_OP = 2 ** 18;
 /** Far beyond any real log, far below where clock arithmetic could overflow. */
 export const MAX_CLOCK = 2 ** 40;
 /** Latest valid `at` in ms (about the year 6400); new ops stay at it rather than fail. */
@@ -22,7 +24,7 @@ export const LIMITS = {
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
-const KINDS = new Set(["create", "reply", "edit", "delete", "resolve", "reopen"]);
+const KINDS = new Set<unknown>(["create", "reply", "edit", "delete", "resolve", "reopen"]);
 
 export async function signOp(body: OpBody, identity: Identity): Promise<SignedOp> {
   if (body.author !== identity.publicKey) throw new Error("pipeup: an op must be signed by its author");
@@ -30,27 +32,25 @@ export async function signOp(body: OpBody, identity: Identity): Promise<SignedOp
 }
 
 const isStr = (v: unknown, max: number): v is string => typeof v === "string" && v.length <= max;
+const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object";
 const isUnit = (v: unknown): boolean => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 1;
 
 export function isAnchor(a: unknown): boolean {
-  if (!a || typeof a !== "object") return false;
-  const { id, path, fingerprint, snapshot, quote, point, view } = a as Record<string, unknown>;
+  if (!isObj(a)) return false;
+  const { id, path, fingerprint, snapshot, quote, point, view } = a;
   if (!isStr(path, LIMITS.path) || !isStr(snapshot, LIMITS.snapshot)) return false;
   if (typeof fingerprint !== "string" || !FINGERPRINT.test(fingerprint)) return false;
   if (id !== undefined && (!isStr(id, LIMITS.anchorId) || id === "")) return false;
   if (quote !== undefined) {
-    if (!quote || typeof quote !== "object") return false;
-    const q = quote as Record<string, unknown>;
-    if (!isStr(q.exact, LIMITS.quote) || q.exact === "") return false;
-    if (!isStr(q.prefix, LIMITS.context) || !isStr(q.suffix, LIMITS.context)) return false;
+    if (!isObj(quote)) return false;
+    if (!isStr(quote.exact, LIMITS.quote) || quote.exact === "") return false;
+    if (!isStr(quote.prefix, LIMITS.context) || !isStr(quote.suffix, LIMITS.context)) return false;
   }
   if (point !== undefined) {
-    if (!point || typeof point !== "object") return false;
-    const p = point as Record<string, unknown>;
-    if (!isUnit(p.x) || !isUnit(p.y)) return false;
+    if (!isObj(point) || !isUnit(point.x) || !isUnit(point.y)) return false;
   }
   if (view !== undefined) {
-    if (!view || typeof view !== "object" || Array.isArray(view)) return false;
+    if (!isObj(view) || Array.isArray(view)) return false;
     const entries = Object.entries(view);
     if (entries.length > LIMITS.viewEntries) return false;
     if (!entries.every(([k, v]) => k.length <= LIMITS.viewKey && isStr(v, LIMITS.viewValue))) return false;
@@ -60,12 +60,13 @@ export function isAnchor(a: unknown): boolean {
 
 /** Shape checks that need nothing but the op itself. */
 export function isWellFormed(op: unknown): op is SignedOp {
-  if (!op || typeof op !== "object") return false;
+  if (!isObj(op)) return false;
   const { body, sig } = op as Partial<SignedOp>;
-  if (typeof sig !== "string" || !body || typeof body !== "object") return false;
+  if (typeof sig !== "string" || !isObj(body)) return false;
+  if (JSON.stringify({ body, sig }).length > MAX_OP) return false;
   const b = body as Partial<OpBody>;
   if (b.v !== 1 || typeof b.id !== "string" || !ID.test(b.id)) return false;
-  if (typeof b.kind !== "string" || !KINDS.has(b.kind)) return false;
+  if (!KINDS.has(b.kind)) return false;
   if (!isStr(b.doc, LIMITS.doc) || b.doc === "" || typeof b.thread !== "string" || !ID.test(b.thread))
     return false;
   if (typeof b.author !== "string" || !KEY.test(b.author)) return false;
@@ -77,7 +78,7 @@ export function isWellFormed(op: unknown): op is SignedOp {
   if (b.text !== undefined && (!isStr(b.text, MAX_TEXT) || b.text !== b.text.trim())) return false;
   if (b.target !== undefined && (typeof b.target !== "string" || !ID.test(b.target))) return false;
   const needsText = b.kind === "create" || b.kind === "reply" || b.kind === "edit";
-  if (needsText && (typeof b.text !== "string" || b.text.trim() === "")) return false;
+  if (needsText && !b.text) return false;
   if ((b.kind === "reply" || b.kind === "edit" || b.kind === "delete") && !b.target) return false;
   if (b.kind === "create") {
     if (b.id !== b.thread || !isAnchor(b.anchor)) return false;

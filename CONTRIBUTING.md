@@ -5,7 +5,8 @@ before you spend time on it.
 
 ## Build and test
 
-Everything lives in `libs/ts/pipeup` and needs Node 20 or later.
+The library lives in `libs/ts/pipeup` and needs Node 20 or later. The add-ons (`libs/ts/addons`) and the mailbox
+server (`services/mailbox`) need Node 22 or later.
 
 ```sh
 cd libs/ts/pipeup
@@ -21,6 +22,15 @@ npm run check
 | `npm run e2e` | Browser tests (run `npm run build` first) |
 | `npm run format` | Format with Prettier |
 
+The add-ons are written against the core's types and built into combined files with its classic build, so build
+the core first:
+
+```sh
+cd libs/ts/pipeup && npm run build
+cd ../addons && npm ci && npm run check      # types, lint, unit tests, builds, size budgets, browser tests
+cd ../../../services/mailbox && npm test     # the mailbox server and its checker
+```
+
 Build the website with `apps/site/build.sh`, then serve `apps/site/_site` with any static server
 (for example `python3 -m http.server --directory apps/site/_site`).
 
@@ -28,7 +38,7 @@ Build the website with `apps/site/build.sh`, then serve `apps/site/_site` with a
 
 - Bug fixes and website changes for the current version go into `main`; work for the next milestone
   goes into `next` ([RELEASE.md](docs/RELEASE.md)).
-- `npm run check` must be green. CI runs the same command.
+- `npm run check` must be green (in `libs/ts/pipeup`, and in `libs/ts/addons` for add-on changes). CI runs the same commands.
 - Keep each pull request to one change, with tests for new behaviour and fixed bugs.
 - Say what changed for people using Pipeup; add a line under **Unreleased** in `CHANGELOG.md`.
 - Behaviour changes update the functional spec (`docs/FUNCTIONAL_SPEC.md`), which describes what

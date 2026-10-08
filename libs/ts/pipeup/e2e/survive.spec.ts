@@ -52,3 +52,34 @@ test("a new comment being written survives other comments arriving", async ({ pa
   await expect(box).toHaveValue("Draft words");
   expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA", value: "Draft words" });
 });
+
+test("a reply being typed keeps its words, and its thread, when someone else resolves the thread", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await showComments(page);
+  const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const th = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await th.locator(".tx").first().click();
+  const line = th.locator(".rbox.always textarea");
+  await line.click();
+  await line.pressSequentially("Half a thou");
+  // Ada, in another browser, resolves it: her op reaches this page through a merge, as an add-on would bring it.
+  await page.evaluate(async (id) => {
+    const w = window as any;
+    const ada = await w.Pipeup.PipeupDocument.open({
+      doc: w.pu.document.id,
+      key: null,
+      store: new w.Pipeup.MemoryStore(),
+      identity: await w.Pipeup.createIdentity(),
+      name: "Ada",
+    });
+    await ada.merge(w.pu.document.ops(), "share");
+    await ada.resolve(id);
+    await w.pu.document.merge(ada.ops(), "share");
+  }, id);
+  await expect(th).toBeVisible();
+  await expect(line).toHaveValue("Half a thou");
+  await expect(th.locator(".rbox .note")).toContainText("This thread was resolved");
+  expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA", value: "Half a thou" });
+});

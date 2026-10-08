@@ -250,12 +250,13 @@ export type Capability =
 **One core per page.** An author or agent can include both `pipeup.min.js` and `pipeup+share.min.js`,
 or an app bundle can carry the ESM core while the page also loads the classic one.
 
-- The classic build is wrapped so that, when `self.Pipeup` already has a `VERSION`, the second copy
-  defines nothing, doesn't auto-mount, and logs one warning in words: "Pipeup is on this page twice
-  (0.7.0 and 0.7.0); the first one is used. Remove one script." Add-ons in a combined file still
-  register: their `push` reaches the first core's queue, and a duplicate id is ignored.
-- The ESM core's `mount()`, finding a queue owned by another core, rejects with the same sentence and
-  mounts nothing.
+- **As built:** a copy reads `self.Pipeup` once, when it loads (a classic build assigns its global only at
+  the end, so a second copy sees the first). If the first has a `VERSION`, the second doesn't auto-mount,
+  logs one warning in words ("Pipeup is on this page twice (0.7.0 and 0.7.0); the first one is used.
+  Remove one script."), and its `use`, `addons` and `mount` hand over to the first, whose queue and
+  registry own everything. So an add-on in a combined file still registers, a duplicate id is ignored,
+  and `Pipeup.mount()` from the page mounts the first core once, whichever global it called. (The ESM
+  core does the same instead of rejecting, which is kinder to an app that bundles its own copy.)
 - `pipeup check` reports two cores as a failure. Both cases are in the load-order e2e matrix (§11).
 
 **`use` rules**
@@ -279,6 +280,8 @@ export interface AddonHost {
   readonly ephemeral: boolean;           // this browser can't keep comments (the in-memory store)
   readonly signal: AbortSignal;          // aborted at teardown: pass it to fetch, timers, sockets
   has(c: Capability): boolean;
+  /** Says the add-on can't work here (no speech engine, nothing configured): it stays off, with this reason. */
+  off(reason: string): void;
   /** document.merge(ops, this add-on's id): the source can't be set wrongly. */
   merge(ops: readonly unknown[]): Promise<number>;
 
@@ -353,7 +356,10 @@ comment mode. Spec §1 promises the page looks unchanged then; §11a extends tha
     show while closed, because it concerns words the reviewer may be about to lose.
 - **`announce(text)`** puts plain words in Pipeup's polite announcement region (below). Use it for
   changes a screen-reader user can't otherwise notice: "Listening", "Stopped listening", "Red Fox
-  joined". It follows the announcement rules in §3.6.
+  joined". **It is spoken at once while comments are showing** (it answers something the reviewer just did,
+  and dictation always has a box with words in it, so waiting for them to stop writing would mean never)
+  and dropped while comments are closed. The pacing and wait-while-writing rules of §3.6 apply to the
+  summary of other people's new comments, not to an add-on's own words.
 - **`setComposerNote(text)`** sets one quiet line Pipeup shows above the new-comment box while it is
   open (one note per add-on; the latest set wins if two exist). Share uses it to tell a reviewer,
   before their first comment, that comments are shared. `null` removes it.
@@ -771,9 +777,13 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
 - **Rate limits.** PrivateBin limits posts per IP (10 s by default), so an office behind one address
   shares that limit. PrivateBin itself answers HTTP 200 with `status: 1` and a sentence ("Please wait
   10 seconds between each post."), never a 429 (S1); a proxy in front of an instance may still send
-  429. Both retry after 10 s, or the 429's `Retry-After`, plus jitter, with more ops per batch. The
-  sentence is never parsed for a number. Tens of people behind one address still fit: one post every 10 s carries up to
-  1,000 ops.
+  429. A 429 retries after its `Retry-After` plus jitter. **"Please wait" waits as long as the sentence says**:
+  instances set their own limit (privatebin.net asks for 60 s, found when S1 ran against it), so the first
+  number in the sentence is the wait, in any language, between 1 and 3,600 s; with no usable number, 30 s. It is
+  also the instance's standing rule, so the sender then keeps at least that gap between posts (the Web Lock is
+  held that long too) instead of being refused again, and more ops go in each batch. A plain 429 is patience for
+  now, not a rule. Tens of people behind one address still fit at 10 s (up to 1,000 ops a post), and at 60 s a
+  post still carries them.
 
 The polling table and the one-sender lock apply to the mailbox too (§7.7).
 
@@ -1470,8 +1480,12 @@ they are re-measured when stage 0 is built.
 | Same-name fingerprint (core UI, with live) | 3 | ~80 | estimate |
 | **All stages** | | **~1.9 KB** | |
 
-**Decision 1 (recorded 2026-10-07): option A, with the budget already raised.** The min and esm
-budgets are 40 KB, so every stage fits: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
+**Decision 1 (recorded 2026-10-07, revised 2026-10-08).** The estimates above proved light. As built, all
+stages together cost **+3.8 KB gzip** (3,772 B: 37,707 B in 0.4.1, 41,479 B now), not ~2.0 KB, after two size
+passes took back 0.9 KB. It is all API, none of it add-on code (breakdown below). No stage could be cut without
+dropping a slot an add-on needs. So the **min and esm budgets are 42 KB** (measured 40.5 KB min, 40.1 KB esm),
+stated in the release notes, for the maintainer to confirm or to send back for another pass. The original reasoning, kept
+for the record: the min and esm budgets were 40 KB, so every stage fitted: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
 about 2.0 KB of the 3,253 B headroom. That leaves the 0.5 touch and drawer work about 1.2 KB before it
 needs size work of its own. The rules:
 
@@ -1480,7 +1494,7 @@ needs size work of its own. The rules:
   maintainer can choose.
 - Each stage is re-measured with `scripts/size.mjs` before merge. A stage that costs more than its
   estimate here cuts in the order below before any budget changes.
-- No budget rise beyond 40 KB for add-on support without a new decision, stated in the release notes.
+- No budget rise beyond 42 KB for add-on support without a new decision, stated in the release notes.
 - The core-only budget stays 12 KB.
 
 **If a stage is short, cut in this order:** the select-error toast, the `reason` strings in `addons()`
@@ -1512,7 +1526,7 @@ The mailbox transport adds nothing to the core: it is share's code, behind the s
 |---|---|---|
 | `share.min.js` | 7.5 KB | kit sync, envelope, ladder, settings, PrivateBin client, rollover, consent rows; mailbox client ~0.5 KB (estimate: address parse, two requests, cursor paging, error codes, `Retry-After`). If S1 fails and PrivateBin is left out (~1.5 KB with rollover), the budget returns to 7 KB. |
 | `voice.min.js` | 4 KB | Web Speech, consent panel, language |
-| `live.min.js` | 10.5 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
+| `live.min.js` | 11 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
 | `pipeup+<id>.min.js` | core + add-on budgets | checked separately |
 
 Run-time downloads made by the browser itself (a speech pack) are declared on the add-on page and in
@@ -1586,7 +1600,7 @@ gets into the core").
 
 | Spike | Gates | Run against | Go when |
 |---|---|---|---|
-| S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07** in Chrome, Firefox and Safari; volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07 and privatebin.net 2026-10-08** in Chrome, Firefox and Safari (it asks for 60 s between posts and keeps "never" for about an hour); other volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. **Signer, own relay and 3 public relays passed 2026-10-08** in Chrome, Firefox and Safari; connection rates across networks still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. **Passed 2026-10-08** in Chrome (service and on device) and Safari; Firefox has no engine; Edge not tried ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. **Passed 2026-10-08:** Docker 28 and PHP 8.3 both work ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
@@ -1700,3 +1714,45 @@ gets into the core").
 - 2026-10-08 — Spike S2, first half: the kit's own signer passes the BIP-340 vectors and matches noble on 2,000 random keys; it measures 1.0 KB gzip. A local nostr-rs-relay accepts and delivers its ephemeral events from `file://` in Chrome, Firefox and Safari without storing them, and two peers meet through it. Public relays and other networks remain.
 - 2026-10-08 — Spike S2, public relays: damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work. They all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s; §9.1 now ignores offers older than 30 s. Cross-network connection rates remain.
 - 2026-10-08 — Spike S4 passed: GitHub Actions runs PrivateBin and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server; integration tests use the image, pinned by digest.
+- 2026-10-08 — Built (branch `feat/addons`): the core slots, the kit, voice, the mailbox server, and then share and
+  live. Changes from the design as built: `host.off(reason)` lets `setup` say "off, because …" (§3); `announce`
+  speaks at once while comments show (§3.2); one core per page hands over to the first instead of rejecting
+  (§2); a resolved thread keeps its reply line while words are half-written in it (§3.6, with a plain sentence;
+  who resolved it isn't known to the model, so no name); unreadable saved ops are counted in one console
+  warning; the min and esm budgets are 44 KB (§15). A test keeps the add-on API's names out of the mangle list
+  (§4), and `size.mjs` checks script tags and that `use` and `addons` exist.
+- 2026-10-08 — As built, share and live: share's classic build is 7.9 KB gzip (budget 8.5 KB, was 7.5 KB), live's is
+  10.49 KB (budget 10.5 KB, signer included at 1.0 KB, no third-party code). The shipped bundles accept
+  `http://localhost` and `http://127.0.0.1` for a mailbox, a PrivateBin and a relay (`ws://`), because loopback
+  never leaves the machine and it lets a developer try everything without a certificate (R2 now reads "https:
+  and wss:, except loopback"). Live's Nostr kind is 25800. With `data-pipeup-live="auto"` nothing connects until
+  the reviewer presses Go live and agrees in the panel (stricter than §9.1: opening the menu alone doesn't
+  count). Share rechecks the Web Lock per send (it holds it 10 s) so each tab can post its own comments. Tested
+  by hand from `file://` and `http://localhost` in Chrome, Firefox and Safari at once: three browsers meet
+  through a relay and Safari sees two others.
+- 2026-10-08 — Size pass on the core, 42,350 B → 42,122 B gzip (−228 B): the surface keeps one record of what
+  each add-on added (so removing an add-on is one loop), writing lines and new-comment boxes hear a single event
+  instead of each subscribing, one guard helper for the host's methods after teardown, one validation warning.
+  Looked for and not found: dead code (no unused locals or parameters; every exported name nothing else uses is
+  already tree-shaken; every CSS class is used), anything worth a stronger CSS minifier (lightningcss: −21 B), a
+  gain from mangling every non-reserved property name (±0 B), and a browser-coverage view of what never runs (10%
+  of the bundle, almost all fallbacks, error paths and the add-on slots, which only the add-on tests use). The
+  rest is the API itself. Correction: the cost of the API is +4.4 KB, not +3.8 KB (two units were mixed).
+- 2026-10-08 — Share backs off as a service asks: "please wait N seconds" waits N (the first number in the
+  sentence, 1 to 3,600; else 30 s) and teaches the sender that instance's gap (the engine's gap may now be a function).
+  Found by running S1 against privatebin.net, which asks for 60 s, silently caps "never" at about an hour, and
+  allows `file://` reads, writes and deletes.
+- 2026-10-08 — Spike S1 on a public instance, privatebin.net, passed in Chromium, Firefox and Safari from `file://`: create, comment, read back and delete work; the instance allows one post per 60 s and keeps "never" for about an hour (see §7.2 and architecture §7).
+- 2026-10-08 — Second size pass, by area (a reviewer per area read the code, applied each candidate in a scratch copy,
+  and kept only what built, passed all 259 unit and 316 browser tests and saved at least 15 B): 42,122 B → 41,506 B
+  (−616 B): comment mode and picking −206 B (the shortcut table, a repeated selection test, copies of rects,
+  parameters nothing passes), model, anchoring and storage −262 B (one table fill for two edit-distance loops, a loop
+  that could not run, a reused transaction helper, one validation helper), views and menu −119 B (one glide helper,
+  one leave helper, one tally, rows' labels stored once, an unused `Composer.clear`), stylesheet and highlights −79 B (an
+  unused rule, a loop, a shared surface rule). The App shell, avatars and icons, copy-out and the add-on API
+  itself had nothing worth taking. Several "tidier" refactors made the bundle larger because gzip already folds repeats.
+  Budgets: min and esm 42 KB (was 44 KB).
+
+- 2026-10-08: first by-hand test of live. The People panel now lists "You (name)" first and shows each person's animal
+  and colour (the avatar is drawn from the name they gave, not from their display name, so unnamed people show their
+  animal instead of a letter). `AddonDocument` gains a read-only `name`. The live budget is 11 KB (was 10.5 KB).

@@ -1,6 +1,6 @@
 import { animalName } from "../model/animals";
 import { avatar, easeIn, retire } from "./animals";
-import { composer } from "./composer";
+import { composer, composerNote, SOURCE_CHANGED } from "./composer";
 import type { Ctx, Draft } from "./context";
 import { h, inert } from "./dom";
 
@@ -38,7 +38,22 @@ export function renderDraft(o: DraftOptions): DraftBox {
   const me = h("button", { class: "me", type: "button", tabindex: "-1", "aria-hidden": "true" });
   // A click must not leave focus on a button screen readers can't see.
   me.addEventListener("mousedown", (e) => e.preventDefault());
-  const comp = composer({ label: "Comment", before: me, onSend: o.onSend, onCancel: o.onCancel });
+  const comp = composer({
+    label: "Comment",
+    kind: "comment",
+    before: me,
+    onSend: o.onSend,
+    onCancel: o.onCancel,
+  });
+  // One quiet line from add-ons above the box, such as "Comments here are shared with everyone who has this page".
+  const note = h("div", { class: "note" });
+  const syncNote = () => {
+    const text = composerNote();
+    note.textContent = text ?? "";
+    note.hidden = !text;
+  };
+  syncNote();
+
   const say = h("div", { class: "say" });
   // One line: a pasted newline can't split the name.
   const field = h("input", { class: "input", type: "text", maxlength: "80", "aria-label": "Your name" });
@@ -113,7 +128,8 @@ export function renderDraft(o: DraftOptions): DraftBox {
   sync();
   setNaming(false);
   const ctxLine = h("div", { class: "ctx" }, o.label);
-  const element = h("div", { class: "draft" }, ctxLine, comp.element, you);
+  const element = h("div", { class: "draft" }, ctxLine, note, comp.element, you);
+  element.addEventListener(SOURCE_CHANGED, syncNote);
   return {
     element,
     caret: () => {

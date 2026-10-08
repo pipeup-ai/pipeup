@@ -99,20 +99,20 @@ export function parentBlock(el: Element, root: Element, look: Look): Element | n
 }
 
 /** The real page: boxes from layout, "drawn" and "grouped" from computed styles. */
-export function pageLook(win: Window = window): Look {
+export function pageLook(): Look {
   return {
     box: (el) => el.getBoundingClientRect(),
     drawn: (el) => {
-      const s = win.getComputedStyle(el);
+      const s = getComputedStyle(el);
       const painted = s.backgroundColor !== "transparent" && !/,\s*0\)$/.test(s.backgroundColor);
       const bordered = ["top", "right", "bottom", "left"].some(
         (side) => parseFloat(s.getPropertyValue(`border-${side}-width`)) > 0,
       );
       return painted || bordered || s.backgroundImage !== "none" || s.boxShadow !== "none";
     },
-    grouped: (el) => /^(inline-)?(flex|grid)$/.test(win.getComputedStyle(el).display),
+    grouped: (el) => /^(inline-)?(flex|grid)$/.test(getComputedStyle(el).display),
     flow: (el) => {
-      const s = win.getComputedStyle(el);
+      const s = getComputedStyle(el);
       const axes = [s.overflowX, s.overflowY];
       return {
         display: s.display,
@@ -121,12 +121,12 @@ export function pageLook(win: Window = window): Look {
         clips:
           axes.some((o) => o === "hidden" || o === "clip") &&
           !axes.some((o) => o === "auto" || o === "scroll") &&
-          el !== win.document.documentElement &&
-          el !== win.document.body,
+          el !== document.documentElement &&
+          el !== document.body,
         off: s.pointerEvents === "none",
       };
     },
-    viewport: () => ({ width: win.innerWidth, height: win.innerHeight }),
+    viewport: () => ({ width: innerWidth, height: innerHeight }),
   };
 }
 

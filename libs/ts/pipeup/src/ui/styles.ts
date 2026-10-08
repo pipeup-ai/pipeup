@@ -3,14 +3,15 @@ export const STYLES = `
 /* Inherited page styles are reset on .layer below; custom properties pass through all:initial. */
 :host{all:initial}
 *{box-sizing:border-box}
-button{-webkit-appearance:none;appearance:none;font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button{appearance:none;font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 svg{display:block}
 .layer{all:initial;display:block;position:fixed;inset:0;pointer-events:none;font:13px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--k);
 --k:#2C2C2A;--mu:#5F5E5A;--fa:#888780;--ln:#E5E3DA;--ru:#ECEAE2;--so:#FAFAF7;--su:#FFFFFF;--ho:#F1EFE8;
 --as:color-mix(in srgb,var(--pu-accent,#534AB7) 12%,transparent);
 --sh:0 8px 28px rgba(44,44,42,.10);
 --in:.26s;--mv:.34s;--out:.2s;--pl:1.2s;
---eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1)}
+--eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1);
+--pu-text:var(--k);--pu-muted:var(--mu);--pu-faint:var(--fa);--pu-line:var(--ln);--pu-surface:var(--su);--pu-soft:var(--so);--pu-hover:var(--ho);--pu-shadow:var(--sh);--pu-ease:var(--eo)}
 .layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#8D8B84;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
 
@@ -94,7 +95,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .bub.in:hover,.bub.on{transform:scale(1.18)}
 .bub.done{background:var(--fa)}
 .bub.ghost{pointer-events:none}
-.tip,.pop,.menu,.all,.toast,.selbar{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
+.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
 .tip{position:fixed;max-width:260px;border-radius:10px;padding:7px 10px;opacity:0;transform:translateY(3px);
 transition:opacity .22s var(--eo),transform .26s var(--eo)}
 .tip.show{opacity:1;transform:none;pointer-events:auto;cursor:pointer;
@@ -142,7 +143,7 @@ markers that hold focus are invisible. */
 .km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
-white-space:nowrap;background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh);pointer-events:none;opacity:0;transform:translateY(4px);
+white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform .3s var(--eo)}
 .namebar.show.glide{transition-property:all;transition-duration:var(--mv);transition-timing-function:var(--eio)}
@@ -154,8 +155,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 /* The comment control: one round button; the open count sits inside a comment bubble. Nothing about it
 grows or slides: its layers and numbers cross-fade in place. */
 .launch{position:fixed;right:20px;bottom:20px;pointer-events:auto}
-.launch .mode{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--su);border:1px solid var(--ln);
-box-shadow:var(--sh);transition:background-color .3s var(--eo),color .3s var(--eo)}
+.launch .mode{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;transition:background-color .3s var(--eo),color .3s var(--eo)}
 .mode>*,.cnt>*{grid-area:1/1}
 .mode>*{display:grid;place-items:center;transition:opacity var(--in) var(--eo)}
 .cnt,.has>.plus{opacity:0}
@@ -169,8 +169,7 @@ box-shadow:var(--sh);transition:background-color .3s var(--eo),color .3s var(--e
 .mode>.dot{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--pu-accent);border:2px solid var(--su);opacity:0}
 .mode.else>.dot{opacity:1}
 /* The tooltip eases in after a moment, above the button, and never moves it. */
-.ttip{position:absolute;right:0;bottom:54px;white-space:nowrap;border-radius:8px;padding:4px 9px;font-size:12px;background:var(--su);border:1px solid var(--ln);
-box-shadow:var(--sh);pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
+.ttip{position:absolute;right:0;bottom:54px;white-space:nowrap;border-radius:8px;padding:4px 9px;font-size:12px;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .ttip small{margin-left:8px}
 .ttip small,.mi .kc{font-size:12px;color:var(--fa)}
 .mode:hover+.ttip,.mode:focus-visible+.ttip{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .5s,transform var(--in) var(--eo) .5s}
@@ -190,7 +189,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .mi .av svg{color:inherit}
 .sep{height:1px;margin:4px 10px;background:var(--ru)}
 .tt{position:absolute;right:calc(100% + 14px);top:50%;translate:0 -50%;width:max-content;max-width:220px;padding:4px 9px;border-radius:8px;font-size:12px;line-height:1.4;
-color:var(--mu);background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh);pointer-events:none;opacity:0;transform:translateX(3px);
+color:var(--mu);pointer-events:none;opacity:0;transform:translateX(3px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .mi:hover>.tt,.mi:focus-visible>.tt{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .5s,transform var(--in) var(--eo) .5s}
 @media (max-width:600px){.tt{right:8px;top:auto;bottom:100%;translate:none;transform:translateY(3px)}}
@@ -201,10 +200,19 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .sw::before{opacity:0;transform:translateX(10px)}
 [aria-checked=true]>.sw{background:var(--pu-accent)}
 [aria-checked=true]>.sw::after{transform:translateX(10px)}
+.tools{display:flex;flex:none;gap:2px}
+.tools[hidden]{display:none}
+.tool[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
+.note{display:block;padding:0 0 4px;font-size:12px;color:var(--fa)}
+.note[hidden]{display:none}
+.ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+/* An add-on's panel (.xp) is the same full-height panel as All comments (.all), with its own body. */
+.xb{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 16px;font-size:13px}
+.xb p{margin:0 0 10px}
 /* All comments: a full-height panel on the right that slides in (fades, with reduced motion). */
-.all{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
+.all,.xp{position:fixed;top:0;right:0;bottom:0;width:var(--pu-panel);display:flex;flex-direction:column;border-width:0 0 0 1px;opacity:0;transform:translateX(100%);
 transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
-.all.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
+.all.show,.xp.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
 .all.full{width:100%}
 .hd{display:flex;align-items:center;gap:8px;padding:12px 10px 8px 16px;font-weight:600}
 .pn{font-weight:400;color:var(--fa)}
@@ -216,7 +224,6 @@ transition:background-color .2s var(--eo)}
 .all .mi>.av{flex:none}
 .all .mi>span:last-child{flex:1;min-width:0}
 .all .mi small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.all .mi .av svg{margin:0}
 .all .mi.done{opacity:.6}
 .layer.listing .col{opacity:0;transition:opacity var(--out) var(--ei)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
@@ -227,18 +234,18 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}
-.layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button):focus-visible{outline:2px solid Highlight}
+.layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button,.xb button):focus-visible{outline:2px solid Highlight}
 }
 
 @media (prefers-reduced-motion: reduce){
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.ttip,.tt,.toast{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}
 .th{transition-property:opacity,box-shadow}
 .tip.show{transition-property:opacity}
 .pick,.pick.show{transition:opacity .16s ease-in-out}
-.all,.all.show{transition-property:opacity}
+.all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}
 .av,.nf{transform:none!important}
 @keyframes pu-pulse{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}

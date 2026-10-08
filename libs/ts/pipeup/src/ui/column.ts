@@ -146,36 +146,33 @@ export function createColumn(ctx: Ctx): View {
     return { el, thread: t, lost, placed: null, view };
   }
 
+  /** Fades an element out (no longer measured) and removes it. */
+  function leave(el: HTMLElement): void {
+    sizes.unobserve(el);
+    el.classList.add("out");
+    window.setTimeout(() => el.remove(), EXIT_MS);
+  }
+
   function syncDraft(): void {
     const d = ctx.state.draft;
-    if (draft && d && draft.of !== d) {
-      const old = draft.el;
-      sizes.unobserve(old);
-      old.classList.add("out");
-      window.setTimeout(() => old.remove(), EXIT_MS);
+    if (draft && draft.of !== d) {
+      leave(draft.el);
       draft = null;
+      if (!d) ctx.registerDraft(null);
     }
-    if (d && draft) {
-      draft.box.setLabel(d.label);
-      draft.box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
-    }
-    if (d && !draft) {
+    if (!d) return;
+    const made = !draft;
+    if (draft) draft.box.setLabel(d.label);
+    else {
       const box = draftBox(ctx, d);
       const el = h("div", { class: "th on" }, box.element);
       el.style.transition = "none";
       col.append(el);
       sizes.observe(el);
       draft = { el, box, of: d };
-      box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
-      box.focus();
-    } else if (!d && draft) {
-      const el = draft.el;
-      sizes.unobserve(el);
-      el.classList.add("out");
-      window.setTimeout(() => el.remove(), EXIT_MS);
-      draft = null;
-      ctx.registerDraft(null);
     }
+    draft.box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
+    if (made) draft.box.focus();
   }
 
   function render(list: readonly Thread[]): void {
@@ -214,9 +211,7 @@ export function createColumn(ctx: Ctx): View {
     for (const [id, item] of items) {
       if (live.has(id)) continue;
       items.delete(id);
-      sizes.unobserve(item.el);
-      item.el.classList.add("out");
-      window.setTimeout(() => item.el.remove(), EXIT_MS);
+      leave(item.el);
     }
     syncDraft();
     // Tab meets the threads in page order, before the draft; moved ones settle before they glide.

@@ -149,7 +149,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       );
       const flipped = draft?.above !== null && draft?.above !== above;
       if (draft) draft.above = above;
-      if (flipped && flip()) return;
+      if (flipped && move()) return;
       pop.style.left = `${left}px`;
       pop.style.top = `${top}px`;
       return;
@@ -158,41 +158,28 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (where) put(pop, where, POPOVER);
   }
 
-  /** The open draft is now about `label`'s block: the same box glides there (or, with reduced motion, fades). */
   /** The naming bar already names this draft's block, so its box needn't. */
   const named = (d: Draft) => ctx.state.commenting && !d.anchor.quote && !d.anchor.point;
 
-  /** The box changed sides of its block (scrolling): it eases across (opacity only with reduced motion). */
-  function flip(): boolean {
+  /**
+   * The open box moves (to another side of its block, another block, or beside All comments): it glides, or
+   * with reduced motion fades out, changes and moves while unseen, and fades back in. True when it waits to move.
+   */
+  function move(change: () => void = () => {}): boolean {
     window.clearTimeout(gliding);
     if (reduced) {
       pop.classList.remove("show");
       gliding = window.setTimeout(() => {
+        change();
         place();
         pop.classList.add("show");
       }, 220);
       return true;
     }
+    change();
     pop.classList.add("glide");
     gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
     return false;
-  }
-
-  function moveDraftBox(label: string): void {
-    window.clearTimeout(gliding);
-    if (reduced) {
-      // Opacity only: it fades out, changes and moves while unseen, and fades back in.
-      pop.classList.remove("show");
-      gliding = window.setTimeout(() => {
-        draft?.box.setLabel(label);
-        place();
-        pop.classList.add("show");
-      }, 220);
-      return;
-    }
-    draft?.box.setLabel(label);
-    pop.classList.add("glide");
-    gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
   }
 
   /** The element an open element thread (or element draft) is about, outlined while its popover shows. */
@@ -239,11 +226,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     // The preview follows the thread it shows (it hides once that thread opens).
     showTip(hovered);
     // All comments opening or closing changes the room beside it: an open popover glides to its new place.
-    if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) {
-      window.clearTimeout(gliding);
-      pop.classList.add("glide");
-      gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
-    }
+    if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) move();
     listing = ctx.state.listing;
 
     const d = opts.popovers ? ctx.state.draft : null;
@@ -266,7 +249,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         if (draft.at !== where) {
           draft.at = where;
           draft.above = null;
-          moveDraftBox(d.label);
+          move(() => draft?.box.setLabel(d.label));
         }
         draft.box.hideLabel(named(d));
       }

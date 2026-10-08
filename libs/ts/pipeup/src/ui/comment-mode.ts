@@ -2,11 +2,11 @@ import { describeElement } from "../anchor/describe";
 import { kindOf, labelOf, wordsOf } from "../anchor/locate";
 import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
-import { fit, h, inert } from "./dom";
+import { fit, h, inert, selected } from "./dom";
 import { icon, type IconName } from "./icons";
 import { placeBar } from "./layout";
 import { byPage, nodeOf } from "./order";
-import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block, type Look } from "./pick";
+import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -62,7 +62,8 @@ export interface CommentMode extends View {
  * Known limits: the page's CSS `:hover` still applies; page listeners on window in the capture phase that were
  * added before comment mode started still hear events; Escape still reaches the page's own handlers.
  */
-export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMode {
+export function createCommentMode(ctx: Ctx): CommentMode {
+  const look = pageLook();
   // The hint, read once as part of the cursor's first landing.
   const hintText = h("span", { hidden: true }, KEYS_HINT);
   const outline = h("div", { class: "pick" }, hintText);
@@ -166,9 +167,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   function positionBar(): void {
     if (!barAt) return;
     bar.classList.toggle("glide", performance.now() < glideUntil && bar.classList.contains("show"));
-    const r = barAt.getBoundingClientRect();
     const { left, top } = placeBar(
-      { left: r.left, top: r.top, width: r.width, height: r.height },
+      barAt.getBoundingClientRect(),
       { width: bar.offsetWidth || 200, height: bar.offsetHeight || 34 },
       { width: window.innerWidth, height: window.innerHeight },
     );
@@ -279,12 +279,12 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       ctx.report(err);
       return;
     }
-    const next = {
+    const next: Draft = {
       anchor,
       label: point ? `Pin on ${labelOf(el).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase())}` : labelOf(el),
       ranges: [],
       resolved: { state: "attached", element: el, range: null },
-    } as const;
+    };
     const open = ctx.state.draft;
     // The cursor follows the draft's block, so it comes back there.
     if (cur) {
@@ -292,9 +292,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       nth = -1;
     }
     choose(point ? null : el);
-    drafted = open ?? { ...next, ranges: [] };
-    if (open) ctx.moveDraft({ ...next, ranges: [] });
-    else ctx.startDraft(drafted);
+    drafted = open ?? next;
+    ctx.moveDraft(next);
     ctx.say(point ? next.label : `Commenting on ${next.label}`);
   }
 
@@ -347,7 +346,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     }
     e.stopPropagation();
     if (chosen || ctx.state.draft) return;
-    const block = !selecting() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
+    const block = !selected() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
     if (cur) {
       // The mouse moving onto another block takes the outline; Tab carries on from there. A move the browser
       // makes up after a scroll has no movement, so the cursor's own scrolling never puts it away.
@@ -361,12 +360,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     show(block);
   };
   /** Selected words have their own comment icon: no block is offered while they are, wherever the pointer goes. */
-  const selecting = () => {
-    const sel = window.getSelection();
-    return !!sel && !sel.isCollapsed && sel.toString().trim() !== "";
-  };
   const onSelect = () => {
-    if (!selecting()) return;
+    if (!selected()) return;
     // Words selected while the block cursor is out: it is put away, so the selection's own icon shows.
     if (cur) stow();
     if (!chosen) show(null);
@@ -412,6 +407,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       e.preventDefault();
       e.stopPropagation();
       taken = e.key;
+      ctx.dismiss();
       if (ctx.state.active) ctx.open(null);
       if (ctx.state.menu) {
         ctx.state.menu = false;
@@ -664,7 +660,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     taken = e.key;
     if (e.key === "Escape") return void ctx.back();
     if (e.key === "Enter" || e.key === " ") return act(e.shiftKey && e.key === "Enter");
-    // Moving on closes an open thread, as a click elsewhere does.
+    // Moving on closes an open thread or an empty draft, as a click elsewhere does.
+    if (e.key === "Tab") ctx.dismiss();
     if (ctx.state.active) ctx.open(null);
     if (e.key === "Tab") step(e.shiftKey ? -1 : 1);
     else if (e.key === "ArrowUp") around();

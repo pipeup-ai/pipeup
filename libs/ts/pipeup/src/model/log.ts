@@ -41,9 +41,11 @@ export class OpLog {
    */
   async add(incoming: unknown[]): Promise<SignedOp[]> {
     const added: SignedOp[] = [];
-    for (const op of incoming) {
-      if (!isWellFormed(op) || op.body.doc !== this.doc || this.ops.has(op.body.id)) continue;
-      if (op.body.id !== (await computeOpId(op.body)) || !(await isAuthentic(op))) continue;
+    for (const raw of incoming) {
+      if (!isWellFormed(raw) || raw.body.doc !== this.doc || this.ops.has(raw.body.id)) continue;
+      if (raw.body.id !== (await computeOpId(raw.body)) || !(await isAuthentic(raw))) continue;
+      // What was signed, nothing else: an unsigned extra field is never stored or sent on.
+      const op: SignedOp = { body: raw.body, sig: raw.sig };
       this.ops.set(op.body.id, op);
       this.clock = Math.max(this.clock, op.body.clock);
       if (op.body.kind === "create")
@@ -81,16 +83,8 @@ export class OpLog {
         MAX_AT,
       ),
     };
-    // Safety net: identical changes would share an id, so nudge the time (below the cap) until the
-    // id is new. Unreachable through PipeupDocument below the caps: its writes are serialised and
-    // `at` strictly increases within each thread and across each writer's creates.
-    for (let tries = 0; ; tries++) {
-      if (tries === 1000) throw new Error("pipeup: could not record this change");
-      body.id = await computeOpId(body);
-      if (!this.ops.has(body.id) || body.at >= MAX_AT) break;
-      body.at += 1;
-    }
     // Same id means the same change is already recorded (e.g. resolving twice at both caps).
+    body.id = await computeOpId(body);
     const existing = this.ops.get(body.id);
     if (existing) return existing;
     if (body.kind === "create") body.thread = body.id;

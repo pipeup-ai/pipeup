@@ -238,8 +238,24 @@ From the 2.0.6 source (`lib/FormatV2.php`, `lib/Request.php`, `lib/Controller.ph
 - Defaults: discussions on, expiries 5 min to 1 year plus `never` (default 1 week), one post per
   address every 10 s, 10 MiB size limit.
 
-**Still to do for S1:** the same checks on one or two volunteer instances, with their operators'
-permission, and over HTTPS on a public instance.
+**A public instance: privatebin.net** (the project's own demo instance, nginx, over HTTPS, with the
+maintainer's agreement; about ten posts in all, from throwaway keys with random sealed content, every paste
+deleted afterwards with its delete token). From `file://` in Chromium 153, Firefox 157 and Safari 27, one browser
+at a time, 150 s apart:
+
+| Check | privatebin.net (all three browsers) |
+|---|---|
+| Simple requests from `file://`; JSON reads; CORS headers (`Access-Control-Allow-Origin: *`, no preflight) | work |
+| A paste created with `expire: never`, then a comment in the §7.2 mapping with a real sealed envelope | accepted; the comment reads back byte for byte |
+| `meta.time_to_live` of the paste | about **3,540 s**: the instance silently keeps "never" for about an hour only |
+| Posts per address | **one per 60 s** ("Please wait 60 seconds between each post.", HTTP 200, `status: 1`); a refused post seems to restart the clock |
+| Delete with the delete token | works (`status: 0`) |
+| Web Locks on `file://` | granted |
+
+So a public instance can be far stricter than the default: share now waits the number of seconds the sentence
+asks for and keeps that gap between posts, and `share create` must report the real lifetime (about an hour here).
+
+**Still to do for S1:** volunteer-run instances beyond this one, only with their operators' permission.
 
 ### S3: Web Speech from `file://` (add-ons spike, 2026-10-08): passed in Chrome and Safari
 
@@ -370,8 +386,13 @@ and Chrome runs passed the address through AppleScript instead.
 
 **Still to do for S6:**
 
-- The same checks over **TLS on a private address**, with a certificate the browsers trust (an
-  intranet's own CA). Local-network rules may treat secure and plain requests differently.
+- **TLS on a private address, Chromium only so far (2026-10-08):** the reference mailbox server behind a
+  self-signed certificate for this Mac's LAN address, reached from a `file://` page in Playwright's Chromium
+  with that certificate's key pinned (`--ignore-certificate-errors-spki-list`; nothing was added to any trust
+  store). The requests went through with no prompt and no preflight, and a 404 answer was readable as JSON,
+  so the CORS headers on errors work over TLS to a private address too. Still to do: the same in Chrome,
+  Firefox and Safari with a certificate they trust (an intranet's own CA), which needs the maintainer to set
+  one up.
 
 ### Peer to peer (deferred)
 

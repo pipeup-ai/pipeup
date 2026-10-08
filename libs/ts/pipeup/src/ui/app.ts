@@ -7,6 +7,7 @@ import type { Ctx, Draft, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
 import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
+import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
@@ -152,6 +153,10 @@ export function startApp(o: AppOptions): App {
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
   });
 
+  const writingIn = (id: string): boolean =>
+    (host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`)?.value.trim() ??
+      "") !== "";
+
   /** A resolved thread leaves: focus goes to the cursor, else the Comment control. */
   const gone = (id: string): boolean => {
     if (state.active !== id || state.showResolved) return false;
@@ -172,14 +177,11 @@ export function startApp(o: AppOptions): App {
     resolve: async (id) => {
       try {
         await o.doc.resolve(id);
-        if (gone(id)) state.active = null;
         toast("Resolved · Show resolved brings it back");
       } catch (e) {
-        if (e instanceof UnsavedChangeError) {
-          if (gone(id)) state.active = null;
-          toast(`Resolved · ${UNSAVED_NOTE}`);
-        } else toast(message(e));
+        toast(e instanceof UnsavedChangeError ? `Resolved · ${UNSAVED_NOTE}` : message(e));
       }
+      if (gone(id)) state.active = null;
     },
     reopen: async (id) => {
       try {
@@ -246,7 +248,12 @@ export function startApp(o: AppOptions): App {
     all: () => [...o.doc.threads()].sort(byPage(ctx)).map(exportItem),
   };
 
+  // The surface needs the context, and the context hands it out: a holder breaks the loop.
+  const slot: { surface?: Surface } = {};
   const ctx: Ctx = {
+    get addons() {
+      return slot.surface!;
+    },
     doc: o.doc,
     root: o.root,
     layer: host.layer,
@@ -261,7 +268,9 @@ export function startApp(o: AppOptions): App {
     recheck: () => {
       if (classify()) render();
     },
-    visible: (t) => !state.hidden && (!t.resolved || state.showResolved) && !elsewhere.has(t.id),
+    // A resolved thread stays while words are half-written in its reply line: they are never lost.
+    visible: (t) =>
+      !state.hidden && (!t.resolved || state.showResolved || writingIn(t.id)) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
       for (const t of o.doc.threads()) {
         const r = resolved.get(t.id);
@@ -305,6 +314,8 @@ export function startApp(o: AppOptions): App {
     render,
     back: stepBack,
   };
+
+  const addons = (slot.surface = new Surface(ctx, host.shadow, sr));
 
   function resolveAll(only?: Set<string>): void {
     const start = performance.now();
@@ -440,6 +451,7 @@ export function startApp(o: AppOptions): App {
     paint(threads);
     for (const v of views) v.render(threads);
     modeView?.render(threads);
+    if (!state.hidden) addons.flush();
   }
 
   /**
@@ -638,6 +650,7 @@ export function startApp(o: AppOptions): App {
     if (destroyed) return;
     for (const v of views) v.frame();
     modeView?.frame();
+    addons.frame();
     raf = requestAnimationFrame(frame);
   };
 
@@ -694,9 +707,10 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("resize", onResize);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
-  const sizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleReplace);
-  sizeObserver?.observe(o.root);
-  const offChange = o.doc.onChange(() => {
+  const sizeObserver = new ResizeObserver(scheduleReplace);
+  sizeObserver.observe(o.root);
+  const offChange = o.doc.onChange((_threads, added, source) => {
+    addons.heard(added, source);
     resolveAll();
     render();
   });
@@ -718,13 +732,14 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(mutationTimer);
       window.clearTimeout(deferredTimer);
       observer.disconnect();
-      sizeObserver?.disconnect();
+      sizeObserver.disconnect();
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();
+      addons.destroy();
       sheet.remove();
       host.destroy();
     },

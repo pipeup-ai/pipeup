@@ -43,6 +43,22 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run check
 
+      # The add-ons and the mailbox server are released with the core, at the same version, from the same tag.
+      - name: Check and build the add-ons
+        run: |
+          for pkg in ../addons ../addons/kit ../addons/share ../addons/voice ../addons/live ../../../services/mailbox; do
+            v="$(node -p "require('$pkg/package.json').version")"
+            if [ "$v" != "$VERSION" ]; then echo "::error::$pkg is at $v, not $VERSION"; exit 1; fi
+          done
+          for id in share voice live; do
+            p="$(node -p "require('../addons/$id/package.json').peerDependencies.pipeup")"
+            if [ "$p" != "$VERSION" ]; then echo "::error::@pipeup/$id needs pipeup $p, not $VERSION"; exit 1; fi
+          done
+          (cd ../addons && npm ci && npx playwright install --with-deps chromium && npm run check)
+          (cd ../../../services/mailbox && npm test)
+          node ../addons/scripts/sri.mjs > "$RUNNER_TEMP/addons-sri.txt"
+          cat "$RUNNER_TEMP/addons-sri.txt"
+
       - name: Release notes (CHANGELOG section and SRI)
         run: |
           sri="$(node scripts/sri.mjs)"
@@ -69,6 +85,14 @@ jobs:
             echo '```'
             echo
             echo "SRI for \`dist/pipeup.min.js\`: \`$sri\`"
+            echo
+            echo "## Add-ons"
+            echo
+            echo '```sh'
+            echo "npm i @pipeup/share@$VERSION @pipeup/voice@$VERSION @pipeup/live@$VERSION"
+            echo '```'
+            echo
+            cat "$RUNNER_TEMP/addons-sri.txt"
           } >> "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
 
@@ -79,6 +103,14 @@ jobs:
           tag=latest
           case "$VERSION" in *-*) tag=next ;; esac
           npm publish --provenance --access public --tag "$tag"
+
+      - name: Publish the add-ons and the mailbox server
+        run: |
+          tag=latest
+          case "$VERSION" in *-*) tag=next ;; esac
+          for dir in ../addons/share ../addons/voice ../addons/live ../../../services/mailbox; do
+            (cd "$dir" && npm publish --provenance --access public --tag "$tag")
+          done
 
       - name: Create the GitHub Release
         env:

@@ -2,6 +2,7 @@ import type { Resolved } from "../anchor/resolve";
 import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
 import type { Anchor, Thread } from "../model/types";
+import type { Surface } from "./addons";
 import type { DraftBox } from "./draft-view";
 import type { Here } from "./here";
 import type { ThreadActions } from "./thread-view";
@@ -65,6 +66,8 @@ export interface Ctx {
   readonly menu: MenuActions;
   /** Where the reviewer is: the slide, or the page's own view. */
   readonly here: Here;
+  /** What add-ons put on the page. */
+  readonly addons: Surface;
   /** The thread lives on another slide or view, or the page hides its content: nothing of it shows. */
   elsewhere(t: Thread): boolean;
   /** Sorts threads into here and elsewhere again now, re-rendering if that changed anything. */

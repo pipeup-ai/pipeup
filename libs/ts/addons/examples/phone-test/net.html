@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>
+    S2 net
+  </title>
+  <style>
+    body {
+      font:
+        18px -apple-system,
+        Helvetica,
+        sans-serif;
+      background: #fff;
+      color: #1f1f1f;
+      padding: 16px;
+      max-width: 640px;
+      margin: auto;
+    }
+    #state {
+      font-size: 26px;
+      font-weight: 600;
+      margin: 16px 0;
+      transition: color 0.4s ease;
+    }
+    pre {
+      font-size: 12px;
+      background: #f7f7f5;
+      padding: 10px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+  </style>
+  <h1 style="font-size: 20px">Pipeup spike S2: two devices meet</h1>
+  <p id="role"></p>
+  <div id="state">Starting…</div>
+  <pre id="out"></pre>
+  <script src="/schnorr.js"></script>
+  <script>
+    const KIND = 25800,
+      RELAY = "wss://relay.damus.io",
+      role = location.pathname.startsWith("/b") ? "b" : "a";
+    const frag = new URLSearchParams(location.hash.slice(1)),
+      secret = frag.get("k"),
+      run = frag.get("run") || "?";
+    const r = {
+      role,
+      run,
+      ua: (navigator.userAgent.match(/(CriOS|FxiOS|Firefox|Chrome|Version)\/[\d.]+/) || [""])[0],
+      mobile: /Mobi/.test(navigator.userAgent),
+    };
+    const $ = (id) => document.getElementById(id),
+      hex = (b) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join(""),
+      unhex = (s) => Uint8Array.from(s.match(/../g), (h) => parseInt(h, 16));
+    const enc = new TextEncoder(),
+      b64 = (u8) => btoa(String.fromCharCode(...u8)),
+      unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+    const sha = async (b) => new Uint8Array(await crypto.subtle.digest("SHA-256", b));
+    const state = (t, c) => {
+      $("state").textContent = t;
+      $("state").style.color = c || "#1f1f1f";
+    };
+    const report = () => {
+      $("out").textContent = JSON.stringify(r, null, 1);
+      fetch("/report?" + encodeURIComponent(JSON.stringify(r)), { credentials: "omit" }).catch(() => {});
+    };
+    $("role").textContent = role === "a" ? "This device starts the connection." : "This device answers.";
+    (async () => {
+      if (!secret) return state("This link is missing its key.", "#a33");
+      const topic = hex(await sha(enc.encode("topic:" + secret))),
+        key = await crypto.subtle.importKey("raw", await sha(enc.encode("key:" + secret)), "AES-GCM", false, [
+          "encrypt",
+          "decrypt",
+        ]);
+      const seal = async (s) => {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        return (
+          b64(iv) +
+          "." +
+          b64(new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(s))))
+        );
+      };
+      const open = async (c) => {
+        const [iv, ct] = c.split(".");
+        return new TextDecoder().decode(
+          await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(iv) }, key, unb64(ct)),
+        );
+      };
+      const sk = crypto.getRandomValues(new Uint8Array(32)),
+        me = hex(Schnorr.publicKey(sk));
+      const ws = new WebSocket(RELAY);
+      await new Promise((res, rej) => {
+        ws.onopen = res;
+        ws.onerror = () => rej(new Error("relay"));
+      });
+      const send = async (content) => {
+        const ev = {
+          pubkey: me,
+          created_at: Math.floor(Date.now() / 1000),
+          kind: KIND,
+          tags: [["t", topic]],
+          content: await seal(content),
+        };
+        ev.id = hex(
+          await sha(enc.encode(JSON.stringify([0, ev.pubkey, ev.created_at, KIND, ev.tags, ev.content]))),
+        );
+        ev.sig = hex(await Schnorr.sign(unhex(ev.id), sk));
+        ws.send(JSON.stringify(["EVENT", ev]));
+        r.events_sent = (r.events_sent || 0) + 1;
+      };
+      ws.send(
+        JSON.stringify([
+          "REQ",
+          "m",
+          { kinds: [KIND], "#t": [topic], since: Math.floor(Date.now() / 1000) - 20 },
+        ]),
+      );
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun.cloudflare.com:3478" }],
+      });
+      const gathered = () =>
+        new Promise((res) => {
+          if (pc.iceGatheringState === "complete") return res();
+          const t = setTimeout(res, 6000);
+          pc.onicegatheringstatechange = () =>
+            pc.iceGatheringState === "complete" && (clearTimeout(t), res());
+        });
+      const t0 = performance.now();
+      let done = false,
+        timer;
+      const finish = async (ok) => {
+        if (done) return;
+        done = true;
+        clearInterval(timer);
+        r.connected = ok;
+        r.seconds = ((performance.now() - t0) / 1000).toFixed(2);
+        r.ice = pc.iceConnectionState;
+        try {
+          const st = await pc.getStats();
+          let pair;
+          st.forEach((s) => {
+            if (s.type === "transport" && s.selectedCandidatePairId) pair = st.get(s.selectedCandidatePairId);
+          });
+          if (!pair)
+            st.forEach((s) => {
+              if (s.type === "candidate-pair" && s.nominated && s.state === "succeeded") pair = s;
+            });
+          if (pair) {
+            r.local = st.get(pair.localCandidateId).candidateType;
+            r.remote = st.get(pair.remoteCandidateId).candidateType;
+            r.protocol = st.get(pair.localCandidateId).protocol;
+          }
+        } catch (e) {
+          r.stats_error = e.message;
+        }
+        state(ok ? "Connected directly" : "Couldn't connect directly", ok ? "#2a7a3d" : "#a33");
+        report();
+        ws.close();
+      };
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === "failed") finish(false);
+      };
+      const onChannel = (ch) => {
+        ch.onopen = () => {
+          ch.send("hello from " + role);
+        };
+        ch.onmessage = () => finish(true);
+      };
+      const kinds = {};
+      pc.onicecandidate = (e) => {
+        const ty = e.candidate && (e.candidate.candidate.match(/ typ (\w+)/) || [])[1];
+        if (ty) kinds[ty] = (kinds[ty] || 0) + 1;
+        r.own_candidates = kinds;
+      };
+      if (role === "a") setTimeout(() => finish(false), 120000);
+      if (role === "a") {
+        onChannel(pc.createDataChannel("pipeup"));
+        await pc.setLocalDescription(await pc.createOffer());
+        await gathered();
+        const offer = JSON.stringify({ t: "offer", sdp: pc.localDescription.sdp });
+        state("Waiting for the other device…");
+        await send(offer);
+        timer = setInterval(() => {
+          if (r.events_sent < 24) send(offer);
+        }, 5000);
+      } else {
+        pc.ondatachannel = (e) => onChannel(e.channel);
+        state("Looking for the other device…");
+        fetch(
+          "/report?" +
+            encodeURIComponent(JSON.stringify({ role, run, status: "waiting", ua: r.ua, mobile: r.mobile })),
+          { credentials: "omit" },
+        ).catch(() => {});
+      }
+      ws.onmessage = async (e) => {
+        const m = JSON.parse(e.data);
+        if (m[0] !== "EVENT" || m[2].pubkey === me) return;
+        let msg;
+        try {
+          msg = JSON.parse(await open(m[2].content));
+        } catch {
+          return;
+        }
+        if (role === "b" && msg.t === "offer" && !pc.remoteDescription) {
+          state("Connecting…");
+          setTimeout(() => finish(false), 60000);
+          await pc.setRemoteDescription({ type: "offer", sdp: msg.sdp });
+          await pc.setLocalDescription(await pc.createAnswer());
+          await gathered();
+          await send(JSON.stringify({ t: "answer", sdp: pc.localDescription.sdp }));
+        }
+        if (role === "a" && msg.t === "answer" && !pc.remoteDescription) {
+          clearInterval(timer);
+          state("Connecting…");
+          await pc.setRemoteDescription({ type: "answer", sdp: msg.sdp });
+        }
+      };
+    })().catch((e) => {
+      state("Error: " + e.message, "#a33");
+      r.error = e.message;
+      report();
+    });
+  </script>
+</html>
