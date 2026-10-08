@@ -119,7 +119,7 @@ and the site to catch up, and exits non-zero on any failure. By hand:
 
 | Symptom | Cause and fix |
 |---|---|
-| Release fails at *Publish to npm* with `EOTP` or `ENEEDAUTH` | The trusted publisher on npm doesn't match (org, repo, workflow file name) or doesn't allow `npm publish`. Fix it on npm, then re-run the failed job: the tag stays the same. |
+| Release fails at *Publish to npm* or *Publish the add-ons* with `EOTP`, `ENEEDAUTH` or a `404` on the `PUT` | The trusted publisher on npm doesn't match (org, repo, workflow file name) or doesn't allow `npm publish`. Fix it on npm, then finish the release without a new tag: `gh workflow run release.yml -f tag=vX.Y.Z` (packages already on npm and an existing GitHub Release are skipped; "Re-run failed jobs" can't be used when the first package was already published). |
 | Release fails at the tag check | The tag doesn't match `package.json`. Delete the tag on GitHub and locally, fix the version in a pull request, tag again. |
 | Release fails at *Release notes* | No CHANGELOG section for the version. |
 | npm still shows the old version | The registry lags a minute or two; ask with `--prefer-online`. |
