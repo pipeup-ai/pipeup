@@ -75,6 +75,25 @@ structured data describing Pipeup as software.
 unfurls with a large preview image (the Pipeup mark, the name and "Feedback for any HTML", in the
 site's light look), a title and a description. The pre-release copy's previews use its own image.
 
+### Add-ons page
+
+Optional add-ons have a page of their own, reached from a quiet "Add-ons" link in the footer. Nothing else on the
+site changes: the first screen, the Copy prompt and the Install menu are about the core, which is what most people
+use. The page:
+
+- Says first that the core needs none of them and sends nothing anywhere, and that an add-on is an extra step the page's
+  author chooses, never something a reviewer is moved into.
+- Has one short card per add-on (Share, Voice, Live), each in plain words: what it does, **what it sends and to
+  whom**, what the reviewer is asked first, and its script tag. Share also says the author picks the service (a
+  PrivateBin or their own mailbox) and that it never picks one for them; Live says it is peer to peer and asks each
+  reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
+  maker.
+- Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
+- Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
+  scripts of its own.
+- Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
+  choose a sharing service for them.
+
 ## 4. Look and feel
 
 - **Minimal**: it looks like a normal product site, not a document — content centred in the
@@ -135,3 +154,4 @@ site's light look), a title and a description. The pre-release copy's previews u
 - 2026-10-07 — The privacy point lives only in the footer: "Stays on your device" with a lock, and a short note on hover, focus or tap ("Private by design…"); the first screen stays as it was.
 - 2026-10-07 — The link-preview image is only the mark and the name, centred so a square thumbnail crop keeps all of it.
 - 2026-10-07 — 0.4.1: the size is stated as about 37 KB.
+- 2026-10-08 — An Add-ons page (Share, Voice, Live) reached from the footer; the home page and Copy prompt stay core only. The Copy prompt and llms.txt no longer ask an agent to download a file: they add the pinned CDN tag.

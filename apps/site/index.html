@@ -68,6 +68,7 @@
       .gh:hover svg { transform: translateY(-1px); }
       .status { font-size: 13px; color: var(--muted); text-decoration: none; }
       .status:hover { color: var(--strong); }
+      .more-links { display: flex; gap: 22px; align-items: baseline; }
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
@@ -512,6 +513,8 @@
               <span class="tip" role="tooltip" id="private-tip"><b>Private by design.</b>Nothing to install: one script in your HTML file. Comments stay in your browser and are never sent anywhere. They leave only when you copy them and share them yourself.</span>
             </li>
           </ul>
+        <div class="more-links">
+        <a class="agents-link" href="addons.html">Add-ons</a>
         <div class="agents">
           <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
           <div class="agents-menu" role="menu" aria-label="For agents">
@@ -520,6 +523,7 @@
             <a role="menuitem" href="index.html.md" title="This page as plain Markdown">This page as Markdown</a>
             <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
           </div>
+        </div>
         </div>
       </footer>
     </main>

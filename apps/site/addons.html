@@ -1,0 +1,96 @@
+<!doctype html>
+<!-- Pipeup's add-ons page. Spec: docs/WEBSITE_SPEC.md ("Add-ons page"). Light only. Built by apps/site/build.sh. -->
+<html lang="en" data-pipeup-doc="pIpEuPwEbSiTe002:WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeup add-ons</title>
+    <meta name="description" content="Optional extras for Pipeup: share comments through an encrypted service, dictate comments, and review live together. The core needs none of them." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/addons.html" />
+    <style>
+      @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+      :root {
+        --ink: #2f3437; --strong: #111111; --muted: #787774; --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --violet: #534ab7;
+        --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
+        --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      * { box-sizing: border-box; }
+      html { background: var(--paper); }
+      body { margin: 0; font: 16px/1.6 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+      main { max-width: 760px; width: 100%; margin: 0 auto; padding: 0 24px; flex: 1; display: flex; flex-direction: column; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+      .mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--strong); text-decoration: none; }
+      .back { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s var(--ease); }
+      .back:hover { color: var(--strong); }
+      h1 { font-size: clamp(32px, 6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--strong); margin: 28px 0 14px; font-weight: 600; }
+      .lede { font-size: 18px; color: var(--ink); margin: 0 0 8px; max-width: 34em; }
+      .beta { font-size: 14px; color: var(--muted); margin: 0 0 32px; }
+      .card { border-top: 1px solid var(--line); padding: 26px 0; }
+      .card h2 { font-size: 20px; margin: 0 0 6px; color: var(--strong); font-weight: 600; }
+      .card p { margin: 0 0 10px; }
+      .card dl { margin: 14px 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 15px; }
+      .card dt { color: var(--muted); }
+      .card dd { margin: 0; }
+      pre { margin: 14px 0 0; padding: 12px 14px; background: var(--bone); border-radius: 10px; overflow-x: auto; font: 13px/1.6 var(--mono); color: var(--strong); }
+      footer { border-top: 1px solid var(--line); margin-top: auto; padding: 22px 0 28px; font-size: 13px; color: var(--muted); }
+      footer a { color: inherit; transition: color 0.2s var(--ease); }
+      footer a:hover { color: var(--strong); }
+      @media (max-width: 560px) { .card dl { grid-template-columns: 1fr; gap: 0; } .card dd { margin-bottom: 8px; } }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <a class="mark" href="./" aria-label="Pipeup home">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          Pipeup
+        </a>
+        <a class="back" href="./">Back to Pipeup</a>
+      </header>
+
+      <h1 data-pipeup-id="title">Add-ons</h1>
+      <p class="lede" data-pipeup-id="lede">Pipeup on its own needs none of these. It sends nothing anywhere, and most pages should stay that way.</p>
+      <p class="beta" data-pipeup-id="beta">An add-on is one extra script that the page's author chooses to add. Reviewers are never moved into one, and each asks before it does anything. The add-ons are in beta: the core alone is the stable choice.</p>
+
+      <section class="card" data-pipeup-id="share">
+        <h2>Share</h2>
+        <p>Comments reach everyone who has the page, not only the browser they were written in.</p>
+        <dl>
+          <dt>Sends</dt><dd>Comments, sealed in the reviewer's browser with a key that is only in the page's link, to a service the author picks: a PrivateBin or their own small mailbox server. The service never sees the words.</dd>
+          <dt>Asked first</dt><dd>Comments written before sharing stay on the device until the reviewer chooses to share them.</dd>
+          <dt>You choose</dt><dd>Where it goes. Pipeup never picks a service for you.</dd>
+        </dl>
+        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/share@next/dist/share.min.js"&gt;&lt;/script&gt;
+&lt;html data-pipeup-share="https://…#…"&gt;</pre>
+      </section>
+
+      <section class="card" data-pipeup-id="voice">
+        <h2>Voice</h2>
+        <p>Dictate a comment instead of typing it.</p>
+        <dl>
+          <dt>Sends</dt><dd>Nothing of its own. Speech is turned into words by the browser's own engine, which in some browsers sends the audio to its maker.</dd>
+          <dt>Asked first</dt><dd>A short note before the first use, then the browser's own microphone prompt.</dd>
+        </dl>
+        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@next/dist/voice.min.js"&gt;&lt;/script&gt;</pre>
+      </section>
+
+      <section class="card" data-pipeup-id="live">
+        <h2>Live</h2>
+        <p>See comments arrive as people write them, who else is on the page, and where they are looking.</p>
+        <dl>
+          <dt>Sends</dt><dd>Presence and comments straight between the reviewers' browsers. Public relays are used only to introduce them to each other, and see addresses, not words.</dd>
+          <dt>Asked first</dt><dd>Each reviewer is asked before connecting. Nothing is opened until they agree.</dd>
+        </dl>
+        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/live@next/dist/live.min.js"&gt;&lt;/script&gt;</pre>
+      </section>
+    </main>
+    <footer>
+      <main style="flex:none;padding:0"><a href="./">Pipeup</a> · <a href="llms.txt">For agents</a></main>
+    </footer>
+    <script src="pipeup.min.js"></script>
+  </body>
+</html>
