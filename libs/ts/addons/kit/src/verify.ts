@@ -14,8 +14,15 @@ export async function verifySigned(
 ): Promise<boolean> {
   if (!KEY.test(author)) return false;
   try {
-    const key = await crypto.subtle.importKey("raw", fromB64u(author), { name: "Ed25519" }, false, ["verify"]);
-    return await crypto.subtle.verify({ name: "Ed25519" }, key, fromB64u(sig), utf8(`pipeup:${purpose}\n${data}`));
+    const key = await crypto.subtle.importKey("raw", fromB64u(author), { name: "Ed25519" }, false, [
+      "verify",
+    ]);
+    return await crypto.subtle.verify(
+      { name: "Ed25519" },
+      key,
+      fromB64u(sig),
+      utf8(`pipeup:${purpose}\n${data}`),
+    );
   } catch {
     return false;
   }

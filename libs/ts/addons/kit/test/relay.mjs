@@ -40,8 +40,7 @@ export async function startRelay(port = 0) {
         events.push(e);
         if (!(e.kind >= 20000 && e.kind < 30000)) stored.push(e);
         ws.send(JSON.stringify(["OK", e.id, true, ""]));
-        for (const client of wss.clients)
-          if (client.readyState === 1 && client.deliver) client.deliver(e);
+        for (const client of wss.clients) if (client.readyState === 1 && client.deliver) client.deliver(e);
       } else if (m[0] === "REQ" && typeof m[1] === "string") {
         const filters = m.slice(2);
         subs.set(m[1], filters);

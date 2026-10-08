@@ -64,7 +64,8 @@ function mulG(k: bigint): [bigint, bigint] {
 
 const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
 const big = (b: Uint8Array) => BigInt("0x" + (hex(b) || "0"));
-const bytes = (n: bigint) => Uint8Array.from(n.toString(16).padStart(64, "0").match(/../g)!, (h) => parseInt(h, 16));
+const bytes = (n: bigint) =>
+  Uint8Array.from(n.toString(16).padStart(64, "0").match(/../g)!, (h) => parseInt(h, 16));
 const cat = (...a: Uint8Array[]) => {
   const out = new Uint8Array(a.reduce((s, x) => s + x.length, 0));
   let i = 0;

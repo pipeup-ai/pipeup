@@ -162,6 +162,30 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
 
+## Add-ons (only when the author asks)
+
+Pipeup itself sends nothing anywhere. Add-ons are extra scripts that do, each for one feature; they work from a
+page opened from disk and in any script order, and they are released with Pipeup at the same version.
+
+| Add-on | Only when the author wants | What it sends |
+|---|---|---|
+| `@pipeup/share` | comments to reach everyone who has the page, without copying and pasting | sealed comments to the sharing service the page names |
+| `@pipeup/voice` | dictating comments | nothing itself; the reviewer's browser may use its maker's speech service, after they agree |
+| `@pipeup/live` | live comments, who is here, live cursors | the reviewer's network address to the others who are live and to the meeting-point relays |
+
+- **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
+  pick a sharing service yourself: the author chooses one.
+- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.4.1/dist/share.min.js`
+  with its `integrity` from the release notes), or use the combined file `pipeup+share.min.js` instead of Pipeup's.
+- Sharing is set up by the author with the command line (`npx @pipeup/share create page.html --server …`), which writes
+  `data-pipeup-share` into the file and prints a stop key once. **Never write `data-pipeup-share` yourself and never
+  put a stop key in a page.**
+- **When you rewrite or regenerate a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are.** A
+  new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
+  comments of different documents never mix.
+- `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
+  about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
+
 ## Options
 
 Markup on the page:

@@ -111,7 +111,8 @@ export class SyncEngine {
 
   private deliver(ops: unknown[]): void {
     this.inbound.push(...ops);
-    if (!this.inboundTimer) this.inboundTimer = setTimeout(() => void this.drain(), INBOUND_MS) as unknown as number;
+    if (!this.inboundTimer)
+      this.inboundTimer = setTimeout(() => void this.drain(), INBOUND_MS) as unknown as number;
   }
 
   private async drain(): Promise<void> {

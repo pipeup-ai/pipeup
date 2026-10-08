@@ -71,7 +71,9 @@ export async function openJson(l: Ladder, p: Purpose, bytes: Uint8Array<ArrayBuf
       await l.key(p),
       bytes.slice(13),
     );
-    return JSON.parse(text(await pipe(new Uint8Array(plain), new DecompressionStream("deflate-raw"), MAX_INFLATED)));
+    return JSON.parse(
+      text(await pipe(new Uint8Array(plain), new DecompressionStream("deflate-raw"), MAX_INFLATED)),
+    );
   } catch {
     return null;
   }
