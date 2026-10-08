@@ -157,6 +157,61 @@ describe("blockTree", () => {
   });
 });
 
+describe("blockTree: only what a reviewer would click", () => {
+  /** data-display, data-position, data-clips and data-off stand for the computed styles pageLook reads. */
+  const flowLook: Look = {
+    ...look,
+    flow: (el) => ({
+      display: el.getAttribute("data-display") ?? "block",
+      position: el.getAttribute("data-position") ?? "static",
+      clips: el.hasAttribute("data-clips"),
+      off: el.hasAttribute("data-off"),
+    }),
+  };
+
+  it("skips the parts inside a link or button, keys and words inside a line of text, and tiny decorations", () => {
+    document.body.innerHTML = `
+    <header id="top" data-box="0,0,800,60">
+      <a id="logo" data-box="10,10,140,40"><svg id="mark" data-box="10,10,40,40"></svg><span id="name" data-drawn data-box="60,10,90,40">Name</span></a>
+      <i id="dot" data-drawn data-box="200,20,10,10"></i>
+      <a id="x" data-box="300,20,16,16">x</a>
+    </header>
+    <p id="tip2" data-box="0,200,600,40"><span id="row" data-display="inline-flex" data-box="0,200,300,24"><span id="grp" data-display="flex" data-grouped data-box="40,200,70,24"><kbd id="k3" data-display="grid" data-drawn data-box="40,200,30,24">Shift</kbd><kbd id="k4" data-display="grid" data-drawn data-box="74,200,30,24">C</kbd></span></span></p>
+    <p id="tip" data-box="0,80,600,40">Press <span id="keys" data-display="inline-flex" data-grouped data-box="40,90,70,22"><kbd id="k1" data-display="grid" data-drawn data-box="40,90,22,22">A</kbd><kbd id="k2" data-display="grid" data-drawn data-box="64,90,22,22">B</kbd></span> to start <img id="pic" data-display="inline" data-box="200,80,40,40"></p>
+    <div id="hidden" aria-hidden="true" data-drawn data-box="0,140,400,40"><p id="hp" data-box="0,140,400,40">Hidden</p></div>`;
+    expect(ids(blockTree(document.body, flowLook))).toEqual(["top", "logo", "x", "tip2", "tip", "pic"]);
+  });
+
+  it("leaves out what is clipped out of sight or takes no pointer, and keeps what the author marked", () => {
+    document.body.innerHTML = `
+    <div id="show" data-pipeup-id="show" data-clips data-drawn data-box="0,0,400,200">
+      <div id="track" data-off data-grouped data-box="0,0,1200,200">
+        <p id="s1" data-off data-box="0,0,400,200">One</p><p id="s2" data-off data-box="400,0,400,200">Two</p>
+      </div>
+    </div>
+    <div id="win" data-clips data-drawn data-box="0,300,400,200">
+      <p id="seen" data-box="0,300,400,100">Seen</p><p id="gone" data-box="500,300,400,100">Gone</p>
+    </div>
+    <span id="badge" data-pipeup-id="badge" data-display="inline" data-box="0,600,20,20">!</span>`;
+    expect(ids(blockTree(document.body, flowLook))).toEqual(["show", "win", "seen", "badge"]);
+  });
+
+  it("keeps blocks inside plain inline wrappers, tall inline-block cards, and fixed boxes a clipper doesn't clip", () => {
+    document.body.innerHTML = `
+    <app-card id="host" data-display="inline" data-box="0,0,600,200">
+      <div id="body" data-drawn data-box="0,0,600,200"><p id="hp" data-box="10,10,400,40">Inside a component</p></div>
+    </app-card>
+    <div id="cards" data-box="0,220,800,200">
+      <div id="c1" data-display="inline-block" data-drawn data-box="0,220,200,160">Card</div>
+      <code id="c2" data-display="inline" data-drawn data-box="220,220,200,80">wrapped code</code>
+    </div>
+    <footer id="foot" data-clips data-box="0,2000,800,100">
+      <button id="fab" data-position="fixed" data-box="700,700,60,40">Feedback</button>
+    </footer>`;
+    expect(ids(blockTree(document.body, flowLook))).toEqual(["body", "hp", "c1", "foot", "fab"]);
+  });
+});
+
 describe("row and childBlocks", () => {
   beforeEach(() => {
     document.body.innerHTML = `

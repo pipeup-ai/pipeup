@@ -117,11 +117,12 @@ test("the bottom row is Start commenting, with a switch that follows comment mod
     "aria-checked",
     "false",
   );
+  // Turned on from the keyboard, the menu closes and the block cursor starts; Escape on it leaves comment mode.
   await page.keyboard.press("Space");
   await commenting(page);
-  await page.keyboard.press("Escape");
   await expect(menu(page)).toHaveCount(0);
-  await commenting(page);
+  await page.keyboard.press("Escape");
+  await commenting(page, false);
 });
 
 test("the menu closes on a click outside, or 3 s after the pointer leaves it, and coming back keeps it", async ({

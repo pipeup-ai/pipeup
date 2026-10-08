@@ -557,7 +557,7 @@ export function startApp(o: AppOptions): App {
     if (keys) modeView.resume();
     if (!keys)
       toast(
-        `Click anything to comment · Option-click (Alt-click) to pin · ${SHORTCUT_LABEL} or Esc to finish`,
+        `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · ${SHORTCUT_LABEL} or Esc to finish`,
         HINT_MS,
         true,
       );
@@ -652,7 +652,7 @@ export function startApp(o: AppOptions): App {
     if (e.key === "Escape") return stepBack();
     // Shift+Option+C (Shift+Alt+C) (matched on the key's code: Option changes its character on a Mac), unless
     // the page's own shortcut (defaultPrevented) or an IME already took it: comment mode off → on with the
-    // block cursor; the cursor put away → back; otherwise off.
+    // block cursor; the cursor put away by the mouse → back; otherwise off.
     if (isShortcut(e) && !e.isComposing && !e.defaultPrevented && !typing(e)) {
       e.preventDefault();
       // Put away with nothing left to land on: the shortcut still turns comment mode off.

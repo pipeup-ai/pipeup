@@ -248,10 +248,10 @@ examples; the document page has its own gutter prototype.
 - **Resolve time budget.** Anchors resolve in passes of at most 40 ms; threads that run out of
   budget get only the exact match first and are shown as unplaced (not lost) until a deferred
   pass (250 ms later) gives them the fuzzy match, so they never flash as lost.
-- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 36 KB
-  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 36 KB) and
+- **Three bundles.** `dist/pipeup.min.js` (classic script: core + UI + auto-mount, at most 40 KB
+  gzipped), `dist/pipeup.esm.js` (core + UI for bundlers, no side effects, at most 40 KB) and
   `dist/pipeup.core.js` (core only, at most 12 KB), raised in Plan 2B, to 33 KB (min, esm) for 0.4 part 1
-  and to 36 KB for 0.4 part 2 (the keyboard cursor; touch and the drawer moved to 0.5), see §11. `scripts/size.mjs` enforces the
+  to 36 KB for 0.4 part 2 (the keyboard cursor; touch and the drawer moved to 0.5) and to 40 KB for 0.4.1 (Tab in comment mode), see §11. `scripts/size.mjs` enforces the
   budgets.
 
 ### Motion tokens (starting values)
@@ -605,3 +605,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §11: 0.4 part 2, step 1 built — the block cursor as designed in [keyboard.md](keyboard.md); +3.05 KB gzip (over the 1.8 KB target, within the 36 KB budgets); "As built" notes.
 - 2026-10-07 — §11: keyboard final-review fixes — the cursor lets go of a draft's block when it moves off it; Enter in a page form field submits with the cursor not in use; All comments and Copy share `byPage`; doc corrections (no `TreeWalker`, `pinAt` folded into `commentOn`, name wording, Esc steps); 36,765 B (min) / 36,419 B (esm) gzip.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
+- 2026-10-07 — §11: 0.4.1 budgets 40 KB (min, esm), 12 KB (core): Tab in comment mode and the cursor's stops cost about +0.9 KB gzip (36,759 B before).

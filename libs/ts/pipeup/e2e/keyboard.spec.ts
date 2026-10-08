@@ -1,5 +1,4 @@
 import { expect, test, type Page } from "@playwright/test";
-import { SHORTCUT_LABEL } from "../src/ui/shortcut";
 import {
   bodySnapshot,
   commenting,
@@ -53,18 +52,16 @@ test("the block cursor starts on the block that has focus", async ({ page }) => 
   await expect.poll(() => cursorOn(page)).toEqual({ label: "Link, 2 of 8", block: "cta" });
 });
 
-test("Esc puts the cursor away and gives focus back; the shortcut brings it back, then leaves comment mode", async ({
-  page,
-}) => {
+test("Esc on the cursor leaves comment mode and gives focus back; so does the shortcut", async ({ page }) => {
   await open(page, "controls.html");
   await page.locator("#cta").focus();
   await shortcut(page);
   await expect.poll(() => cursorOn(page)).toMatchObject({ block: "cta" });
   await page.keyboard.press("Escape");
+  await commenting(page, false);
   await expect(page.locator("#cta")).toBeFocused();
   await expect(page.locator(".pick.show")).toHaveCount(0);
-  await expect(said(page)).toHaveText(`Cursor put away · ${SHORTCUT_LABEL} brings it back`);
-  await commenting(page);
+  await expect(said(page)).toHaveText("Comment mode off");
   await shortcut(page);
   await expect.poll(() => cursorOn(page)).toMatchObject({ block: "cta" });
   await shortcut(page);
@@ -73,20 +70,15 @@ test("Esc puts the cursor away and gives focus back; the shortcut brings it back
   await expect(said(page)).toHaveText("Comment mode off");
 });
 
-test("with nothing focused before, Esc leaves focus on the page and Tab goes on past the cursor; the next Esc leaves", async ({
+test("with nothing focused before, Esc leaves comment mode with focus on the Comment control", async ({
   page,
 }) => {
   await open(page, "controls.html");
   await shortcut(page);
   await expect.poll(() => cursorOn(page)).not.toBeNull();
   await page.keyboard.press("Escape");
-  await expect.poll(() => focusInPipeup(page)).toMatchObject({ tag: "" });
-  expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
-  // The browser's Tab starts from where the cursor was: Pipeup's own controls come last on the page.
-  await page.keyboard.press("Tab");
-  await expect(control(page)).toBeFocused();
-  await page.keyboard.press("Escape");
   await commenting(page, false);
+  await expect(control(page)).toBeFocused();
 });
 
 test("Start commenting chosen from the keyboard closes the menu and puts the cursor on the page; Esc goes to the control", async ({
@@ -123,9 +115,9 @@ test("after a pointer click the shortcut brings the cursor back; after a mouse s
   await page.locator("#card").click();
   await expect(page.locator(".draft")).toHaveCount(1);
   await page.keyboard.press("Escape");
+  // It comes back on the block clicked last.
   await shortcut(page);
-  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "title" });
-  await page.keyboard.press("Escape");
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "card" });
   await page.keyboard.press("Escape");
   await commenting(page, false);
   await toggleCommenting(page);
@@ -163,8 +155,9 @@ test("with the cursor not in use, Enter and Space on page controls do what the p
   await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await commenting(page, false);
-  await shortcut(page);
-  await page.keyboard.press("Escape");
+  // Comment mode with no block cursor out.
+  await toggleCommenting(page);
+  await commenting(page);
   await page.locator("#go").focus();
   await page.keyboard.press("Enter");
   expect(await page.evaluate(() => (window as any).fired)).toEqual(["go", "go"]);
@@ -221,12 +214,13 @@ test("a keyup the cursor took but never heard does not swallow a later keyup the
   await expect.poll(() => ups(page, "Enter")).toEqual(["Enter"]);
 });
 
-test("with the cursor put away and nothing left to land on, the shortcut leaves comment mode", async ({
+test("with the cursor put away by a click and nothing left to land on, the shortcut leaves comment mode", async ({
   page,
 }) => {
   await open(page, "doc.html");
   await shortcut(page);
   await expect.poll(() => cursorOn(page)).not.toBeNull();
+  await page.locator("article p").first().click();
   await page.keyboard.press("Escape");
   await page.evaluate(() => document.querySelector("article")!.remove());
   await page.waitForTimeout(500);
@@ -443,11 +437,12 @@ test("on a reveal.js deck the deck hears no key the cursor takes; → still move
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Tab");
   await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Paragraph, 2 of 3" });
-  // Esc on the marker puts the cursor away; the shortcut brings it back to the same block.
+  // Esc on the marker leaves comment mode; the deck doesn't hear it. The shortcut starts the cursor afresh.
   await page.keyboard.press("Escape");
+  await commenting(page, false);
   expect(await page.evaluate(() => (window as any).heard)).toEqual([]);
   await shortcut(page);
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Paragraph, 2 of 3" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Heading, 1 of 3" });
   await page.evaluate(() => ((window as any).heard = []));
   const was = await marker(page);
   await page.keyboard.press("ArrowRight");
@@ -639,7 +634,7 @@ test("a draft with words on a slide that went away is returned to by Enter, with
   expect(await page.evaluate(() => (window as any).slid)).toEqual([1, 0]);
 });
 
-test("the cursor moved off the draft's block lets go of it: ↑ moves the cursor, Esc puts it away, the draft waits", async ({
+test("the cursor moved off the draft's block lets go of it: ↑ moves the cursor, Esc leaves, the draft waits", async ({
   page,
 }) => {
   await open(page, "reveal.html");
@@ -653,15 +648,15 @@ test("the cursor moved off the draft's block lets go of it: ↑ moves the cursor
   await page.keyboard.press("ArrowUp");
   await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Section, 1 of 2" });
   await expect(page.locator(".draft .ctx")).toHaveText("Heading · One");
-  // Esc puts the cursor away properly: no marker keeps an invisible focus, and the draft is kept.
+  // Esc leaves comment mode properly: no marker keeps an invisible focus, and the draft is kept.
   await page.keyboard.press("Escape");
-  await expect(said(page)).toContainText("Cursor put away");
+  await commenting(page, false);
   expect(await cursorOn(page)).toBeNull();
   await expect(page.locator(".pick.show")).toHaveCount(0);
   await expect(draftLine(page)).toHaveValue("Keep me");
-  // The shortcut brings the cursor back, and Enter returns to the draft on slide one.
+  // The shortcut starts the cursor again, and Enter returns to the draft on slide one.
   await shortcut(page);
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Section, 1 of 2" });
+  await expect.poll(() => cursorOn(page)).not.toBeNull();
   await page.keyboard.press("Enter");
   await expect(draftLine(page)).toBeFocused();
   await expect(draftLine(page)).toHaveValue("Keep me");
@@ -857,8 +852,13 @@ test("a selection made without the mouse shows its icon once it settles, is said
   page,
 }) => {
   await open(page, "doc.html");
-  await shortcut(page);
-  await page.keyboard.press("Escape");
+  // Comment mode with no block cursor out.
+  await toggleCommenting(page);
+  await commenting(page);
+  // Focus is on the page, as with caret browsing (closing the menu left it on the Comment control).
+  await page.evaluate(() =>
+    (document.querySelector("pipeup-root")!.shadowRoot!.activeElement as HTMLElement).blur(),
+  );
   /** Selects `words` in #p1 by script: no mouseup or keyup, as caret browsing or a screen reader would. */
   const select = (words: string) =>
     page.evaluate((words) => {
@@ -921,8 +921,9 @@ test("Pin on the bar starts a pin draft at the block's centre; with a block draf
 
 test("a new selection after the last was cleared is said again, once", async ({ page }) => {
   await open(page, "doc.html");
-  await shortcut(page);
-  await page.keyboard.press("Escape");
+  // Comment mode with no block cursor out.
+  await toggleCommenting(page);
+  await commenting(page);
   const select = (words: string) =>
     page.evaluate((words) => {
       const text = document.querySelector("#p1")!.firstChild as Text;
@@ -940,8 +941,9 @@ test("a new selection after the last was cleared is said again, once", async ({ 
 
 test("a mouse drag that pauses is not a settled selection until the button is released", async ({ page }) => {
   await open(page, "doc.html");
-  await shortcut(page);
-  await page.keyboard.press("Escape");
+  // Comment mode with no block cursor out.
+  await toggleCommenting(page);
+  await commenting(page);
   const [a, b] = await page.evaluate(() => {
     const text = document.querySelector("#p1")!.firstChild as Text;
     const at = (i: number) => {
@@ -970,8 +972,9 @@ test("Enter on a focused link does what the page expects, even with a settled se
   page,
 }) => {
   await open(page, "doc.html");
-  await shortcut(page);
-  await page.keyboard.press("Escape");
+  // Comment mode with no block cursor out.
+  await toggleCommenting(page);
+  await commenting(page);
   await page.evaluate(() => {
     const text = document.querySelector("#p1")!.firstChild as Text;
     const i = text.data.indexOf("onboarding");
@@ -1117,4 +1120,137 @@ test("in forced colours the cursor's focus and Pipeup's buttons draw with Highli
   await expect(around).toHaveCSS("outline-style", "solid");
   await expect(around).toHaveCSS("outline-width", "2px");
   await expect(around).toHaveCSS("outline-color", highlight);
+});
+
+test.describe("Tab in comment mode, however it was turned on", () => {
+  test("turned on with the mouse, the first Tab starts the cursor on the first block in view, Shift+Tab too", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await toggleCommenting(page);
+    await commenting(page);
+    expect(await cursorOn(page)).toBeNull();
+    await expect(page.locator(".toast.show")).toContainText("Tab between blocks");
+    await page.keyboard.press("Tab");
+    await expect.poll(() => cursorOn(page)).toEqual({ label: "Heading, 1 of 8", block: "h1" });
+    await page.keyboard.press("Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "p1" });
+    // Esc leaves comment mode, and focus goes to the Comment control.
+    await page.keyboard.press("Escape");
+    await commenting(page, false);
+    await expect(control(page)).toBeFocused();
+    await toggleCommenting(page);
+    await page.keyboard.press("Shift+Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  });
+
+  test("Tab from the open menu after Start commenting closes the menu and starts the cursor", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await control(page).click();
+    await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
+    await commenting(page);
+    await expect(page.locator(".menu.show")).toHaveCount(1);
+    await page.keyboard.press("Tab");
+    await expect(page.locator(".menu.show")).toHaveCount(0);
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  });
+
+  test("after a click and Esc out of the comment box, Tab carries on after the clicked block, Shift+Tab before it", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await shortcut(page);
+    await page.keyboard.press("Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "p1" });
+    await page.locator("#p2").click();
+    await expect(draftLine(page)).toBeFocused();
+    await page.keyboard.press("Escape");
+    await commenting(page);
+    await page.keyboard.press("Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 4 of 8" });
+    await page.locator("#p2").click();
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Shift+Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "p1" });
+    // The page never heard Tab.
+    expect(await page.evaluate(() => location.hash)).toBe("");
+  });
+
+  test("after a comment sent from a click, Tab still goes through the thread's own buttons", async ({
+    page,
+  }) => {
+    await open(page, "doc.html", { name: "Sam" });
+    await toggleCommenting(page);
+    await page.locator("#p2").click();
+    await page.keyboard.type("Looks right");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("textbox", { name: "Reply" })).toBeFocused();
+    await page.keyboard.press("Tab");
+    expect(await cursorOn(page)).toBeNull();
+  });
+
+  test("the mouse moving onto another block takes the outline from the cursor; Tab carries on from there", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await shortcut(page);
+    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+    const p2 = (await page.locator("#p2").boundingBox())!;
+    await page.mouse.move(p2.x + 20, p2.y + 5);
+    await page.mouse.move(p2.x + 40, p2.y + 8);
+    await expect.poll(() => cursorOn(page)).toBeNull();
+    await page.keyboard.press("Tab");
+    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 4 of 8" });
+  });
+
+  test("blocks below the fold of a scrolling pane and inside inline component tags are still stops", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await page.evaluate(() => {
+      document.querySelector("article")!.innerHTML = `
+        <div style="height:200px;overflow-x:hidden;overflow-y:auto;border:1px solid #ccc">
+          <p id="top" style="height:150px;margin:0">Top</p><p id="below" style="height:150px;margin:0">Below the fold</p>
+        </div>
+        <x-card><div><p id="inside">Inside a component tag</p></div></x-card>`;
+    });
+    await shortcut(page);
+    const seen: string[] = [];
+    for (let i = 0; i < 4; i++) {
+      seen.push((await cursorOn(page))?.block ?? "");
+      await page.keyboard.press("Tab");
+    }
+    expect(seen).toEqual(expect.arrayContaining(["top", "below", "inside"]));
+  });
+
+  test("the cursor never stops on keys or words inside a line, icons inside a link, or what is clipped or takes no pointer", async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    await page.evaluate(() => {
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <p id="keys">Press <span style="display:inline-flex;gap:2px"><kbd style="border:1px solid #999">A</kbd><kbd style="border:1px solid #999">B</kbd></span> to start, <code style="background:#eee">npm i</code>.</p>
+        <p id="links"><a id="gh" href="#gh"><svg width="20" height="20" aria-hidden="true"><rect width="20" height="20"/></svg>GitHub</a></p>
+        <div id="show" data-pipeup-id="show" style="overflow:hidden;width:300px;height:80px;border:1px solid #ccc">
+          <div style="display:flex;width:900px;pointer-events:none">
+            <p style="width:300px;margin:0;background:#eef">One</p><p style="width:300px;margin:0;background:#fee">Two</p>
+          </div>
+        </div>`;
+      document.querySelector("article")!.append(div);
+    });
+    await shortcut(page);
+    const seen: string[] = [];
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press("Tab");
+      await expect.poll(() => cursorOn(page)).not.toBeNull();
+      seen.push((await cursorOn(page))!.block);
+    }
+    expect(seen).toContain("keys");
+    expect(seen).toContain("gh");
+    expect(seen).toContain("show");
+    expect(seen.filter((b) => ["kbd", "span", "code", "svg", "rect"].includes(b))).toEqual([]);
+  });
 });

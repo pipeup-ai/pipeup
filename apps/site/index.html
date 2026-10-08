@@ -371,7 +371,7 @@
               </button>
               <a class="choice" role="menuitem" href="pipeup.min.js" download>
                 <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg></span>
-                <span>Download pipeup.min.js<small>One file, about 36 KB</small></span><span></span>
+                <span>Download pipeup.min.js<small>One file, about 37 KB</small></span><span></span>
               </a>
             </div>
           </div>
@@ -504,7 +504,7 @@
 
       <footer>
         <ul class="facts">
-            <li><b>One file</b>, about 36 KB</li>
+            <li><b>One file</b>, about 37 KB</li>
             <li><b>No dependencies</b></li>
             <li><b>Works from disk</b></li>
             <li class="private">
@@ -547,7 +547,7 @@
         const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]], typeFrom: 4300, typeTo: 6700 };
         const KEYBOARD = { steps: [[6000, "s3"], [8200, "s4"]], typeFrom: 6500, typeTo: 7900, still: 8700 };
         const TIMES = [POINTER, POINTER, POINTER, KEYBOARD];
-        // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: put away)].
+        // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: comment mode off)].
         const KEYS = [
           [600, isMac ? ["⇧", "⌥", "C"] : ["Shift", "Alt", "C"], "Comment mode", ".kh"],
           [1700, ["Tab"], "Next block", ".k1"],

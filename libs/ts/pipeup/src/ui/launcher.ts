@@ -571,6 +571,8 @@ export function createLauncher(ctx: Ctx): View {
       if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
       if (tipWords.data !== (label || "Comment")) tipWords.data = label || "Comment";
       btn.classList.toggle("on", ctx.state.commenting);
+      // Closed from elsewhere (Tab in comment mode moves to the page's blocks).
+      if (menuOpen && !ctx.state.menu) setMenu(false);
       if (menuOpen) sync();
       const listing = ctx.state.listing;
       // On a narrow screen the panel is the whole width, so a chosen thread needs it out of the way.

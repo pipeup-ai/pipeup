@@ -28,10 +28,10 @@ stable release. About 10 minutes. Record ✅ / ❌ and a note for each step.
 | 9 | Tab to a block with no comments, press **Shift+Enter** | "No comments on this block". | |
 | 10 | Press **Enter**, type a word, press **Esc** | The draft is cancelled (or asks to keep words, per the page), and focus is back on the cursor, not lost. | |
 | 11 | Tab to the naming bar's **Pin** (VO+arrows if needed) and activate it | "Pin on …"; a pin comment box opens with focus. Press Esc. | |
-| 12 | On the cursor, press **Esc** | "Cursor put away · ⇧⌥C brings it back". Tab now moves through the page's own links. | |
-| 13 | Press **Shift+Option+C** | The cursor comes back on the block it was on. | |
-| 14 | Press **Esc** twice | "Cursor put away", then "Comment mode off". The Comment control's name no longer says "comment mode on". | |
-| 15 | Tab to the **Comment** control | Its name: "Comment, …" (with "comment mode on" only while it is on). | |
+| 12 | On the cursor, press **Esc** | "Comment mode off"; focus goes back where it was (the Comment control if it was nowhere). | |
+| 13 | Press **Shift+Option+C**, then click a paragraph with the mouse and press **Esc** | The comment box closes. Then **Tab**: the cursor lands on the block after the clicked one, read aloud. | |
+| 14 | Press **Esc**, then turn comment mode on with a click on the Comment control's Start commenting, and press **Tab** | The menu closes and the cursor lands on a block, read with the hint. The Comment control's name says "comment mode on" until Esc turns it off. | |
+| 15 | Press **Esc** to leave comment mode, then Tab to the **Comment** control | Its name: "Comment, …" (with "comment mode on" only while it is on). | |
 | 16 | VO browse mode: **VO+→** through a paragraph, then **VO+Space** on it while comment mode is on (Shift+Option+C first) | The cursor moves to that block (not put away), and the block is read. | |
 | 17 | Long block: Tab to the section with the most text and listen | The full description is read. Note whether it's tolerable or too long on every move. | |
 | 18 | Open `try/slides.html`, Shift+Option+C, then **→** | The slide changes and the cursor lands on the new slide's first block, read aloud. | |
@@ -44,6 +44,7 @@ stable release. About 10 minutes. Record ✅ / ❌ and a note for each step.
 
 ## Result
 
+- 0.4.1: steps 12–15 changed (Esc leaves comment mode; Tab after a click or a mouse start). Released without a fresh VoiceOver run (maintainer's call); run it in 0.4.x.
 - 2026-10-07, 0.4.0-beta.3: **pass** (VoiceOver on macOS, run by the maintainer). NVDA and JAWS checks follow in 0.4.x.
 - Date, macOS and Safari versions:
 - Overall: pass / pass with notes / fail

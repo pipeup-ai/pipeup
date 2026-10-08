@@ -2,7 +2,7 @@
 
 People comment right on your page: documents, decks or whole sites. No accounts, no servers. Their feedback comes back ready for your AI to act on.
 
-- **One file**, about 36 KB, with no dependencies.
+- **One file**, about 37 KB, with no dependencies.
 - **Works from disk**: no server needed.
 - **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.

@@ -7,7 +7,6 @@ import { icon, type IconName } from "./icons";
 import { placeBar } from "./layout";
 import { byPage, nodeOf } from "./order";
 import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block, type Look } from "./pick";
-import { SHORTCUT_LABEL } from "./shortcut";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -36,16 +35,18 @@ const GLIDE_MS = 400;
 /** The keyboard's hint: shown as a toast, and read with the block cursor's first landing. */
 export const KEYS_HINT =
   "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Esc to finish · F7 selects text";
+/** Pointer movement, in px, the cursor ignores before the mouse takes the outline from it. */
+const NUDGE = 4;
 /** A block with at most this many characters is read whole as the cursor's name; a longer one as its description. */
 const SHORT_BLOCK = 150;
 
 /** Comment mode's view. */
 export interface CommentMode extends View {
-  /** Escape's step: clears a chosen block, else puts the block cursor away; false when there was neither. */
+  /** Escape's step: clears a chosen block; false when there was none (comment mode ends next). */
   back(): boolean;
-  /** The keyboard's block cursor is in use (started, and not put away). */
+  /** The keyboard's block cursor is in use (started, and not put away by a click, a selection or the mouse). */
   cursor(): boolean;
-  /** The block cursor was put away: the shortcut brings it back. */
+  /** The block cursor was put away by the mouse or a selection: the shortcut brings it back. */
   away(): boolean;
   /** Starts the block cursor, or brings it back: on its last block if still here, else where focus is, else the first block in view. */
   resume(): boolean;
@@ -131,13 +132,16 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   let cur: Element | null = null;
   let lvl = 0;
   let turn = 0;
-  /** It has been in use (so it was put away, not never started), and the block it was on then. */
+  /** It has been in use (so it was put away, not never started). */
   let had = false;
+  /** The block Tab carries on from while the cursor isn't out: where it was, or the block last clicked or hovered. */
   let was: Element | null = null;
-  /** Where focus was when it started: it goes back there when the cursor is put away. */
+  /** Where focus was when it started: it goes back there when comment mode ends. */
   let before: Element | null = null;
   /** The block the cursor last came up from (↓ goes back towards it). */
   let from: Element | null = null;
+  /** How far the pointer has moved since the cursor last moved: past NUDGE, the mouse takes the outline. */
+  let moved = 0;
   /** Shift+Enter: the block's thread opened last (-1: none yet on this block). */
   let nth = -1;
   /** The hint is still to be read with the first landing. */
@@ -302,6 +306,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
   /** Option-click: a pin at that exact spot, as fractions of the block under it (or of the whole area). */
   function pin(e: MouseEvent): void {
     const el = (e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null) ?? ctx.root;
+    if (el !== ctx.root) was = el;
     const r = el.getBoundingClientRect();
     if (r.width && r.height)
       commentOn(el, { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
@@ -326,6 +331,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       return;
     }
     const block = e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
+    if (block) was = block;
     if (block) commentOn(block);
     else {
       ctx.dismiss();
@@ -340,8 +346,19 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       return;
     }
     e.stopPropagation();
-    if (chosen || ctx.state.draft || cur) return;
-    show(!selecting() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null);
+    if (chosen || ctx.state.draft) return;
+    const block = !selecting() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
+    if (cur) {
+      // The mouse moving onto another block takes the outline; Tab carries on from there. A move the browser
+      // makes up after a scroll has no movement, so the cursor's own scrolling never puts it away.
+      if (!block || block === cur) return;
+      // A nudge of a pixel or two (a trackpad touched while typing) doesn't count.
+      moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+      if (moved <= NUDGE) return;
+      stow();
+    }
+    if (block) was = block;
+    show(block);
   };
   /** Selected words have their own comment icon: no block is offered while they are, wherever the pointer goes. */
   const selecting = () => {
@@ -391,6 +408,17 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     passed = null;
     // A keyup lost on the way (focus left the window) never swallows a later one.
     taken = "";
+    if (e.key === "Tab" && tabs(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      taken = e.key;
+      if (ctx.state.active) ctx.open(null);
+      if (ctx.state.menu) {
+        ctx.state.menu = false;
+        ctx.render();
+      }
+      return land(e.shiftKey ? -1 : 1);
+    }
     if (!onPage(e) || !(e.target instanceof Element)) return;
     if ((e.key === "Enter" || e.key === " ") && e.target.closest(ACTIVATES)) {
       if (!cur) {
@@ -401,6 +429,21 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       e.stopPropagation();
       // Enter in a page field with a form submits it, as the page expects.
     } else if (e.key === "Enter" && !cur && (e.target as HTMLInputElement).form) passed = e.target;
+  };
+
+  /**
+   * Tab is the block cursor's in comment mode wherever its markers aren't the ones to hear it: on the page (not in
+   * an ignored area) and on the Comment control and its menu (not its name field). Pipeup's comment box, threads
+   * and panels keep their own Tab.
+   */
+  const tabs = (e: KeyboardEvent): boolean => {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+    const t = e.composedPath()[0];
+    if (!(t instanceof Element) || markers.some((m) => m === t)) return false;
+    // Ignored areas, also from inside a web component's own shadow root.
+    if (!ctx.owns(e))
+      return !e.composedPath().some((n) => n instanceof Element && n.hasAttribute("data-pipeup-ignore"));
+    return !!t.closest(".launch,.menu") && !t.closest("input,textarea,select,[contenteditable]");
   };
 
   /** Pipeup's own element with focus, if any; a marker has it. */
@@ -458,6 +501,7 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   /** Moves the cursor to `el`: the outline and bar go there, and the idle marker, named for it, takes focus. */
   function go(el: Element, focus = true): void {
+    moved = 0;
     const t = blocks();
     const b = t.find((x) => x.el === el);
     // A block outside the row it was in: the row becomes its level.
@@ -512,11 +556,15 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     return held;
   }
 
-  /** Focus goes back where it was: a page element still there, the control for the menu that is gone, else the page. */
+  /**
+   * Focus goes back where it was: a page element still there, else the Comment control (for the menu that is
+   * gone, or when focus came from nowhere on the page).
+   */
   function giveBack(): void {
     const b = before as HTMLElement | null;
-    b?.focus?.({ preventScroll: true });
-    if (b && ctx.layer.contains(b) && focused() !== b)
+    if (b && b !== document.body && b.isConnected) b.focus?.({ preventScroll: true });
+    // :focus also matches inside a shadow root, where document.activeElement is only its host.
+    if (!b || b === document.body || !b.matches?.(":focus"))
       ctx.layer.querySelector<HTMLElement>(".launch .mode")?.focus({ preventScroll: true });
   }
 
@@ -533,6 +581,42 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
     // The cursor's own block is gone: it is before the first, so Tab goes to the first and Shift+Tab the last.
     const to = r[i < 0 ? (by > 0 ? 0 : r.length - 1) : (i + by + r.length) % r.length];
     if (to) go(to.el);
+  }
+
+  /**
+   * Tab with the cursor not out (comment mode turned on with the mouse, or put away by a click, a selection or the
+   * mouse): it starts on the block after the one it carries on from (before it, for Shift+Tab), in that block's
+   * row; a block the keyboard doesn't stop on is placed by page order among the smallest blocks. With none to
+   * carry on from, it starts on the first block in view. With the cursor out but focus elsewhere, it moves on as from its marker.
+   */
+  function land(by: number): void {
+    if (cur) return step(by);
+    tree = null;
+    const page = document.activeElement;
+    before = focused() ?? page;
+    const ref = was?.isConnected ? was : null;
+    const known = ref && blockOf(ref);
+    let to: Block | undefined;
+    if (known) {
+      lvl = known.level;
+      const r = row(blocks(), lvl);
+      const i = r.indexOf(known);
+      to = r[(i + by + r.length) % r.length];
+    } else if (ref) {
+      lvl = 0;
+      const r = row(blocks(), 0);
+      const after = (b: Block) =>
+        (ref.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+      const around = (b: Block) => b.el.contains(ref);
+      if (by > 0) to = r.find((b) => after(b) && !around(b)) ?? r[0];
+      else to = r.filter((b) => !after(b) && !around(b)).pop() ?? r[r.length - 1];
+    } else {
+      to = firstInView();
+      if (to) lvl = to.level;
+    }
+    if (!to) return ctx.say("Nothing here to comment on");
+    had = true;
+    go(to.el);
   }
 
   /** ↑ and Around it: the block around the cursor's, or the draft moves to the block around its own. */
@@ -595,7 +679,10 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   /** The key the cursor took on keydown: its keyup is the cursor's too, wherever focus has gone by then. */
   let taken = "";
+  /** Comment mode has ended: the listener stays only for the keyup of the key that ended it (Esc). */
+  let ended = false;
   const onKeyUp = (e: KeyboardEvent) => {
+    if (ended) window.removeEventListener("keyup", onKeyUp, true);
     if (e.key !== taken) return;
     taken = "";
     e.preventDefault();
@@ -610,12 +697,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
 
   return {
     back() {
-      if (chosen) choose(null);
-      else if (!cur) return false;
-      else {
-        if (stow()) giveBack();
-        ctx.say(`Cursor put away · ${SHORTCUT_LABEL} brings it back`);
-      }
+      if (!chosen) return false;
+      choose(null);
       return true;
     },
     cursor: () => cur !== null,
@@ -656,7 +739,8 @@ export function createCommentMode(ctx: Ctx, look: Look = pageLook()): CommentMod
       for (const m of markers) m.remove();
       stopFade();
       stopBar();
-      window.removeEventListener("keyup", onKeyUp, true);
+      ended = true;
+      if (!taken) window.removeEventListener("keyup", onKeyUp, true);
       window.removeEventListener("pointermove", onMove, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
