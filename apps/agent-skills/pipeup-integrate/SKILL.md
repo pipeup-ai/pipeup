@@ -82,8 +82,10 @@ Then choose the options (see "Options" below): usually just the defaults.
 
      Each version's release notes (https://github.com/pipeup-ai/pipeup/releases) give its
      `integrity` value; copy it exactly, or leave the attribute out if you can't look it up.
-     For a page that must work offline or from disk, download that same file, put it next to the
-     page as `pipeup.min.js`, and use `<script src="pipeup.min.js"></script>` instead.
+     Only edit the HTML file: do not download, fetch or run anything yourself (no `curl`, `wget`
+     or scripts); the reader's browser loads the script. If the page must work offline or from
+     disk, tell the user to save that same file next to the page as `pipeup.min.js` themselves,
+     and use `<script src="pipeup.min.js"></script>` instead.
    - Add `data-pipeup-doc="<key>"` to `<html>`, with a key made in a browser by
      `await Pipeup.newDocumentAttribute()` (the user's prompt may already include one).
 

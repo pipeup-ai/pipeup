@@ -31,6 +31,9 @@ change the API and the stored comment format.
 - A second copy of Pipeup on a page warns and hands over to the first.
 - The bundle is 40.5 KB gzip (36.8 KB in 0.4.1): add-on support cost 3.8 KB, and the min and esm budgets are now 42 KB.
 
+### Fixed
+- **The guidance for AI agents no longer tells them to download a file.** `llms.txt` and the integrate skill now say to add the pinned CDN script tag by editing the HTML only; saving a local copy for offline pages is left to the user. Some agent permission classifiers blocked the old `curl` step.
+
 ## [0.4.1] - 2026-10-07
 
 Shipped first as pre-release 0.4.1-beta.1.

@@ -11,11 +11,10 @@ People comment right on your page: documents, decks or whole sites. No accounts,
 
 **Copy prompt** gives you a prompt to paste into Claude, Codex or another coding agent with your HTML file open. It asks the agent to:
 
-1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file.
+1. Add the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.1/dist/pipeup.min.js"></script>` just before `</body>`, editing only the HTML file (nothing to download or run).
 2. Add `data-pipeup-doc="<key>"` to the `<html>` element (a key made with `await Pipeup.newDocumentAttribute()`), and keep it exactly as it is from then on.
-3. Add `<script src="pipeup.min.js"></script>` just before `</body>`.
-4. Mark stable blocks with `data-pipeup-id`, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
-5. Leave the page's layout and styling alone.
+3. Mark stable blocks with `data-pipeup-id`, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
+4. Leave the page's layout and styling alone.
 
 **Install** offers:
 
