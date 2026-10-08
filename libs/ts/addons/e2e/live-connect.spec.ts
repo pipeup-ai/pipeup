@@ -157,8 +157,10 @@ test("presence: a cursor in the overlay, the typing words, the People panel and 
   await openMenu(a.page);
   await a.page.locator(".menu.show").locator(".lb", { hasText: "People here (1)" }).click();
   const panel = a.page.locator(".xp.show");
-  await expect(panel.locator(".live-p")).toHaveCount(1);
-  await expect(panel.locator(".live-p .in")).toHaveCount(1);
+  // You first, then the one other person; each with an animal avatar.
+  await expect(panel.locator(".live-p")).toHaveCount(2);
+  await expect(panel.locator(".live-p").first()).toContainText("You (");
+  await expect(panel.locator(".live-p .in")).toHaveCount(2);
   await panel.getByRole("button", { name: "Go to where they are" }).click();
   await expect(a.page.locator(".xp.show")).toHaveCount(0);
   await a.ctx.close();
