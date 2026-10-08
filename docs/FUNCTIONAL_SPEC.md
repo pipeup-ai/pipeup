@@ -2,7 +2,7 @@
 
 **Status:** Draft for review
 **Owner:** Pipeup maintainers
-**Last updated:** 2026-10-07 (Tab always moves between blocks in comment mode)
+**Last updated:** 2026-10-07 (add-ons; roadmap renumbered)
 
 This document describes *what* Pipeup does. It is **functional only** — it does not prescribe
 languages, frameworks, protocols, ciphers or hosting internals. Those live in the dev design
@@ -28,12 +28,14 @@ Principles:
 
 - **The page stays the author's.** Pipeup never changes how the page looks or behaves when
   comments are closed, and never covers its content.
-- **Private by default.** Without any setup, comments stay on the reviewer's own machine.
-  Nothing leaves it unless someone deliberately shares.
-- **No service to run.** Pipeup works without any server operated by the Pipeup project.
-  Authors who want live rooms host their own relay on a free account in one step.
-- **Untrusted relay.** Whoever runs a relay, including its hosting company, can never read or
-  forge comments.
+- **Private by default.** Without any setup, comments stay on the reviewer's own machine. Pipeup itself
+  never sends anything anywhere. Only add-ons the author chooses to include can send anything, and each
+  one says what it sends.
+- **No service to run.** Pipeup works without any server operated by the Pipeup project. Authors who
+  want shared or live comments include an add-on that uses a free service they pick, or later a relay
+  they own.
+- **Untrusted services.** No service that carries comments can read or forge them. That covers a free
+  sharing service, a meeting point between reviewers, and a relay and its hosting company.
 - **Agent-ready.** Agents can add Pipeup to a page, verify they did it well, and read and act on
   the feedback.
 
@@ -87,6 +89,13 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
 - A page can **include Pipeup entirely inside the file**, so it works with no network at all.
 - Pipeup works the same whether the page is **opened from disk**, served from a local server, or
   hosted on the web.
+- An author can add **optional features as add-ons**: shared comments, live review and dictation. Each
+  add-on is one more line in the page, and the lines work in any order. Pipeup and its add-ons can
+  also be included as **one combined file**, which can sit inside the page.
+- Add-ons work whether the page is opened from disk, served locally or hosted on the web.
+- A page without add-ons works exactly as before. It pays only for the small add-on support built into
+  Pipeup.
+- If Pipeup is included twice on one page, it runs once and the check reports the mistake.
 - Authors can optionally mark up their page to help Pipeup:
   - a **document identity**, so copies of the same file on different machines are recognised as
     the same document;
@@ -421,7 +430,10 @@ any of them off.
   shows their initial. Until they do, they appear as their animal, including in copied comments.
 - A reviewer's identity is **tied to their browser**. Their own comments are recognised as theirs
   so only they can edit or delete them.
-- Nobody can post a comment that **appears to come from someone else**, even in a shared room.
+- Nobody can post a comment that **appears to come from someone else**, even in a shared or live
+  document. Nobody can appear in live presence as someone else.
+- When two people in a shared or live document use the same name, Pipeup shows a way to tell them
+  apart.
 
 ## 11. Saving and sharing feedback
 
@@ -442,30 +454,157 @@ any of them off.
   tool. They have **no controls in the page yet**: no Send feedback, no Add feedback, and dropping a
   file on the page does nothing.
 
-**Shared rooms**
+**Shared comments (sharing add-on)**
 
-- An author can turn a document into a **room** on a relay they own. Everyone in the room sees
-  comments appear as they are written, and comments persist while nobody is online.
-- The author shares an **invite** — a link, or a code to enter on a page opened from disk.
-  Only people with the invite can read or write.
-- An author can choose for the invite to be **built into the file**, so anyone holding the file
-  joins automatically, or to be **shared separately**, for sensitive documents.
-- An author can **close a room** and start a new one to remove everyone's access.
-- If the connection drops, a reviewer keeps working; their changes are sent when it returns.
-- A room's comments can still be copied out at any time (and, once feedback files have controls,
-  exported to one).
+- An author can share a document's comments through a free, encrypted service that the author picks.
+  Pipeup never picks a service by itself.
+  - Everyone who has the page sees the comments others have chosen to share.
+  - Comments last while nobody is online, for as long as the service keeps them.
+  - New comments usually arrive within a minute while people are commenting, and within a few minutes
+    otherwise. Pages in a background tab update more slowly.
+- **The author sets up sharing with the command-line tool.** It writes the sharing line into the file,
+  tells the author how long the chosen service will keep the shared copy, and shows a private stop key
+  once, separately from the file. The stop key is never put in the page.
+- An organisation can host the shared copy on its own server. That server only ever holds comments it
+  can't read; it can see when and how much is sent, and from which network addresses. The organisation
+  decides how long the shared copy is kept.
+- Reviewers can't create a shared copy from inside the page.
+- The sharing address and its key are **built into the file**, so anyone holding the file can read and
+  add shared comments.
+- Before a reviewer writes their first comment on a shared page, Pipeup tells them that comments there
+  are shared with everyone who has the page.
+- **Comments a reviewer wrote before the page was shared are not sent until they choose.** They can
+  share those earlier comments or keep them on their machine.
+- Each reviewer chooses whether **to send their own comments** to the shared copy. They still see
+  everyone else's.
+  - Comments written while they aren't sending stay on their machine, including later edits and replies
+    in those threads.
+  - What was already sent stays in the shared copy.
+- Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
+  someone else by file or live review. People who already received your comments could still pass them
+  on themselves, and Pipeup says so where you choose whether to send.
+- Pipeup says in words whether the shared copy is:
+  - up to date;
+  - waiting to send changes;
+  - offline;
+  - about to expire, and when;
+  - gone.
+- If the connection drops, a reviewer keeps working, and their changes are sent when it returns.
+- In a browser that can't keep comments, the shared copy keeps the comments the reviewer sends, and
+  Pipeup says so.
+- An author can **stop sharing**. They can also **start again at a new address**: people who only hold
+  the old file then can't read or add new comments. Reviewers who open the new file bring the comments
+  they had already shared, without being asked again. Anyone who already had access keeps what they
+  saw, and Pipeup says so plainly.
+- Where the service only lets the author delete part of a large shared copy, stopping sharing says which
+  parts remain and when they expire.
+- The website states how much each reviewer downloads while a shared page is open, so authors can choose
+  a suitable service.
+- Shared comments can always be copied out.
+- Deleting a comment hides it everywhere. Anyone who already received it keeps its words in their copy.
 
-## 12. Presence (in rooms)
+**Comments arriving while you read or write (shared and live)**
 
-- Avatars show **who is here now**, and on decks, **which slide each person is on**.
-- Live **cursors** and **"typing…"** indicators, which each person can turn off for themselves.
+- Words being written are never lost when others change the comment: a reply being written stays, with
+  its words, if the comment is resolved or deleted by someone else meanwhile.
+- Comments arriving from others never move the reviewer's cursor, selection or scroll position, and
+  never open or close a comment.
+- Screen-reader users hear new comments from others as one short summary, such as "2 new comments from
+  Blue Owl", at most every few seconds, never while they are writing and never while comments are
+  closed. Live cursors are never announced.
+
+**Live review (live add-on)**
+
+- People viewing the same page at the same time can **go live**. Their new comments, replies, edits,
+  deletions, resolves and reopens then appear for each other within about a second.
+- Each reviewer chooses whether to go live.
+  - Before they do, they are told that the other people who are live will see their network address.
+  - An author can make going live the default for their page. Reviewers are still told before they are
+    first connected, which happens only once they open Pipeup, and can turn it off.
+- Live review works without a shared copy: people merge their comments when they meet. Without a
+  shared copy, comments made while nobody else is live reach others only when they next meet.
+- Up to 8 people can be live together.
+- Only people with the same version of the file meet live. After the author starts sharing or changes
+  the sharing address, people with the old file and the new one don't see each other, and Pipeup says
+  when nobody else is here with this version of the page.
+- **Some networks, often office networks, don't allow direct connections.** Then Pipeup says in words
+  that it can't reach that person directly. With a shared copy, their comments still reach each other,
+  more slowly.
+
+**Rooms on the author's own relay (later add-on)**
+
+- An author can turn a document into a **room** on a relay they own.
+  - Everyone in the room sees comments appear as they are written.
+  - Comments persist while nobody is online.
+- The author shares an **invite**: a link, or a code to enter on a page opened from disk. Only people
+  with the invite can read or write.
+- An author can choose for the invite to be **built into the file**, or **shared separately** for
+  sensitive documents.
+- An author can **close a room** and start a new one, to remove everyone's access.
+
+**What each kind of sharing keeps.** The website and each add-on's page state which of these promises
+the add-on keeps:
+
+- whether comments last while nobody is online;
+- live updates;
+- presence;
+- who can read;
+- who can write;
+- whether missing comments can be detected;
+- whether the author can list and delete what is stored.
+
+A shared copy on a free service can't stop anyone holding the address from adding unreadable data,
+which Pipeup discards. It also can't tell when something is missing.
+
+## 11a. Add-ons
+
+- Optional features come as add-ons. Authors include only the ones they want, and reviewers download
+  only those.
+- Each add-on states in one plain sentence:
+  - whether it uses the network;
+  - which services it contacts;
+  - what those services, and other reviewers, can see.
+
+  The website, the docs, the agent skills and the check repeat that sentence.
+- Pipeup itself makes no network requests, with or without add-ons. Only an add-on sends anything.
+- **Whatever add-on a page includes, Pipeup checks every comment arriving from elsewhere as strictly as
+  one opened from a file.** No add-on can make Pipeup accept a comment that is forged, altered or meant
+  for another document.
+- **Add-ons published by the Pipeup project:**
+  - send only to the services they name;
+  - send nothing before the reviewer agrees, where they need agreement (going live, dictating);
+  - never change the page's own content;
+  - never post, edit or resolve anything on a reviewer's behalf; they may only fill in words that the
+    reviewer then sends;
+  - never send one reviewer's comments to a sharing service on another reviewer's behalf.
+- **Add-ons from anyone else run with the page's full power.** Pipeup doesn't vouch for them, and the
+  website says so.
+- An add-on that can't work with the Pipeup version on the page stays off and says why. It never
+  half-works.
+- Authors and agents can see which add-ons a page has, and whether each one is on.
+- Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
+  dark appearance and reduced motion, and keep every rule that words being written are never lost.
+- **While comments are closed, add-ons add nothing to the page except words in the comment control's
+  label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
+  next opens Pipeup.
+
+## 12. Presence (live review)
+
+- While live, avatars show **who is here now**. On decks they also show **which slide each person is
+  on**.
+- Live **cursors**, **selections** and **"typing…"** show where others are. Each person can turn
+  cursors and selections off for themselves: they then neither send nor see them.
 - A **follow** action jumps to the slide or place another person is looking at.
-- Presence is never stored; it exists only while people are connected.
+- Cursors and selections show only while comments are showing. While comments are closed, only the
+  comment control's label and tooltip say who is live.
+- Screen-reader users hear when someone joins or leaves, as a short summary, while comments are
+  showing.
+- Presence is never stored. It exists only while people are connected.
 
 ## 13. The relay
 
-- An author can **create their own relay with one step** on a free hosting account they own.
-  The first supported host is Cloudflare.
+- As a later add-on, an author can **create their own relay with one step** on a free hosting
+  account they own. The first supported host is Cloudflare.
 - Running a relay on a free account **never produces a bill**: when free limits are reached the
   relay stops accepting new data and says so, rather than charging.
 - The relay enforces limits per room — size, rate of writes, number of people — and rooms that
@@ -477,19 +616,39 @@ any of them off.
 
 ## 14. Security and privacy
 
-- **Nobody but the room's members can read comments**, including the relay operator and its
-  hosting company.
-- The relay and its host can see only **that a room exists, the size and timing of traffic and
-  members' network addresses** — never comment text, names, cursors, quoted text or the document.
-- **Comments cannot be forged or altered** by other members or by the relay. The relay can at
-  most withhold or drop data; Pipeup shows when it can tell something is missing.
+- **Only people holding the page can read shared comments.** Later, for rooms shared separately, only
+  people holding the invite can. That excludes every service carrying the comments and its hosting
+  company.
+- Services that carry comments see only:
+  - that something is stored or exchanged;
+  - its size and timing;
+  - network addresses.
+
+  They never see comment text, names, cursors, quoted text or the document. This holds for an
+  organisation's own sharing server too.
+- **Comments cannot be forged or altered** by other people or by any service. A service can at most
+  withhold or drop data, or fill its storage. Pipeup shows that something is missing where it can
+  tell; a shared copy on a free service can't tell.
 - Comment content can **never run as code** or change the page.
-- Pipeup sends data **only** to the relay the author chose. It has **no analytics, tracking or
-  telemetry**.
-- Published builds are **verifiable**: an author can pin the exact version they tested, and the
-  browser will refuse a build that has been tampered with.
-- Access can be removed by **closing the room** (§11). Anyone who already had access can still
-  read what they saw before; Pipeup says so plainly when a room is closed.
+- **Pipeup itself makes no network requests** and has no analytics, tracking or telemetry.
+- Add-ons published by the Pipeup project send only what they declare, only to the services they name,
+  and only encrypted so those services can't read it. **The one exception is dictation through a
+  browser maker's speech service** (Google in Chrome, Apple in Safari): that service hears the
+  reviewer's voice, and dictation uses it only after the reviewer agrees to a sentence saying so.
+- Dictation may make the browser download a speech pack from its maker once; Pipeup says so first.
+- With live review, the other people who are live see your network address. The services that help
+  people find each other see it too.
+- A reviewer's Pipeup identity is the same across documents in one browser.
+- On pages opened from disk, other pages opened from disk in the same browser can read and change what
+  Pipeup and its add-ons keep. Secrets used for sharing are never kept; they come from the file each
+  time. Anything an add-on downloads and keeps is checked again every time before it is used.
+- Add-ons from anyone other than the Pipeup project run with the page's full power; only the checks on
+  arriving comments apply to them.
+- Published builds are **verifiable**, including add-ons and combined files. An author can pin the
+  exact versions they tested, and the browser will refuse a build that has been tampered with.
+- Access to new shared comments can be removed by starting sharing again at a new address, or by
+  closing a relay room. Anyone who already had access can still read what they saw before, and Pipeup
+  says so plainly.
 
 ## 15. Agent support
 
@@ -506,11 +665,24 @@ any of them off.
   - closed Pipeup UI overlapping page content, at phone, tablet and desktop widths;
   - Pipeup UI overlapping the page's own controls;
   - blocks, charts and slides without stable identifiers;
-  - colour contrast and keyboard reachability of Pipeup's UI.
+  - colour contrast and keyboard reachability of Pipeup's UI;
+  - which add-ons a page has, whether each is on, and what each sends;
+  - Pipeup included twice on one page (a failure);
+  - saved comments that couldn't be read.
+
+  Its overlap checks include add-on surfaces.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy as Markdown); later they will also read and write feedback
-  files and, with an invite, take part in rooms.
+- Agents read comments a reviewer copied (Copy as Markdown), and can read and reply in a page's shared
+  copy. Later they will also read and write feedback files and, with an invite, take part in rooms on
+  a relay.
+- An agent taking part in a shared copy does so under **its own identity and a name that shows it is
+  an agent**, never as the person it works for. Its identity is never put in the page.
+- Agents add an add-on only when the author asks for that feature, and tell the author in plain words
+  what it sends and to whom. They never pick a sharing service without asking.
+- When an agent rewrites or regenerates a page, it keeps the page's document identity and sharing line
+  unchanged. A new document made from an existing page or template gets a new identity and no sharing
+  line, so comments of different documents never mix. Agents never put a stop key in a page.
 
 ## 16. Distribution
 
@@ -518,40 +690,61 @@ any of them off.
   fixed, permanent version.
 - Each release says which version to pin and how to verify it.
 - Pipeup is **as compact as possible**: it adds as little as it can to a page's download, every
-  release states its size, and a release that grows past its size budget is not published.
+  release states the size of Pipeup, of each add-on and of each combined file, and a release where
+  any of them grows past its size budget is not published. Any change to a size budget is stated in
+  the release notes.
 - **Open source under the MIT licence.** The source, issues and releases are public on GitHub, and
   the website (with its Try pages and agent skills) is published alongside it.
-- Versions follow semantic versioning. Until 1.0 the project is in **alpha**: the API and the stored
-  format may change between minor versions, and each release says what changed.
+- Versions follow semantic versioning, and add-ons are released with Pipeup at the same version.
+  Until 1.0 the project is in **alpha**: the API may change between minor versions, and each release
+  says what changed. **Comments written by any released version stay readable by every later
+  version**, including comments already saved in reviewers' browsers.
+- When a page meets comments from a newer version of Pipeup that it can't show, it says how many in
+  words, rather than dropping them silently.
 - **Pre-releases** can be tried before a milestone reaches everyone: installed from npm and the CDNs
   by their exact version or a `next` tag, with their own copy of the website, Try pages and agent
   skills at a separate address, clearly marked as a pre-release and not indexed by search engines.
   A pre-release never changes what a plain install gets, the stable website or the stable CDN
   address.
 
-## 17. Out of scope for the first release
+## 17. Out of scope for now
 
 - Standalone images and PDFs as review targets.
 - Accounts, sign-in, email or push notifications, and @mentions.
 - A relay run by the Pipeup project, and hosts other than Cloudflare.
-- Peer-to-peer rooms without a relay.
 - Rich text, attachments or reactions in comments.
 - Drag-to-select an area as a comment target.
 - Replies to a reply (every reply answers the original comment).
 - Suggesting edits to the page text (tracked changes).
+- Editing the page's own content together, live.
+- Creating a shared copy from inside the page.
 
 ## 18. Release phases
 
-1. **Comments on this machine** — documents, slides and rich pages; all ways to start a comment
-   (§5); reading, replies, resolve and copy for AI (§7, §7a); anchoring (§8); placement and
-   motion (§9); feedback files; check; agent skills. Private builds only.
-2. **Rooms** — relay, invites, presence, live sync. Planned as sharing add-ons in 0.7 (share, then voice, then live).
-3. **Public release** — npm and CDN publication, verification guidance, open-source licence. The
-   first public release (0.3.0) ships phase 1's comments on this machine, ahead of rooms.
+1. **Comments on this machine** (shipped: 0.3 and 0.4): documents, slides and rich pages; all ways to
+   start a comment (§5); reading, replies, resolve and copy for AI (§7, §7a); anchoring (§8);
+   placement and motion (§9); check; agent skills.
+2. **Public release** (shipped: 0.3.0): npm and CDN publication, verification guidance, open-source
+   licence.
+3. **Touch and narrow pages** (0.5).
+4. **The command-line tool** (0.6).
+5. **Add-ons**, each only once tests with real services show it works from a page opened from disk,
+   and each in its own release so one add-on's delay never holds back another:
+   - shared comments through a free service the author picks (0.7);
+   - dictation (0.8);
+   - live review and presence (0.9).
+6. **The author's relay** (later):
+   - rooms on a relay the author owns;
+   - invites shared separately;
+   - closing rooms;
+   - detecting missing comments.
 
 ## 19. Open questions
 
 - How long inactive rooms live before expiring by default.
+- How long shared copies last on free services, which services Pipeup suggests, and how much traffic
+  is fair to ask of volunteer-run services.
+- Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
 
 ---
 
@@ -647,3 +840,23 @@ any of them off.
   last clicked, commented on or under the pointer. Esc no longer puts the block cursor away: after a comment
   box and an open thread it leaves comment mode. The block cursor skips what can't be seen or clicked, the
   parts inside links and buttons, words styled inside a line of text, and tiny decorations.
+- 2026-10-07 — Add-ons. Optional features are add-ons, each one more line or one combined file, and
+  they work from disk:
+  - shared comments through a free encrypted service the author picks, set up from the command line;
+  - live review with presence, which each reviewer chooses to join;
+  - dictation.
+
+  Pipeup itself sends nothing. Each add-on says what it sends and to whom, and asks before sending
+  where it needs agreement; while comments are closed, add-ons only change the control's words.
+  Comments from elsewhere are checked like comments from a file, whatever add-on brought them; other
+  promises cover the project's own add-ons, and add-ons from others run with the page's power. Each
+  reviewer sends only their own comments to a shared copy, and comments written before sharing wait
+  for their choice. Comments arriving from others never lose words being written or move the reader,
+  and are announced briefly. Deleted words stay in copies others already received. Live review shows
+  your network address to others who are live, and some networks can't connect directly. Comments
+  from any released version stay readable. Rooms on the author's own relay become a later add-on.
+  Peer to peer is now in scope; editing the page together is not. Phases renumbered to show what has
+  shipped.
+- 2026-10-07 — Roadmap renumbered: each add-on gets its own release, so one add-on waiting on its tests
+  never holds back another: shared comments 0.7, dictation 0.8, live review 0.9; touch and narrow
+  pages stay 0.5 and the command-line tool 0.6.

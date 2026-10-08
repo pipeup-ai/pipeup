@@ -37,8 +37,9 @@ Build the website with `apps/site/build.sh`, then serve `apps/site/_site` with a
 
 ## Style
 
-- **No dependencies.** The library has no runtime dependencies, and the bundle stays inside its
-  size budget (`scripts/size.mjs`).
+- **No dependencies.** The library and its add-ons have no runtime dependencies: no third-party code
+  is bundled in or loaded at run time. Build and test tools are fine as dev dependencies. Every bundle
+  stays inside its size budget (`scripts/size.mjs`).
 - **Light UI.** Pipeup's UI, the website, diagrams and mock-ups are light mode only.
 - **Eased motion.** Nothing appears, moves or disappears abruptly: ease every transition.
 - **The page stays the author's.** Never change the host page's DOM or layout; Pipeup's UI lives in

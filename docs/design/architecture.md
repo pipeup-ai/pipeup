@@ -168,7 +168,7 @@ from disk. The fragment never reaches any server.
 | Malicious host page reads Pipeup data | Out of scope: the page owner controls the page. Pipeup says so in its docs |
 
 Ed25519 in WebCrypto is supported in current Chrome, Safari and Firefox. Verify the minimum
-versions during phase 1. A small audited fallback library is the contingency.
+versions during phase 1. There is no third-party fallback: Pipeup and its add-ons bundle no outside code.
 
 ## 7. Platform findings (spike, 2026-10-05)
 
@@ -184,6 +184,194 @@ A test page opened from `file://` in headless Chrome on macOS:
 
 Still to test: **Safari and Firefox** (Firefox isolates each `file://` document by default, which
 may affect IndexedDB persistence). Local ES modules fail from `file://`, hence the classic bundle.
+
+### S5: CDN file names with `+` (add-ons spike, 2026-10-07): passed
+
+Combined files are named `pipeup+<id>.min.js` ([add-ons design](addons.md) §13). Tested with an
+existing npm package that ships `+` file names (`timezone@1.0.23`, `Etc/GMT+1.js`); nothing was
+published.
+
+| Check | jsDelivr | unpkg |
+|---|---|---|
+| `+` in the path, raw or as `%2B` | 200 | 200 |
+| Content type | `application/javascript; charset=utf-8` | `text/javascript; charset=utf-8` |
+| `access-control-allow-origin: *` (needed for SRI) | yes | yes |
+| Bytes equal to the npm tarball's (SHA-384) | yes | yes |
+| `<script integrity crossorigin>` from `file://`: Chrome (Playwright Chromium), Firefox 153, Safari 27 | loads | loads |
+
+A wrong-hash control was refused in all three browsers, so the SRI check ran. A space in place of the
+`+` gives 404, so neither CDN reads `+` as a space. jsDelivr gives `/+esm` at the end of a path a special
+meaning; `pipeup+<id>.min.js` doesn't end that way, and an existing `.min.js` is served unchanged. The
+fallback name `pipeup-with-<id>.min.js` isn't needed.
+
+### S1: PrivateBin from `file://` (add-ons spike, 2026-10-07): own instance passed; volunteer instances to do
+
+PrivateBin **2.0.6**, the official Docker image (`privatebin/nginx-fpm-alpine`) with its built-in
+defaults, on this Mac. A `file://` page in Chrome 154, Chromium 153 (Playwright), Firefox 157 and
+Safari 27 sent only simple requests: `text/plain` POST bodies, `Accept: application/json`, no
+credentials.
+
+| Check | All four browsers |
+|---|---|
+| Web Locks (`navigator.locks.request`) on `file://` | granted |
+| Create a paste (`v: 2`, `meta.expire`), JSON answer | HTTP 200, `status: 0`, an id |
+| A second post within 10 s | HTTP 200, `status: 1`, "Please wait 10 seconds between each post." (not a 429) |
+| A comment in the [add-ons design](addons.md) §7.2 mapping, with a real sealed envelope as `ct` | accepted (`status: 0`) |
+| GET `?<id>` with `Accept: application/json` | JSON, with the comment's `ct` returned unchanged |
+| `meta.time_to_live` after asking for `1week` | about 604,780 s |
+| `meta.time_to_live` after asking for `2year` (not offered) | about 604,770 s: silently the default, 1 week |
+| `meta.time_to_live` after asking for `never` | absent |
+| Preflight (`OPTIONS`) in the server log | none |
+
+From the 2.0.6 source (`lib/FormatV2.php`, `lib/Request.php`, `lib/Controller.php`):
+
+- The server rebuilds each request from the fields it knows. A comment is exactly `v`, `adata` (the
+  8-item cipher spec), `ct`, `pasteid` and `parentid`. Any **non-empty `meta` turns the request into a
+  new paste**; an empty one is ignored.
+- Limits: the iv at most 24 base64 characters, the salt at most 14, iterations above 10,000, key 128,
+  192 or 256, tag 64, 96 or 128, `aes`, `ctr`/`cbc`/`gcm`, `zlib` or `none`. `ct` must be strict
+  standard base64 that doesn't shrink under deflate. 16-byte iv and 8-byte salt fit (24 and 12
+  characters).
+- Any POST body is parsed as JSON whatever its `Content-Type`. JSON answers come with
+  `Access-Control-Allow-Origin: *` when `Accept` holds `application/json` (and not HTML), or with
+  `X-Requested-With: JSONHttpRequest`.
+- Defaults: discussions on, expiries 5 min to 1 year plus `never` (default 1 week), one post per
+  address every 10 s, 10 MiB size limit.
+
+**Still to do for S1:** the same checks on one or two volunteer instances, with their operators'
+permission, and over HTTPS on a public instance.
+
+### S3: Web Speech from `file://` (add-ons spike, 2026-10-08): passed in Chrome and Safari
+
+A `file://` page (`lang="en-US"`) in visible windows, with the maintainer speaking into the Mac's
+microphone and answering the browsers' prompts.
+
+| | Chrome 154 | Safari 27 | Firefox 157 |
+|---|---|---|---|
+| API | `SpeechRecognition` | `webkitSpeechRecognition` | none |
+| `available()`, `install()`, `processLocally` | all three | none | — |
+| On device, en-US, before `install()` | `downloadable` | can't be asked | — |
+| Through the browser's service, en-US | `available`; dictation worked, final text about 2.4 s after speech began | dictation worked, the words right, final text about 4.8 s after speech began | — |
+| On device after `install()` | `install()` answered `true` at once (the pack was probably on this Mac already); dictation worked, final about 3.9 s after speech began | — | — |
+| Interim results | 11 to 19 updates per sentence | about 11 | — |
+| Microphone grant after a reload | asked again | asked again | — |
+
+- **The microphone grant doesn't last on `file://`:** both browsers ask again on every page load, and
+  Chrome's `permissions.query` still says `prompt` after a granted run.
+- **Safari can't say where it listens:** with no `available()` or `processLocally`, a page can't tell
+  on-device recognition from Apple's service.
+- **One recognition at a time in Safari:** a second `start()` aborts the first ("Another request is
+  started"), and one started straight after fails at once with "No speech detected".
+- Edge wasn't installed and wasn't tried; it uses Chrome's engine.
+
+### S2: Nostr and STUN from `file://` (add-ons spike, 2026-10-08): signer, own relay and public relays passed; other networks to do
+
+**The kit's own BIP-340 signer** ([add-ons design](addons.md) §6, §9.1): about 70 lines over WebCrypto
+SHA-256 and `BigInt`, signing only.
+
+| Check | Result |
+|---|---|
+| The 8 signing vectors in BIP-340's `test-vectors.csv` | all pass, keys and signatures |
+| 2,000 random keys, messages and aux values, against `@noble/secp256k1` 3.2.0 (a scratch dev dependency) | noble verified all 2,000; all 2,000 signatures byte-identical |
+| Size | 1,821 B minified, **1,041 B gzip** (estimate 1.5 KB; noble ~5.4 KB) |
+| Speed | about 1.8 ms per signature in Node |
+
+**A relay we control:** `nostr-rs-relay` 0.10.0 (Docker, default settings, no auth, no proof of work),
+reached at `ws://127.0.0.1` from a `file://` page in Chrome 154, Chromium 153, Firefox 157 and Safari
+27. Events were of an ephemeral kind (25800, chosen for the spike), from a fresh throwaway key, with
+200 bytes of sealed-looking content, tagged with a random topic.
+
+| Check | All four browsers |
+|---|---|
+| WebSocket from `file://` | opens |
+| Event signed by the kit's signer | accepted (`OK true`) |
+| Delivered to a subscriber of the topic | in 33–40 ms |
+| Stored (a later `REQ` for the topic) | no |
+| Corrupted signature (checked from Node) | refused: "invalid signature" |
+| Two peers in one page swap offer and answer through the relay, then open a data channel | open, message delivered, in 0.14–0.23 s |
+| STUN binding from `stun.l.google.com` and `stun.cloudflare.com` | server-reflexive candidates from both, in 42–152 ms |
+
+The two peers were on the same machine, so this proves the signalling path and the browsers' WebRTC
+from `file://`, not connection rates across networks.
+
+**Public relays** (with the maintainer's agreement; about three events each, from throwaway keys, with
+random sealed-looking content). Their published limits (NIP-11), then one `file://` run each in
+Chromium:
+
+| Relay | Software | Auth, proof of work or payment declared | Max message | Event accepted | Delivered | Two peers met |
+|---|---|---|---|---|---|---|
+| `relay.damus.io` | strfry 1.1.0 | none | 1 MB | yes | 39 ms | 0.55 s |
+| `nos.lol` | strfry 1.1.3 | none | 128 KiB | yes | 281 ms | 0.81 s |
+| `relay.primal.net` | strfry | none | 1 MB | yes | 276 ms | 0.75 s |
+| `offchain.pub` (spare, limits only) | strfry 1.1.0 | none | 128 KiB | — | — | — |
+
+- **All four run the same software (strfry),** so a change in strfry's defaults would reach all of them
+  at once.
+- **Ephemeral isn't unstored on strfry.** Unlike nostr-rs-relay, all three returned the event to a new
+  subscription afterwards. strfry's defaults keep ephemeral events for 300 s and refuse ones whose
+  `created_at` is more than 60 s old. So meeting-point messages can be read for about five minutes by
+  anyone who knows the topic. The topic is an opaque address and the content is sealed, so this
+  exposes timing and network addresses to the relays, not comments. Live must ignore offers older
+  than about 30 s, and must stamp events with a clock within 60 s of the relay's.
+- In one of the hosted-page checks, Chrome 154 couldn't open a WebSocket to `relay.damus.io` at all;
+  it worked on the next try. One relay is never enough; the design's 3–5 stands.
+
+**Hosted two-device check.** A test page on a `workers.dev` Worker (deleted afterwards) had two devices
+meet through `relay.damus.io`, with offers and answers sealed under a key carried in the link's
+`#fragment`. On this Mac, Chrome (offering) and Safari (answering) connected directly over UDP in
+0.17–3.3 s. The phone runs, on mobile data and on the same Wi-Fi, were postponed.
+
+**Still to do for S2:**
+
+- **STUN-only connection rates** between different networks: a phone on mobile data, home Wi-Fi, and
+  one office network.
+- Pick the ephemeral kind for live (the spike used 25800).
+
+### S4: integration services in CI (add-ons spike, 2026-10-08): passed
+
+A throwaway workflow on a branch (deleted afterwards) on GitHub's `ubuntu-24.04` runners:
+
+| Job | Setup | Result |
+|---|---|---|
+| Docker | Docker 28.0.4; PrivateBin 2.0.6 (the S1 image, pinned by digest) and nostr-rs-relay 0.10.0 as containers | paste, §7.2 comment and read-back pass; the relay accepts an event signed by the kit's signer |
+| PHP fallback | PHP 8.3.6's built-in server over the PrivateBin 2.0.6 release tarball | paste, §7.2 comment and read-back pass |
+
+Both ways work, so share's integration tests can use the official image, with the PHP fallback kept as a
+second route.
+
+### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
+
+A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
+Mac, reached from a `file://` page at `127.0.0.1` (loopback) and at the Mac's LAN address (a private
+address), over plain `http:`.
+
+| Check | Chrome 154 | Chromium 153 (Playwright) | Firefox 157 | Safari 27 |
+|---|---|---|---|---|
+| `GET …/ops?since=` with `Accept: application/json` | 200 | 200 | 200 | 200 |
+| `POST …/ops`, `text/plain` body; the same POST again | 201, then 200 | 201, then 200 | 201, then 200 | 201, then 200 |
+| 429: status, exposed `Retry-After` and `retryAfter` in the body readable | yes | yes | yes | yes |
+| `keepalive` POST at `pagehide` arrives | yes | yes | yes | yes |
+| Preflight (`OPTIONS`) sent | none | none | none | none |
+| Local-network prompt or `Access-Control-Request-Private-Network` | none | none | none | none |
+
+The same results came from both loopback and the LAN address. Every request carried `Origin: null` and
+no cookies. Requests to the LAN address carried no `Sec-Fetch-*` headers, because plain `http:` to it
+isn't a trustworthy origin. Chrome 154 neither prompted nor sent a private-network preflight for a
+`file://` page reaching a private address.
+
+**Public host over TLS.** The same checks against a Cloudflare Worker on `workers.dev` (HTTPS, HTTP/2),
+deployed for the test and deleted straight after. Chrome 154, Chromium 153, Firefox 157 and Safari 27
+all passed every row above: no preflight, the 429 readable, the `keepalive` POST at `pagehide` arrived,
+`Origin: null` and no cookies. A brand-new `workers.dev` subdomain took about two minutes to get its
+certificate.
+
+**Harness note.** macOS `open` drops the `?query` and `#fragment` from `file://` addresses; the Safari
+and Chrome runs passed the address through AppleScript instead.
+
+**Still to do for S6:**
+
+- The same checks over **TLS on a private address**, with a certificate the browsers trust (an
+  intranet's own CA). Local-network rules may treat secure and plain requests differently.
 
 ### Peer to peer (deferred)
 
@@ -606,3 +794,11 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §11: keyboard final-review fixes — the cursor lets go of a draft's block when it moves off it; Enter in a page form field submits with the cursor not in use; All comments and Copy share `byPage`; doc corrections (no `TreeWalker`, `pinAt` folded into `commentOn`, name wording, Esc steps); 36,765 B (min) / 36,419 B (esm) gzip.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
 - 2026-10-07 — §11: 0.4.1 budgets 40 KB (min, esm), 12 KB (core): Tab in comment mode and the cursor's stops cost about +0.9 KB gzip (36,759 B before).
+- 2026-10-07 — §6: no third-party Ed25519 fallback (no runtime dependencies in Pipeup or its add-ons). §7: add-ons spike S5 passed — jsDelivr and unpkg serve `+` file names with SRI from `file://` in Chrome, Firefox and Safari.
+- 2026-10-07 — §7: add-ons spike S6, first half — the mailbox works from `file://` on loopback and a private address in Chrome, Firefox and Safari: no preflight, 429 readable, `keepalive` at `pagehide` arrives, no local-network prompt. TLS and a public host still to test.
+- 2026-10-07 — §7: S6 public half passed — a Cloudflare Worker over HTTPS, from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
+- 2026-10-07 — §7: add-ons spike S1 on an own PrivateBin 2.0.6 passed in Chrome, Firefox and Safari from `file://`: simple requests, the §7.2 comment mapping, JSON reads, `time_to_live`, Web Locks; "please wait" is HTTP 200 with `status: 1`. Volunteer instances still to test.
+- 2026-10-08 — §7: add-ons spike S3 passed: dictation from `file://` in Chrome (service and on device) and Safari; the microphone is asked for on every load; Safari can't say where it listens.
+- 2026-10-08 — §7: add-ons spike S2, first half: the kit's own BIP-340 signer passes the BIP-340 vectors and a 2,000-key cross-check against noble (1,041 B gzip); a local nostr-rs-relay accepts, delivers and doesn't store its ephemeral events from `file://` in Chrome, Firefox and Safari, and two peers meet through it and open a data channel. Public relays and other networks still to test.
+- 2026-10-08 — §7: S2 public relays — damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work; all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s. Cross-network rates still to test.
+- 2026-10-08 — §7: add-ons spike S4 passed: GitHub Actions runs PrivateBin 2.0.6 and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server.

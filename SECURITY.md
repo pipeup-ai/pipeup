@@ -27,7 +27,7 @@ Pipeup is alpha until 1.0; only the newest minor version receives fixes.
   comments that fail verification are rejected, so others can't forge or alter them.
 - **No network.** Pipeup makes no network requests: comments stay in the reviewer's browser until
   they choose to copy them.
-- **No telemetry.** No analytics, tracking or telemetry of any kind, and no runtime dependencies.
+- **No telemetry.** No analytics, tracking or telemetry of any kind, and no runtime dependencies, in Pipeup or its add-ons.
 - **Your page stays yours.** All of Pipeup's UI lives in its own shadow root; it doesn't rewrite the
   host page.
 - **Verifiable builds.** Each release is published to npm with provenance, and its notes give the

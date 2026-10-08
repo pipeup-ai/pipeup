@@ -9,7 +9,9 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
 
 - Never mutate the host page's DOM or layout; all UI lives in Pipeup's shadow root.
 - Comment content is untrusted: render it as text only, never as HTML.
-- No runtime dependencies in `libs/ts/pipeup`; no analytics or telemetry anywhere. The bundle stays inside
+- No runtime dependencies in `libs/ts/pipeup` or in any add-on (`@pipeup/*`): no third-party code is
+  bundled in or loaded at run time. Tools for building and testing are fine as dev dependencies. No
+  analytics or telemetry anywhere. The bundle stays inside
   its size budget (`libs/ts/pipeup/scripts/size.mjs`).
 - Pipeup's UI, the website, diagrams and mock-ups are light mode only. Every transition eases; nothing
   appears, moves or disappears abruptly.

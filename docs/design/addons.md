@@ -1,8 +1,10 @@
 # Add-ons
 
-Status: **approved** (2026-10-07). All 20 decisions accepted as recommended; the size ceiling (decision 1) is revisited because the budget is now 36 KB and the keyboard work uses most of it. Functional requirements:
-[FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §1, §4, §10–§19 and a new §11a, once the spec changes are
-reviewed. **Two things gate any code:** the size decision in §15, and the spikes in §18's "Now" step.
+Status: **approved** (2026-10-07). All 20 decisions accepted as recommended; decision 1 (size) is
+recorded in §15. Functional requirements: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §1, §4, §10–§19
+and §11a. **What gates code:** the spikes in §18's "Now" step, each for its own stage.
+
+![Add-ons architecture: the core with its data slots, registry and host slots; share, voice, live and later relay with the private kit; and the outside services each one talks to](images/addons.svg)
 
 Code paths are relative to `libs/ts/pipeup/`; doc paths to the repository root.
 
@@ -22,7 +24,9 @@ Add-ons must:
 - share one data contract, so a free service, peer to peer and the planned relay can run side by side
   and converge;
 - also run headless against `pipeup/core` (CLI, agents) where they carry data;
-- pay for every core byte, measured, with a stated order for what is cut first.
+- pay for every core byte, measured, with a stated order for what is cut first;
+- carry no third-party code, bundled or loaded at run time, just as the core doesn't (R11). Only
+  browser APIs and code in this repository; build and test tools are dev dependencies only.
 
 The approach is **typed capability slots**: an add-on is a plain object; the core calls its `setup`
 with a host whose members are the slots. Slots land in stages, each with the first add-on that needs
@@ -248,7 +252,7 @@ or an app bundle can carry the ESM core while the page also loads the classic on
 
 - The classic build is wrapped so that, when `self.Pipeup` already has a `VERSION`, the second copy
   defines nothing, doesn't auto-mount, and logs one warning in words: "Pipeup is on this page twice
-  (0.6.0 and 0.6.0); the first one is used. Remove one script." Add-ons in a combined file still
+  (0.7.0 and 0.7.0); the first one is used. Remove one script." Add-ons in a combined file still
   register: their `push` reaches the first core's queue, and a duplicate id is ignored.
 - The ESM core's `mount()`, finding a queue owned by another core, rejects with the same sentence and
   mounts nothing.
@@ -402,7 +406,7 @@ export interface PanelHandle { close(): void }
 ```
 
 - `openPanel` offers add-ons the side popover the launcher already has (`src/ui/launcher.ts:288-317`).
-  Pipeup places it (in the 2C-2 drawer on narrow pages), makes the rest of its UI `inert`, moves focus
+  Pipeup places it (in the 0.5 drawer on narrow pages), makes the rest of its UI `inert`, moves focus
   in and back, and lets Escape close it before anything else.
 - The add-on supplies a node built with `textContent`, styled with its own classes and the public
   tokens. Panels hold consent notices, the people here, and later invite codes.
@@ -562,6 +566,7 @@ The smallest complete add-on:
 | `Transport`, `TabTransport` | the transport interface; a `BroadcastChannel` transport for tests and Try pages | 0.2 KB |
 | `presence` | the presence message types and one renderer, shared by live and later relay | 3 KB (live only) |
 | `inlineWorker(code)` | the only way to start a worker: a classic Blob worker | 0.1 KB |
+| `schnorr` | Pipeup's own minimal BIP-340 signer over secp256k1, for Nostr meeting points (§9.1); signing only | 1.0 KB (live only, measured in S2) |
 
 **Settings when storage fails.** `settings` uses memory when `host.ephemeral` is true or its own
 database fails to open. `settings.lasting` is then false, and an add-on that asks the reviewer
@@ -680,7 +685,7 @@ both spikes fail.
 `pm1.` is a mailbox (contract version 1); otherwise an `https:` address with a `?<paste id>` query
 and a `#<key>` is PrivateBin. Both are `https:` only.
 
-**Only the author's command line creates a shared copy, in 0.6.** Pipeup has no author role in the
+**Only the author's command line creates a shared copy, in 0.7.** Pipeup has no author role in the
 page, and a page opened from disk can't rewrite its own file. An in-page "Start sharing" would let
 any reviewer create a separate shared copy that nobody else ever finds. So:
 
@@ -724,7 +729,7 @@ my own write ─► IndexedDB (core, unchanged)
 GET paste + comments ─► open new ones (drop failures) ─► host.merge(batch) ─► core verifies, stores, renders
 ```
 
-**Wire format (to be validated against `FormatV2::isValid` in S1).** A comment is posted as:
+**Wire format (validated against PrivateBin 2.0.6's `FormatV2::isValid` in S1).** A comment is posted as:
 
 ```
 { "v": 2,
@@ -737,8 +742,10 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
   10,000, key and tag sizes, `aes`, `gcm`, `zlib` or `none`). Its iv and salt are random and unused;
   Pipeup's own iv is inside `ct`. `ct` is AES-GCM output, so it passes the server's "doesn't compress"
   check. PrivateBin's own page can't open these comments; only Pipeup reads them.
-- S1 records the exact checks of the instance versions tried (whether `meta` is allowed on comments,
-  the iv and salt length limits, the size limit) and freezes this mapping in a test vector.
+- S1 recorded 2.0.6's checks ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)): a
+  comment is exactly these five fields; a non-empty `meta` would make it a new paste, so comments never
+  carry one; the iv is at most 24 base64 characters and the salt 14; `ct` is strict standard base64;
+  the default size limit is 10 MiB. The mapping is frozen in a test vector when share is built.
 - **Append-only mailbox.** Each batch is a new comment; comments are never edited. Concurrent writers
   can't overwrite each other; a race posts an op twice and the union collapses it.
 - **Simple requests only** (`text/plain` body, `Accept: application/json`, no credentials), so pages
@@ -762,8 +769,10 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
   (`pipeup-share:<doc>`); only the holder posts, the others read. Where Web Locks are missing (S1 checks
   `file://`), each tab waits a random 0–5 s and re-GETs before posting, dropping what is already there.
 - **Rate limits.** PrivateBin limits posts per IP (10 s by default), so an office behind one address
-  shares that limit. A "please wait" answer or a 429 retries after the stated time plus jitter, with
-  more ops per batch. Tens of people behind one address still fit: one post every 10 s carries up to
+  shares that limit. PrivateBin itself answers HTTP 200 with `status: 1` and a sentence ("Please wait
+  10 seconds between each post."), never a 429 (S1); a proxy in front of an instance may still send
+  429. Both retry after 10 s, or the 429's `Retry-After`, plus jitter, with more ops per batch. The
+  sentence is never parsed for a number. Tens of people behind one address still fit: one post every 10 s carries up to
   1,000 ops.
 
 The polling table and the one-sender lock apply to the mailbox too (§7.7).
@@ -846,7 +855,7 @@ needed, because no Pipeup add-on uploads another person's comments.
   old copy, without asking again, because they agreed per document, not per address. Comments are
   only lost from the shared copy if nobody who held them opens the new file; they are never lost
   from anyone's own copy.
-- **Stop sharing** is `share stop page.html --key …` in 0.6 (§7.2 for later generations); in-page once
+- **Stop sharing** is `share stop page.html --key …` in 0.7 (§7.2 for later generations); in-page once
   the panel exists. Everyone keeps their local copy, and the docs say plainly that people who had
   access keep what they saw.
 
@@ -888,7 +897,7 @@ global `fetch`, WebCrypto and `CompressionStream("deflate-raw")`. `@pipeup/share
 
 **An agent's identity.** The agent writes as its own reviewer, never as the person:
 
-- Its identity key comes from the CLI's profile (the 0.5 CLI plan): one key per machine user, stored in
+- Its identity key comes from the CLI's profile (the 0.6 CLI plan): one key per machine user, stored in
   the CLI's config directory with owner-only permissions, or a file given with `--identity`. It is never
   put in the page, the share, or a feedback file.
 - Its name is set with `--name`, default "Claude (agent)" when run by the skill, so reviewers can tell
@@ -902,7 +911,7 @@ server it runs, by implementing four endpoints or deploying the reference server
 envelope, send policy or consent changes: the mailbox is one more `Transport` (§6.3) inside
 `share.min.js`, and the server stores opaque batches it can't read.
 
-**Contract version 1** (`pm1`). Frozen from 0.6; later changes are additive (new optional fields, new
+**Contract version 1** (`pm1`). Frozen from 0.7; later changes are additive (new optional fields, new
 error codes treated as "try later"). An incompatible change is `pm2`, a new fragment prefix, and
 servers may serve both.
 
@@ -1080,12 +1089,19 @@ re-sends its own shared comments and those it received from the old copy, as in 
      turned into words. Pipeup doesn't keep it."
 
    The choice is kept in the add-on's settings (not a secret). Where settings don't last (§6), the panel
-   says "This browser won't remember this choice". On `file://` that choice, and Firefox's "remember"
-   for the microphone, may apply to every local file; the docs say so.
-3. The browser asks for the microphone.
+   says "This browser won't remember this choice". On `file://` that choice may apply to every local
+   file; the docs say so.
+   - **Safari can't say where it listens.** It has no `available()` or `processLocally` (S3), so Pipeup
+     can't tell on-device from Apple's service and always shows the service sentence there.
+3. The browser asks for the microphone. **On `file://`, Chrome and Safari ask again on every page load**
+   (S3): the grant lasts only until the page is reloaded. The docs say so, and the consent panel isn't
+   shown again, since that choice is Pipeup's own and is kept.
 4. Words in progress go to `dictation.update()`, final words to `commit()`, so they are in the box from
    the start. `host.announce("Listening")` when it starts.
-5. It stops on a second press, on `onEnd` (send, cancel, clear, box removed) and after 60 s of silence,
+5. Only one recognition runs at a time: in Safari a second `start()` aborts the first, and a new one
+   started straight after an abort fails at once with "No speech detected" (S3). So a press while
+   listening only stops, and a new start waits for the previous `end`.
+6. It stops on a second press, on `onEnd` (send, cancel, clear, box removed) and after 60 s of silence,
    with `host.announce("Stopped listening")`.
 
 The reviewer still sends; voice never writes an op.
@@ -1099,20 +1115,9 @@ choice is kept in settings per browser.
 - **v1: the Web Speech API.** On-device (`processLocally`) where `available()` reports it; otherwise the
   browser's service, only after consent. Spike S3 (§18) decides whether v1 ships at all: from `file://`
   in a visible window, in Chrome (on-device and service) and Safari.
-- **v2, not committed: on-device Whisper** (about 47 MB once, offline after). Loaded without `import()`:
-  the add-on fetches its own pre-bundled classic engine script and runs it as a classic Blob worker.
-  - **Everything is checked on every load, not only after download** (R5). The engine script, wasm and
-    model files are checked against SHA-384 hashes in a manifest built into `voice.min.js`, each time
-    they are read, from the network or from a cache. A mismatch is a refusal in words ("The speech
-    engine on this computer was changed; it won't be used") and the entry is deleted.
-  - **The add-on owns its cache** (`pipeup-voice-<manifest hash>`), and turns off transformers.js's
-    shared `transformers-cache`, which any local page could replace.
-  - **Model files are pinned** to an exact Hugging Face commit (`/resolve/<sha>/…`), never a branch.
-  - Hashing 47 MB takes a noticeable moment, so it runs in the worker, while the panel says "Checking
-    the speech engine".
-  - Whether onnxruntime's internal `import()` can be bundled away needs a spike in Chrome, Firefox and
-    Safari from `file://`. If it can't, v2 doesn't ship.
-  - A test replaces a cached entry and expects the refusal.
+- **No downloaded engine.** An on-device model such as Whisper would need third-party code (an
+  inference runtime) and model files loaded at run time, which R11 rules out. Voice uses only the
+  speech engine the browser itself provides.
 
 ```js
 { when: "after-consent", to: ["the browser's speech service", "the browser maker's speech pack download"],
@@ -1147,9 +1152,19 @@ kinds are a closed set. Suggested edits would be an op v2 kind and a separate de
   page", and the add-on page explains it. This is the same rule that closes access (§6.1).
 - **Meeting point:** Nostr ephemeral events (kinds 20000–29999) on 3–5 public relays, tagged
   `addr("signal")`, content sealed with `key("signal")`. The author may replace the list with
-  `data-pipeup-live-relays="wss://…,wss://…"`. Each session signs with a throwaway secp256k1 key
-  (@noble/secp256k1, about 5.4 KB), unrelated to the reviewer's identity. Spike S2 (§18) decides
-  whether public relays accept this.
+  `data-pipeup-live-relays="wss://…,wss://…"`. Each session signs with a throwaway secp256k1 key,
+  unrelated to the reviewer's identity, as Nostr requires. WebCrypto has no secp256k1 and add-ons
+  bundle no outside library (R11), so the kit carries its own minimal BIP-340 signer (`schnorr`, §6):
+  signing only, since relays verify and peers check each other through `hello` (§9.2); checked against
+  the published BIP-340 test vectors. The key is thrown away after the session and signs only sealed
+  meeting-point messages, so a flaw in the signer could at worst let someone disturb the meeting point,
+  never read or forge comments or presence. Spike S2 (§18) decides whether public relays accept this.
+- **Ephemeral events are kept for a while (S2).** The public relays tried all run strfry, which keeps
+  ephemeral events for 300 s and refuses any with a `created_at` more than 60 s old. So a joiner asks
+  only for events from the last 30 s and ignores older offers; every event carries the current time;
+  and the add-on page says the meeting points can see network addresses and timing for a few minutes,
+  never comments. The relay list mixes software where it can, since all the public relays tried run
+  strfry.
 - **Connection:** WebRTC data channels, full mesh, up to 8 people; STUN from Google and Cloudflare; no
   TURN in v1. Expect roughly 15–25% of pairs (more on office networks) to be unable to connect directly.
   The status then says "Can't reach Blue Owl directly" and, with share present, "— comments still
@@ -1242,22 +1257,25 @@ Only the relay keeps every promise; the others say which they keep, on the site 
 |---|---|
 | R1 | Each add-on file is one classic IIFE beginning `"use strict"`: no `type="module"`, no `import`/`export`, no `import()`, no `import.meta`. |
 | R2 | No requests for local files. Every URL is absolute `https:`, `wss:`, `blob:` or `data:`. |
-| R3 | Workers only through the kit's `inlineWorker(code)`, a classic Blob worker. `importScripts("https://…")` inside it is allowed for pinned, hash-checked code (R5). |
+| R3 | Workers only through the kit's `inlineWorker(code)`, a classic Blob worker running the add-on's own code. No `importScripts`. |
 | R4 | No `SharedArrayBuffer`; wasm runs single-threaded (`file://` isn't cross-origin isolated). |
 | R5 | Code and data fetched at run time are checked against a hash built into the add-on **every time they are loaded**, from the network or any cache, before use. Caches are the add-on's own, never shared library caches. |
 | R6 | Register through `pipeupAddons`; never call `mount()`. |
 | R7 | Contact only hosts in `network.to`; an `after-consent` add-on contacts nothing before the reviewer agrees. The core contacts nothing. |
 | R8 | No secrets in localStorage, IndexedDB or the Cache API; the add-on's own non-secret settings go through the kit's `settings`. |
-| R9 | Works under a strict CSP given `connect-src` (and for voice v2, `worker-src blob:` and `'wasm-unsafe-eval'`): constructed sheets, no inline handlers, no eval. |
+| R9 | Works under a strict CSP given `connect-src` (and `worker-src blob:` for an add-on that starts a worker): constructed sheets, no inline handlers, no eval. |
 | R10 | No `</script` or `<script` in any built file, so a combined file can sit inside the page. |
+| R11 | No third-party code: nothing from outside this repository is bundled into an add-on or loaded by it at run time. Browser APIs only. Build and test tools are dev dependencies only. |
 
 **Enforcement**
 
 - **`check-addon.mjs`** (kit) runs in every add-on's `npm run check` and fails the built file on
   `import(`, `import.meta`, `export `, `new Worker(` not fed by `URL.createObjectURL`, `type:"module"`,
-  `importScripts(` with a non-https argument, `SharedArrayBuffer`, `eval(`, `new Function(`,
+  `importScripts(`, `SharedArrayBuffer`, `eval(`, `new Function(`,
   `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `</script` and `<script` (case-insensitive), a file
-  not starting with `"use strict"`, and checks URL literals against `network.to`.
+  not starting with `"use strict"`, and checks URL literals against `network.to`. It also fails any
+  add-on `package.json` with `dependencies`, and any bundle input from `node_modules` other than
+  `pipeup` types and the kit (R11).
 - **The core's `size.mjs`** gains the same `</script` / `<script` check for `pipeup.min.js`,
   `pipeup.esm.js` and `pipeup.core.js` (all three pass today; the one `<!--` in them, the Markdown
   export's comment marker, is harmless without a `<script` after it), and checks `Pipeup.use` and
@@ -1356,7 +1374,7 @@ libs/ts/
   addons/test/     private: the e2e test add-on
   addons/relay/    npm "@pipeup/relay" (later; server in services/relay)
 services/
-  mailbox/         npm "@pipeup/mailbox": the reference mailbox server and `check` (§7.7); lockstep, public from 0.6
+  mailbox/         npm "@pipeup/mailbox": the reference mailbox server and `check` (§7.7); lockstep, public from 0.7
 ```
 
 Each add-on has `devDependencies` on `pipeup` and the kit (`file:` paths, for types and the combined
@@ -1382,9 +1400,9 @@ site, the skill and `pipeup check` read. Add-ons with a headless part declare `e
   `"use strict"`, so a sloppy-mode third-party add-on can't be broken by it silently.
 - Concatenation keeps each piece identical to its separate file, so the core's mangling never reaches
   add-on code.
-- Whether jsDelivr and unpkg serve `+` in file names is checked in S5; the fallback name is
-  `pipeup-with-<id>.min.js`.
-- CDN: `https://cdn.jsdelivr.net/npm/@pipeup/share@0.6.0/dist/share.min.js` and
+- jsDelivr and unpkg serve `+` in file names with the right type and SRI (S5, passed 2026-10-07), so
+  the fallback name `pipeup-with-<id>.min.js` isn't used.
+- CDN: `https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0/dist/share.min.js` and
   `…/dist/pipeup+share.min.js`, pinned and SRI-checked like the core.
 
 **Release pipeline**
@@ -1426,9 +1444,11 @@ site, the skill and `pipeup check` read. Add-ons with a headless part declare `e
 
 ## 15. Size
 
-**Core today (gzip, as `size.mjs` measures, re-measured on 0.4.0-beta.2, 2026-10-07).**
-`pipeup.min.js` 33,759 B of 33,792 B (**33 B left**); `pipeup.esm.js` 33,393 B (399 B left);
-`pipeup.core.js` 8,884 B of 12,288 B.
+**Core today (gzip, as `size.mjs` measures, re-measured on 0.4.1, 2026-10-07).** Budgets are now
+40 KB (40,960 B) for `pipeup.min.js` and `pipeup.esm.js`, and 12 KB for `pipeup.core.js`.
+`pipeup.min.js` 37,707 B (**3,253 B left**); `pipeup.esm.js` 37,378 B (3,582 B left);
+`pipeup.core.js` 8,869 B (3,419 B left). The stage 0 figures below were measured on 0.4.0-beta.2;
+they are re-measured when stage 0 is built.
 
 | Piece | Stage | Classic | Basis |
 |---|---|---|---|
@@ -1450,19 +1470,18 @@ site, the skill and `pipeup check` read. Add-ons with a headless part declare `e
 | Same-name fingerprint (core UI, with live) | 3 | ~80 | estimate |
 | **All stages** | | **~1.9 KB** | |
 
-**The plan doesn't close without a decision.** Stage 0 alone is 100 B more than today's headroom, and
-0.5 has no size work identified yet. Before the spec review, the maintainer decides one of:
+**Decision 1 (recorded 2026-10-07): option A, with the budget already raised.** The min and esm
+budgets are 40 KB, so every stage fits: stage 0 (+133 B) and stages 1–3 (~1.9 KB) together come to
+about 2.0 KB of the 3,253 B headroom. That leaves the 0.5 touch and drawer work about 1.2 KB before it
+needs size work of its own. The rules:
 
-- **A (recommended).** Size work pays first: the 2C-2 size pass banks what it saves beyond its own
-  needs. Where it can't pay for a stage, the min and esm budgets rise by that stage's **measured** cost
-  only, stated in the release notes, up to a ceiling the maintainer sets. Proposed ceiling: **35.0 KB**
-  (35,840 B), which covers all stages with about 150 B to spare if no savings are found.
-- **B.** No budget rise. Each stage waits until size work has found its bytes; 0.5 ships the CLI
-  without the data slots unless 2C-2 or 0.5 finds at least 133 B plus whatever they add themselves.
-
-**Decision: pending (decision 1).** Until it is recorded here, 0.5 is planned without stage 0, and
-stage 0 joins 0.5 only once the decision allows its measured +133 B. The core-only budget stays 12 KB
-either way.
+- About 2.1 KB of the min and esm headroom is **set aside for the add-on stages**. A change outside
+  them that would eat into it pays for itself with savings, or says so in its pull request so the
+  maintainer can choose.
+- Each stage is re-measured with `scripts/size.mjs` before merge. A stage that costs more than its
+  estimate here cuts in the order below before any budget changes.
+- No budget rise beyond 40 KB for add-on support without a new decision, stated in the release notes.
+- The core-only budget stays 12 KB.
 
 **If a stage is short, cut in this order:** the select-error toast, the `reason` strings in `addons()`
 (the state stays), `signal` (add-ons keep their own `AbortController`), announcement pacing (fall back
@@ -1481,7 +1500,7 @@ held-reply rule.
 | Counting newer-version ops in the core | ~25 B | The kit counts them before merging (§6.2). |
 | A global event bus and commands (`Pipeup.on`, `Pipeup.run`) | ~0.5 KB | Typed slots. A global bus would hand composer text to any script on the page. A small `run`-style entry for agents may come later, on top of slots. |
 | Raw shadow-root access or a "slot created" callback | ~150 B | Ties add-ons to private classes, aria and DOM rebuilt on every layout change. |
-| A composer DOM contract (find the textarea, `setRangeText`, fire `input`) | ~0 B | `dictate()`; 2C-2 is about to change that UI. |
+| A composer DOM contract (find the textarea, `setRangeText`, fire `input`) | ~0 B | `dictate()`; the 0.5 drawer is about to change that UI. |
 | Public short tokens (`--k`, `--mu`) | 0 B | `--pu-*` aliases, so internal styling can still change. |
 | Sync as an `OpStore` | — | Breaks the store contract. |
 
@@ -1492,11 +1511,11 @@ The mailbox transport adds nothing to the core: it is share's code, behind the s
 | File | Budget | Notes |
 |---|---|---|
 | `share.min.js` | 7.5 KB | kit sync, envelope, ladder, settings, PrivateBin client, rollover, consent rows; mailbox client ~0.5 KB (estimate: address parse, two requests, cursor paging, error codes, `Retry-After`). If S1 fails and PrivateBin is left out (~1.5 KB with rollover), the budget returns to 7 KB. |
-| `voice.min.js` | 4 KB | Web Speech, consent panel, language; the v2 engine is stated, not budgeted |
-| `live.min.js` | 14 KB | secp256k1 ~5.4 KB, signalling, mesh, reconcile, presence renderer |
+| `voice.min.js` | 4 KB | Web Speech, consent panel, language |
+| `live.min.js` | 10.5 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
 | `pipeup+<id>.min.js` | core + add-on budgets | checked separately |
 
-Run-time downloads (voice v2's ~47 MB, a browser's speech pack) are declared on the add-on page and in
+Run-time downloads made by the browser itself (a speech pack) are declared on the add-on page and in
 the consent panel.
 
 ## 16. Site, `llms.txt`, skill and check
@@ -1542,24 +1561,24 @@ the consent panel.
 | Names | `PUBLIC_NAMES` vs the mangle regex; `PUBLIC_NAMES` vs the `.d.ts` keys. |
 | Types | A compile-only sample add-on against the published `.d.ts`. |
 | Kit unit | Frozen derivation test vectors; envelope round trip, tamper, wrong purpose or doc, inflate cap, newer-version count; `verifySigned`; `settings` with IndexedDB disabled. |
+| Kit `schnorr` | Every official BIP-340 test vector (signing and the expected signatures). A cross-check against `@noble/secp256k1`, a dev dependency used only in tests and never bundled (R11): thousands of random keys and messages, signed by ours and verified by noble, and the same signatures where both use the same auxiliary randomness. A bundle check that no noble code reaches `live.min.js`. |
 | Transport conformance | Every `Transport` (Tab, PrivateBin mock, mailbox against the reference server in process, Nostr mock, later relay) makes two or three `PipeupDocument`s converge under drop, duplicate, reorder, garbage and offline-then-online, keeps each send policy, and **stops asking for an invalid op a peer keeps offering** (the rejected set). Runs in Node against `pipeup/core` on the minimum Node version, proving the headless path. |
 | Add-on e2e (`file://`) | Chromium and Firefox; WebKit best effort. Every load order (§11). Two browser contexts converge through a mocked PrivateBin (`route`), through the reference mailbox server (an `https://mailbox.test` address routed to it, so the shipped bundle's `https:` rule holds), and through live over loopback WebRTC, meeting via the kit's **test relay** (`addons/kit/test/relay.mjs`, a ~100-line Node Nostr relay over the `ws` dev dependency, ephemeral kinds only). Live presence draws, hides elsewhere, hides while comments are closed. Voice with a fake `SpeechRecognition` driving `update`/`commit`; words survive cancel and slide changes; nothing fetched before consent. §7.5's consent cases. Canary leak test; network guard. |
 | Browser flags | Chromium: `--use-fake-ui-for-media-stream`, `--use-fake-device-for-media-stream`, `--disable-features=WebRtcHideLocalIpsWithMdns`. Firefox prefs: `media.navigator.streams.fake`, `media.navigator.permission.disabled`, `media.peerconnection.ice.loopback`, `media.peerconnection.ice.obfuscate_host_addresses=false`. Set in `playwright.config.ts` per project. |
-| Integration | Share against PrivateBin's official Docker image, if S4 confirms Docker on the CI runners; otherwise PrivateBin from a pinned release under PHP's built-in server. CI never writes to public instances. The reference mailbox server needs neither: it runs in Node, and `@pipeup/mailbox check` runs against it over TLS with a test certificate in every pipeline. |
+| Integration | Share against PrivateBin's official Docker image, pinned by digest (S4 confirmed Docker on the CI runners); PrivateBin from a pinned release under PHP's built-in server is the tested fallback. CI never writes to public instances. The reference mailbox server needs neither: it runs in Node, and `@pipeup/mailbox check` runs against it over TLS with a test certificate in every pipeline. |
 | Size | Every file and combined file within budget; combined = concatenation, byte for byte; no `</script` or `<script` in any `*.min.js`. |
-| Voice v2 (if it ships) | A tampered cached engine, wasm or model file is refused and deleted. |
 
 ## 18. Roadmap
 
 | Step | Version | Contents | Why in this order |
 |---|---|---|---|
-| Now | — | This design; spec changes reviewed; **decision 1 (size) recorded in §15**; spikes S1–S5 below | Spec before code; each spike is a go/no-go for its stage. Share needs one backend: the mailbox (S6) reduces its dependence on public PrivateBin instances. |
-| 2C-2 | 0.4 part 2 | As planned, plus the items below | Keeps the slots possible and banks bytes. |
-| 0.5 | 0.5 | CLI as planned (including the agent identity, §7.6). **Stage 0** (data slots, hardening, migration; op v1 frozen) only if decision 1 allows its measured +133 B | The CLI is the first headless user of `ops`/`merge`; hardening must exist before any shared data. |
-| Stage 1 | 0.6, if S5 passes and S1 or S6 passes | Registry, `AddonDocument`, one core per page, menu, notices, announcements, remote-change rules; the kit; the packaging pipeline; **share** with the CLI's `share create/stop/update`, over PrivateBin (if S1 passes) and the HTTP mailbox (if S6 passes); `@pipeup/mailbox` and its published contract | Today comments reach nobody except by copying. Share needs the fewest slots, rescues browsers that can't keep comments, and proves packaging end to end. |
-| Stage 2 | 0.7, if S3 passes | Composer tools, panel, styles; **voice** v1 | Small and independent; proves the composer slot and the consent panel. In-page "stop sharing" uses the panel. |
-| Stage 3 | 0.8, if S2 passes | Status, overlay, here, `onUi`, avatar, `sign`; **live**; telling same-name people apart | The most moving parts and third-party services; better with share underneath. |
-| Later | — | **relay** and `services/relay`; invites shared separately; op v2 with sequence numbers and a strict schema; voice v2 if its spike works; a small scripting entry for agents | Owned infrastructure, once the free paths show what's missing. |
+| Now | — | This design; spec changes reviewed; **decision 1 (size) recorded in §15**; spikes S1–S6 below | Spec before code; each spike is a go/no-go for its stage. Share needs one backend: the mailbox (S6) reduces its dependence on public PrivateBin instances. |
+| 0.5 | 0.5 | Touch and the narrow-page drawer as planned, plus the items below | Keeps the slots possible and banks bytes; the drawer is where add-on rows, status and panel will live. |
+| 0.6 | 0.6 | CLI as planned (including the agent identity, §7.6). **Stage 0** (data slots, hardening, migration; op v1 frozen), within the share of headroom set aside in §15 | The CLI is the first headless user of `ops`/`merge`; hardening must exist before any shared data. |
+| Stage 1 | 0.7, if S5 passes and S1 or S6 passes | Registry, `AddonDocument`, one core per page, menu, notices, announcements, remote-change rules; the kit; the packaging pipeline; **share** with the CLI's `share create/stop/update`, over PrivateBin (if S1 passes) and the HTTP mailbox (if S6 passes); `@pipeup/mailbox` and its published contract | Today comments reach nobody except by copying. Share needs the fewest slots, rescues browsers that can't keep comments, and proves packaging end to end. |
+| Stage 2 | 0.8, if S3 passes | Composer tools, panel, styles; **voice** v1 | Small and independent; proves the composer slot and the consent panel. In-page "stop sharing" uses the panel. |
+| Stage 3 | 0.9, if S2 passes | Status, overlay, here, `onUi`, avatar, `sign`; **live**; telling same-name people apart | The most moving parts and third-party services; better with share underneath. |
+| Later | — | **relay** and `services/relay`; invites shared separately; op v2 with sequence numbers and a strict schema; a small scripting entry for agents | Owned infrastructure, once the free paths show what's missing. |
 
 **Spikes in the "Now" step.** Each is written up in the architecture doc's platform findings. A
 failed spike means its add-on waits, and the slots only it needs don't land (rule 2 in "How a byte
@@ -1567,14 +1586,14 @@ gets into the core").
 
 | Spike | Gates | Run against | Go when |
 |---|---|---|---|
-| S1 PrivateBin | 0.6 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. |
-| S2 Nostr and STUN | 0.8 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays; STUN-only connection rates on home, mobile and one office network are recorded. |
-| S3 Web Speech | 0.7 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. |
-| S4 CI | integration tests | The GitLab runners and the GitHub mirror's Actions | Docker is available, or the PHP fallback runs. |
-| S5 CDN names | 0.6 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. |
-| S6 Mailbox | 0.6 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). |
+| S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07** in Chrome, Firefox and Safari; volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. **Signer, own relay and 3 public relays passed 2026-10-08** in Chrome, Firefox and Safari; connection rates across networks still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. **Passed 2026-10-08** in Chrome (service and on device) and Safari; Firefox has no engine; Edge not tried ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. **Passed 2026-10-08:** Docker 28 and PHP 8.3 both work ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. **Passed 2026-10-07** in Chrome, Firefox and Safari ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
+| S6 Mailbox | 0.7 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). **Public host over TLS and a private address over `http:` passed 2026-10-07** in Chrome, Firefox and Safari; TLS on a private address still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 
-**What 2C-2 should do now.** None of these adds visible behaviour; most save bytes later.
+**What 0.5 should do now.** None of these adds visible behaviour; most save bytes later.
 
 1. **Let the menu's rows grow.** Replace `if (menu.firstChild !== idRow)` in `build()`
    (`src/ui/launcher.ts:431-434`) with a version check; keep rows built from one array with a (still
@@ -1587,10 +1606,10 @@ gets into the core").
    exempted; keep a place above the new-comment box where a note line can go.
 4. **Keep choke points single:** `open()`, `render()`, the animation-frame loop and the `here` callback.
    Keep the held-draft and unsent-reply rules in one place, so §3.6 can reuse them.
-5. **Don't add reserved public names to `mangleProps`** (§4). If 2C-2 touches `build.mjs`, move the
+5. **Don't add reserved public names to `mangleProps`** (§4). If 0.5 touches `build.mjs`, move the
    regex to `scripts/mangle.mjs` with `PUBLIC_NAMES` and the test.
-6. **Bank size savings** beyond 2C-2's own needs toward stage 0 (+133 B, measured) and stage 1
-   (~0.7 KB), and record each saving in bytes.
+6. **Keep the headroom set aside in §15** (about 2.1 KB for stages 0–3); bank any savings toward
+   it, and record each saving in bytes.
 
 ## 19. Other docs changed with this design
 
@@ -1620,7 +1639,7 @@ gets into the core").
   purpose: a dynamically imported module can't be hash-checked before it runs the way R5 requires
   (SRI for `import()` has no browser-wide support), and `import()` from `file://` pages is untested in
   Safari. Code fetched at run time goes through fetch, hash check and a classic Blob worker instead.
-- Creating shared copies from inside the page in 0.6 (§7.1).
+- Creating shared copies from inside the page in 0.7 (§7.1).
 - Uploading other people's comments to a sharing service, or a signed opt-out op in v1 (§7.3).
 - TURN from public services, or any service run by the Pipeup project (the reference mailbox server is
   software operators run, not a service).
@@ -1628,6 +1647,8 @@ gets into the core").
   in mailbox v1, and an endpoint that lists mailboxes (§7.7).
 - Storing secrets anywhere, or an add-on keeping long-lived ids of its own.
 - Trystero (about 31 KB, ESM-only, no TURN) or other large peer-to-peer libraries.
+- Third-party code in any add-on, bundled or loaded at run time (R11): no on-device speech model
+  (Whisper and its runtime), no secp256k1 or other crypto library.
 - Per-author sequence numbers and gap detection before op v2.
 
 ---
@@ -1659,3 +1680,23 @@ gets into the core").
   command, and spike S6. Share's budget 7.5 KB; core unchanged. §7.1, §7.2, §10, §12, §13–§19 and Not
   doing updated.
 - 2026-10-07 — Moved to GitHub with the project; paths are relative to the repository root and the sync script row is gone.
+- 2026-10-07 — Renumbered to match RELEASE.md, with one release per add-on so a failed spike never holds
+  back another: the "2C-2" items move to 0.5 (touch and the drawer), the CLI and stage 0 to 0.6, share
+  to 0.7, voice to 0.8, live to 0.9. Decision 1 recorded (§15): the 40 KB budget leaves 3,253 B, about
+  2.1 KB of it set aside for the add-on stages. Core sizes re-measured on 0.4.1. S4 runs on GitHub
+  Actions only. Architecture diagram added. The functional spec changes are applied.
+- 2026-10-07 — No dependencies for add-ons either (R11, and AGENTS.md): nothing third-party is bundled
+  into an add-on or loaded at run time; build and test tools stay dev-only. Voice v2 (on-device Whisper)
+  is dropped, along with `importScripts` of fetched code. Live signs its Nostr meeting-point events with
+  the kit's own minimal BIP-340 signer instead of @noble/secp256k1; S2 now covers it, and live's budget
+  falls from 14 KB to 10.5 KB. `check-addon.mjs` fails any add-on with `dependencies`.
+- 2026-10-07 — Spike S5 passed: jsDelivr and unpkg serve `+` file names byte for byte with SRI, from
+  `file://` in Chrome, Firefox and Safari; `pipeup+<id>.min.js` stays.
+- 2026-10-07 — §17: the kit's `schnorr` signer is tested against the BIP-340 vectors and cross-checked against `@noble/secp256k1` as a test-only dev dependency.
+- 2026-10-07 — Spike S6, first half: from `file://`, the mailbox on loopback and a private address works in Chrome, Firefox and Safari with no preflight and no local-network prompt; TLS and the public host remain.
+- 2026-10-07 — Spike S6, public half: the mailbox behind TLS on a public host (a Cloudflare Worker) works from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
+- 2026-10-07 — Spike S1 on an own PrivateBin 2.0.6 passed (§7.2 updated): the comment mapping is accepted, comments never carry `meta`, "please wait" is HTTP 200 with `status: 1` and is never parsed, an unoffered expiry silently becomes the default and `time_to_live` shows it. Volunteer instances still to test, with their operators' permission.
+- 2026-10-08 — Spike S3 passed (§8 updated): dictation works from `file://` in Chrome, through its service and on device, and in Safari; Firefox has none. Chrome and Safari ask for the microphone again on every load of a `file://` page. Safari can't say whether it listens on device, so its consent panel always uses the service sentence. One recognition at a time.
+- 2026-10-08 — Spike S2, first half: the kit's own signer passes the BIP-340 vectors and matches noble on 2,000 random keys; it measures 1.0 KB gzip. A local nostr-rs-relay accepts and delivers its ephemeral events from `file://` in Chrome, Firefox and Safari without storing them, and two peers meet through it. Public relays and other networks remain.
+- 2026-10-08 — Spike S2, public relays: damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work. They all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s; §9.1 now ignores offers older than 30 s. Cross-network connection rates remain.
+- 2026-10-08 — Spike S4 passed: GitHub Actions runs PrivateBin and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server; integration tests use the image, pinned by digest.
