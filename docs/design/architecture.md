@@ -185,6 +185,25 @@ A test page opened from `file://` in headless Chrome on macOS:
 Still to test: **Safari and Firefox** (Firefox isolates each `file://` document by default, which
 may affect IndexedDB persistence). Local ES modules fail from `file://`, hence the classic bundle.
 
+### S5: CDN file names with `+` (add-ons spike, 2026-10-07): passed
+
+Combined files are named `pipeup+<id>.min.js` ([add-ons design](addons.md) §13). Tested with an
+existing npm package that ships `+` file names (`timezone@1.0.23`, `Etc/GMT+1.js`); nothing was
+published.
+
+| Check | jsDelivr | unpkg |
+|---|---|---|
+| `+` in the path, raw or as `%2B` | 200 | 200 |
+| Content type | `application/javascript; charset=utf-8` | `text/javascript; charset=utf-8` |
+| `access-control-allow-origin: *` (needed for SRI) | yes | yes |
+| Bytes equal to the npm tarball's (SHA-384) | yes | yes |
+| `<script integrity crossorigin>` from `file://`: Chrome (Playwright Chromium), Firefox 153, Safari 27 | loads | loads |
+
+A wrong-hash control was refused in all three browsers, so the SRI check ran. A space in place of the
+`+` gives 404, so neither CDN reads `+` as a space. jsDelivr gives `/+esm` at the end of a path a special
+meaning; `pipeup+<id>.min.js` doesn't end that way, and an existing `.min.js` is served unchanged. The
+fallback name `pipeup-with-<id>.min.js` isn't needed.
+
 ### Peer to peer (deferred)
 
 ![Peer to peer from file://](images/p2p-file-protocol.svg)
@@ -606,3 +625,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §11: keyboard final-review fixes — the cursor lets go of a draft's block when it moves off it; Enter in a page form field submits with the cursor not in use; All comments and Copy share `byPage`; doc corrections (no `TreeWalker`, `pinAt` folded into `commentOn`, name wording, Esc steps); 36,765 B (min) / 36,419 B (esm) gzip.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
 - 2026-10-07 — §11: 0.4.1 budgets 40 KB (min, esm), 12 KB (core): Tab in comment mode and the cursor's stops cost about +0.9 KB gzip (36,759 B before).
+- 2026-10-07 — §6: no third-party Ed25519 fallback (no runtime dependencies in Pipeup or its add-ons). §7: add-ons spike S5 passed — jsDelivr and unpkg serve `+` file names with SRI from `file://` in Chrome, Firefox and Safari.

@@ -1383,8 +1383,8 @@ site, the skill and `pipeup check` read. Add-ons with a headless part declare `e
   `"use strict"`, so a sloppy-mode third-party add-on can't be broken by it silently.
 - Concatenation keeps each piece identical to its separate file, so the core's mangling never reaches
   add-on code.
-- Whether jsDelivr and unpkg serve `+` in file names is checked in S5; the fallback name is
-  `pipeup-with-<id>.min.js`.
+- jsDelivr and unpkg serve `+` in file names with the right type and SRI (S5, passed 2026-10-07), so
+  the fallback name `pipeup-with-<id>.min.js` isn't used.
 - CDN: `https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0/dist/share.min.js` and
   `…/dist/pipeup+share.min.js`, pinned and SRI-checked like the core.
 
@@ -1572,7 +1572,7 @@ gets into the core").
 | S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. |
 | S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. |
-| S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. |
+| S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. **Passed 2026-10-07** in Chrome, Firefox and Safari ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S6 Mailbox | 0.7 share (mailbox) | The reference server behind TLS on a public host and on a private (intranet) address | From `file://` in Chrome, Firefox and Safari: simple GET and `text/plain` POST work with no preflight; a 429's body and exposed `Retry-After` are readable; a `keepalive` POST at `pagehide` arrives; what Chrome's local-network rules ask for on the private address is recorded (a prompt is acceptable if it is the browser's own and stated on the site). |
 
 **What 0.5 should do now.** None of these adds visible behaviour; most save bytes later.
@@ -1672,3 +1672,5 @@ gets into the core").
   is dropped, along with `importScripts` of fetched code. Live signs its Nostr meeting-point events with
   the kit's own minimal BIP-340 signer instead of @noble/secp256k1; S2 now covers it, and live's budget
   falls from 14 KB to 10.5 KB. `check-addon.mjs` fails any add-on with `dependencies`.
+- 2026-10-07 — Spike S5 passed: jsDelivr and unpkg serve `+` file names byte for byte with SRI, from
+  `file://` in Chrome, Firefox and Safari; `pipeup+<id>.min.js` stays.
