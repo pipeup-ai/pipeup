@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-10-08
+
 ### Fixed
 - The comment control's icon is readable when a page's link colour is pale (on a dark page, the icon was white on pale blue in comment mode).
 - Pipeup follows a page that switches between light and dark after it has loaded.
@@ -188,7 +190,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/pipeup-ai/pipeup/compare/v0.3.2...v0.4.0

@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/voice",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Dictate Pipeup comments with the browser's own speech engine.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.5.0"
+    "pipeup": "0.5.1"
   },
   "pipeup": {
     "network": {
