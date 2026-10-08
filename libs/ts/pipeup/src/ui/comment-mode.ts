@@ -407,6 +407,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       e.preventDefault();
       e.stopPropagation();
       taken = e.key;
+      ctx.dismiss();
       if (ctx.state.active) ctx.open(null);
       if (ctx.state.menu) {
         ctx.state.menu = false;
@@ -659,7 +660,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     taken = e.key;
     if (e.key === "Escape") return void ctx.back();
     if (e.key === "Enter" || e.key === " ") return act(e.shiftKey && e.key === "Enter");
-    // Moving on closes an open thread, as a click elsewhere does.
+    // Moving on closes an open thread or an empty draft, as a click elsewhere does.
+    if (e.key === "Tab") ctx.dismiss();
     if (ctx.state.active) ctx.open(null);
     if (e.key === "Tab") step(e.shiftKey ? -1 : 1);
     else if (e.key === "ArrowUp") around();

@@ -136,7 +136,7 @@ test("presence: a cursor in the overlay, the typing words, the People panel and 
   await b.page.mouse.move(box!.x + 40, box!.y + 10);
   await b.page.mouse.move(box!.x + 60, box!.y + 12);
   await expect(a.page.locator(".ov[data-addon=live] .live-c.on")).toHaveCount(1, { timeout: 5000 });
-  await expect(a.page.locator(".ov[data-addon=live] .live-c span")).toHaveText(/\S/);
+  await expect(a.page.locator(".ov[data-addon=live] .live-c > span")).toHaveText(/\S/);
   await expect(a.page.locator(".ov[data-addon=live]")).toHaveAttribute("aria-hidden", "true");
   // A comments; B starts a reply: A sees it in words, .
   await a.page.evaluate(async () => {
