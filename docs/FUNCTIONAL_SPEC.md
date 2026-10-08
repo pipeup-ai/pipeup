@@ -865,3 +865,4 @@ which Pipeup discards. It also can't tell when something is missing.
   can't work on a page (no speech engine, nothing configured) stays off and says why (§11a); an add-on's own
   spoken words ("Listening") are heard at once, while comments show.
 - 2026-10-08 — Add-ons ship together in 0.5 (not in separate releases); touch and narrow pages move to 0.6 and the command-line tool to 0.7.
+- 2026-10-08 — Comment boxes (popovers) are wider when the window has room (about 400 px on windows 900 px wide or more, 300 px otherwise); All comments keeps its own width. The comment control stays readable on a page whose accent colour is pale (its icon turns dark in comment mode), and Pipeup follows a page that switches between light and dark after it has started.

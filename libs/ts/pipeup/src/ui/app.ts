@@ -11,7 +11,7 @@ import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
-import { narrow, PANEL } from "./layout";
+import { narrow, PANEL, popover } from "./layout";
 import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
@@ -20,7 +20,7 @@ import { createHere } from "./here";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
-import { readTheme } from "./theme";
+import { applyTheme, readTheme } from "./theme";
 import type { ThreadActions } from "./thread-view";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
@@ -680,6 +680,7 @@ export function startApp(o: AppOptions): App {
     dismiss();
   };
   const onResize = () => {
+    host.layer.style.setProperty("--pu-pop", `${popover()}px`);
     const mode = chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {
       state.mode = mode;
@@ -707,6 +708,9 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("resize", onResize);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
+  // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
+  const themeObserver = new MutationObserver(() => applyTheme(host.layer, readTheme(o.root)));
+  for (const el of [document.documentElement, document.body]) themeObserver.observe(el, { attributes: true });
   const sizeObserver = new ResizeObserver(scheduleReplace);
   sizeObserver.observe(o.root);
   const offChange = o.doc.onChange((_threads, added, source) => {
@@ -733,6 +737,7 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(deferredTimer);
       observer.disconnect();
       sizeObserver.disconnect();
+      themeObserver.disconnect();
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
