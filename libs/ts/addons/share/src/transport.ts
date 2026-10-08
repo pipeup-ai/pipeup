@@ -41,6 +41,7 @@ export class ShareTransport implements Transport {
   private ok = false;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private busy: Promise<void> | null = null;
+  private again = false;
   private rolling = false;
   private ready: [string, RequestInit] | null = null;
   private stopped = false;
@@ -78,9 +79,22 @@ export class ShareTransport implements Transport {
     return this.ok ? this.b.ids : null;
   }
 
-  /** Reads now (once at a time), then schedules the next read. */
+  /**
+   * Reads now (once at a time), then schedules the next read. Asked again while a read is under way, it reads once
+   * more straight after: that read may have started before whatever made the reviewer ask (focus, coming back online).
+   */
   poll(): Promise<void> {
-    return (this.busy ??= this.read().finally(() => (this.busy = null)));
+    if (this.busy) {
+      this.again = true;
+      return this.busy;
+    }
+    const run = async () => {
+      do {
+        this.again = false;
+        await this.read();
+      } while (this.again && !this.stopped);
+    };
+    return (this.busy = run().finally(() => (this.busy = null)));
   }
 
   /** The reviewer changed something: reads become frequent again. */
