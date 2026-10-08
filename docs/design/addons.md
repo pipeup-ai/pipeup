@@ -566,7 +566,7 @@ The smallest complete add-on:
 | `Transport`, `TabTransport` | the transport interface; a `BroadcastChannel` transport for tests and Try pages | 0.2 KB |
 | `presence` | the presence message types and one renderer, shared by live and later relay | 3 KB (live only) |
 | `inlineWorker(code)` | the only way to start a worker: a classic Blob worker | 0.1 KB |
-| `schnorr` | Pipeup's own minimal BIP-340 signer over secp256k1, for Nostr meeting points (§9.1); signing only | ~1.5 KB (live only, estimate) |
+| `schnorr` | Pipeup's own minimal BIP-340 signer over secp256k1, for Nostr meeting points (§9.1); signing only | 1.0 KB (live only, measured in S2) |
 
 **Settings when storage fails.** `settings` uses memory when `host.ephemeral` is true or its own
 database fails to open. `settings.lasting` is then false, and an add-on that asks the reviewer
@@ -1506,7 +1506,7 @@ The mailbox transport adds nothing to the core: it is share's code, behind the s
 |---|---|---|
 | `share.min.js` | 7.5 KB | kit sync, envelope, ladder, settings, PrivateBin client, rollover, consent rows; mailbox client ~0.5 KB (estimate: address parse, two requests, cursor paging, error codes, `Retry-After`). If S1 fails and PrivateBin is left out (~1.5 KB with rollover), the budget returns to 7 KB. |
 | `voice.min.js` | 4 KB | Web Speech, consent panel, language |
-| `live.min.js` | 10.5 KB | own BIP-340 signer ~1.5 KB (estimate), signalling, mesh, reconcile, presence renderer |
+| `live.min.js` | 10.5 KB | own BIP-340 signer 1.0 KB (measured, S2), signalling, mesh, reconcile, presence renderer |
 | `pipeup+<id>.min.js` | core + add-on budgets | checked separately |
 
 Run-time downloads made by the browser itself (a speech pack) are declared on the add-on page and in
@@ -1581,7 +1581,7 @@ gets into the core").
 | Spike | Gates | Run against | Go when |
 |---|---|---|---|
 | S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07** in Chrome, Firefox and Safari; volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
-| S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. |
+| S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. **Signer and own relay passed 2026-10-08** in Chrome, Firefox and Safari; public relays and other networks still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. **Passed 2026-10-08** in Chrome (service and on device) and Safari; Firefox has no engine; Edge not tried ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. |
 | S5 CDN names | 0.7 packaging | jsDelivr and unpkg | A file named with `+` is served with the right type and SRI; otherwise `pipeup-with-<id>`. **Passed 2026-10-07** in Chrome, Firefox and Safari ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
@@ -1691,3 +1691,4 @@ gets into the core").
 - 2026-10-07 — Spike S6, public half: the mailbox behind TLS on a public host (a Cloudflare Worker) works from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
 - 2026-10-07 — Spike S1 on an own PrivateBin 2.0.6 passed (§7.2 updated): the comment mapping is accepted, comments never carry `meta`, "please wait" is HTTP 200 with `status: 1` and is never parsed, an unoffered expiry silently becomes the default and `time_to_live` shows it. Volunteer instances still to test, with their operators' permission.
 - 2026-10-08 — Spike S3 passed (§8 updated): dictation works from `file://` in Chrome, through its service and on device, and in Safari; Firefox has none. Chrome and Safari ask for the microphone again on every load of a `file://` page. Safari can't say whether it listens on device, so its consent panel always uses the service sentence. One recognition at a time.
+- 2026-10-08 — Spike S2, first half: the kit's own signer passes the BIP-340 vectors and matches noble on 2,000 random keys; it measures 1.0 KB gzip. A local nostr-rs-relay accepts and delivers its ephemeral events from `file://` in Chrome, Firefox and Safari without storing them, and two peers meet through it. Public relays and other networks remain.

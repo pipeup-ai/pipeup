@@ -264,6 +264,43 @@ microphone and answering the browsers' prompts.
   started"), and one started straight after fails at once with "No speech detected".
 - Edge wasn't installed and wasn't tried; it uses Chrome's engine.
 
+### S2: Nostr and STUN from `file://` (add-ons spike, 2026-10-08): own relay and signer passed; public relays and other networks to do
+
+**The kit's own BIP-340 signer** ([add-ons design](addons.md) §6, §9.1): about 70 lines over WebCrypto
+SHA-256 and `BigInt`, signing only.
+
+| Check | Result |
+|---|---|
+| The 8 signing vectors in BIP-340's `test-vectors.csv` | all pass, keys and signatures |
+| 2,000 random keys, messages and aux values, against `@noble/secp256k1` 3.2.0 (a scratch dev dependency) | noble verified all 2,000; all 2,000 signatures byte-identical |
+| Size | 1,821 B minified, **1,041 B gzip** (estimate 1.5 KB; noble ~5.4 KB) |
+| Speed | about 1.8 ms per signature in Node |
+
+**A relay we control:** `nostr-rs-relay` 0.10.0 (Docker, default settings, no auth, no proof of work),
+reached at `ws://127.0.0.1` from a `file://` page in Chrome 154, Chromium 153, Firefox 157 and Safari
+27. Events were of an ephemeral kind (25800, chosen for the spike), from a fresh throwaway key, with
+200 bytes of sealed-looking content, tagged with a random topic.
+
+| Check | All four browsers |
+|---|---|
+| WebSocket from `file://` | opens |
+| Event signed by the kit's signer | accepted (`OK true`) |
+| Delivered to a subscriber of the topic | in 33–40 ms |
+| Stored (a later `REQ` for the topic) | no |
+| Corrupted signature (checked from Node) | refused: "invalid signature" |
+| Two peers in one page swap offer and answer through the relay, then open a data channel | open, message delivered, in 0.14–0.23 s |
+| STUN binding from `stun.l.google.com` and `stun.cloudflare.com` | server-reflexive candidates from both, in 42–152 ms |
+
+The two peers were on the same machine, so this proves the signalling path and the browsers' WebRTC
+from `file://`, not connection rates across networks.
+
+**Still to do for S2:**
+
+- Events accepted and delivered by **at least 3 public relays**, without NIP-42 auth or NIP-13 proof of
+  work, and their stated rate limits.
+- **STUN-only connection rates** between different networks: home, mobile and one office network.
+- Pick the ephemeral kind for live.
+
 ### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
 A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
@@ -724,3 +761,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §7: S6 public half passed — a Cloudflare Worker over HTTPS, from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
 - 2026-10-07 — §7: add-ons spike S1 on an own PrivateBin 2.0.6 passed in Chrome, Firefox and Safari from `file://`: simple requests, the §7.2 comment mapping, JSON reads, `time_to_live`, Web Locks; "please wait" is HTTP 200 with `status: 1`. Volunteer instances still to test.
 - 2026-10-08 — §7: add-ons spike S3 passed: dictation from `file://` in Chrome (service and on device) and Safari; the microphone is asked for on every load; Safari can't say where it listens.
+- 2026-10-08 — §7: add-ons spike S2, first half: the kit's own BIP-340 signer passes the BIP-340 vectors and a 2,000-key cross-check against noble (1,041 B gzip); a local nostr-rs-relay accepts, delivers and doesn't store its ephemeral events from `file://` in Chrome, Firefox and Safari, and two peers meet through it and open a data channel. Public relays and other networks still to test.
