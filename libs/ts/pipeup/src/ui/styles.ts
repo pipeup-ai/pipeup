@@ -164,7 +164,7 @@ grows or slides: its layers and numbers cross-fade in place. */
 .n.s{font-size:9.5px;letter-spacing:-.04em}
 .n.on{opacity:1}
 .launch .mode:hover,.launch .mode[aria-expanded=true]{background:var(--ho)}
-.launch .mode.on{background:var(--pu-accent);color:#fff}
+.launch .mode.on{background:var(--pu-accent);color:var(--pu-on,#fff)}
 /* Open threads on other slides or views: a small dot at the button's top right, easing in and out. */
 .mode>.dot{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--pu-accent);border:2px solid var(--su);opacity:0}
 .mode.else>.dot{opacity:1}

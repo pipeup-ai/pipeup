@@ -10,7 +10,7 @@ import { popoverAnchor } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { MenuItem } from "./addons";
 import { draw, icon } from "./icons";
-import { narrow, placePopover, POPOVER, room } from "./layout";
+import { narrow, placePopover, popover, room } from "./layout";
 import { threadView, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
@@ -310,7 +310,7 @@ export function createLauncher(ctx: Ctx): View {
     const vp = room(ctx.state.listing);
     const { left, top } = placePopover(
       { x: vp.width, y, below: false },
-      { width: POPOVER, height: side.offsetHeight },
+      { width: popover(), height: side.offsetHeight },
       vp,
     );
     side.style.left = `${left}px`;

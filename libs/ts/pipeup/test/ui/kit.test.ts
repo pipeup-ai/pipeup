@@ -62,6 +62,25 @@ describe("theme", () => {
     document.body.style.backgroundColor = "rgb(255, 255, 255)";
     expect(readTheme(document.body).dark).toBe(false);
   });
+
+  it("does not take a link colour that can't be seen, and picks text that reads on the accent", () => {
+    document.documentElement.style.removeProperty("--pipeup-accent");
+    const a = document.createElement("a");
+    a.href = "#x";
+    a.style.color = "rgb(157, 187, 248)"; // a dark page's pale link
+    document.body.append(a);
+    document.body.style.backgroundColor = "rgb(255, 255, 255)";
+    expect(readTheme(document.body).accent).toBe("#534AB7");
+    document.body.style.backgroundColor = "rgb(20, 20, 20)";
+    const dark = readTheme(document.body);
+    expect(dark.accent).toBe("rgb(157, 187, 248)"); // pale is fine on a dark surface
+    expect(dark.on).toBe("#111");
+    a.style.color = "rgb(40, 90, 200)";
+    document.body.style.backgroundColor = "rgb(255, 255, 255)";
+    expect(readTheme(document.body)).toMatchObject({ accent: "rgb(40, 90, 200)", on: "#fff" });
+    a.remove();
+    document.body.style.backgroundColor = "";
+  });
 });
 
 describe("styles", () => {
@@ -72,7 +91,7 @@ describe("styles", () => {
 
 describe("host", () => {
   it("adds one ignored, fixed, click-through root with an open shadow and a layer", () => {
-    const host = createHost({ font: "serif", accent: "#123456", dark: true });
+    const host = createHost({ font: "serif", accent: "#123456", dark: true, on: "#fff" });
     expect(host.element.tagName).toBe("PIPEUP-ROOT");
     expect(host.element.parentElement).toBe(document.documentElement);
     expect(host.element.hasAttribute("data-pipeup-ignore")).toBe(true);

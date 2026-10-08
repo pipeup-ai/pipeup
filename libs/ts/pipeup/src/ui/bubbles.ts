@@ -5,7 +5,7 @@ import type { Ctx, Draft, View } from "./context";
 import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
-import { placeDraft, placePopover, POPOVER, room, type AnchorPoint } from "./layout";
+import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
 import { byPage } from "./order";
 import { threadView, type ThreadView } from "./thread-view";
 
@@ -144,7 +144,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       // A block's box sits below it (above if no room), so it never covers what it is about.
       const { left, top, above } = placeDraft(
         block.getBoundingClientRect(),
-        { width: pop.offsetWidth || POPOVER, height: pop.offsetHeight },
+        { width: pop.offsetWidth || popover(), height: pop.offsetHeight },
         { width: window.innerWidth, height: window.innerHeight },
       );
       const flipped = draft?.above !== null && draft?.above !== above;
@@ -155,7 +155,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       return;
     }
     const where = draft && d ? popoverAnchor(d.anchor, d.resolved) : shown ? at(shown) : null;
-    if (where) put(pop, where, POPOVER);
+    if (where) put(pop, where, popover());
   }
 
   /** The naming bar already names this draft's block, so its box needn't. */

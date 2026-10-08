@@ -7,6 +7,13 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+- The comment control's icon is readable when a page's link colour is pale (on a dark page, the icon was white on pale blue in comment mode).
+- Pipeup follows a page that switches between light and dark after it has loaded.
+
+### Changed
+- Comment boxes are wider (400 px) on windows 900 px wide or more.
+
 ## [0.5.0] - 2026-10-08
 
 ### Added
