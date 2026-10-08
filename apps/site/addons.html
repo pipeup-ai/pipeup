@@ -12,58 +12,106 @@
       @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
       @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
       :root {
-        --edge: max(24px, calc((100% - 1120px) / 2));
-        --ink: #2f3437; --strong: #111111; --muted: #55544f; --line: #d2d0c8; --bone: #eeede7; --paper: #ffffff; --violet: #534ab7;
+        --ink: #2f3437; --strong: #111111; --muted: #55544f; --faint: #7d7c76;
+        --line: #d2d0c8; --bone: #eeede7; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
         --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
         --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
         --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --move: cubic-bezier(0.4, 0, 0.2, 1);
+        --exit: cubic-bezier(0.4, 0, 1, 1);
       }
       * { box-sizing: border-box; }
       html { background: var(--paper); }
-      body { margin: 0; font: 16px/1.6 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
-      main { width: 100%; flex: 1; display: flex; flex-direction: column; }
-      main > * { padding-left: var(--edge); padding-right: var(--edge); }
-      header.top { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; padding-bottom: 22px; }
-      .mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--strong); text-decoration: none; }
-      .back { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s var(--ease); }
-      .back:hover { color: var(--strong); }
-      h1 { font-size: clamp(32px, 6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--strong); margin: 28px 0 14px; font-weight: 600; }
-      .lede { font-size: 18px; color: var(--ink); margin: 0 0 8px; max-width: 40em; }
-      .beta { font-size: 14px; color: var(--muted); margin: 0 0 32px; }
-      .card { border-top: 1px solid var(--line); padding-top: 32px; padding-bottom: 32px; }
-      .card h2 { font-size: 20px; margin: 0 0 6px; color: var(--strong); font-weight: 600; }
-      .card p { margin: 0 0 10px; }
-      .card dl { margin: 14px 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 15px; }
-      .card dt { color: var(--muted); }
-      .card dd { margin: 0; }
-      .card { display: grid; grid-template-columns: 1fr; gap: 0 56px; align-content: start; }
-      .card > .demo { max-width: 560px; }
-      @media (min-width: 900px) {
-        .card { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-auto-rows: min-content; align-items: start; padding: 44px var(--edge); }
-        .card > .demo { grid-column: 2; grid-row: 1 / span 6; margin: 0; max-width: none; align-self: center; }
-        .card > :not(.demo) { grid-column: 1; }
-        .card:nth-of-type(even) { background: #f4f3ee; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
-        .card:nth-of-type(even) > .demo { grid-column: 1; }
-        .card:nth-of-type(even) > :not(.demo) { grid-column: 2; }
+      body { margin: 0; font: 16px/1.55 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+      main { max-width: 1120px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
+      main > footer { margin-top: auto; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+      .mark { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      /* The GitHub link, top right: the mark and its name, in the muted ink until hovered. */
+      .gh { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .gh svg { display: block; transition: transform 0.26s var(--ease); }
+      .gh:hover, .gh:focus-visible { color: var(--strong); }
+      .gh:hover svg { transform: translateY(-1px); }
+      .more-links { display: flex; gap: 22px; align-items: baseline; }
+      .agents { position: relative; }
+      .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
+      .agents-menu {
+        position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; padding: 6px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        opacity: 0; transform: translateY(4px); visibility: hidden;
+        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
       }
-      .card h2, .card p { margin-bottom: 8px; }
-      .art { border-radius: 14px; background: var(--bone); padding: 18px; display: grid; place-items: center; }
-      .art svg { width: 100%; max-width: 420px; height: auto; display: block; }
-      .row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
-      .copy { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: 1px solid #b4b2a8; border-radius: 999px; background: var(--paper); color: var(--strong); font: 500 14px/1 var(--sans); cursor: pointer; transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease); }
-      .copy:hover { background: var(--bone); border-color: #8f8d84; }
-      .copy:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
-      .copy svg { width: 16px; height: 16px; }
-      .copy .ok { display: none; }
-      .copy.done .ok { display: block; }
-      .copy.done .cp { display: none; }
-      .note { font-size: 13px; color: var(--muted); margin: 0; }
-      pre { margin: 14px 0 0; padding: 12px 14px; background: var(--bone); border-radius: 10px; overflow-x: auto; font: 13px/1.6 var(--mono); color: var(--strong); }
-      footer { border-top: 1px solid var(--line); margin-top: auto; padding: 22px var(--edge, 24px) 28px; font-size: 13px; color: var(--muted); }
-      footer a { color: inherit; transition: color 0.2s var(--ease); }
-      footer a:hover { color: var(--strong); }
-
-      /* ---------- Animated demos: the same look as the home page's showcase ---------- */
+      /* A short bridge so the pointer can travel from the link up to the menu. */
+      .agents-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; }
+      .agents:hover .agents-menu, .agents:focus-within .agents-menu, .agents.open .agents-menu {
+        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
+      }
+      .agents-menu a { display: block; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: var(--strong); text-decoration: none; transition: background-color 0.15s var(--ease); }
+      .agents-menu a:hover, .agents-menu a:focus-visible { background: var(--bone); outline: none; }
+      a { color: var(--strong); text-underline-offset: 3px; text-decoration-color: var(--line); }
+      a:hover { text-decoration-color: var(--strong); }
+      .mark { text-decoration: none; }
+      h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
+      .intro { padding: 32px 0 40px; }
+      .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 34em; }
+      .lede b { font-weight: 500; color: var(--ink); }
+      .btn {
+        appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
+        padding: 12px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--strong);
+        transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+      }
+      .btn:hover { background: var(--bone); }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
+      .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
+      .btn.primary:hover { background: #2a2a2a; }
+      .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .btn:hover { background: var(--bone); }
+      .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
+      .btn.primary:hover { background: #2a2a2a; }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
+      .btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .ok { display: none; }
+      .copied .ok { display: block; animation: pop 0.3s var(--ease); }
+      @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
+      .copied .ic { display: none; }
+      /* One add-on per row, laid out like the home page's first screen: words left, the demo right. */
+      .addon { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 48px; align-items: center; padding: 40px 0; border-top: 1px solid var(--line); }
+      .addon h2 { font-size: 28px; letter-spacing: -0.03em; line-height: 1.1; color: var(--strong); margin: 0 0 10px; font-weight: 600; }
+      .addon .one { font-size: 18px; color: var(--ink); margin: 0 0 18px; }
+      .addon .fact { margin: 0 0 8px; font-size: 15px; color: var(--muted); }
+      .addon .fact b { font-weight: 500; color: var(--strong); margin-right: 6px; }
+      .addon .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+      .addon .demo { margin: 0; }
+      /* "Stays on your device": a lock and a short note on hover, focus or tap. */
+      .private { position: relative; }
+      .private button { all: unset; cursor: default; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; }
+      .private button:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+      .private svg { flex: none; color: var(--ink); }
+      .private .tip {
+        position: absolute; left: -10px; bottom: calc(100% + 12px); width: 264px; padding: 12px 14px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        font-size: 13px; line-height: 1.5; color: var(--muted);
+        opacity: 0; transform: translateY(4px); visibility: hidden;
+        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
+      }
+      .private .tip b { display: block; color: var(--strong); margin-bottom: 2px; }
+      .private .tip::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
+      .private:hover .tip, .private:focus-within .tip {
+        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
+      }
+      .facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
+      .facts b { font-weight: 500; color: var(--ink); }
+      @media (max-width: 860px) {
+        .addon { grid-template-columns: 1fr; gap: 24px; }
+        .agents-menu, .private .tip { transform: none !important; }
+      }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+/* ---------- Animated demos: the same look as the home page's showcase ---------- */
       .demo { position: relative; overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; margin: 14px 0 18px; pointer-events: none; }
       .stage { position: absolute; left: 0; top: 0; width: 400px; height: 300px; transform-origin: 0 0; transition: opacity 0.5s var(--ease); }
       .stage.out { opacity: 0; }
@@ -91,7 +139,7 @@
       .sh .who1, .sh .who2 { top: 12px; font-weight: 500; color: var(--ink); width: 162px; }
       .sh .who1 { left: 12px; } .sh .who2 { left: 226px; }
       .sh .dash { position: absolute; left: 178px; top: 150px; width: 44px; border-top: 1.5px dashed #c9c8c2; }
-      .sh .pk { position: absolute; left: 176px; top: 134px; width: 48px; height: 32px; border-radius: 9px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.06); display: grid; place-items: center; opacity: 0; transform: translateX(-34px) scale(0.8); transition: opacity 0.4s var(--ease), transform 1.2s var(--ease); }
+      .sh .pk { z-index: 3; position: absolute; left: 176px; top: 134px; width: 48px; height: 32px; border-radius: 9px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.06); display: grid; place-items: center; opacity: 0; transform: translateX(-34px) scale(0.8); transition: opacity 0.4s var(--ease), transform 1.2s var(--ease); }
       .sh.s4 .pk { opacity: 1; transform: translateX(-34px); }
       .sh.s5 .pk { transform: translateX(34px); }
       .sh.s6 .pk { opacity: 0; transform: translateX(40px) scale(0.8); }
@@ -116,7 +164,7 @@
       .vo .wave i { width: 3px; height: 4px; border-radius: 2px; background: var(--violet); animation: bar 0.9s ease-in-out infinite; }
       .vo .wave i:nth-child(2) { animation-delay: 0.15s; } .vo .wave i:nth-child(3) { animation-delay: 0.3s; } .vo .wave i:nth-child(4) { animation-delay: 0.45s; }
       @keyframes bar { 0%, 100% { height: 4px; } 50% { height: 14px; } }
-      .vo .state { position: absolute; left: 30px; bottom: 9px; font-size: 10px; color: var(--muted); opacity: 0; transition: opacity 0.3s var(--ease); }
+      .vo .state { position: absolute; left: 38px; bottom: 9px; font-size: 10px; color: var(--muted); opacity: 0; transition: opacity 0.3s var(--ease); }
       .vo.s3:not(.s4) .state { opacity: 1; }
       .vo .cursor { transform: translate(90px, 220px); } .vo.s1 .cursor { transform: translate(150px, 84px); } .vo.s2 .cursor { transform: translate(296px, 114px); } .vo.s5 .cursor { transform: translate(300px, 230px); }
       /* Live */
@@ -135,27 +183,39 @@
       .lv .pin { left: 214px; top: 100px; } .lv.s6 .pin { opacity: 1; transform: none; }
       .lv .cb { left: 205px; top: 148px; width: 152px; } .lv.s6 .cb { opacity: 1; transform: none; }
       @media (prefers-reduced-motion: reduce) { .stage .wave i { animation: none; } }
-      @media (max-width: 560px) { .card dl { grid-template-columns: 1fr; gap: 0; } .card dd { margin-bottom: 8px; } }
-      @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+      main > footer { margin-top: auto; }
+      footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
     </style>
   </head>
   <body>
     <main>
       <header class="top">
         <a class="mark" href="./" aria-label="Pipeup home">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" shape-rendering="geometricPrecision" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
           Pipeup
         </a>
-        <a class="back" href="./">Back to Pipeup</a>
+        <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" /></svg>
+          GitHub
+        </a>
       </header>
 
-      <h1 data-pipeup-id="title">Add-ons</h1>
-      <p class="lede" data-pipeup-id="lede">Pipeup on its own needs none of these. It sends nothing anywhere, and most pages should stay that way.</p>
-      <p class="beta" data-pipeup-id="beta">An add-on is one extra script that the page's author chooses to add. Reviewers are never moved into one, and each asks before it does anything. The add-ons are in beta: the core alone is the stable choice.</p>
+      <section class="intro" data-pipeup-id="intro">
+        <h1>Add-ons</h1>
+        <p class="lede">Pipeup on its own needs none of these, and sends nothing anywhere. An add-on is one extra script the page's author chooses; each asks reviewers first. <b>In beta.</b></p>
+      </section>
 
-      <section class="card" data-pipeup-id="share">
-        <h2>Share</h2>
-        <p>Comments reach everyone who has the page, not only the browser they were written in.</p>
+      <section class="addon" data-pipeup-id="share">
+        <div class="text">
+          <h2>Share</h2>
+          <p class="one">Comments reach everyone who has the page.</p>
+          <p class="fact"><b>Sends</b> Sealed comments, to a service you pick: a PrivateBin or your own mailbox.</p>
+          <p class="fact"><b>Asks first</b> Nothing is shared until the reviewer chooses to.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="share-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="share-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
         <div class="demo" data-len="10000" data-steps='[[900,"s1"],[2000,"s2"],[5000,"s3"],[5400,"s4"],[6000,"s5"],[7300,"s6"],[7600,"s7"]]' data-type="2600,4600" aria-hidden="true">
           <div class="stage sh">
             <div class="cap who1">Sam's browser</div><div class="cap who2">Ada's browser</div>
@@ -166,19 +226,18 @@
               <div class="cb sent"><div class="who"><span class="av" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Sam</div><div class="txt" style="min-height:0">Add the Q3 figure.</div></div></div>
             <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
           </div></div>
-        <dl>
-          <dt>Sends</dt><dd>Comments, sealed in the reviewer's browser with a key that is only in the page's link, to a service the author picks: a PrivateBin or their own small mailbox server. The service never sees the words.</dd>
-          <dt>Asked first</dt><dd>Comments written before sharing stay on the device until the reviewer chooses to share them.</dd>
-          <dt>You choose</dt><dd>Where it goes. Pipeup never picks a service for you.</dd>
-        </dl>
-        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/share@next/dist/share.min.js"&gt;&lt;/script&gt;
-&lt;html data-pipeup-share="https://…#…"&gt;</pre>
-        <div class="row"><button type="button" class="copy" data-prompt="share"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open. It will ask you for the sharing address.</p></div>
       </section>
-
-      <section class="card" data-pipeup-id="voice">
-        <h2>Voice</h2>
-        <p>Dictate a comment instead of typing it.</p>
+      <section class="addon" data-pipeup-id="voice">
+        <div class="text">
+          <h2>Voice</h2>
+          <p class="one">Dictate a comment instead of typing it.</p>
+          <p class="fact"><b>Sends</b> Nothing of its own. Your browser's speech engine does the listening.</p>
+          <p class="fact"><b>Asks first</b> A short note, then the browser's own microphone prompt.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="voice-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="voice-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
         <div class="demo" data-len="10000" data-steps='[[700,"s1"],[1800,"s2"],[2800,"s3"],[6600,"s4"],[8000,"s5"]]' data-type="3200,6400" aria-hidden="true">
           <div class="stage vo">
             <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:42px;width:170px"></div><div class="ln" style="top:58px;width:210px"></div><div class="hl"></div><div class="ln" style="top:96px;width:190px"></div><div class="ln" style="top:112px;width:230px"></div><div class="ln" style="top:128px;width:120px"></div><div class="pin"></div></div>
@@ -187,17 +246,18 @@
               <span class="wave"><i></i><i></i><i></i><i></i></span><span class="state">Listening…</span></div>
             <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
           </div></div>
-        <dl>
-          <dt>Sends</dt><dd>Nothing of its own. Speech is turned into words by the browser's own engine, which in some browsers sends the audio to its maker.</dd>
-          <dt>Asked first</dt><dd>A short note before the first use, then the browser's own microphone prompt.</dd>
-        </dl>
-        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@next/dist/voice.min.js"&gt;&lt;/script&gt;</pre>
-        <div class="row"><button type="button" class="copy" data-prompt="voice"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open.</p></div>
       </section>
-
-      <section class="card" data-pipeup-id="live">
-        <h2>Live</h2>
-        <p>See comments arrive as people write them, who else is on the page, and where they are looking.</p>
+      <section class="addon" data-pipeup-id="live">
+        <div class="text">
+          <h2>Live</h2>
+          <p class="one">See who else is on the page, and where.</p>
+          <p class="fact"><b>Sends</b> Presence and comments, browser to browser.</p>
+          <p class="fact"><b>Asks first</b> Each reviewer, before anything connects.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="live-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="live-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
         <div class="demo" data-len="10000" data-steps='[[600,"s1"],[1400,"s2"],[2200,"s3"],[3800,"s4"],[5600,"s5"],[6600,"s6"]]' data-type="6800,8600" aria-hidden="true">
           <div class="stage lv">
             <div class="w"><div class="dots"><i></i><i></i><i></i></div>
@@ -208,17 +268,33 @@
             <span class="cursor fox" aria-hidden="true"><svg width="16" height="18" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#3b82c4" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="chip" style="background:#3b82c4">Blue Fox</span></span>
             <span class="cursor owl" aria-hidden="true"><svg width="16" height="18" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#d97a1e" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="chip" style="background:#d97a1e">Orange Owl</span></span>
           </div></div>
-        <dl>
-          <dt>Sends</dt><dd>Presence and comments straight between the reviewers' browsers. Public relays are used only to introduce them to each other, and see addresses, not words.</dd>
-          <dt>Asked first</dt><dd>Each reviewer is asked before connecting. Nothing is opened until they agree.</dd>
-        </dl>
-        <pre>&lt;script src="https://cdn.jsdelivr.net/npm/@pipeup/live@next/dist/live.min.js"&gt;&lt;/script&gt;</pre>
-        <div class="row"><button type="button" class="copy" data-prompt="live"><svg class="cp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><svg class="ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Copy prompt</span></button><p class="note">Paste it into Claude or Codex with your page open.</p></div>
       </section>
+
+      <footer>
+        <ul class="facts">
+            <li><b>One file</b>, about 37 KB</li>
+            <li><b>No dependencies</b></li>
+            <li><b>Works from disk</b></li>
+            <li class="private">
+              <button type="button" aria-describedby="private-tip"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" /><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" /></svg><b>Stays on your device</b></button>
+              <span class="tip" role="tooltip" id="private-tip"><b>Private by design.</b>Nothing to install: one script in your HTML file. Comments stay in your browser and are never sent anywhere. They leave only when you copy them and share them yourself.</span>
+            </li>
+          </ul>
+        <div class="more-links">
+        <a class="agents-link" href="addons.html">Add-ons</a>
+        <div class="agents">
+          <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
+          <div class="agents-menu" role="menu" aria-label="For agents">
+            <a role="menuitem" href="llms.txt" title="A short guide for AI agents">llms.txt</a>
+            <a role="menuitem" href="llms-full.txt" title="The guide and every skill, in one file">llms-full.txt</a>
+            <a role="menuitem" href="index.html.md" title="This page as plain Markdown">This page as Markdown</a>
+            <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
+          </div>
+        </div>
+        </div>
+      </footer>
     </main>
-    <footer>
-      <a href="./">Pipeup</a> · <a href="llms.txt">For agents</a>
-    </footer>
+
     <script>
       const CDN = "https://cdn.jsdelivr.net/npm/";
       const tag = (pkg, file) => `<script src="${CDN}${pkg}@next/dist/${file}"><\/script>`;
@@ -280,14 +356,28 @@
           else if (!e.isIntersecting && seen) { seen = false; cancelAnimationFrame(raf); }
         }).observe(demo);
       }
-      for (const b of document.querySelectorAll(".copy")) {
+      for (const b of document.querySelectorAll("[data-copy]")) {
         b.addEventListener("click", async () => {
-          const text = prompts[b.dataset.prompt]();
+          const [id, what] = b.dataset.copy.split("-");
+          const text = what === "tag" ? tag("@pipeup/" + id, id + ".min.js") : prompts[id]();
           try { await navigator.clipboard.writeText(text); } catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
-          b.classList.add("done"); b.querySelector("span").textContent = "Copied";
-          setTimeout(() => { b.classList.remove("done"); b.querySelector("span").textContent = "Copy prompt"; }, 2200);
+          const label = b.querySelector(".label");
+          const was = label.textContent;
+          b.classList.add("copied"); label.textContent = "Copied";
+          setTimeout(() => { b.classList.remove("copied"); label.textContent = was; }, 2000);
         });
       }
+        // For agents: hover or focus shows the menu; on touch screens (no hover) the first tap opens it.
+        const agents = document.querySelector(".agents");
+        const agentsLink = agents.querySelector(".agents-link");
+        const setAgents = (on) => { agents.classList.toggle("open", on); agentsLink.setAttribute("aria-expanded", String(on)); };
+        agentsLink.addEventListener("click", (e) => {
+          if (matchMedia("(hover: none)").matches && !agents.classList.contains("open")) { e.preventDefault(); setAgents(true); }
+        });
+        agents.addEventListener("mouseenter", () => agentsLink.setAttribute("aria-expanded", "true"));
+        agents.addEventListener("mouseleave", () => setAgents(false));
+        agents.addEventListener("keydown", (e) => { if (e.key === "Escape") { setAgents(false); agentsLink.blur(); } });
+        document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
     </script>
     <script src="pipeup.min.js"></script>
   </body>
