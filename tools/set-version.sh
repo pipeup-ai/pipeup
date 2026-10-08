@@ -15,13 +15,16 @@ lib="$root/libs/ts/pipeup"
 semver='[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?'
 
 (cd "$lib" && npm version "$version" --no-git-tag-version --allow-same-version >/dev/null)
-# The add-ons, their workspace and the mailbox server are released with the core, at the same version.
+# The add-ons, their workspace and the mailbox server are released with the core, at the same version. `npm pkg
+# set` edits package.json only: `npm version` inside a workspace resolves the whole tree and fails on peer ranges
+# that don't yet match.
 addons="$root/libs/ts/addons"
 for dir in "$addons" "$addons/kit" "$addons/test" "$addons/share" "$addons/voice" "$addons/live" "$root/services/mailbox"; do
-  (cd "$dir" && npm version "$version" --no-git-tag-version --allow-same-version >/dev/null)
+  (cd "$dir" && npm pkg set "version=$version" >/dev/null)
 done
 for id in share voice live; do (cd "$addons/$id" && npm pkg set "peerDependencies.pipeup=$version" >/dev/null); done
-(cd "$addons" && npm install --package-lock-only --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 || true)
+(cd "$addons" && npm install --package-lock-only --ignore-scripts --no-audit --no-fund >/dev/null)
+
 sed -i.bak -E "s/^export const VERSION = \"$semver\";/export const VERSION = \"$version\";/" "$lib/src/core.ts"
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
