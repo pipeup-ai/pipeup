@@ -729,7 +729,7 @@ my own write ─► IndexedDB (core, unchanged)
 GET paste + comments ─► open new ones (drop failures) ─► host.merge(batch) ─► core verifies, stores, renders
 ```
 
-**Wire format (to be validated against `FormatV2::isValid` in S1).** A comment is posted as:
+**Wire format (validated against PrivateBin 2.0.6's `FormatV2::isValid` in S1).** A comment is posted as:
 
 ```
 { "v": 2,
@@ -742,8 +742,10 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
   10,000, key and tag sizes, `aes`, `gcm`, `zlib` or `none`). Its iv and salt are random and unused;
   Pipeup's own iv is inside `ct`. `ct` is AES-GCM output, so it passes the server's "doesn't compress"
   check. PrivateBin's own page can't open these comments; only Pipeup reads them.
-- S1 records the exact checks of the instance versions tried (whether `meta` is allowed on comments,
-  the iv and salt length limits, the size limit) and freezes this mapping in a test vector.
+- S1 recorded 2.0.6's checks ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)): a
+  comment is exactly these five fields; a non-empty `meta` would make it a new paste, so comments never
+  carry one; the iv is at most 24 base64 characters and the salt 14; `ct` is strict standard base64;
+  the default size limit is 10 MiB. The mapping is frozen in a test vector when share is built.
 - **Append-only mailbox.** Each batch is a new comment; comments are never edited. Concurrent writers
   can't overwrite each other; a race posts an op twice and the union collapses it.
 - **Simple requests only** (`text/plain` body, `Accept: application/json`, no credentials), so pages
@@ -767,8 +769,10 @@ GET paste + comments ─► open new ones (drop failures) ─► host.merge(batc
   (`pipeup-share:<doc>`); only the holder posts, the others read. Where Web Locks are missing (S1 checks
   `file://`), each tab waits a random 0–5 s and re-GETs before posting, dropping what is already there.
 - **Rate limits.** PrivateBin limits posts per IP (10 s by default), so an office behind one address
-  shares that limit. A "please wait" answer or a 429 retries after the stated time plus jitter, with
-  more ops per batch. Tens of people behind one address still fit: one post every 10 s carries up to
+  shares that limit. PrivateBin itself answers HTTP 200 with `status: 1` and a sentence ("Please wait
+  10 seconds between each post."), never a 429 (S1); a proxy in front of an instance may still send
+  429. Both retry after 10 s, or the 429's `Retry-After`, plus jitter, with more ops per batch. The
+  sentence is never parsed for a number. Tens of people behind one address still fit: one post every 10 s carries up to
   1,000 ops.
 
 The polling table and the one-sender lock apply to the mailbox too (§7.7).
@@ -1569,7 +1573,7 @@ gets into the core").
 
 | Spike | Gates | Run against | Go when |
 |---|---|---|---|
-| S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. |
+| S1 PrivateBin | 0.7 share | A self-hosted PrivateBin (official Docker image) and one or two volunteer instances, **with their operators' permission** | From `file://` in Chrome, Firefox and Safari: a `text/plain` POST of a paste and of a comment with the §7.2 mapping is accepted (validated against `FormatV2::isValid` of the versions tried); GET returns JSON with `Accept: application/json` and no preflight; `meta.time_to_live` reads back the real expiry; the "please wait" and 429 answers are recorded; Web Locks work on `file://`. **Own instance (2.0.6) passed 2026-10-07** in Chrome, Firefox and Safari; volunteer instances still to test ([architecture §7](architecture.md#7-platform-findings-spike-2026-10-05)). |
 | S2 Nostr and STUN | 0.9 live | A relay we control (the test relay and one real implementation) plus 3 public relays | Ephemeral kinds from fresh keys are accepted and delivered without NIP-42 auth or NIP-13 proof of work, within stated rate limits, by at least 3 public relays, signed by the kit's own BIP-340 signer (which passes the BIP-340 test vectors); STUN-only connection rates on home, mobile and one office network are recorded. |
 | S3 Web Speech | 0.8 voice | Chrome (on-device and service), Safari, Edge, in a visible window, from `file://` | Dictation works from `file://` in at least Chrome and Safari; whether the microphone grant persists is recorded. Firefox has no engine and is documented. |
 | S4 CI | integration tests | GitHub Actions | Docker is available, or the PHP fallback runs. |
@@ -1678,3 +1682,4 @@ gets into the core").
 - 2026-10-07 — §17: the kit's `schnorr` signer is tested against the BIP-340 vectors and cross-checked against `@noble/secp256k1` as a test-only dev dependency.
 - 2026-10-07 — Spike S6, first half: from `file://`, the mailbox on loopback and a private address works in Chrome, Firefox and Safari with no preflight and no local-network prompt; TLS and the public host remain.
 - 2026-10-07 — Spike S6, public half: the mailbox behind TLS on a public host (a Cloudflare Worker) works from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
+- 2026-10-07 — Spike S1 on an own PrivateBin 2.0.6 passed (§7.2 updated): the comment mapping is accepted, comments never carry `meta`, "please wait" is HTTP 200 with `status: 1` and is never parsed, an unoffered expiry silently becomes the default and `time_to_live` shows it. Volunteer instances still to test, with their operators' permission.

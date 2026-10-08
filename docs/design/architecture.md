@@ -204,6 +204,43 @@ A wrong-hash control was refused in all three browsers, so the SRI check ran. A 
 meaning; `pipeup+<id>.min.js` doesn't end that way, and an existing `.min.js` is served unchanged. The
 fallback name `pipeup-with-<id>.min.js` isn't needed.
 
+### S1: PrivateBin from `file://` (add-ons spike, 2026-10-07): own instance passed; volunteer instances to do
+
+PrivateBin **2.0.6**, the official Docker image (`privatebin/nginx-fpm-alpine`) with its built-in
+defaults, on this Mac. A `file://` page in Chrome 154, Chromium 153 (Playwright), Firefox 157 and
+Safari 27 sent only simple requests: `text/plain` POST bodies, `Accept: application/json`, no
+credentials.
+
+| Check | All four browsers |
+|---|---|
+| Web Locks (`navigator.locks.request`) on `file://` | granted |
+| Create a paste (`v: 2`, `meta.expire`), JSON answer | HTTP 200, `status: 0`, an id |
+| A second post within 10 s | HTTP 200, `status: 1`, "Please wait 10 seconds between each post." (not a 429) |
+| A comment in the [add-ons design](addons.md) §7.2 mapping, with a real sealed envelope as `ct` | accepted (`status: 0`) |
+| GET `?<id>` with `Accept: application/json` | JSON, with the comment's `ct` returned unchanged |
+| `meta.time_to_live` after asking for `1week` | about 604,780 s |
+| `meta.time_to_live` after asking for `2year` (not offered) | about 604,770 s: silently the default, 1 week |
+| `meta.time_to_live` after asking for `never` | absent |
+| Preflight (`OPTIONS`) in the server log | none |
+
+From the 2.0.6 source (`lib/FormatV2.php`, `lib/Request.php`, `lib/Controller.php`):
+
+- The server rebuilds each request from the fields it knows. A comment is exactly `v`, `adata` (the
+  8-item cipher spec), `ct`, `pasteid` and `parentid`. Any **non-empty `meta` turns the request into a
+  new paste**; an empty one is ignored.
+- Limits: the iv at most 24 base64 characters, the salt at most 14, iterations above 10,000, key 128,
+  192 or 256, tag 64, 96 or 128, `aes`, `ctr`/`cbc`/`gcm`, `zlib` or `none`. `ct` must be strict
+  standard base64 that doesn't shrink under deflate. 16-byte iv and 8-byte salt fit (24 and 12
+  characters).
+- Any POST body is parsed as JSON whatever its `Content-Type`. JSON answers come with
+  `Access-Control-Allow-Origin: *` when `Accept` holds `application/json` (and not HTML), or with
+  `X-Requested-With: JSONHttpRequest`.
+- Defaults: discussions on, expiries 5 min to 1 year plus `never` (default 1 week), one post per
+  address every 10 s, 10 MiB size limit.
+
+**Still to do for S1:** the same checks on one or two volunteer instances, with their operators'
+permission, and over HTTPS on a public instance.
+
 ### S6: the HTTP mailbox from `file://` (add-ons spike, 2026-10-07): public host and private address passed; TLS on a private address to do
 
 A throwaway server with the page-facing `pm1` endpoints ([add-ons design](addons.md) §7.7), on this
@@ -662,3 +699,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-07 — §6: no third-party Ed25519 fallback (no runtime dependencies in Pipeup or its add-ons). §7: add-ons spike S5 passed — jsDelivr and unpkg serve `+` file names with SRI from `file://` in Chrome, Firefox and Safari.
 - 2026-10-07 — §7: add-ons spike S6, first half — the mailbox works from `file://` on loopback and a private address in Chrome, Firefox and Safari: no preflight, 429 readable, `keepalive` at `pagehide` arrives, no local-network prompt. TLS and a public host still to test.
 - 2026-10-07 — §7: S6 public half passed — a Cloudflare Worker over HTTPS, from `file://` in Chrome, Firefox and Safari. Only TLS on a private address remains.
+- 2026-10-07 — §7: add-ons spike S1 on an own PrivateBin 2.0.6 passed in Chrome, Firefox and Safari from `file://`: simple requests, the §7.2 comment mapping, JSON reads, `time_to_live`, Web Locks; "please wait" is HTTP 200 with `status: 1`. Volunteer instances still to test.
