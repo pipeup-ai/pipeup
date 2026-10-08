@@ -88,6 +88,8 @@ use. The page:
   PrivateBin or their own mailbox) and that it never picks one for them; Live says it is peer to peer and asks each
   reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
   maker.
+- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
+- Flows the full width of the window like the home page, text beside its demo.
 - Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
@@ -155,3 +157,4 @@ use. The page:
 - 2026-10-07 — The link-preview image is only the mark and the name, centred so a square thumbnail crop keeps all of it.
 - 2026-10-07 — 0.4.1: the size is stated as about 37 KB.
 - 2026-10-08 — An Add-ons page (Share, Voice, Live) reached from the footer; the home page and Copy prompt stay core only. The Copy prompt and llms.txt no longer ask an agent to download a file: they add the pinned CDN tag.
+- 2026-10-08 — The Add-ons page gets an animated demo and a Copy prompt for each add-on, and uses the full width.

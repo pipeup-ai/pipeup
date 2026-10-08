@@ -12,6 +12,7 @@
       @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
       @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
       :root {
+        --edge: max(24px, calc((100% - 1120px) / 2));
         --ink: #2f3437; --strong: #111111; --muted: #787774; --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --violet: #534ab7;
         --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
         --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
@@ -20,21 +21,31 @@
       * { box-sizing: border-box; }
       html { background: var(--paper); }
       body { margin: 0; font: 16px/1.6 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
-      main { max-width: 760px; width: 100%; margin: 0 auto; padding: 0 24px; flex: 1; display: flex; flex-direction: column; }
-      header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+      main { width: 100%; flex: 1; display: flex; flex-direction: column; }
+      main > * { padding-left: var(--edge); padding-right: var(--edge); }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; padding-bottom: 22px; }
       .mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--strong); text-decoration: none; }
       .back { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.2s var(--ease); }
       .back:hover { color: var(--strong); }
       h1 { font-size: clamp(32px, 6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--strong); margin: 28px 0 14px; font-weight: 600; }
-      .lede { font-size: 18px; color: var(--ink); margin: 0 0 8px; max-width: 34em; }
+      .lede { font-size: 18px; color: var(--ink); margin: 0 0 8px; max-width: 40em; }
       .beta { font-size: 14px; color: var(--muted); margin: 0 0 32px; }
-      .card { border-top: 1px solid var(--line); padding: 26px 0; }
+      .card { border-top: 1px solid var(--line); padding-top: 32px; padding-bottom: 32px; }
       .card h2 { font-size: 20px; margin: 0 0 6px; color: var(--strong); font-weight: 600; }
       .card p { margin: 0 0 10px; }
       .card dl { margin: 14px 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; font-size: 15px; }
       .card dt { color: var(--muted); }
       .card dd { margin: 0; }
-      .card { display: grid; grid-template-columns: 1fr; grid-auto-rows: min-content; align-content: start; gap: 4px 28px; }
+      .card { display: grid; grid-template-columns: 1fr; gap: 0 56px; align-content: start; }
+      .card > .demo { max-width: 560px; }
+      @media (min-width: 900px) {
+        .card { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-auto-rows: min-content; align-items: start; padding: 44px var(--edge); }
+        .card > .demo { grid-column: 2; grid-row: 1 / span 6; margin: 0; max-width: none; align-self: center; }
+        .card > :not(.demo) { grid-column: 1; }
+        .card:nth-of-type(even) { background: #fbfaf8; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+        .card:nth-of-type(even) > .demo { grid-column: 1; }
+        .card:nth-of-type(even) > :not(.demo) { grid-column: 2; }
+      }
       .card h2, .card p { margin-bottom: 8px; }
       .art { border-radius: 14px; background: var(--bone); padding: 18px; display: grid; place-items: center; }
       .art svg { width: 100%; max-width: 420px; height: auto; display: block; }
@@ -47,11 +58,83 @@
       .copy.done .ok { display: block; }
       .copy.done .cp { display: none; }
       .note { font-size: 13px; color: var(--muted); margin: 0; }
-      @media (min-width: 720px) { .card { grid-template-columns: 1fr 300px; align-items: start; gap: 4px 28px; } .card .art { grid-column: 2; grid-row: 1 / span 8; } .card > :not(.art) { grid-column: 1; } }
       pre { margin: 14px 0 0; padding: 12px 14px; background: var(--bone); border-radius: 10px; overflow-x: auto; font: 13px/1.6 var(--mono); color: var(--strong); }
-      footer { border-top: 1px solid var(--line); margin-top: auto; padding: 22px 0 28px; font-size: 13px; color: var(--muted); }
+      footer { border-top: 1px solid var(--line); margin-top: auto; padding: 22px var(--edge, 24px) 28px; font-size: 13px; color: var(--muted); }
       footer a { color: inherit; transition: color 0.2s var(--ease); }
       footer a:hover { color: var(--strong); }
+
+      /* ---------- Animated demos: the same look as the home page's showcase ---------- */
+      .demo { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--bone); margin: 14px 0 18px; pointer-events: none; }
+      .stage { position: absolute; left: 0; top: 0; width: 400px; height: 300px; transform-origin: 0 0; transition: opacity 0.5s var(--ease); }
+      .stage.out { opacity: 0; }
+      .stage .w { position: absolute; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .stage .dots { position: absolute; top: 9px; left: 11px; display: flex; gap: 5px; }
+      .stage .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+      .stage .ln { position: absolute; left: 16px; height: 7px; border-radius: 4px; background: var(--line); }
+      .stage .hl { position: absolute; left: 16px; height: 13px; border-radius: 3px; background: transparent; transition: background-color 0.5s var(--ease); }
+      .stage .cap { position: absolute; font-size: 11px; color: var(--muted); text-align: center; }
+      .stage .av { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; flex: none; }
+      .stage .pin { position: absolute; width: 16px; height: 16px; border-radius: 50% 50% 50% 3px; background: var(--violet); opacity: 0; transform: scale(0.4); transform-origin: 2px 14px; transition: opacity 0.26s var(--ease), transform 0.34s var(--ease); }
+      .stage .cb { position: absolute; width: 150px; background: var(--paper); border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; box-shadow: 0 2px 8px rgba(0,0,0,.04); opacity: 0; transform: translateY(6px); transition: opacity 0.3s var(--ease), transform 0.4s var(--ease); }
+      .stage .cb .who { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+      .stage .cb .who .av { width: 18px; height: 18px; border-radius: 6px; }
+      .stage .cb .txt { font-size: 11.5px; line-height: 1.35; color: var(--strong); min-height: 15px; }
+      .stage .cb .txt::after { content: ""; display: inline-block; width: 1.5px; height: 12px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+      .stage .cb.sent .txt::after { display: none; }
+      @keyframes blink { 50% { opacity: 0; } }
+      .stage .cursor { position: absolute; left: 0; top: 0; z-index: 5; transition: transform 0.9s var(--move, cubic-bezier(0.4, 0, 0.2, 1)); }
+      .stage .chip { position: absolute; left: 12px; top: 12px; padding: 1px 6px; border-radius: 5px; font: 600 9px/1.5 var(--sans); color: #fff; white-space: nowrap; }
+      .stage .on { opacity: 1; transform: none; }
+      /* Share */
+      .sh .a { left: 12px; top: 34px; width: 162px; height: 224px; }
+      .sh .b { left: 226px; top: 34px; width: 162px; height: 224px; }
+      .sh .who1, .sh .who2 { top: 12px; font-weight: 500; color: var(--ink); width: 162px; }
+      .sh .who1 { left: 12px; } .sh .who2 { left: 226px; }
+      .sh .dash { position: absolute; left: 178px; top: 150px; width: 44px; border-top: 1.5px dashed #c9c8c2; }
+      .sh .pk { position: absolute; left: 176px; top: 134px; width: 48px; height: 32px; border-radius: 9px; background: var(--paper); border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.06); display: grid; place-items: center; opacity: 0; transform: translateX(-34px) scale(0.8); transition: opacity 0.4s var(--ease), transform 1.2s var(--ease); }
+      .sh.s4 .pk { opacity: 1; transform: translateX(-34px); }
+      .sh.s5 .pk { transform: translateX(34px); }
+      .sh.s6 .pk { opacity: 0; transform: translateX(40px) scale(0.8); }
+      .sh .why { left: 0; top: 270px; width: 400px; opacity: 0; transition: opacity 0.4s var(--ease); }
+      .sh.s4 .why { opacity: 1; } .sh.s6 .why { opacity: 0; }
+      .sh .a .hl, .sh .b .hl { top: 78px; width: 110px; }
+      .sh.s1 .a .hl, .sh.s6 .b .hl { background: var(--amber); }
+      .sh .a .pin { left: 118px; top: 62px; } .sh.s3 .a .pin { opacity: 1; transform: none; }
+      .sh .b .pin { left: 118px; top: 62px; } .sh.s6 .b .pin { opacity: 1; transform: none; }
+      .sh .a .cb { left: 6px; top: 112px; width: 148px; } .sh.s2 .a .cb { opacity: 1; transform: none; } .sh.s3 .a .cb { opacity: 0; transform: translateY(6px); }
+      .sh .b .cb { left: 6px; top: 112px; width: 148px; } .sh.s7 .b .cb { opacity: 1; transform: none; }
+      .sh .cursor { transform: translate(60px, 170px); } .sh.s1 .cursor { transform: translate(110px, 92px); } .sh.s3 .cursor { transform: translate(150px, 200px); }
+      /* Voice */
+      .vo .w { left: 40px; top: 24px; width: 320px; height: 250px; }
+      .vo .hl { top: 66px; width: 150px; } .vo.s1 .hl { background: var(--amber); }
+      .vo .pin { left: 172px; top: 50px; } .vo.s5 .pin { opacity: 1; transform: none; }
+      .vo .cb { left: 150px; top: 100px; width: 156px; padding-bottom: 26px; } .vo.s2 .cb { opacity: 1; transform: none; } .vo.s5 .cb { opacity: 0; transform: translateY(6px); }
+      .vo .mic { position: absolute; right: 8px; top: 8px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--bone); color: var(--ink); transition: background-color 0.3s var(--ease), color 0.3s var(--ease); }
+      .vo.s3 .mic { background: var(--violet); color: #fff; } .vo.s4 .mic { background: var(--bone); color: var(--ink); }
+      .vo .wave { position: absolute; left: 11px; bottom: 9px; display: flex; gap: 3px; align-items: flex-end; height: 14px; opacity: 0; transition: opacity 0.3s var(--ease); }
+      .vo.s3:not(.s4) .wave { opacity: 1; }
+      .vo .wave i { width: 3px; height: 4px; border-radius: 2px; background: var(--violet); animation: bar 0.9s ease-in-out infinite; }
+      .vo .wave i:nth-child(2) { animation-delay: 0.15s; } .vo .wave i:nth-child(3) { animation-delay: 0.3s; } .vo .wave i:nth-child(4) { animation-delay: 0.45s; }
+      @keyframes bar { 0%, 100% { height: 4px; } 50% { height: 14px; } }
+      .vo .state { position: absolute; left: 30px; bottom: 9px; font-size: 10px; color: var(--muted); opacity: 0; transition: opacity 0.3s var(--ease); }
+      .vo.s3:not(.s4) .state { opacity: 1; }
+      .vo .cursor { transform: translate(90px, 220px); } .vo.s1 .cursor { transform: translate(150px, 84px); } .vo.s2 .cursor { transform: translate(296px, 114px); } .vo.s5 .cursor { transform: translate(300px, 230px); }
+      /* Live */
+      .lv .w { left: 20px; top: 26px; width: 360px; height: 250px; }
+      .lv .ppl { position: absolute; right: 12px; top: 6px; display: flex; gap: 4px; }
+      .lv .ppl .av { opacity: 0; transform: scale(0.6); transition: opacity 0.3s var(--ease), transform 0.34s var(--ease); width: 20px; height: 20px; }
+      .lv .ppl .you, .lv.s1 .ppl .fox, .lv.s2 .ppl .owl { opacity: 1; transform: none; }
+      .lv .sel { position: absolute; left: 16px; top: 117px; height: 13px; width: 0; border-radius: 3px; background: rgba(217, 122, 30, 0.2); transition: width 0.9s var(--ease); }
+      .lv.s4 .sel { width: 190px; }
+      .lv .cursor { opacity: 0; transition: opacity 0.4s var(--ease), transform 1.2s var(--move, cubic-bezier(0.4, 0, 0.2, 1)); }
+      .lv.s3 .cursor { opacity: 1; }
+      .lv .fox { transform: translate(250px, 80px); } .lv.s4 .fox { transform: translate(120px, 150px); }
+      .lv .owl { transform: translate(60px, 138px); } .lv.s4 .owl { transform: translate(200px, 136px); }
+      .lv .typing { position: absolute; left: 210px; top: 236px; font-size: 10.5px; color: var(--muted); background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; opacity: 0; transition: opacity 0.3s var(--ease); }
+      .lv.s5 .typing { opacity: 1; } .lv.s6 .typing { opacity: 0; }
+      .lv .pin { left: 214px; top: 100px; } .lv.s6 .pin { opacity: 1; transform: none; }
+      .lv .cb { left: 205px; top: 148px; width: 152px; } .lv.s6 .cb { opacity: 1; transform: none; }
+      @media (prefers-reduced-motion: reduce) { .stage .wave i { animation: none; } }
       @media (max-width: 560px) { .card dl { grid-template-columns: 1fr; gap: 0; } .card dd { margin-bottom: 8px; } }
       @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
@@ -72,14 +155,17 @@
 
       <section class="card" data-pipeup-id="share">
         <h2>Share</h2>
-        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-  <rect x="8" y="26" width="92" height="82" rx="10" fill="#fff"/><path d="M8 44h92"/><rect x="20" y="56" width="52" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="20" y="70" width="36" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
-  <rect x="200" y="26" width="92" height="82" rx="10" fill="#fff"/><path d="M200 44h92"/><rect x="212" y="56" width="52" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="212" y="70" width="44" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
-  <path d="M104 67h28M168 67h28" stroke-dasharray="2 5"/>
-  <rect x="132" y="48" width="36" height="38" rx="8" fill="#fff"/><rect x="141" y="64" width="18" height="14" rx="3" fill="#534ab7" stroke="none"/><path d="M144 64v-5a6 6 0 0 1 12 0v5"/>
-  <text x="150" y="132" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">sealed before it leaves</text>
-</svg></div>
         <p>Comments reach everyone who has the page, not only the browser they were written in.</p>
+        <div class="demo" data-len="10000" data-steps='[[900,"s1"],[2000,"s2"],[5000,"s3"],[5400,"s4"],[6000,"s5"],[7300,"s6"],[7600,"s7"]]' data-type="2600,4600" aria-hidden="true">
+          <div class="stage sh">
+            <div class="cap who1">Sam's browser</div><div class="cap who2">Ada's browser</div>
+            <div class="w a"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:46px;width:100px"></div><div class="ln" style="top:62px;width:126px"></div><div class="hl"></div><div class="ln" style="top:100px;width:90px"></div><div class="ln" style="top:116px;width:118px"></div><div class="ln" style="top:132px;width:70px"></div><div class="pin"></div>
+              <div class="cb" data-say="Add the Q3 figure."><div class="who"><span class="av" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Sam</div><div class="txt"></div></div></div>
+            <div class="dash"></div><div class="pk"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" fill="#534ab7" stroke="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><div class="cap why">Sealed in the browser first, so the service can't read it</div>
+            <div class="w b"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:46px;width:100px"></div><div class="ln" style="top:62px;width:126px"></div><div class="hl"></div><div class="ln" style="top:100px;width:90px"></div><div class="ln" style="top:116px;width:118px"></div><div class="ln" style="top:132px;width:70px"></div><div class="pin"></div>
+              <div class="cb sent"><div class="who"><span class="av" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Sam</div><div class="txt" style="min-height:0">Add the Q3 figure.</div></div></div>
+            <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+          </div></div>
         <dl>
           <dt>Sends</dt><dd>Comments, sealed in the reviewer's browser with a key that is only in the page's link, to a service the author picks: a PrivateBin or their own small mailbox server. The service never sees the words.</dd>
           <dt>Asked first</dt><dd>Comments written before sharing stay on the device until the reviewer chooses to share them.</dd>
@@ -92,14 +178,15 @@
 
       <section class="card" data-pipeup-id="voice">
         <h2>Voice</h2>
-        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-  <rect x="40" y="34" width="30" height="52" rx="15" fill="#fff"/><path d="M28 68a27 27 0 0 0 54 0M55 95v14M43 109h24"/>
-  <path d="M92 52c6 6 6 22 0 28M104 44c10 10 10 34 0 44M116 36c14 14 14 46 0 60" stroke="#534ab7"/>
-  <rect x="146" y="40" width="140" height="54" rx="12" fill="#fff"/><path d="M168 94l-8 14 22-14"/>
-  <rect x="160" y="54" width="104" height="7" rx="3.5" fill="#d9d6f3" stroke="none"/><rect x="160" y="68" width="72" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
-  <text x="150" y="136" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">say it, then check the words</text>
-</svg></div>
         <p>Dictate a comment instead of typing it.</p>
+        <div class="demo" data-len="10000" data-steps='[[700,"s1"],[1800,"s2"],[2800,"s3"],[6600,"s4"],[8000,"s5"]]' data-type="3200,6400" aria-hidden="true">
+          <div class="stage vo">
+            <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:42px;width:170px"></div><div class="ln" style="top:58px;width:210px"></div><div class="hl"></div><div class="ln" style="top:96px;width:190px"></div><div class="ln" style="top:112px;width:230px"></div><div class="ln" style="top:128px;width:120px"></div><div class="pin"></div></div>
+            <div class="cb" data-say="Move this chart above the table."><div class="who"><span class="av" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Owl</div><div class="txt"></div>
+              <span class="mic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+              <span class="wave"><i></i><i></i><i></i><i></i></span><span class="state">Listening…</span></div>
+            <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+          </div></div>
         <dl>
           <dt>Sends</dt><dd>Nothing of its own. Speech is turned into words by the browser's own engine, which in some browsers sends the audio to its maker.</dd>
           <dt>Asked first</dt><dd>A short note before the first use, then the browser's own microphone prompt.</dd>
@@ -110,14 +197,17 @@
 
       <section class="card" data-pipeup-id="live">
         <h2>Live</h2>
-        <div class="art" aria-hidden="true"><svg viewBox="0 0 300 150" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-  <rect x="10" y="14" width="280" height="108" rx="12" fill="#fff"/>
-  <rect x="28" y="34" width="160" height="7" rx="3.5" fill="#eaeaea" stroke="none"/><rect x="28" y="50" width="220" height="7" rx="3.5" fill="#eaeaea" stroke="none"/><rect x="28" y="66" width="120" height="7" rx="3.5" fill="#eaeaea" stroke="none"/>
-  <path d="M96 56l11 5-4.6 1.6L100.8 68z" fill="#3b82c4" stroke="#fff"/><rect x="108" y="64" width="62" height="17" rx="5" fill="#3b82c4" stroke="none"/><text x="139" y="76" text-anchor="middle" font-family="Geist, sans-serif" font-size="9.5" font-weight="600" fill="#fff" stroke="none">Blue Fox</text>
-  <path d="M196 88l11 5-4.6 1.6L200.8 100z" fill="#d97a1e" stroke="#fff"/><rect x="208" y="96" width="70" height="17" rx="5" fill="#d97a1e" stroke="none"/><text x="243" y="108" text-anchor="middle" font-family="Geist, sans-serif" font-size="9.5" font-weight="600" fill="#fff" stroke="none">Orange Owl</text>
-  <text x="150" y="141" text-anchor="middle" font-family="Geist, sans-serif" font-size="11" fill="#787774" stroke="none">see who is here, and where</text>
-</svg></div>
         <p>See comments arrive as people write them, who else is on the page, and where they are looking.</p>
+        <div class="demo" data-len="10000" data-steps='[[600,"s1"],[1400,"s2"],[2200,"s3"],[3800,"s4"],[5600,"s5"],[6600,"s6"]]' data-type="6800,8600" aria-hidden="true">
+          <div class="stage lv">
+            <div class="w"><div class="dots"><i></i><i></i><i></i></div>
+              <div class="ppl"><span class="av you" style="background:#e1f5ee"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><span class="av fox" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><span class="av owl" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span></div>
+              <div class="ln" style="top:50px;width:200px"></div><div class="ln" style="top:66px;width:260px"></div><div class="ln" style="top:82px;width:180px"></div><div class="ln" style="top:98px;width:250px"></div><div class="sel"></div><div class="ln" style="top:120px;width:230px"></div><div class="ln" style="top:136px;width:280px"></div><div class="ln" style="top:152px;width:150px"></div><div class="ln" style="top:168px;width:240px"></div><div class="ln" style="top:184px;width:190px"></div><div class="pin"></div>
+              <div class="cb" data-say="Can we cut this line?"><div class="who"><span class="av" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Orange Owl</div><div class="txt"></div></div></div>
+            <div class="typing">Orange Owl is writing a comment…</div>
+            <span class="cursor fox" aria-hidden="true"><svg width="16" height="18" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#3b82c4" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="chip" style="background:#3b82c4">Blue Fox</span></span>
+            <span class="cursor owl" aria-hidden="true"><svg width="16" height="18" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#d97a1e" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="chip" style="background:#d97a1e">Orange Owl</span></span>
+          </div></div>
         <dl>
           <dt>Sends</dt><dd>Presence and comments straight between the reviewers' browsers. Public relays are used only to introduce them to each other, and see addresses, not words.</dd>
           <dt>Asked first</dt><dd>Each reviewer is asked before connecting. Nothing is opened until they agree.</dd>
@@ -127,7 +217,7 @@
       </section>
     </main>
     <footer>
-      <main style="flex:none;padding:0"><a href="./">Pipeup</a> · <a href="llms.txt">For agents</a></main>
+      <a href="./">Pipeup</a> · <a href="llms.txt">For agents</a>
     </footer>
     <script>
       const CDN = "https://cdn.jsdelivr.net/npm/";
@@ -163,6 +253,33 @@
           "Leave everything else on the page as it is. Each reviewer is asked before Live does anything, so no other setting is needed.",
         ].join("\n"),
       };
+
+      // The demos: each is a timeline of steps (ms into a 10 s loop); a step switches its class on, the CSS eases the change.
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      for (const demo of document.querySelectorAll(".demo")) {
+        const stage = demo.querySelector(".stage");
+        const steps = JSON.parse(demo.dataset.steps);
+        const len = +demo.dataset.len;
+        const [from, to] = demo.dataset.type.split(",").map(Number);
+        const box = demo.querySelector(".cb[data-say]");
+        const txt = box && box.querySelector(".txt");
+        const fit = () => { const k = demo.clientWidth / 400; stage.style.transform = `scale(${k})`; demo.style.height = 300 * k + "px"; };
+        fit(); addEventListener("resize", fit);
+        const at = (t) => {
+          for (const [ms, cls] of steps) stage.classList.toggle(cls, t >= ms);
+          stage.classList.toggle("out", t >= len - 500);
+          if (box) { const n = Math.round(Math.max(0, Math.min(1, (t - from) / (to - from))) * box.dataset.say.length); txt.textContent = box.dataset.say.slice(0, n); box.classList.toggle("sent", t >= to); }
+        };
+        let start = 0, raf = 0, seen = false;
+        const frame = (now) => { at((now - start) % len); raf = requestAnimationFrame(frame); };
+        const still = new URLSearchParams(location.search).get("t"); // e.g. ?t=4000 shows that moment, for checking
+        if (still) { stage.style.transition = "none"; at(+still); continue; }
+        if (reduced) { at(len - 600); continue; }
+        new IntersectionObserver(([e]) => {
+          if (e.isIntersecting && !seen) { seen = true; start = performance.now(); raf = requestAnimationFrame(frame); }
+          else if (!e.isIntersecting && seen) { seen = false; cancelAnimationFrame(raf); }
+        }).observe(demo);
+      }
       for (const b of document.querySelectorAll(".copy")) {
         b.addEventListener("click", async () => {
           const text = prompts[b.dataset.prompt]();
