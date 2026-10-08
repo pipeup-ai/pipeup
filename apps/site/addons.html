@@ -32,7 +32,7 @@
       .gh svg { display: block; transition: transform 0.26s var(--ease); }
       .gh:hover, .gh:focus-visible { color: var(--strong); }
       .gh:hover svg { transform: translateY(-1px); }
-      .more-links { display: flex; gap: 22px; align-items: baseline; }
+      .more-links { margin-left: auto; display: flex; gap: 22px; align-items: baseline; }
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
@@ -87,25 +87,6 @@
       .addon .fact b { font-weight: 500; color: var(--strong); margin-right: 6px; }
       .addon .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
       .addon .demo { margin: 0; }
-      /* "Stays on your device": a lock and a short note on hover, focus or tap. */
-      .private { position: relative; }
-      .private button { all: unset; cursor: default; display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; }
-      .private button:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
-      .private svg { flex: none; color: var(--ink); }
-      .private .tip {
-        position: absolute; left: -10px; bottom: calc(100% + 12px); width: 264px; padding: 12px 14px; background: var(--paper);
-        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-        font-size: 13px; line-height: 1.5; color: var(--muted);
-        opacity: 0; transform: translateY(4px); visibility: hidden;
-        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
-      }
-      .private .tip b { display: block; color: var(--strong); margin-bottom: 2px; }
-      .private .tip::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
-      .private:hover .tip, .private:focus-within .tip {
-        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
-      }
-      .facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: var(--muted); }
-      .facts b { font-weight: 500; color: var(--ink); }
       @media (max-width: 860px) {
         .addon { grid-template-columns: 1fr; gap: 24px; }
         .agents-menu, .private .tip { transform: none !important; }
@@ -271,15 +252,6 @@
       </section>
 
       <footer>
-        <ul class="facts">
-            <li><b>One file</b>, about 37 KB</li>
-            <li><b>No dependencies</b></li>
-            <li><b>Works from disk</b></li>
-            <li class="private">
-              <button type="button" aria-describedby="private-tip"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" /><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5" /></svg><b>Stays on your device</b></button>
-              <span class="tip" role="tooltip" id="private-tip"><b>Private by design.</b>Nothing to install: one script in your HTML file. Comments stay in your browser and are never sent anywhere. They leave only when you copy them and share them yourself.</span>
-            </li>
-          </ul>
         <div class="more-links">
         <a class="agents-link" href="addons.html">Add-ons</a>
         <div class="agents">
