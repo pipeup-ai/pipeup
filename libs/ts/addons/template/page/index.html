@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="aaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb">
+  <head>
+    <meta charset="utf-8" />
+    <title>Try my add-on</title>
+    <style>
+      body {
+        font:
+          16px/1.5 Georgia,
+          serif;
+        max-width: 620px;
+        margin: 40px auto;
+        padding: 0 16px;
+        color: #222;
+      }
+    </style>
+  </head>
+  <body>
+    <main data-pipeup-id="main">
+      <h1 data-pipeup-id="title">Try my add-on</h1>
+      <p data-pipeup-id="p1">
+        Press Shift+Option+C (Shift+Alt+C on Windows) to comment, open the comment control's menu, and choose
+        "Say hello".
+      </p>
+    </main>
+    <!-- Pipeup first, then your add-on (either order works; this is the usual one). -->
+    <script src="../node_modules/pipeup/dist/pipeup.min.js"></script>
+    <script src="../dist/hello.min.js"></script>
+  </body>
+</html>
