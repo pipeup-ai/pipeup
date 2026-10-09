@@ -70,6 +70,7 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 /* An AI's reply: a plain disc with a violet ring that glows gently (opacity and scale on a pseudo-element). */
 .av.ai{position:relative;border-radius:50%;background:var(--su);color:var(--pu-accent);font-size:9px;letter-spacing:.02em;box-shadow:0 0 0 1.5px var(--pu-accent)}
 .av.ai::after{content:"";position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 9px 1px color-mix(in srgb,var(--pu-accent) 45%,transparent);opacity:.3;animation:pu-breathe 3.8s var(--eio) infinite;pointer-events:none}
+.root>.av.ai,.it>.av.ai{position:absolute}
 .av.ai.busy::after{animation-duration:2.2s}
 @keyframes pu-breathe{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
 .ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}

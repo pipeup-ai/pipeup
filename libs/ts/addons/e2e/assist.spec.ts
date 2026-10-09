@@ -140,3 +140,16 @@ test("with no model on this device, the row says it is not available", async ({ 
   await openMenu(page);
   await expect(page.locator(".menu.show")).toContainText("Not available");
 });
+
+test("the AI ring sits at the reply's top right, like any avatar, not over its words", async ({ page }) => {
+  await start(page);
+  await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
+  await turnOn(page);
+  await page.keyboard.press("Shift+Alt+KeyC");
+  const ring = page.locator(".layer .it .av.ai");
+  await expect(ring).toHaveCount(1, { timeout: 15000 });
+  const box = (await ring.boundingBox())!;
+  const reply = (await page.locator(".layer .it").boundingBox())!;
+  // Right edge of the reply's box, where every avatar sits.
+  expect(box.x + box.width).toBeGreaterThan(reply.x + reply.width - 12);
+});

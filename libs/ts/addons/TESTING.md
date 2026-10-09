@@ -36,6 +36,10 @@ one on a phone (mobile data, mobile data again, then the same Wi-Fi), note "Conn
 Needs desktop Chrome with its built-in model (Prompt API; about 22 GB free disk, a GPU with more than 4 GB of video
 memory or 16 GB RAM). Check `chrome://on-device-internals` if the row says "Not available".
 
+Try pages (after `npm run build` here and in `../pipeup`, then `python3 -m http.server 8895` in this folder):
+`http://localhost:8895/examples/assist/page.html` uses the browser's own model; `page-fake.html` uses a scripted stand-in, so the
+whole flow can be tried without a model.
+
 1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a
    paragraph with that number, and "Love the title." on the heading.
 2. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or

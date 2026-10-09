@@ -7,6 +7,9 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+- An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words.
+
 ## [0.5.2] - 2026-10-09
 
 ### Added
