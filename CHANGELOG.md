@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Assist reads every slide of a deck (marked slides and reveal.js alike), the one showing, the one commented on and all the others, instead of lumping unmarked content into the slide on screen.
+
 - "Reviewed by AI · nothing to add" has a small Check again that makes Assist look at the thread afresh; threads checked by an older Assist are looked at once more.
 
 - Assist shows related information as pills only, under "This may be related:"; hovering or focusing a pill shows the sentence it points to.

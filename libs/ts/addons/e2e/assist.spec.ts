@@ -346,3 +346,22 @@ test("a thread it reviewed has a Check again, which makes it look at the thread 
   await seen.getByRole("button", { name: "Check again" }).dispatchEvent("click");
   await expect.poll(decided, { timeout: 15000 }).toBe(2);
 });
+
+test("in a deck every slide is read, the one showing and all the others, marked or reveal.js style", async ({
+  page,
+}) => {
+  await start(page);
+  await page.evaluate(() => {
+    document.body.innerHTML = `<div class="slides">
+      <section><h2>Intro</h2><p>Hello team.</p></section>
+      <section><h2>Goals</h2><p>Hold churn under 3%.</p></section>
+      <section><h2>Risks</h2><p>Pricing slips with onboarding.</p></section>
+    </div>`;
+  });
+  await turnOn(page);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__reads.length), { timeout: 15000 })
+    .toBeGreaterThanOrEqual(3);
+  const reads = (await page.evaluate(() => (window as any).__reads)) as string[];
+  expect([...new Set(reads)].sort()).toEqual(["Slide 1", "Slide 2", "Slide 3"]);
+});

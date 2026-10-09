@@ -142,6 +142,15 @@ export function createAddon(): PipeupAddon {
         host.setStatus({ text: parts.join(" · ") });
       };
 
+      /** The slide an element is on (marked, or a reveal.js section), whether or not it is the one showing. */
+      const slideOf = (e: Element): { n: string; el: Element } | undefined => {
+        const marked = e.closest("[data-pipeup-slide]");
+        if (marked) return { n: marked.getAttribute("data-pipeup-slide")!, el: marked };
+        const sec = e.closest(".slides > section");
+        const top = sec?.parentElement?.closest(".slides > section") ?? sec;
+        return top ? { n: String([...top.parentElement!.children].indexOf(top) + 1), el: top } : undefined;
+      };
+
       /** Every part of the page, a deck's slides and the notes, in sections that each fit a small model; nothing cut. */
       const gather = (): Passage[] => {
         const out: Passage[] = [];
@@ -163,9 +172,10 @@ export function createAddon(): PipeupAddon {
           if (e.closest("[data-pipeup-ignore]")) continue;
           const text = (e.textContent ?? "").replace(/\s+/g, " ").trim();
           if (!text) continue;
-          const slide = host.where(e)?.slide;
-          if (slide) {
-            const s = slides.get(slide) ?? { texts: [], el: e.closest("[data-pipeup-slide]") ?? e };
+          const at = slideOf(e);
+          if (at) {
+            const slide = at.n;
+            const s = slides.get(slide) ?? { texts: [], el: at.el };
             s.texts.push(text);
             slides.set(slide, s);
             continue;
@@ -224,7 +234,7 @@ export function createAddon(): PipeupAddon {
           text: text.slice(0, 400),
           full,
           el: block ?? null,
-          slide: e ? host.where(e)?.slide : undefined,
+          slide: e ? slideOf(e)?.n : undefined,
         };
       };
 
@@ -285,11 +295,7 @@ export function createAddon(): PipeupAddon {
           // The likely sections, from everything read; then each read in full for the sentence that bears on it.
           pool = gather();
           for (const p of pool) p.extra = index[p.hash!];
-          const likely = rank(
-            pool.filter((p) => !(p.slide && p.slide === block.slide)),
-            `${m.comment} ${block.text}`,
-            LOOKS,
-          );
+          const likely = rank(pool, `${m.comment} ${block.text}`, LOOKS);
           for (const p of likely) {
             const sentence = foundIn(p.text, await s.prompt(verify(m, p.text), { signal: stopped.signal }));
             if (sentence && !restates(sentence, block.full)) used.push({ ...p, text: sentence });
