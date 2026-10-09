@@ -73,7 +73,9 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .av.ai::after{animation:pu-pulse-ring 3s var(--eo) infinite}
 .av.ai.busy::after{animation-duration:1.6s}
 .root>.av.ai,.it>.av.ai{position:absolute}
-@keyframes pu-pulse-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}}
+@keyframes pu-pulse-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}
+.seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
+.seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
 .ghost .dots i{width:4px;height:4px;border-radius:50%;background:var(--fa);animation:pu-dot 1.6s var(--eio) infinite}
 .ghost .dots i:nth-child(2){animation-delay:.2s}

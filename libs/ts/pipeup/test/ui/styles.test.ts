@@ -26,4 +26,13 @@ describe("the stylesheet", () => {
   it("keeps its own tokens short: only the host's five and the public set carry the --pu- prefix", () => {
     expect([...new Set(STYLES.match(/--pu-[\w-]+/g))].sort()).toEqual([...SET_BY_SCRIPT, ...PUBLIC].sort());
   });
+
+  it("has balanced braces (a stray one makes the browser drop the rule after it)", () => {
+    let depth = 0;
+    for (const ch of STYLES.replace(/\/\*[\s\S]*?\*\//g, "")) {
+      depth += ch === "{" ? 1 : ch === "}" ? -1 : 0;
+      expect(depth).toBeGreaterThanOrEqual(0);
+    }
+    expect(depth).toBe(0);
+  });
 });

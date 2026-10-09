@@ -5,7 +5,7 @@ import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
-import { threadNotes } from "./notes";
+import { threadMarks, threadNotes } from "./notes";
 
 export interface ThreadActions {
   reply(parentId: string, text: string): Promise<void>;
@@ -67,6 +67,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   line.prepend(note);
   let root: HTMLElement = h("div", {});
   let list: HTMLElement | null = null;
+  let seen: HTMLElement | null = null;
   const element = h("div", {}, root, h("div", { class: "more" }, inner));
   /**
    * Avatars by comment, with the face they show. Updates rebuild the comment's box, so the same avatar is
@@ -180,6 +181,11 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           )
         : null;
     if (list) inner.prepend(list);
+    // A quiet line from an add-on: it has looked at this thread (and had nothing to add, or is reading it now).
+    seen?.remove();
+    const mark = threadMarks.get(t.id);
+    seen = mark === undefined ? null : h("div", { class: "seen" }, h("i"), mark);
+    if (seen) inner.insertBefore(seen, line.parentNode === inner ? line : null);
     faces = nextFaces;
     // Words half-written in the reply line are never lost: a thread resolved meanwhile (by anyone) keeps its line
     // until they are sent or cleared, with a plain sentence saying so.

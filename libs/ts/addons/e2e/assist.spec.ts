@@ -77,6 +77,9 @@ test("turned on, it replies to a comment that deserves one, in its own name, and
   expect(all.find((t: any) => t.root.text.startsWith("Love")).root.replies).toHaveLength(0);
   // Its own key, not the reviewer's.
   expect(asked.root.replies[0].author).not.toBe(await page.evaluate(() => (window as any).pu.document.me));
+  // The comment it stayed quiet on says it was reviewed; the one it replied to doesn't need to.
+  await expect(page.locator(".layer .seen")).toHaveCount(1);
+  await expect(page.locator(".layer .seen")).toHaveText("Reviewed by AI · nothing to add");
   await expect(page.locator(".launch .mode")).toBeVisible();
 });
 

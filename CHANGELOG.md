@@ -9,6 +9,7 @@ change the API and the stored comment format.
 
 ### Fixed
 - An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words, and it pulses outward inside its own box, so nothing is cropped.
+- A thread the AI assistant has looked at and had nothing to add to says so ("Reviewed by AI · nothing to add"), and says "AI assistant is reading this…" while it does. `host.setThreadMark` is the add-on slot for it.
 - The "Assistant replies" row shows in the menu only while commenting is on.
 - Assist no longer replies with what the commented words already say, and shows a link as a numbered reference ("[1]"), not an address.
 

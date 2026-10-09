@@ -4,7 +4,7 @@ import { clip, h, inert, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
-import { threadNotes } from "./notes";
+import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { plural, threadView, type ThreadView } from "./thread-view";
 
@@ -125,7 +125,7 @@ export function createColumn(ctx: Ctx): View {
 
   function fill(item: Item, t: Thread): void {
     item.thread = t;
-    item.note = threadNotes.get(t.id);
+    item.note = notesKey(t.id);
     item.lost = isLost(t);
     item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null });
   }
@@ -193,7 +193,7 @@ export function createColumn(ctx: Ctx): View {
         item = create(t);
         items.set(t.id, item);
         fresh.push(item.el);
-      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== threadNotes.get(t.id)) {
+      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== notesKey(t.id)) {
         fill(item, t);
       }
       const el = item.el;

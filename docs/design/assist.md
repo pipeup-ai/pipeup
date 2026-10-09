@@ -40,6 +40,9 @@ See the mock-ups for each state.
    three times in one thread, and never to its own replies. A person can remove an
    assistant reply, and can switch assistant replies off for what they see. Replies already added stay when it is
    turned off.
+6a. **Reviewed, nothing to add.** A thread it looked at and stayed quiet on carries a quiet line, "Reviewed by AI ·
+   nothing to add", with a still ring, so a reviewer can tell silence from "not looked at". While it reads a thread the
+   line says "AI assistant is reading this…".
 7. **In All comments,** a quiet line on each row says what happened: "AI assistant replied", "AI assistant is
    reading", or "Checked, nothing to add".
 8. **When it can't,** one plain sentence (not enough memory, no graphics support, download refused). A failed reply

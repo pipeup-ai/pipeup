@@ -6,7 +6,7 @@ import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
-import { threadNotes } from "./notes";
+import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { threadView, type ThreadView } from "./thread-view";
 
@@ -288,15 +288,15 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       shownView = threadView(next, ctx.actions, { variant: "popover", quote });
       pop.replaceChildren(shownView.element);
       shown = next;
-      shownNote = threadNotes.get(next.id);
+      shownNote = notesKey(next.id);
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next || shownNote !== threadNotes.get(next.id)) {
+    } else if (shown !== next || shownNote !== notesKey(next.id)) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
       shownView.update(next, { quote });
       shown = next;
-      shownNote = threadNotes.get(next.id);
+      shownNote = notesKey(next.id);
     }
   }
 

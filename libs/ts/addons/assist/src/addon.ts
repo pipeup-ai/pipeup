@@ -10,6 +10,8 @@ const MAX_REPLIES = 3;
 const PACE_MS = 1500;
 /** The model is freed after this long unused. */
 const IDLE_MS = 5 * 60_000;
+const READING = "AI assistant is reading this…";
+const SEEN = "Reviewed by AI · nothing to add";
 const BLOCKS = "p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd";
 /** A ring and a dot: the mark of an AI reply, small. */
 const ICON = ["M12 7a5 5 0 1 0 0 10a5 5 0 1 0 0-10z", "M12 2.5a9.5 9.5 0 1 0 0 19a9.5 9.5 0 1 0 0-19z"];
@@ -79,6 +81,14 @@ export function createAddon(): PipeupAddon {
       let panel: { close(): void } | undefined;
       let row: ItemHandle | null = null;
       const notes: Passage[] = [];
+      let reading: string | null = null;
+      /** Marks the threads it has looked at and had nothing to add to (and the one it is reading now). */
+      const syncMarks = () => {
+        for (const t of host.document.threads()) {
+          const seen = on && !t.resolved && checked[t.id] === stampOf(t) && aiCount(t) === 0;
+          host.setThreadMark(t.id, reading === t.id ? READING : seen ? SEEN : null);
+        }
+      };
       /** Redraws the menu row, if it is showing. */
       const updateRow = () => (row as ItemHandle | null)?.update();
 
@@ -168,6 +178,8 @@ export function createAddon(): PipeupAddon {
       /** Looks at one thread: decides whether a reply would help, and if so writes it into the thread. */
       const handle = async (t: Thread): Promise<void> => {
         const stamp = stampOf(t);
+        reading = t.id;
+        host.setThreadMark(t.id, READING);
         // Marked first, so a failure is never a loop: it is looked at again only when something is added.
         checked[t.id] = stamp;
         looked++;
@@ -260,7 +272,11 @@ export function createAddon(): PipeupAddon {
             if (!t) break;
             try {
               await handle(t);
+              reading = null;
+              syncMarks();
             } catch (e) {
+              reading = null;
+              syncMarks();
               if (stopped.signal.aborted) break;
               host.setThreadNote(t.id, null);
               globalThis.reportError?.(e);
@@ -273,7 +289,10 @@ export function createAddon(): PipeupAddon {
         }
       };
 
-      const offChange = host.document.onChange(() => void pump());
+      const offChange = host.document.onChange(() => {
+        syncMarks();
+        void pump();
+      });
       const onVisible = () => void pump();
       document.addEventListener("visibilitychange", onVisible);
 
@@ -283,6 +302,7 @@ export function createAddon(): PipeupAddon {
         await store?.set("on", true);
         await loadNotes();
         status();
+        syncMarks();
         updateRow();
         void pump();
       };
@@ -294,6 +314,7 @@ export function createAddon(): PipeupAddon {
         session = undefined;
         await store?.set("on", false);
         status();
+        syncMarks();
         updateRow();
       };
 
