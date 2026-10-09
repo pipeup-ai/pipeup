@@ -6,6 +6,7 @@ import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
+import { threadNotes } from "./notes";
 import { byPage } from "./order";
 import { threadView, type ThreadView } from "./thread-view";
 
@@ -31,6 +32,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   let threads: readonly Thread[] = [];
   let shown: Thread | null = null;
   let shownView: ThreadView | null = null;
+  /** The reply an add-on was writing into the shown thread when it was last drawn. */
+  let shownNote: string | undefined;
   let draft: { box: DraftBox; of: Draft; at: unknown; above: boolean | null } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let gliding = 0;
@@ -285,13 +288,15 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       shownView = threadView(next, ctx.actions, { variant: "popover", quote });
       pop.replaceChildren(shownView.element);
       shown = next;
+      shownNote = threadNotes.get(next.id);
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next) {
+    } else if (shown !== next || shownNote !== threadNotes.get(next.id)) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
       shownView.update(next, { quote });
       shown = next;
+      shownNote = threadNotes.get(next.id);
     }
   }
 

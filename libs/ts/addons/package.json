@@ -9,6 +9,7 @@
     "share",
     "voice",
     "live",
+    "assist",
     "test"
   ],
   "engines": {

@@ -172,6 +172,16 @@ describe("PipeupDocument", () => {
     }).toThrow(/a name/);
   });
 
+  it("keeps the AI assistant's name for AI replies", async () => {
+    const d = await reviewer("Sam", "doc", null);
+    for (const name of ["AI assistant", "AI assistant (on this device)"])
+      expect(() => {
+        d.name = name;
+      }).toThrow(/kept for AI replies/);
+    d.name = "AI assistants union"; // not the reserved name or a suffix of it
+    expect(d.name).toBe("AI assistants union");
+  });
+
   it("comments without a name, and shows the name added later on those comments", async () => {
     const d = await reviewer("", "doc", null);
     expect(d.name).toBe("");

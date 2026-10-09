@@ -2,13 +2,14 @@
 
 Optional features for Pipeup, each one more script. The design is [docs/design/addons.md](../../../docs/design/addons.md).
 
-| Folder   | npm package     | What                                                                                                                                  |
-| -------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `share/` | `@pipeup/share` | Comments reach everyone who has the page, through an encrypted service (PrivateBin, or an HTTP mailbox)                               |
-| `voice/` | `@pipeup/voice` | Dictating comments with the browser's own speech engine                                                                               |
-| `live/`  | `@pipeup/live`  | Live comments and presence between people on the page, peer to peer                                                                   |
-| `kit/`   | private         | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
-| `test/`  | private         | A fixture add-on that uses every slot, for the browser tests                                                                          |
+| Folder    | npm package      | What                                                                                                                                  |
+| --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `share/`  | `@pipeup/share`  | Comments reach everyone who has the page, through an encrypted service (PrivateBin, or an HTTP mailbox)                               |
+| `voice/`  | `@pipeup/voice`  | Dictating comments with the browser's own speech engine                                                                               |
+| `live/`   | `@pipeup/live`   | Live comments and presence between people on the page, peer to peer                                                                   |
+| `assist/` | `@pipeup/assist` | Short replies to comments from a small AI model on the reviewer's own device                                                          |
+| `kit/`    | private          | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
+| `test/`   | private          | A fixture add-on that uses every slot, for the browser tests                                                                          |
 
 The mailbox server for `share` is in [`services/mailbox`](../../../services/mailbox).
 
@@ -30,4 +31,4 @@ npm run demo       # a local mailbox and relay and a try page for all three add-
 
 Each add-on builds to `dist/<id>.min.js` (a classic script that registers itself), `dist/<id>.esm.js`
 (`import share from "@pipeup/share"; use(share())`), and `dist/pipeup+<id>.min.js` (Pipeup and the add-on in
-one file, byte for byte). Gzip budgets: share 7.5 KB, voice 4 KB, live 11 KB.
+one file, byte for byte). Gzip budgets: share 8.5 KB, voice 4 KB, live 11 KB, assist 8 KB.

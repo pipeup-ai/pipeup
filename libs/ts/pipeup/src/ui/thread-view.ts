@@ -1,10 +1,11 @@
 import { formatAgo } from "../export/format";
-import { nameOf } from "../model/animals";
+import { AI_NAME, nameOf } from "../model/animals";
 import type { Comment, Thread } from "../model/types";
 import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify } from "./dom";
 import { icon, type IconName } from "./icons";
+import { threadNotes } from "./notes";
 
 export interface ThreadActions {
   reply(parentId: string, text: string): Promise<void>;
@@ -149,21 +150,33 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
 
     // Swap the comment and replies around the reply line; never rebuild the line itself.
     list?.remove();
-    list = n
-      ? h(
-          "div",
-          { class: "rps" },
-          ...t.root.replies.map((c) =>
-            h(
-              "div",
-              { class: "it" },
-              ...face(c),
-              words(c),
-              h("div", { class: o.variant === "column" ? "rft" : "rft open" }, who(c)),
+    const writing = threadNotes.get(t.id);
+    list =
+      n || writing !== undefined
+        ? h(
+            "div",
+            { class: "rps" },
+            ...t.root.replies.map((c) =>
+              h(
+                "div",
+                { class: "it" },
+                ...face(c),
+                words(c),
+                h("div", { class: o.variant === "column" ? "rft" : "rft open" }, who(c)),
+              ),
             ),
-          ),
-        )
-      : null;
+            // A reply being written by an add-on (an AI's, streaming in): not a comment yet, so only shown.
+            writing === undefined
+              ? null
+              : h(
+                  "div",
+                  { class: "it ghost" },
+                  avatar("", AI_NAME, true),
+                  h("div", { class: "tx" }, writing, h("span", { class: "dots" }, h("i"), h("i"), h("i"))),
+                  h("div", { class: "rft open" }, h("span", { class: "who" }, `${AI_NAME} · writing now`)),
+                ),
+          )
+        : null;
     if (list) inner.prepend(list);
     faces = nextFaces;
     // Words half-written in the reply line are never lost: a thread resolved meanwhile (by anyone) keeps its line
