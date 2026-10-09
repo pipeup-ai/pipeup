@@ -1,7 +1,7 @@
 {
   "name": "pipeup-addons",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Pipeup's add-ons (share, voice, live) and the private kit they share. Workspace tooling only; the add-ons are the @pipeup/* packages.",
   "type": "module",
   "workspaces": [

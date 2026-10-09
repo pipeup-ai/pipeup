@@ -26,7 +26,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | Item | Meaning | Status |
 |---|---|---|
 | `<html data-pipeup-doc="<id>:<key>">` | Document identity and key. Generated once, never changed. | Format exists (core `newDocumentAttribute`); auto-detection — **done in 0.3.0** |
-| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.5.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 36 KB gzip; on npm from 0.3.0 |
+| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.5.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 36 KB gzip; on npm from 0.3.0 |
 | Auto-mount when `data-pipeup-doc` is present | No inline script needed, so strict CSP pages work | **Done in 0.3.0** |
 | `Pipeup.mount(options)` | Manual mount; options below | **Done in 0.3.0** (`root`, `name`, `store`) |
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |

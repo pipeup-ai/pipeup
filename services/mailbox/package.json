@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/mailbox",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Reference HTTP mailbox server for Pipeup shared comments (contract pm1), and a checker for any server.",
   "homepage": "https://pipeup-ai.github.io/pipeup/",
   "author": "Pipeup contributors",

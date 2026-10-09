@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-09
+
 ### Added
 - **`@pipeup/assist`**: short replies to comments from a small AI model running on the reviewer's own device (the browser's built-in model by default; a page can supply its own engine). Turned on by the reviewer, it decides for each comment whether a reply would help (ambiguity, related information or tone), streams a short reply into the thread under the name "AI assistant (on this device)", links to the author's Markdown notes where it used them, and remembers what it has looked at so it looks again only when something is added.
 - For add-ons that write AI replies: `host.setThreadNote` shows a reply as it is being written at the end of a thread; the name "AI assistant" is kept for AI replies and they are drawn with a gently glowing ring; `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported.
@@ -14,7 +16,6 @@ change the API and the stored comment format.
 ### Changed
 - **All comments is interactive.** A row is a preview; choosing it opens the thread out in the panel, where you can reply, resolve or reopen, and copy it. The page scrolls to its place and a thin line joins the open row to it. Nothing opens on the page, and the side popover is gone.
 
-### Changed
 - An open thread's popover always shows who and when, with Copy and Resolve, so it no longer jumps in height when hovered; the chosen block's outline and naming bar step aside while a thread is open.
 - The bundles go through a second minifier (terser) after esbuild: 3% smaller, 40.2 KB gzip for the script (41.5 KB before), 35.4 KB brotli.
 
@@ -201,7 +202,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/pipeup-ai/pipeup/compare/v0.4.0...v0.4.1
