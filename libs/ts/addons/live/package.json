@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/live",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Live comments and presence for Pipeup, peer to peer.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.5.2"
+    "pipeup": "0.5.3"
   },
   "pipeup": {
     "network": {
