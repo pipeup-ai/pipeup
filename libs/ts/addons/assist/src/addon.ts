@@ -1,15 +1,17 @@
 import { settings, type Settings } from "@pipeup/kit";
-import type { Comment, Identity, PipeupAddon, Thread } from "pipeup";
+import type { Comment, Identity, ItemHandle, MenuItem, PipeupAddon, Thread } from "pipeup";
 import { core, NAME, replyOp, type Core } from "./author";
 import { authorEngine, promptApi, type Availability, type Engine, type Session } from "./engine";
 import { decide, DECIDE_SCHEMA, write, type Material } from "./prompts";
-import { clean, rank, replyPart, scenarioOf, sections, usedOf, type Passage } from "./text";
+import { clean, rank, replyPart, restates, scenarioOf, sections, usedOf, type Passage } from "./text";
 
 /** The most replies in one thread, and the wait between two comments' replies. */
 const MAX_REPLIES = 3;
 const PACE_MS = 1500;
 /** The model is freed after this long unused. */
 const IDLE_MS = 5 * 60_000;
+const READING = "AI assistant is reading this…";
+const SEEN = "Reviewed by AI · nothing to add";
 const BLOCKS = "p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd";
 /** A ring and a dot: the mark of an AI reply, small. */
 const ICON = ["M12 7a5 5 0 1 0 0 10a5 5 0 1 0 0-10z", "M12 2.5a9.5 9.5 0 1 0 0 19a9.5 9.5 0 1 0 0-19z"];
@@ -23,6 +25,10 @@ const CSS = `.assist-p{margin:0 0 10px}.assist-note{color:var(--pu-faint)}
 .assist-btns button{font:inherit;color:inherit;background:none;cursor:pointer;padding:6px 12px;border:1px solid var(--pu-line);border-radius:8px;transition:background-color .2s var(--pu-ease),opacity .2s var(--pu-ease)}
 .assist-btns button:hover,.assist-btns button:focus-visible{background:var(--pu-hover);outline:none}
 .assist-btns button:disabled{opacity:.5;cursor:default}.assist-btns .assist-go{color:var(--pu-accent)}`;
+
+/** Where a reference pill goes: the notes' heading, the slide, or the passage on this page. */
+const pointer = (p: Passage): string =>
+  p.url ?? (p.slide ? `slide:${p.slide}` : `quote:${encodeURIComponent(p.text.slice(0, 40))}`);
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const isAi = (c: Comment): boolean => c.name === NAME || c.name.startsWith("AI assistant ");
@@ -77,7 +83,18 @@ export function createAddon(): PipeupAddon {
       let looked = 0;
       let pool: Passage[] = [];
       let panel: { close(): void } | undefined;
+      let row: ItemHandle | null = null;
       const notes: Passage[] = [];
+      let reading: string | null = null;
+      /** Marks the threads it has looked at and had nothing to add to (and the one it is reading now). */
+      const syncMarks = () => {
+        for (const t of host.document.threads()) {
+          const seen = on && !t.resolved && checked[t.id] === stampOf(t) && aiCount(t) === 0;
+          host.setThreadMark(t.id, reading === t.id ? READING : seen ? SEEN : null);
+        }
+      };
+      /** Redraws the menu row, if it is showing. */
+      const updateRow = () => (row as ItemHandle | null)?.update();
 
       const lowMemory = (): boolean => {
         const gb = (navigator as { deviceMemory?: number }).deviceMemory;
@@ -93,19 +110,23 @@ export function createAddon(): PipeupAddon {
       /** Reads the page's blocks (and the notes' sections) the assistant may draw on. */
       const gather = (): Passage[] => {
         const out: Passage[] = [];
+        // A deck's slides are read whole: one passage per slide, so a short bullet ("Hold churn under 3%.") counts.
+        const slides = new Map<string, { texts: string[]; el: Element }>();
         let heading = "";
         for (const e of host.root.querySelectorAll(BLOCKS)) {
           if (e.closest("[data-pipeup-ignore]")) continue;
           const text = (e.textContent ?? "").replace(/\s+/g, " ").trim();
           if (/^H[1-6]$/.test(e.tagName)) heading = text.slice(0, 60);
-          if (text.length < 25) continue;
           const slide = host.where(e)?.slide;
-          out.push({
-            label: slide ? `Slide ${slide}` : heading || "This page",
-            text: text.slice(0, 300),
-            el: e,
-          });
+          if (slide) {
+            const s = slides.get(slide) ?? { texts: [], el: e.closest("[data-pipeup-slide]") ?? e };
+            if (text) s.texts.push(text);
+            slides.set(slide, s);
+          } else if (text.length >= 12)
+            out.push({ label: heading || "This page", text: text.slice(0, 300), el: e });
         }
+        for (const [slide, s] of slides)
+          out.push({ label: `Slide ${slide}`, text: s.texts.join(" · ").slice(0, 400), el: s.el, slide });
         return [...out, ...notes];
       };
 
@@ -124,7 +145,7 @@ export function createAddon(): PipeupAddon {
       };
 
       /** The words of the block a comment is about. */
-      const blockOf = (t: Thread): { text: string; el: Element | null } => {
+      const blockOf = (t: Thread): { text: string; full: string; el: Element | null; slide?: string } => {
         let e: Element | null = null;
         try {
           const r = c.resolveAnchor?.(t.anchor, host.root, { fuzzy: false });
@@ -136,7 +157,13 @@ export function createAddon(): PipeupAddon {
         const text = (t.anchor.quote?.exact ?? block?.textContent ?? t.anchor.snapshot)
           .replace(/\s+/g, " ")
           .trim();
-        return { text: text.slice(0, 400), el: block ?? null };
+        const full = (block?.textContent ?? text).replace(/\s+/g, " ").trim();
+        return {
+          text: text.slice(0, 400),
+          full,
+          el: block ?? null,
+          slide: e ? host.where(e)?.slide : undefined,
+        };
       };
 
       const getSession = async (): Promise<Session> => {
@@ -164,6 +191,8 @@ export function createAddon(): PipeupAddon {
       /** Looks at one thread: decides whether a reply would help, and if so writes it into the thread. */
       const handle = async (t: Thread): Promise<void> => {
         const stamp = stampOf(t);
+        reading = t.id;
+        host.setThreadMark(t.id, READING);
         // Marked first, so a failure is never a loop: it is looked at again only when something is added.
         checked[t.id] = stamp;
         looked++;
@@ -188,8 +217,8 @@ export function createAddon(): PipeupAddon {
         if (kind === "related") {
           pool = gather();
           used = rank(
-            pool.filter((p) => p.el !== block.el),
-            `${m.comment} ${t.anchor.quote?.exact ?? ""}`,
+            pool.filter((p) => p.el !== block.el && !(p.slide && p.slide === block.slide)),
+            `${m.comment} ${block.text}`,
           );
           if (!used.length) return;
           m.related = used.map((p, i) => `[${i + 1}] ${p.label}: ${p.text}`);
@@ -204,11 +233,16 @@ export function createAddon(): PipeupAddon {
           }
           const supplied = `${m.comment} ${m.passage} ${m.thread} ${m.related.join(" ")}`;
           let text = clean(raw, m.comment, supplied);
-          if (!text) return;
-          const link = usedOf(raw)
-            .map((n) => used[n - 1]?.url)
-            .find(Boolean);
-          if (link) text = `${text} More: ${link}`;
+          // A reply that only says again what the commented words say tells the reviewer nothing.
+          if (!text || restates(text, block.full)) return;
+          // What it relied on goes in reference lines, at most three; Pipeup shows each as a small pill under the words
+          // (a slide with a slide icon), so the reply stays short and the screen is not flooded.
+          const refs = [...new Set(usedOf(raw))]
+            .map((n) => used[n - 1])
+            .filter((p): p is Passage => !!p)
+            .slice(0, 3);
+          if (refs.length)
+            text = `${text}\n\n${refs.map((p, i) => `[${i + 1}]: ${pointer(p)} ${p.label.slice(0, 30)}`).join("\n")}`;
           const op = await replyOp(
             c as Core,
             await identity(),
@@ -254,7 +288,11 @@ export function createAddon(): PipeupAddon {
             if (!t) break;
             try {
               await handle(t);
+              reading = null;
+              syncMarks();
             } catch (e) {
+              reading = null;
+              syncMarks();
               if (stopped.signal.aborted) break;
               host.setThreadNote(t.id, null);
               globalThis.reportError?.(e);
@@ -267,7 +305,10 @@ export function createAddon(): PipeupAddon {
         }
       };
 
-      const offChange = host.document.onChange(() => void pump());
+      const offChange = host.document.onChange(() => {
+        syncMarks();
+        void pump();
+      });
       const onVisible = () => void pump();
       document.addEventListener("visibilitychange", onVisible);
 
@@ -277,7 +318,8 @@ export function createAddon(): PipeupAddon {
         await store?.set("on", true);
         await loadNotes();
         status();
-        row.update();
+        syncMarks();
+        updateRow();
         void pump();
       };
       const turnOff = async () => {
@@ -288,7 +330,8 @@ export function createAddon(): PipeupAddon {
         session = undefined;
         await store?.set("on", false);
         status();
-        row.update();
+        syncMarks();
+        updateRow();
       };
 
       /** The consent panel: what it does, which model, what it costs, and that nothing leaves the device. */
@@ -362,7 +405,7 @@ export function createAddon(): PipeupAddon {
         panel = host.openPanel(box, { label: "Assistant replies", onClose: () => (panel = undefined) });
       };
 
-      const row = host.addMenuItem({
+      const item: MenuItem = {
         id: "assist",
         icon: ICON,
         label: () => "Assistant replies",
@@ -382,6 +425,15 @@ export function createAddon(): PipeupAddon {
             ?.get<string>("consent")
             .then((c0) => (c0 === engine.info.name && avail === "ready" ? turnOn() : ask()));
         },
+      };
+      // The row shows only while comments do (comment mode, All comments, or a comment being written): the
+      // assistant belongs to reviewing, so it stays out of the menu otherwise. It keeps working either way.
+      const offUi = host.onUi((ui) => {
+        if (ui.shown && !row) row = host.addMenuItem(item);
+        else if (!ui.shown && row) {
+          row.remove();
+          row = null;
+        }
       });
 
       // Settings, availability and what was already looked at come in the background; the row is there meanwhile.
@@ -391,7 +443,7 @@ export function createAddon(): PipeupAddon {
         checked =
           (await store.get<Record<string, string>>(`checked:${host.document.id}`).catch(() => undefined)) ??
           {};
-        row.update();
+        updateRow();
         if (avail === "ready" && (await store.get<boolean>("on").catch(() => false))) await turnOn();
       })();
 
@@ -401,6 +453,7 @@ export function createAddon(): PipeupAddon {
         window.clearTimeout(idle);
         session?.destroy();
         offChange();
+        offUi();
         document.removeEventListener("visibilitychange", onVisible);
         panel?.close();
         offStyles();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decide, write, SHARED } from "../src/prompts";
-import { clean, rank, replyPart, scenarioOf, sections, usedOf, type Passage } from "../src/text";
+import { clean, rank, replyPart, restates, scenarioOf, sections, usedOf, type Passage } from "../src/text";
 
 describe("the model's words", () => {
   it("reads the one-word answer, and anything else is none", () => {
@@ -36,6 +36,19 @@ describe("the model's words", () => {
     expect(out.length).toBeLessThanOrEqual(280);
     expect(out.endsWith(".")).toBe(true);
     expect(clean("x".repeat(400), "Sure?", "")).toBeNull();
+  });
+});
+
+describe("a reply that only repeats", () => {
+  const passage =
+    "The team stays at six people through the end of the quarter. Hiring a second designer moves to Q4.";
+  it("is spotted, and a reply that adds something is not", () => {
+    expect(
+      restates("It's planned for Q4 after the launch. The team is at six people until then.", passage),
+    ).toBe(true);
+    expect(restates("The Risks section says pricing slips if onboarding slips past July.", passage)).toBe(
+      false,
+    );
   });
 });
 

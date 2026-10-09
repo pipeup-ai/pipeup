@@ -112,3 +112,37 @@ describe("linkify", () => {
     ]);
   });
 });
+
+describe("an AI reply's references", () => {
+  it("shows them as pills under the words, with a slide icon for a slide, and hides the lines", async () => {
+    const { referenced } = await import("../../src/ui/dom");
+    const box = document.createElement("div");
+    box.append(
+      ...referenced(
+        "It slips with onboarding [1].\n\n[1]: slide:5\n[2]: https://example.org/notes.md#hiring notes.md › Hiring\n[3]: quote:Hiring%20a%20second Risks",
+      ),
+    );
+    expect(box.firstChild?.textContent).toBe("It slips with onboarding.");
+    const pills = [...box.querySelectorAll(".refs .ref")];
+    expect(pills.map((p) => p.textContent)).toEqual(["Slide 5", "[2] notes.md › Hiring", "[3] Risks"]);
+    expect(pills[0]?.querySelector("i.sl")).not.toBeNull();
+    expect(pills[1]?.getAttribute("href")).toBe("https://example.org/notes.md#hiring");
+    expect(pills[1]?.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(pills[0]?.tagName).toBe("BUTTON");
+  });
+  it("sends a pressed pill to where it points, and leaves lines with no usable target as they are", async () => {
+    const { referenced } = await import("../../src/ui/dom");
+    const { reveal } = await import("../../src/ui/notes");
+    const go = vi.fn();
+    reveal.go = go;
+    const box = document.createElement("div");
+    box.append(...referenced("See it.\n[1]: slide:7"));
+    (box.querySelector(".ref") as HTMLElement).click();
+    expect(go).toHaveBeenCalledWith("slide:7");
+    reveal.go = undefined;
+    const bad = document.createElement("div");
+    bad.append(...referenced("See [2].\n[1]: javascript:alert(1)\n[3]: ftp://example.org/"));
+    expect(bad.querySelector(".ref")).toBeNull();
+    expect(bad.textContent).toContain("javascript:alert(1)");
+  });
+});

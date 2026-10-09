@@ -67,11 +67,20 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 /* Ten colours (.c0 Red to .c9 Grey, as COLOURS): a soft tint and a dark drawing, swapped round on dark pages. */
 .av{--av-l:92%;--av-d:30%;--s:60%;background:hsl(var(--h) var(--s) var(--av-l));color:hsl(var(--h) var(--s) var(--av-d))}
 .dark .av{--av-l:20%;--av-d:78%}
-/* An AI's reply: a plain disc with a violet ring that glows gently (opacity and scale on a pseudo-element). */
-.av.ai{position:relative;border-radius:50%;background:var(--su);color:var(--pu-accent);font-size:9px;letter-spacing:.02em;box-shadow:0 0 0 1.5px var(--pu-accent)}
-.av.ai::after{content:"";position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 9px 1px color-mix(in srgb,var(--pu-accent) 45%,transparent);opacity:.3;animation:pu-breathe 3.8s var(--eio) infinite;pointer-events:none}
-.av.ai.busy::after{animation-duration:2.2s}
-@keyframes pu-breathe{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+/* An AI's reply: a plain disc with a violet ring that pulses outward, all inside the avatar's own box so nothing is cropped. */
+.av.ai{position:relative;border-radius:50%;background:var(--su);color:var(--pu-accent);font-size:9px;letter-spacing:.02em}
+.av.ai::before,.av.ai::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid var(--pu-accent);pointer-events:none}
+.av.ai::after{animation:pu-pulse-ring 3s var(--eo) infinite}
+.av.ai.busy::after{animation-duration:1.6s}
+.root>.av.ai,.it>.av.ai{position:absolute}
+@keyframes pu-pulse-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}
+.refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;white-space:normal}
+.refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
+.refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
+.ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
+.seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
+.seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
 .ghost .dots i{width:4px;height:4px;border-radius:50%;background:var(--fa);animation:pu-dot 1.6s var(--eio) infinite}
 .ghost .dots i:nth-child(2){animation-delay:.2s}
@@ -266,7 +275,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}
 .av,.nf{transform:none!important}
-.av.ai::after{animation:none;opacity:.5}
+.av.ai::after{animation:none;opacity:0}
 .ghost .dots i{animation:none;opacity:.6}
 @keyframes pu-pulse{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}
 }

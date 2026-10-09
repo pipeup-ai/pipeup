@@ -7,6 +7,16 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Assist reads every slide as a whole (short bullets included), so a goal on a slide can be found and pointed to with a slide pill.
+- The line from an open All comments row now runs down the margin beside the panel and turns in to the far right of the marked words' row, or along the gap above the block, instead of cutting across the page.
+
+### Fixed
+- An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words, and it pulses outward inside its own box, so nothing is cropped.
+- Assist shows what a reply relied on as small reference pills (at most three, never an address): "[1] Risks" for a passage, "Slide 5" with a slide icon for a slide, a notes heading; pressing one goes there. It reads every slide of a deck, so the answer can come from slides other than the one commented on.
+- A thread the AI assistant has looked at and had nothing to add to says so ("Reviewed by AI · nothing to add"), and says "AI assistant is reading this…" while it does. `host.setThreadMark` is the add-on slot for it.
+- The "Assistant replies" row shows in the menu only while commenting is on.
+- Assist no longer replies with what the commented words already say, and shows a link as a numbered reference ("[1]"), not an address.
+
 ## [0.5.2] - 2026-10-09
 
 ### Added

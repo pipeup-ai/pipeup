@@ -5,7 +5,7 @@ import { ANIMAL_ICONS, avatar, initial } from "../../src/ui/animals";
 import { composer } from "../../src/ui/composer";
 import { renderDraft } from "../../src/ui/draft-view";
 import { threadView, type ThreadActions } from "../../src/ui/thread-view";
-import { threadNotes } from "../../src/ui/notes";
+import { threadMarks, threadNotes } from "../../src/ui/notes";
 import type { Comment, Thread } from "../../src/model/types";
 
 const NOW = 1_000_000_000_000;
@@ -405,5 +405,20 @@ describe("an AI's replies", () => {
     threadNotes.delete("t1");
     view.update(t);
     expect(view.element.querySelector(".ghost")).toBeNull();
+  });
+});
+
+describe("a mark from an add-on", () => {
+  it("is a quiet line at the end of the thread, before the reply line, and goes when removed", () => {
+    const t = thread();
+    const view = threadView(t, actions(), { variant: "popover", now: () => NOW });
+    threadMarks.set("t1", "Reviewed by AI · nothing to add");
+    view.update(t);
+    const seen = view.element.querySelector(".seen")!;
+    expect(seen.textContent).toBe("Reviewed by AI · nothing to add");
+    expect(seen.nextElementSibling?.classList.contains("rbox")).toBe(true);
+    threadMarks.delete("t1");
+    view.update(t);
+    expect(view.element.querySelector(".seen")).toBeNull();
   });
 });

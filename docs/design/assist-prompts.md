@@ -104,7 +104,9 @@ and numbers them. The model may only point at those numbers.
 {{shared rules}}
 
 Answer from the related passages only. In one or two sentences say what the document says that bears on the
-comment, and which passages you used. If the related passages do not help, leave the reply empty.
+comment, and name where it says it. Never repeat what the commented passage already says: the reviewer has read it.
+Reply only if the related passages add something the reviewer may not have seen (a reason, a number, a date, a
+conflict). If they only restate the passage, or do not help, reply with just the word NONE.
 
 <comment>{{comment}}</comment>
 <passage>{{passage}}</passage>
@@ -166,6 +168,9 @@ Stays quiet when: the comment doesn't actually concern tone, or there is nothing
 - Remove markdown the model added anyway; show it as plain text.
 - Check every link number against what was supplied; drop any that aren't.
 - Drop a reply that repeats the comment, apologises, or says "As an AI".
+- Drop a reply that mostly repeats the commented passage's own words (it tells the reviewer nothing new): a
+  "why" question the document gives no reason for gets no reply.
+- Links are shown as a numbered reference, "[1]", never as a full address.
 - If the text contains a number, name or date that is not in the comment, the passage or the related passages, drop
   it (a cheap check against made-up facts).
 - Post it as a reply by the assistant, streamed in while it is being written.

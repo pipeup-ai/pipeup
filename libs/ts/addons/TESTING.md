@@ -36,9 +36,13 @@ one on a phone (mobile data, mobile data again, then the same Wi-Fi), note "Conn
 Needs desktop Chrome with its built-in model (Prompt API; about 22 GB free disk, a GPU with more than 4 GB of video
 memory or 16 GB RAM). Check `chrome://on-device-internals` if the row says "Not available".
 
+Try pages (after `npm run build` here and in `../pipeup`, then `python3 -m http.server 8895` in this folder):
+`http://localhost:8895/examples/assist/page.html` uses the browser's own model; `deck.html` is a six-slide deck (comment on slide 6, and the answer may be on slides 2 to 5); `*-fake.html` use a scripted stand-in, so the
+whole flow can be tried without a model.
+
 1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a
    paragraph with that number, and "Love the title." on the heading.
-2. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
+2. Turn comment mode on (Shift+Option+C); the row is in the menu only while commenting is on. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
    **Download and turn on** with a progress bar). Turn it on.
 3. The first comment should get a short reply streaming into its thread under "AI assistant (on this device)", with
    the gently glowing ring. The compliment should get nothing.
