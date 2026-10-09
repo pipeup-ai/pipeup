@@ -83,6 +83,14 @@ See the mock-ups for each state.
     not word by word. Showing and hiding eases; with reduced motion things only fade.
 15. Where no model is available (phones, older browsers), Assist says it is not available and does nothing.
 
+## The prompts
+
+Three reply scenarios to start with, each a short prompt written for a small model: **ambiguity** (ask which of two
+readings is meant), **related information** (say what the document says and show where) and **tone** (one
+observation and one alternative wording). Everything else gets no reply. The prompts, the two-step flow (decide, then
+write), the checks the add-on applies afterwards, and the format for adding your own scenarios later are in
+[assist-prompts.md](assist-prompts.md).
+
 ## Models: what is real today
 
 Checked against Chrome's own documentation on 2026-10-09; sizes for other models come from third-party guides and
@@ -165,5 +173,6 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 - 2026-10-09: Proposal with mock-ups.
 - 2026-10-09: Threads checked are remembered (looked at again only when something is added); an AI reply is marked
   with a gently glowing ring and "AI assistant", replacing the chip glyph.
+- 2026-10-09: Three reply scenarios with draft prompts (assist-prompts.md).
 - 2026-10-09: Replies are automatic, short, streamed into the thread and linked to detail, instead of private
   suggestions behind a button; notes files added; the assistant gets its own identity.
