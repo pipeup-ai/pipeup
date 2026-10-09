@@ -225,6 +225,14 @@ transition:background-color .2s var(--eo)}
 .all .mi>span:last-child{flex:1;min-width:0}
 .all .mi small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .all .mi.done{opacity:.6}
+.all .mi.open{background:var(--so)}
+.all .mi.open>.av,.all .mi.open .clamp{display:none}
+.xr{padding:2px 12px 10px 16px}
+/* The line from an open thread in the panel to its place on the page. */
+.cx{position:fixed;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;opacity:0;transition:opacity var(--in) var(--eo)}
+.cx.show{opacity:1}
+.cx path{fill:none;stroke:var(--pu-accent);stroke-width:1.5;stroke-linecap:round;opacity:.7}
+.cx circle{fill:var(--pu-accent)}
 .layer.listing .col{opacity:0;transition:opacity var(--out) var(--ei)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}

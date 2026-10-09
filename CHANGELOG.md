@@ -8,6 +8,9 @@ change the API and the stored comment format.
 ## [Unreleased]
 
 ### Changed
+- **All comments is interactive.** A row is a preview; choosing it opens the thread out in the panel, where you can reply, resolve or reopen, and copy it. The page scrolls to its place and a thin line joins the open row to it. Nothing opens on the page, and the side popover is gone.
+
+### Changed
 - An open thread's popover always shows who and when, with Copy and Resolve, so it no longer jumps in height when hovered; the chosen block's outline and naming bar step aside while a thread is open.
 - The bundles go through a second minifier (terser) after esbuild: 3% smaller, 40.2 KB gzip for the script (41.5 KB before), 35.4 KB brotli.
 

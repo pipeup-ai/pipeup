@@ -241,8 +241,7 @@ any of them off.
   column and open threads are all out of sight; the comment control still shows the number of open
   threads. Pages open with comments hidden, since comment mode starts off.
 - Choosing a thread from All comments shows the comments while the panel stays open. When the panel
-  closes and comment mode is off, they hide again. (On narrow screens, where the panel steps aside
-  to show the chosen thread, they stay shown until that thread is closed.)
+  closes and comment mode is off, they hide again.
 - Showing and hiding **eases**; nothing snaps. With reduced motion they only fade.
 - In comment mode, hovering a highlight previews its thread and clicking it opens the thread, rather
   than choosing the block, unless a comment is being written.
@@ -339,11 +338,18 @@ any of them off.
     the panel closes, so the panel covers none of the page's content (§9).
   - **Show resolved** is a small switch in the panel's header: it brings resolved threads back,
     muted, each with **Reopen**, in the panel and on the page.
-  - Choosing a thread **reveals where it is**, scrolling to it and opening it, while the panel stays
-    open, so a reviewer can step through comments.
-  - The panel closes with its close button, Esc, or a click on the page.
-  - On narrow screens the panel takes the full width, and choosing a thread closes it so the thread
-    can be seen.
+  - A row is a **preview**: the first words of the thread and where it is. Choosing a row **opens the
+    thread out in the panel** as the thread itself: its comments and replies, who and when, Copy,
+    Resolve (or Reopen) and a reply line, all usable there. Nothing opens on the page.
+  - Choosing a row also **reveals where the thread is**: the page scrolls to it, its words are marked,
+    and a thin line eases in from the open row to that place, following scrolling, until the row is
+    closed. Threads with no place to point at (content gone, or on another slide or view) open the
+    same way with no line, and say where they are.
+  - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
+    closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
+    Show resolved is on.
+  - The panel closes with its close button, Esc (after any open thread), or a click on the page.
+  - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
@@ -867,3 +873,4 @@ which Pipeup discards. It also can't tell when something is missing.
 - 2026-10-08 — Add-ons ship together in 0.5 (not in separate releases); touch and narrow pages move to 0.6 and the command-line tool to 0.7.
 - 2026-10-08 — Comment boxes (popovers) are wider when the window has room (about 400 px on windows 900 px wide or more, 300 px otherwise); All comments keeps its own width. The comment control stays readable on a page whose accent colour is pale (its icon turns dark in comment mode), and Pipeup follows a page that switches between light and dark after it has started.
 - 2026-10-09 — An open thread's popover always shows who wrote each comment, when, and Copy and Resolve, so it no longer grows under the pointer when hovered; and while a thread is open the chosen block's outline and naming bar step aside instead of sitting over it. (In the document column, details still ease open on hover.)
+- 2026-10-09 — All comments is interactive: a row is a preview, and choosing it opens the thread out in the panel (reply, resolve or reopen, copy), scrolls the page to its place and draws a line from the open row to it; one thread open at a time; nothing opens on the page.

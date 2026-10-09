@@ -65,7 +65,7 @@ test("the example deck shows each slide's comments and goes to another slide's",
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await page.getByRole("menuitem", { name: /Name the designer/ }).click();
   await expect(page.locator("#count")).toHaveText("3 / 3");
-  await expect(page.locator(".pop.show:not(.side)")).toContainText("Name the designer");
+  await expect(page.locator(".all .xr")).toContainText("Name the designer");
 });
 
 test("a block's label keeps the words of separate blocks apart", async ({ page }) => {

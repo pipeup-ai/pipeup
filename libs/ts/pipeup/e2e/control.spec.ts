@@ -12,7 +12,6 @@ import {
 } from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
-const box = async (page: Page, selector: string) => (await page.locator(selector).boundingBox())!;
 
 test("the control is one round button: no more button, no slide-out words, the number inside it", async ({
   page,
@@ -167,8 +166,7 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
   await panel(page)
     .getByRole("menuitem", { name: /Is this far enough\?/ })
     .click();
-  const pop = page.locator(".pop.show");
-  await expect(pop).toContainText("Is this far enough?");
+  await expect(panel(page).locator(".xr")).toContainText("Is this far enough?");
   await expect(panel(page)).toBeVisible();
   await expect
     .poll(() =>
@@ -178,19 +176,16 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
       }),
     )
     .toBe(true);
-  // The thread it opens is not under the panel.
-  await settled(pop);
-  const o = (await pop.boundingBox())!;
-  expect(o.x + o.width).toBeLessThanOrEqual(p.x);
-
-  // Step on to the next one: the panel is still there.
+  // Step on to the next one: the first closes and the panel is still there.
   await panel(page)
     .getByRole("menuitem", { name: /Love this line\./ })
     .click();
-  await expect(page.locator(".pop.show")).toContainText("Love this line.");
+  await expect(panel(page).locator(".xr")).toHaveCount(1);
+  await expect(panel(page).locator(".xr")).toContainText("Love this line.");
   await expect(panel(page)).toBeVisible();
 
   await leaveReply(page);
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(panel(page)).toHaveCount(0);
   await expect.poll(async () => (await focusInPipeup(page)).cls).toContain("mode");
@@ -231,7 +226,7 @@ test("the panel closes with its close button, and with a click on the page", asy
   await expect(panel(page)).toHaveCount(0);
 });
 
-test("in the column, the panel takes the column's place: a chosen thread opens beside its content", async ({
+test("in the column, the panel takes the column's place: a chosen thread opens out in the panel", async ({
   page,
 }) => {
   await open(page, "doc.html");
@@ -241,20 +236,16 @@ test("in the column, the panel takes the column's place: a chosen thread opens b
   await panel(page)
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })
     .click();
-  const pop = page.locator(".pop.show");
-  await expect(pop).toContainText("Is 20% realistic?");
-  await settled(pop);
-  const p = (await box(page, ".all.show"))!;
-  const o = (await pop.boundingBox())!;
-  expect(o.x + o.width).toBeLessThanOrEqual(p.x);
+  await expect(panel(page).locator(".xr")).toContainText("Is 20% realistic?");
   // The column behind the panel is out of sight and out of reach.
   await expect.poll(() => page.locator(".col").evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
   expect(await page.locator(".col").evaluate((e) => (e as HTMLElement).inert)).toBe(true);
-  // Closing the panel gives the column back, with the thread open there.
+  // Closing the panel gives the column back, with nothing open there.
   await leaveReply(page);
   await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
   await expect(panel(page)).toHaveCount(0);
-  await expect(page.locator(".th.on")).toContainText("Is 20% realistic?");
+  await expect(page.locator(".th.on")).toHaveCount(0);
   await expect(page.locator(".pop.show")).toHaveCount(0);
 });
 

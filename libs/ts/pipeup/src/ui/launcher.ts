@@ -10,7 +10,7 @@ import { popoverAnchor } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { MenuItem } from "./addons";
 import { draw, icon } from "./icons";
-import { narrow, placePopover, popover, room } from "./layout";
+import { narrow, PANEL } from "./layout";
 import { threadView, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
@@ -68,13 +68,18 @@ export function createLauncher(ctx: Ctx): View {
     h("div", { class: "hd" }, h("span", {}, "All comments"), total, showResolved, close),
     list,
   );
-  /** A thread chosen from All comments that has no place on the page: it opens beside the panel. */
-  const side = h("div", { class: "pop side", role: "dialog", "aria-label": "Comment thread" });
+  // The line from an open thread in the panel to its place on the page.
+  const wire = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  wire.setAttribute("class", "cx");
+  wire.setAttribute("aria-hidden", "true");
+  const wirePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const wireDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  wireDot.setAttribute("r", "4");
+  wire.append(wirePath, wireDot);
   // Closed, the menu and panels are out of the keyboard's reach.
-  menu.inert = all.inert = side.inert = true;
-  // The side popover joins the layer the first time it is needed.
+  menu.inert = all.inert = true;
   // The panel comes last: open, it covers the control (its own close button and Esc take its place).
-  ctx.layer.append(menu, launch, all);
+  ctx.layer.append(menu, launch, wire, all);
   let menuOpen = false;
   /** Ends editing your name in place (saving, or not), when it is being edited. */
   let endEdit: ((save: boolean) => void) | null = null;
@@ -82,7 +87,9 @@ export function createLauncher(ctx: Ctx): View {
   let away = 0;
   let latest: readonly Thread[] = [];
   let shown = 0;
-  let sideView: { id: string; view: ThreadView } | null = null;
+  /** The thread open in the panel, if any: its row opens out into the thread itself. */
+  let openId: string | null = null;
+  let railView: ThreadView | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
   const setMenu = (on: boolean) => {
@@ -194,15 +201,26 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Every thread, in page order; the ones whose content is gone last, under their own heading. */
   function buildAll(): void {
-    const before = (focused() as HTMLElement | null)?.dataset.thread;
-    const shownItems = ctx.menu.all().filter((i) => !i.thread.resolved || ctx.state.showResolved);
+    const at = focused() as HTMLElement | null;
+    const before = at?.dataset.thread;
+    const inReply = railView !== null && railView.element.contains(at);
+    const shownItems = ctx.menu
+      .all()
+      .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId);
     const row = (i: ExportItem) => {
       const t = i.thread;
+      const open = t.id === openId;
       const av = avatar(t.root.author, t.root.name);
       av.classList.add("in");
       const b = h(
         "button",
-        { class: t.resolved ? "mi done" : "mi", type: "button", role: "menuitem", "data-thread": t.id },
+        {
+          class: `mi${t.resolved ? " done" : ""}${open ? " open" : ""}`,
+          type: "button",
+          role: "menuitem",
+          "aria-expanded": String(open),
+          "data-thread": t.id,
+        },
         av,
         h(
           "span",
@@ -213,9 +231,15 @@ export function createLauncher(ctx: Ctx): View {
       );
       b.addEventListener("click", (e) => {
         e.stopPropagation();
-        choose(t.id, b.getBoundingClientRect().top);
+        toggle(t.id);
       });
-      return b;
+      const f = document.createDocumentFragment();
+      f.append(b);
+      if (open && railView) {
+        railView.update(t, threadOptions(t));
+        f.append(h("div", { class: "xr", role: "region", "aria-label": "Comment thread" }, railView.element));
+      }
+      return f as unknown as HTMLElement;
     };
     const gone = shownItems.filter((i) => lost(i.thread));
     total.textContent = String(allOpen());
@@ -228,108 +252,93 @@ export function createLauncher(ctx: Ctx): View {
       ),
       gone.length ? group("No longer on the page", gone.map(row)) : "",
     );
-    const now = items(list);
-    if (before) now.find((b) => b.dataset.thread === before)?.focus({ preventScroll: true });
+    if (inReply) railView!.element.querySelector("textarea")?.focus({ preventScroll: true });
+    else if (before)
+      items(list)
+        .find((b) => b.dataset.thread === before)
+        ?.focus({ preventScroll: true });
   }
 
-  /**
-   * Goes to a thread: its content scrolls into view and the thread opens there, while the panel stays open.
-   * A thread with nowhere to show (its content gone, hidden or of no size) opens beside the panel instead.
-   */
-  function choose(id: string, y: number): void {
-    // On a narrow screen the panel steps aside; the chosen thread keeps the comments shown until it closes.
-    if (narrow()) {
-      ctx.state.reading = true;
-      setList(false);
-    }
-    go(id, y);
-  }
-
-  let going = "";
-  function go(id: string, y: number): void {
-    const t = latest.find((x) => x.id === id);
-    if (!t) return;
-    going = id;
-    if (!ctx.elsewhere(t)) return place(t, y);
-    // Like opening, going somewhere else leaves a draft with words where it is, and goes back to it.
-    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.dismiss();
-    // On another slide or view: go there first, then open it on its content, or beside the panel if it never
-    // shows (unless the panel and the thread were closed meanwhile).
-    void ctx.here.navigate(t.anchor.view ?? {}).then(() => {
-      ctx.recheck();
-      const now = latest.find((x) => x.id === id);
-      if (now && going === id && (ctx.state.listing || ctx.state.reading)) place(now, y);
-    });
-  }
-
-  function place(t: Thread, y: number): void {
-    const id = t.id;
-    const r = ctx.resolved.get(id);
-    const el =
-      r && !lost(t) && !ctx.elsewhere(t)
-        ? (r.element ?? r.range?.startContainer.parentElement ?? null)
-        : null;
-    el?.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
-    if (
-      el &&
-      r &&
-      popoverAnchor(t.anchor, r) &&
-      el.checkVisibility?.({ visibilityProperty: true }) !== false
-    ) {
-      closeSide();
-      ctx.open(id);
-      return;
-    }
-    ctx.open(null);
-    if (narrow()) {
-      ctx.state.reading = true;
-      ctx.render();
-    }
-    showSide(t, y);
-  }
-
-  /** Shows thread `t` beside the panel, level with the row chosen (at `y`); with no `y`, only updates it. */
-  function showSide(t: Thread, y?: number): void {
+  /** What a thread shows about where it is (its quote, or where its content has gone). */
+  function threadOptions(t: Thread) {
     const away = !lost(t) && ctx.elsewhere(t);
-    const o = {
+    return {
+      variant: "popover" as const,
       quote: t.anchor.quote?.exact ?? null,
       lost: lost(t) || away ? t.anchor.snapshot : null,
       place: away ? placeOf(t) : null,
     };
-    if (sideView?.id === t.id) sideView.view.update(t, o);
-    else {
-      sideView = { id: t.id, view: threadView(t, ctx.actions, { variant: "popover", ...o }) };
-      side.replaceChildren(sideView.view.element);
-    }
-    if (y === undefined) return;
-    if (!side.isConnected) {
-      ctx.layer.insertBefore(side, all);
-      // Laid out once hidden, so it eases in.
-      void side.offsetWidth;
-    }
-    const vp = room(ctx.state.listing);
-    const { left, top } = placePopover(
-      { x: vp.width, y, below: false },
-      { width: popover(), height: side.offsetHeight },
-      vp,
-    );
-    side.style.left = `${left}px`;
-    side.style.top = `${top}px`;
-    side.classList.add("show");
-    side.inert = false;
-    ctx.focusReply(t.id);
   }
 
-  /** Closes the side thread; `done` when the reader closed it, so a thread read on a narrow screen lets go. */
-  function closeSide(done = false): void {
-    if (!sideView) return;
-    sideView = null;
-    side.classList.remove("show");
-    inert(side, true);
-    if (done && ctx.state.reading) {
-      ctx.state.reading = false;
-      ctx.render();
+  /** Opens a thread out in the panel (or closes it): the page scrolls to its place, and a line joins the two. */
+  let going = "";
+  function toggle(id: string): void {
+    if (openId === id) return closeRow(true);
+    const t = latest.find((x) => x.id === id);
+    if (!t) return;
+    openId = going = id;
+    railView = threadView(t, { ...ctx.actions, close: () => closeRow(true) }, threadOptions(t));
+    buildAll();
+    railView.element.querySelector("textarea")?.focus({ preventScroll: true });
+    if (!ctx.elsewhere(t)) return reveal(t);
+    // Like opening, going somewhere else leaves a draft with words where it is: the thread shows here, with its place.
+    if (ctx.state.draft && !ctx.draftEmpty()) return;
+    // On another slide or view: go there first, then show it (unless the row was closed or changed meanwhile).
+    void ctx.here.navigate(t.anchor.view ?? {}).then(() => {
+      ctx.recheck();
+      const now = latest.find((x) => x.id === id);
+      if (now && going === id && openId === id) reveal(now);
+    });
+  }
+
+  function closeRow(back = false): void {
+    if (!openId) return;
+    const id = openId;
+    openId = railView = null;
+    ctx.hot(null);
+    buildAll();
+    if (back)
+      items(list)
+        .find((b) => b.dataset.thread === id)
+        ?.focus({ preventScroll: true });
+  }
+
+  /** Scrolls a thread's place into view and marks it (it pulses once, and stays marked while the row is open). */
+  function reveal(t: Thread): void {
+    const r = ctx.resolved.get(t.id);
+    const el = r && !lost(t) ? (r.element ?? r.range?.startContainer.parentElement ?? null) : null;
+    el?.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
+    if (el) ctx.hot(t.id);
+  }
+
+  /** Where on the page the open thread's place is, if it can be pointed at. */
+  function target(t: Thread): { x: number; y: number } | null {
+    const r = ctx.resolved.get(t.id);
+    const p = r && !narrow() && !lost(t) && !ctx.elsewhere(t) ? popoverAnchor(t.anchor, r) : null;
+    const el = r?.element ?? r?.range?.startContainer.parentElement;
+    if (!p || el?.checkVisibility?.({ visibilityProperty: true }) === false) return null;
+    const inView = p.x >= 0 && p.x <= window.innerWidth - PANEL && p.y >= 0 && p.y <= window.innerHeight;
+    return inView ? { x: p.x, y: p.y } : null;
+  }
+
+  /** Draws the line from the open thread's header to its place, or lets it fade when there is none to point at. */
+  function drawWire(): void {
+    const t = openId ? latest.find((x) => x.id === openId) : null;
+    const head = openId ? list.querySelector<HTMLElement>(`.mi.open`) : null;
+    const to = t && target(t);
+    const box = head?.getBoundingClientRect();
+    const view = list.getBoundingClientRect();
+    if (!to || !box || box.top + 12 < view.top || box.top + 12 > view.bottom) {
+      wire.classList.remove("show");
+      return;
     }
+    const x = box.left;
+    const y = box.top + 14;
+    const bend = Math.max(40, (x - to.x) / 2);
+    wirePath.setAttribute("d", `M${x} ${y}C${x - bend} ${y} ${to.x + bend} ${to.y} ${to.x} ${to.y}`);
+    wireDot.setAttribute("cx", String(to.x));
+    wireDot.setAttribute("cy", String(to.y));
+    wire.classList.add("show");
   }
 
   /**
@@ -568,7 +577,6 @@ export function createLauncher(ctx: Ctx): View {
     // Focus that was in the panel and went nowhere (empty page) comes back to the button; a page field keeps it.
     if (ctx.state.listing && !ctx.owns(e))
       setList(false, wasInPanel && (!document.activeElement || document.activeElement === document.body));
-    if (!path.includes(side) && !path.includes(all)) closeSide(true);
   };
   /**
    * A pointer away from the menu and the button for 3 s closes the menu; coming back sooner keeps it open. Never
@@ -608,17 +616,15 @@ export function createLauncher(ctx: Ctx): View {
   // Over: the pointer arrived somewhere. Out with nowhere to go: it left the window.
   window.addEventListener("pointerover", onPointer, true);
   window.addEventListener("pointerout", onPointer, true);
-  // Capture phase + stopPropagation: Escape closes the menu, then the panel, then the side thread, one at a
-  // time, and never also an open thread. A reply line outside the panel keeps its own Escape.
+  // Capture phase + stopPropagation: Escape closes the menu, then the thread open in the panel, then the panel,
+  // one at a time, and never also an open thread on the page. A reply line outside the panel keeps its own Escape.
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== "Escape" || endEdit) return;
     const at = e.composedPath()[0];
     if (menuOpen) closeToControl();
-    else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at)))
-      setList(false, true);
-    else if (sideView) {
-      closeSide(true);
-      ctx.actions.close();
+    else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at))) {
+      if (openId) closeRow(true);
+      else setList(false, true);
     } else return;
     e.stopPropagation();
   };
@@ -658,14 +664,14 @@ export function createLauncher(ctx: Ctx): View {
         all.classList.toggle("show", listing);
         inert(all, !listing);
       }
-      if (listing) buildAll();
-      if (sideView) {
-        const t = threads.find((x) => x.id === sideView?.id);
-        if (!t || ctx.state.active || (t.resolved && !ctx.state.showResolved)) closeSide();
-        else showSide(t);
+      // The thread open in the panel goes with the panel, or when it is gone.
+      if (openId && (!listing || !threads.some((x) => x.id === openId))) {
+        openId = railView = null;
+        ctx.state.hot = null;
       }
+      if (listing) buildAll();
     },
-    frame() {},
+    frame: drawWire,
     destroy() {
       offAddons();
       window.removeEventListener("pointerdown", onDown, true);
@@ -676,7 +682,7 @@ export function createLauncher(ctx: Ctx): View {
       window.removeEventListener("keydown", onEscape, true);
       menu.remove();
       all.remove();
-      side.remove();
+      wire.remove();
       launch.remove();
     },
   };
