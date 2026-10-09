@@ -218,20 +218,18 @@ test("entering comment mode closes an open thread; Escape steps back one level a
 }) => {
   await open(page, "controls.html");
   await seedElement(page, "[data-pipeup-id=tile-mrr]", "Use a real number");
-  // A thread opened from All comments (comments show while it is open).
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page
-    .locator(".all.show")
-    .getByRole("menuitem", { name: /Use a real number/ })
-    .click();
+  // A thread opened on the page (comments show while comment mode is on).
+  await showComments(page);
+  await page.locator(".bub.in").click();
   await expect(page.locator(".pop.show")).toHaveCount(1);
   // The cursor is in the reply line, where shortcuts stay quiet: the reader steps out first.
   await leaveReply(page);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page, false);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
   await page.mouse.move(5, 790);
-  await expect(page.locator(".pop.show")).toHaveCount(0);
   await page.locator("#go").click();
   await expect(page.locator(".pick.on")).toHaveCount(1);
   await page.locator(".bub.in").click();

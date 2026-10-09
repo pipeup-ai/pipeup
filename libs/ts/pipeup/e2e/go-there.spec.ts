@@ -11,8 +11,8 @@ const choose = (page: Page, words: string) =>
   list(page)
     .getByRole("menuitem", { name: new RegExp(words) })
     .click();
-/** The thread opens on its content, not as a side thread. */
-const openedInPlace = (page: Page) => page.locator(".pop.show:not(.side)");
+/** The thread opens out in the panel; nothing opens on the page. */
+const openedInPlace = (page: Page) => page.locator(".all .xr");
 
 async function seedDeck(page: Page): Promise<void> {
   await seedView(page, "[data-pipeup-id=s2-q4]", "Bar on two", { slide: "2" });
@@ -37,7 +37,7 @@ test("All comments groups a deck's threads by slide, in deck order, this slide m
   await expect(list(page).locator(".hd .pn")).toHaveText("4");
 });
 
-test("choosing a thread on another slide goes there with the page's onReveal, then opens it in place", async ({
+test("choosing a thread on another slide goes there with the page's onReveal, then opens it in the panel", async ({
   page,
 }) => {
   await open(page, "deck.html");
@@ -90,15 +90,15 @@ test("a scrolling deck with no hook scrolls the slide into view", async ({ page 
   await openAll(page);
   await choose(page, "Far down");
   await expect(openedInPlace(page)).toContainText("Far down");
-  expect(await page.evaluate(() => scrollY)).toBeGreaterThan(1000);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(1000);
 });
 
-test("with no way to go there, the thread opens beside the panel with its snapshot", async ({ page }) => {
+test("with no way to go there, the thread opens in the panel with its snapshot", async ({ page }) => {
   await open(page, "deck.html");
   await seedDeck(page);
   await openAll(page);
   await choose(page, "Words on three");
-  const side = page.locator(".pop.side.show");
+  const side = openedInPlace(page);
   await expect(side).toContainText("Words on three", { timeout: 3000 });
   await expect(side).toContainText("On slide 3 — it read “Hire a second designer");
   await expect(page.locator("#count")).toHaveText("1 / 3");
@@ -157,8 +157,8 @@ test("a jump still waiting does not open its thread over the one chosen after it
   await choose(page, "Words on three");
   await choose(page, "Box on one");
   await page.waitForTimeout(1300);
-  await expect(page.locator(".pop.show")).toHaveCount(1);
-  await expect(page.locator(".pop.show")).toContainText("Box on one");
+  await expect(openedInPlace(page)).toHaveCount(1);
+  await expect(openedInPlace(page)).toContainText("Box on one");
 });
 
 test("on a tabbed page, content the page hides in the current view is listed as hidden, not under its view", async ({
