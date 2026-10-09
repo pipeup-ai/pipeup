@@ -8,7 +8,7 @@ change the API and the stored comment format.
 ## [Unreleased]
 
 - Assist reads every slide as a whole (short bullets included), so a goal on a slide can be found and pointed to with a slide pill.
-- The line from an open All comments row now runs down the margin beside the panel and turns in to the end of the marked words, or along the gap above the block, instead of cutting across the page.
+- The line from an open All comments row now runs down the margin beside the panel and turns in to the far right of the marked words' row, or along the gap above the block, instead of cutting across the page.
 
 ### Fixed
 - An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words, and it pulses outward inside its own box, so nothing is cropped.

@@ -313,7 +313,7 @@ export function createLauncher(ctx: Ctx): View {
 
   /**
    * Where on the page the open thread's place is, if it can be pointed at, and which way the line arrives: at the
-   * right end of the marked words (from the panel, on the right), or at the top middle of a block or picture.
+   * far right of the marked words' row (from the panel, on the right), or at the top middle of a block or picture.
    */
   function target(t: Thread): { x: number; y: number; from: "right" | "top" } | null {
     const r = ctx.resolved.get(t.id);
@@ -327,10 +327,12 @@ export function createLauncher(ctx: Ctx): View {
     )
       return null;
     const words = r.range ? quoteRects(r).at(-1) : undefined;
+    // The line meets the marked row at the far right of its block, so it never crosses the text.
+    const edge = el?.closest("p,li,h1,h2,h3,h4,h5,h6,blockquote,td,th,figcaption,div")?.getBoundingClientRect().right;
     const box = r.element?.getBoundingClientRect();
     const pin = popoverAnchor(t.anchor, r);
     const p = words
-      ? { x: words.right, y: (words.top + words.bottom) / 2, from: "right" as const }
+      ? { x: Math.max(words.right, edge ?? 0) + 4, y: (words.top + words.bottom) / 2, from: "right" as const }
       : box
         ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
         : pin && { x: pin.x, y: pin.y, from: "right" as const };
