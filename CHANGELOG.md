@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Assist reads the whole page, deck and notes once, a section at a time, keeps a short summary of each on the device, and checks the likely sections in full before replying, so a goal on a far-off or short slide is found. The menu row shows how far reading has got.
+
 - Assist reads every slide as a whole (short bullets included), so a goal on a slide can be found and pointed to with a slide pill.
 - The line from an open All comments row now runs down the margin beside the panel and turns in to the end of the marked words, or along the gap above the block, instead of cutting across the page.
 

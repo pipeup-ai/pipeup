@@ -175,6 +175,24 @@ anchors, and `host.merge` to add ops from elsewhere (the same way share and live
 Related passages need no embedding model: Assist ranks the document's own blocks (and the notes file's headings)
 against the comment and its quote with plain text matching, so the download is the language model alone.
 
+## Reading the whole page (how it is built)
+
+- **Sections.** The add-on cuts the page into sections that each fit a small model (about 1,500 characters): a
+  heading and what follows it, a whole slide, or a notes section. Longer ones are cut at sentence ends and every
+  part is kept. A section's fingerprint is a short hash of its label and words.
+- **First reading.** For each section the model writes a gist and key facts (prompt `gist`). They are kept in the
+  add-on's settings on this device, by fingerprint, for the document; a changed section gets a new fingerprint and is
+  read again, and fingerprints no longer on the page are dropped. A section that cannot be read is marked so and is
+  not tried again; it can still be found by its own words.
+- **Order of work.** One loop does one thing at a time: a comment waiting for a look comes first, then the next
+  unread section. So a comment never waits for the whole page. It pauses under the same rules as replies.
+- **Close look.** For a "related" comment, the sections are ranked on their words, gist and facts (word endings
+  folded), the best eight are each shown to the model in full (prompt `verify`), and the model copies out one
+  sentence or says NONE. A sentence counts only if it really is in that section and does not just restate the commented
+  passage. Up to three become the numbered passages the reply may use; none means no reply.
+- **Menu row.** While reading, the row's count says "Reading 4 of 12" and the status line says the same.
+- **Size.** The add-on's budget goes from 8 KB to 10 KB gzip (now 8.75 KB).
+
 ## Notes files
 
 The author may name one or more Markdown files on the page's own site (for example `data-pipeup-assist-notes="notes.md"`)
@@ -202,6 +220,7 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 
 ## Change log
 
+- 2026-10-09: Built: whole-page reading, kept gists and facts, and the close look before a reply; size budget 10 KB.
 - 2026-10-09: Reading the whole page: sections read in full and summarised once, kept on the device, then checked
   closely before a reply (requirements 16 to 19). No embedding model for now.
 - 2026-10-09: Proposal with mock-ups.

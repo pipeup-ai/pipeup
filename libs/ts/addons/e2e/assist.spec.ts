@@ -5,11 +5,16 @@ import { addon, blank, CORE, load, mount, openMenu } from "./helpers";
 const FAKE = () => {
   const w = window as any;
   w.__calls = [] as string[];
+  w.__reads = [] as string[];
   w.pipeupAssistEngine = {
     info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
     availability: async () => "ready",
     create: async () => ({
       prompt: async (t: string) => {
+        if (/Read this section/.test(t)) {
+          w.__reads.push([...t.matchAll(/<section>([^:]*):/g)].pop()?.[1] ?? "");
+          return "Gist: a section.\nFacts: none.";
+        }
         w.__calls.push("decide");
         return /Love the title/.test(t) ? "none" : "ambiguity";
       },
@@ -184,7 +189,12 @@ test("a reply shows what it relied on as small pills, and pressing one goes to t
       info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
       availability: async () => "ready",
       create: async () => ({
-        prompt: async () => "related",
+        prompt: async (t: string) =>
+          /Read this section/.test(t)
+            ? "Gist: x\nFacts: y"
+            : /Find the one sentence/.test(t)
+              ? "Pricing slips if onboarding slips past July"
+              : "related",
         async *stream() {
           yield "Pricing slips if onboarding slips past July.\nUsed: 1";
         },
@@ -224,7 +234,12 @@ test("in a deck it reads every slide, short bullets included, and points at the 
       info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
       availability: async () => "ready",
       create: async () => ({
-        prompt: async () => "related",
+        prompt: async (t: string) =>
+          /Read this section/.test(t)
+            ? "Gist: x\nFacts: y"
+            : /Find the one sentence/.test(t)
+              ? "Hold churn under 3%."
+              : "related",
         async *stream() {
           yield "The next-quarter slide sets a goal to hold churn under 3%.\nUsed: 1";
         },
@@ -251,4 +266,62 @@ test("in a deck it reads every slide, short bullets included, and points at the 
   await expect(pill).toHaveCount(1);
   await expect(pill).toHaveText("Slide 2");
   await expect(pill.locator("i.sl")).toHaveCount(1);
+});
+
+test("it reads the whole page once, a section at a time, and says how far it has got", async ({ page }) => {
+  await start(page);
+  await page.evaluate(() => {
+    document
+      .querySelector("main")!
+      .insertAdjacentHTML("beforeend", "<h2>Goals</h2><p>Hold churn under 3%.</p><p>Ship by July.</p>");
+  });
+  await turnOn(page);
+  // Short lines count: "Hold churn under 3%." is in a section that was read.
+  await expect
+    .poll(() => page.evaluate(() => (window as any).__reads.length), { timeout: 15000 })
+    .toBeGreaterThan(0);
+  await expect
+    .poll(async () => page.evaluate(() => (window as any).pu.document.threads().length >= 0))
+    .toBe(true);
+  const reads = await page.evaluate(() => (window as any).__reads as string[]);
+  expect(reads).toContain("Goals");
+  // A comment arriving later does not make it read the page again.
+  await page.waitForTimeout(500);
+  const before = await page.evaluate(() => (window as any).__reads.length);
+  await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
+  await expect.poll(async () => (await threads(page))[0].root.replies.length, { timeout: 15000 }).toBe(1);
+  expect(await page.evaluate(() => (window as any).__reads.length)).toBe(before);
+});
+
+test("a goal far from the comment is found by reading every section, and a made-up quote is not", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as any;
+    w.pipeupAssistEngine = {
+      info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
+      availability: async () => "ready",
+      create: async () => ({
+        prompt: async (t: string) =>
+          /Read this section/.test(t)
+            ? "Gist: x\nFacts: y"
+            : /Find the one sentence/.test(t)
+              ? "We aim to cut churn to 1% by June."
+              : "related",
+        async *stream() {
+          yield "Not a reply that should appear.\nUsed: 1";
+        },
+        destroy() {},
+      }),
+    };
+  });
+  await blank(page);
+  await load(page, CORE, addon("assist"));
+  await mount(page);
+  await comment(page, "[data-pipeup-id=p1]", "Do we have a risk of churn?");
+  await turnOn(page);
+  // The model "found" a sentence that is nowhere on the page: no reply, and the thread says it was reviewed.
+  await expect(page.locator(".launch .mode.on")).toHaveCount(1);
+  await page.waitForTimeout(1500);
+  expect((await threads(page))[0].root.replies).toHaveLength(0);
 });

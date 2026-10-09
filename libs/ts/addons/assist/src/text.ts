@@ -68,6 +68,65 @@ export interface Passage {
   url?: string;
   el?: Element;
   slide?: string;
+  /** What the first reading made of it (a gist and key facts): ranked on, never shown. */
+  extra?: string;
+  /** A short fingerprint of its words, so a section already read is not read again. */
+  hash?: string;
+}
+
+/** Sections are read in parts this long, so each fits a small model. */
+export const SECTION = 1500;
+
+/** A short fingerprint of some text (FNV-1a), in base 36. */
+export function hashOf(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36);
+}
+
+/** Text cut into parts of at most `max` characters, at sentence ends where it can. Nothing is dropped. */
+export function parts(text: string, max = SECTION): string[] {
+  const out: string[] = [];
+  let rest = text.trim();
+  while (rest.length > max) {
+    const cut = rest.slice(0, max);
+    const end = Math.max(
+      cut.lastIndexOf(". "),
+      cut.lastIndexOf("? "),
+      cut.lastIndexOf("! "),
+      cut.lastIndexOf(" · "),
+    );
+    const at = end > max / 2 ? end + 1 : Math.max(cut.lastIndexOf(" "), max / 2);
+    out.push(rest.slice(0, at).trim());
+    rest = rest.slice(at).trim();
+  }
+  if (rest) out.push(rest);
+  return out;
+}
+
+/** The gist and facts a section was read as: "Gist: ...\nFacts: ...", leniently, at most 300 characters. */
+export function gistOf(raw: string): string {
+  return raw
+    .replace(/[*_`#]+/g, "")
+    .replace(/\b(gist|facts)\s*:/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 300);
+}
+
+/**
+ * The sentence a model copied out of a section, when it really is in the section and says something (not NONE,
+ * not longer than a sentence should be); else null. This is what stops a made-up "quote" becoming a reply.
+ */
+export function foundIn(section: string, answer: string): string | null {
+  const first = answer
+    .trim()
+    .split(/\n/)[0]!
+    .replace(/^\W*(sentence\s*:\s*)?["'“”]*/i, "")
+    .replace(/["'“”]+$/, "")
+    .trim();
+  if (first.length < 12 || first.length > 300 || /^none\b/i.test(first)) return null;
+  return norm(section).includes(norm(first)) ? first : null;
 }
 
 const STOP = new Set(
@@ -75,14 +134,16 @@ const STOP = new Set(
     " ",
   ),
 );
+/** A word without its common endings, so "churns", "churned" and "churning" meet. */
+const stem = (w: string): string => (/^[a-z]{5,}$/.test(w) ? w.replace(/(ing|ed|es|s)$/, "") : w);
 const words = (s: string): string[] =>
-  (s.toLowerCase().match(/[a-z]{3,}|[a-z]*\d[a-z0-9%]*/g) ?? []).filter((w) => !STOP.has(w));
+  (s.toLowerCase().match(/[a-z]{3,}|[a-z]*\d[a-z0-9%]*/g) ?? []).filter((w) => !STOP.has(w)).map(stem);
 
 /** The `n` passages that share the most (rarer) words with `query`, best first. Nothing in common: none. */
-export function rank(passages: readonly Passage[], query: string, n = 3): Passage[] {
+export function rank(passages: readonly Passage[], query: string, n = 8): Passage[] {
   const q = new Set(words(query));
   if (!q.size) return [];
-  const docs = passages.map((p) => words(`${p.label} ${p.text}`));
+  const docs = passages.map((p) => words(`${p.label} ${p.extra ?? ""} ${p.text}`));
   const df = new Map<string, number>();
   for (const d of docs) for (const w of new Set(d)) df.set(w, (df.get(w) ?? 0) + 1);
   const scored = passages.map((p, i) => {
@@ -112,7 +173,7 @@ export function sections(markdown: string, file: string, base: string): Passage[
     if (head && text)
       out.push({
         label: `${file} › ${head}`,
-        text: text.slice(0, 400),
+        text,
         url: `${base}#${head
           .toLowerCase()
           .replace(/[^\p{L}\p{N}\s-]/gu, "")

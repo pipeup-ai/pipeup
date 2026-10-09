@@ -2,12 +2,29 @@ import { settings, type Settings } from "@pipeup/kit";
 import type { Comment, Identity, ItemHandle, MenuItem, PipeupAddon, Thread } from "pipeup";
 import { core, NAME, replyOp, type Core } from "./author";
 import { authorEngine, promptApi, type Availability, type Engine, type Session } from "./engine";
-import { decide, DECIDE_SCHEMA, write, type Material } from "./prompts";
-import { clean, rank, replyPart, restates, scenarioOf, sections, usedOf, type Passage } from "./text";
+import { decide, DECIDE_SCHEMA, gist, verify, write, type Material } from "./prompts";
+import {
+  clean,
+  foundIn,
+  gistOf,
+  hashOf,
+  parts,
+  rank,
+  replyPart,
+  restates,
+  scenarioOf,
+  sections,
+  SECTION,
+  usedOf,
+  type Passage,
+} from "./text";
 
 /** The most replies in one thread, and the wait between two comments' replies. */
 const MAX_REPLIES = 3;
 const PACE_MS = 1500;
+/** The sections looked at closely for one comment, and the sentences a reply may rest on. */
+const LOOKS = 8;
+const HITS = 3;
 /** The model is freed after this long unused. */
 const IDLE_MS = 5 * 60_000;
 const READING = "AI assistant is reading this…";
@@ -81,6 +98,8 @@ export function createAddon(): PipeupAddon {
       let stopped = new AbortController();
       let replied = 0;
       let looked = 0;
+      /** What the first reading made of each section, by its fingerprint ("" when it could not be read). */
+      let index: Record<string, string> = {};
       let pool: Passage[] = [];
       let panel: { close(): void } | undefined;
       let row: ItemHandle | null = null;
@@ -100,34 +119,66 @@ export function createAddon(): PipeupAddon {
         const gb = (navigator as { deviceMemory?: number }).deviceMemory;
         return gb !== undefined && gb < 4;
       };
-      const status = () => {
+      let left = 0;
+      let all = 0;
+      const status = (total = all, todo = left) => {
+        all = total;
+        left = todo;
         if (!on) return host.setStatus(null);
         const parts = [`Assistant · on this device`];
+        if (todo) parts.push(`reading the page… ${total - todo} of ${total}`);
         if (looked) parts.push(`checked ${looked} comment${looked === 1 ? "" : "s"}, replied to ${replied}`);
         host.setStatus({ text: parts.join(" · ") });
       };
 
-      /** Reads the page's blocks (and the notes' sections) the assistant may draw on. */
+      /** Every part of the page, a deck's slides and the notes, in sections that each fit a small model; nothing cut. */
       const gather = (): Passage[] => {
         const out: Passage[] = [];
-        // A deck's slides are read whole: one passage per slide, so a short bullet ("Hold churn under 3%.") counts.
+        const add = (label: string, text: string, e?: Element, slide?: string, url?: string) => {
+          for (const part of parts(text))
+            out.push({ label, text: part, el: e, slide, url, hash: hashOf(`${label}\n${part}`) });
+        };
+        // A deck's slides are read whole, one section each, so a short bullet ("Hold churn under 3%.") counts.
         const slides = new Map<string, { texts: string[]; el: Element }>();
-        let heading = "";
+        let label = "This page";
+        let texts: string[] = [];
+        let first: Element | undefined;
+        const flush = () => {
+          if (texts.length) add(label, texts.join(" "), first);
+          texts = [];
+          first = undefined;
+        };
         for (const e of host.root.querySelectorAll(BLOCKS)) {
           if (e.closest("[data-pipeup-ignore]")) continue;
           const text = (e.textContent ?? "").replace(/\s+/g, " ").trim();
-          if (/^H[1-6]$/.test(e.tagName)) heading = text.slice(0, 60);
+          if (!text) continue;
           const slide = host.where(e)?.slide;
           if (slide) {
             const s = slides.get(slide) ?? { texts: [], el: e.closest("[data-pipeup-slide]") ?? e };
-            if (text) s.texts.push(text);
+            s.texts.push(text);
             slides.set(slide, s);
-          } else if (text.length >= 12)
-            out.push({ label: heading || "This page", text: text.slice(0, 300), el: e });
+            continue;
+          }
+          // A heading starts a new section, unless the one before it holds hardly anything yet.
+          if (/^H[1-6]$/.test(e.tagName)) {
+            if (texts.join(" ").length >= 60) flush();
+            label = text.slice(0, 60);
+          }
+          if (texts.join(" ").length + text.length > SECTION) flush();
+          first ??= e;
+          texts.push(text);
         }
-        for (const [slide, s] of slides)
-          out.push({ label: `Slide ${slide}`, text: s.texts.join(" · ").slice(0, 400), el: s.el, slide });
-        return [...out, ...notes];
+        flush();
+        for (const [slide, s] of slides) add(`Slide ${slide}`, s.texts.join(" · "), s.el, slide);
+        for (const n of notes) add(n.label, n.text, undefined, undefined, n.url);
+        return out;
+      };
+
+      /** The sections not read yet, and how many there are in all. */
+      const unread = (): { todo: Passage[]; total: number } => {
+        pool = gather();
+        for (const p of pool) p.extra = index[p.hash!];
+        return { todo: pool.filter((p) => index[p.hash!] === undefined), total: pool.length };
       };
 
       const loadNotes = async () => {
@@ -213,13 +264,21 @@ export function createAddon(): PipeupAddon {
         const s = await getSession();
         const kind = scenarioOf(await s.prompt(decide(m), { schema: DECIDE_SCHEMA, signal: stopped.signal }));
         if (kind === "none") return;
-        let used: Passage[] = [];
+        const used: Passage[] = [];
         if (kind === "related") {
+          // The likely sections, from everything read; then each read in full for the sentence that bears on it.
           pool = gather();
-          used = rank(
-            pool.filter((p) => p.el !== block.el && !(p.slide && p.slide === block.slide)),
+          for (const p of pool) p.extra = index[p.hash!];
+          const likely = rank(
+            pool.filter((p) => !(p.slide && p.slide === block.slide)),
             `${m.comment} ${block.text}`,
+            LOOKS,
           );
+          for (const p of likely) {
+            const sentence = foundIn(p.text, await s.prompt(verify(m, p.text), { signal: stopped.signal }));
+            if (sentence && !restates(sentence, block.full)) used.push({ ...p, text: sentence });
+            if (used.length >= HITS) break;
+          }
           if (!used.length) return;
           m.related = used.map((p, i) => `[${i + 1}] ${p.label}: ${p.text}`);
         }
@@ -279,13 +338,43 @@ export function createAddon(): PipeupAddon {
         return false;
       };
 
+      /** Reads the next unread section into the index. False when everything has been read (or it cannot). */
+      const readOne = async (): Promise<boolean> => {
+        const { todo, total } = unread();
+        const p = todo[0];
+        if (!p) {
+          reading = null;
+          status(total, 0);
+          return false;
+        }
+        try {
+          const s = await getSession();
+          index[p.hash!] = gistOf(await s.prompt(gist(p.label, p.text), { signal: stopped.signal }));
+        } catch (e) {
+          if (stopped.signal.aborted) return false;
+          // A section that can't be read is not tried again; it can still be found by its own words.
+          index[p.hash!] = "";
+          globalThis.reportError?.(e);
+        }
+        const live = new Set(pool.map((x) => x.hash!));
+        index = Object.fromEntries(Object.entries(index).filter(([h]) => live.has(h)));
+        await store?.set(`index:${host.document.id}`, index).catch(() => undefined);
+        status(total, todo.length - 1);
+        updateRow();
+        await sleep(200);
+        return true;
+      };
+
       const pump = async () => {
         if (busy || !on) return;
         busy = true;
         try {
           while (on && !(await held())) {
             const t = waiting()[0];
-            if (!t) break;
+            if (!t) {
+              if (!(await readOne())) break;
+              continue;
+            }
             try {
               await handle(t);
               reading = null;
@@ -414,7 +503,8 @@ export function createAddon(): PipeupAddon {
             ? "This browser has no built-in model, and the page didn't add one."
             : "A model on this device adds short replies to comments.",
         checked: () => on,
-        count: () => (avail === "none" ? "Not available" : ""),
+        count: () =>
+          avail === "none" ? "Not available" : on && left ? `Reading ${all - left} of ${all}` : "",
         select: () => {
           if (avail === "none")
             return host.notify(
@@ -443,6 +533,8 @@ export function createAddon(): PipeupAddon {
         checked =
           (await store.get<Record<string, string>>(`checked:${host.document.id}`).catch(() => undefined)) ??
           {};
+        index =
+          (await store.get<Record<string, string>>(`index:${host.document.id}`).catch(() => undefined)) ?? {};
         updateRow();
         if (avail === "ready" && (await store.get<boolean>("on").catch(() => false))) await turnOn();
       })();

@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { decide, write, SHARED } from "../src/prompts";
-import { clean, rank, replyPart, restates, scenarioOf, sections, usedOf, type Passage } from "../src/text";
+import { decide, gist, verify, write, SHARED } from "../src/prompts";
+import {
+  clean,
+  foundIn,
+  gistOf,
+  hashOf,
+  parts,
+  rank,
+  replyPart,
+  restates,
+  scenarioOf,
+  sections,
+  usedOf,
+  type Passage,
+} from "../src/text";
 
 describe("the model's words", () => {
   it("reads the one-word answer, and anything else is none", () => {
@@ -101,5 +114,58 @@ describe("the prompts", () => {
     expect(write("ambiguity", m)).not.toContain("<related>\n");
     for (const s of ["ambiguity", "related", "tone"] as const)
       expect(write(s, m).endsWith("Reply:")).toBe(true);
+  });
+});
+
+describe("reading the whole page", () => {
+  it("cuts long text into parts at sentence ends, and loses nothing", () => {
+    const text = "The first goal is churn. ".repeat(200).trim();
+    const out = parts(text, 500);
+    expect(out.length).toBeGreaterThan(5);
+    for (const part of out) expect(part.length).toBeLessThanOrEqual(500);
+    expect(out.join(" ").replace(/\s+/g, " ")).toBe(text);
+    expect(parts("Hold churn under 3%.")).toEqual(["Hold churn under 3%."]);
+  });
+
+  it("fingerprints words, so only changed sections are read again", () => {
+    expect(hashOf("Goals\nHold churn under 3%.")).toBe(hashOf("Goals\nHold churn under 3%."));
+    expect(hashOf("Goals\nHold churn under 4%.")).not.toBe(hashOf("Goals\nHold churn under 3%."));
+  });
+
+  it("keeps a gist short and plain", () => {
+    expect(gistOf("Gist: **Next quarter's goals.**\nFacts: churn under 3%; ship onboarding")).toBe(
+      "Next quarter's goals. churn under 3%; ship onboarding",
+    );
+    expect(gistOf("x".repeat(500))).toHaveLength(300);
+  });
+
+  it("accepts a sentence only when the section really holds it", () => {
+    const section = "Ship onboarding. Hold churn under 3%. Review pricing in August.";
+    expect(foundIn(section, "Hold churn under 3%.")).toBe("Hold churn under 3%.");
+    expect(foundIn(section, 'Sentence: "Hold churn under 3%."\nbecause it matters')).toBe(
+      "Hold churn under 3%.",
+    );
+    expect(foundIn(section, "Hold churn under 1% by June.")).toBeNull();
+    expect(foundIn(section, "NONE")).toBeNull();
+    expect(foundIn(section, "3%")).toBeNull();
+  });
+
+  it("finds a short line on a slide through its gist and facts, and matches word endings", () => {
+    const slide: Passage = {
+      label: "Slide 6",
+      text: "Hold churn under 3%.",
+      extra: "Goals for next quarter",
+    };
+    const other: Passage = { label: "Slide 1", text: "Revenue grew in every region." };
+    expect(rank([other, slide], "Do we have a risk of churning customers?", 8)[0]).toBe(slide);
+    expect(rank([other, slide], "what are the goals?", 8)[0]).toBe(slide);
+  });
+
+  it("asks for a gist of a section, and for one sentence from it", () => {
+    expect(gist("Goals", "Hold churn.")).toContain("<section>Goals: Hold churn.</section>");
+    const m = { comment: "Risk?", passage: "p", thread: "", related: [] };
+    const v = verify(m, "Hold churn under 3%.");
+    expect(v).toContain("<section>Hold churn under 3%.</section>");
+    expect(v.endsWith("Sentence:")).toBe(true);
   });
 });

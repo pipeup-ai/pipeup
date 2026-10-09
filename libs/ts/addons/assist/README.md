@@ -42,6 +42,9 @@ what it reads, and that its replies appear in the thread for everyone sharing th
   meant), **related information** (say what the document says elsewhere, and where) and **tone** (one observation and
   one alternative wording). Anything else gets no reply. The prompts are in
   [assist-prompts.md](../../../docs/design/assist-prompts.md).
+- **Reads everything.** Once, in the background, it reads the whole page (or deck, and notes files) a section at a time
+  and keeps a short gist and key facts of each on the device. A comment is answered from sentences it found by
+  reading the likely sections in full, never from a few cut-off words.
 - **Short.** At most 280 characters, one to three plain sentences. The add-on cuts, strips formatting, and drops a
   reply that apologises, repeats the comment, or contains a number the document never mentioned.
 - **Marked and its own.** Replies are signed by the assistant's own key under the name "AI assistant (on this
