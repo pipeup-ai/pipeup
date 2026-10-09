@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/assist",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Short replies to comments from a small AI model running on the reviewer's own device.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.5.1"
+    "pipeup": "0.5.2"
   },
   "pipeup": {
     "network": {
