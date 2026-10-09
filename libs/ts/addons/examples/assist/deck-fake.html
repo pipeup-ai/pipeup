@@ -168,8 +168,20 @@
         info: { name: "Scripted test model", maker: "Pipeup (no AI)", download: "None", memory: "none" },
         availability: async () => "ready",
         create: async () => ({
-          prompt: async (text) =>
-            /(\d|date|July|sure)/i.test(text.split("<comment>").pop()) ? "related" : "none",
+          prompt: async (text) => {
+            // Reading a section: a stock gist. A close look: the first sentence of the section with a date or number.
+            if (/Read this section/.test(text)) return "Gist: a part of the plan.\nFacts: dates and numbers.";
+            if (/Find the one sentence/.test(text)) {
+              const tag = (n) => (text.split(`<${n}>`).pop().split(`</${n}>`)[0] || "").trim();
+              const seen = tag("passage");
+              return (
+                tag("section")
+                  .split(/(?<=[.!?])\s+/)
+                  .find((x) => /(\d|July)/.test(x) && !seen.includes(x)) || "NONE"
+              );
+            }
+            return /(\d|date|July|sure)/i.test(text.split("<comment>").pop()) ? "related" : "none";
+          },
           async *stream() {
             for (const piece of [
               "If onboarding slips past July, pricing slips with it, ",
