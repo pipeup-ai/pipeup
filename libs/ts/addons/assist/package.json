@@ -1,0 +1,43 @@
+{
+  "name": "@pipeup/assist",
+  "version": "0.5.1",
+  "description": "Short replies to comments from a small AI model running on the reviewer's own device.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/assist"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/assist.esm.js",
+  "module": "./dist/assist.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/assist.min.js",
+  "unpkg": "dist/assist.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.5.1"
+  },
+  "pipeup": {
+    "network": {
+      "when": "after-consent",
+      "to": [
+        "the browser maker's model download",
+        "notes files on this site"
+      ],
+      "says": "Only after you turn it on: your browser may download a small AI model once. Comments and the page are read on this device and never sent anywhere; if the page's author named notes files, they are read from this site."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

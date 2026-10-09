@@ -4,6 +4,7 @@ import { clip, h, inert, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
+import { threadNotes } from "./notes";
 import { byPage } from "./order";
 import { plural, threadView, type ThreadView } from "./thread-view";
 
@@ -51,6 +52,8 @@ interface Item {
   el: HTMLElement;
   thread: Thread;
   lost: boolean;
+  /** The reply an add-on was writing into this thread when it was last drawn. */
+  note?: string;
   view: ThreadView;
   /** Last known line (page y); a thread waiting for its fuzzy match stays there. */
   placed: number | null;
@@ -122,6 +125,7 @@ export function createColumn(ctx: Ctx): View {
 
   function fill(item: Item, t: Thread): void {
     item.thread = t;
+    item.note = threadNotes.get(t.id);
     item.lost = isLost(t);
     item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null });
   }
@@ -189,7 +193,7 @@ export function createColumn(ctx: Ctx): View {
         item = create(t);
         items.set(t.id, item);
         fresh.push(item.el);
-      } else if (item.thread !== t || item.lost !== isLost(t)) {
+      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== threadNotes.get(t.id)) {
         fill(item, t);
       }
       const el = item.el;

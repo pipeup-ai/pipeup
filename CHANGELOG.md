@@ -8,6 +8,7 @@ change the API and the stored comment format.
 ## [Unreleased]
 
 ### Added
+- **`@pipeup/assist`**: short replies to comments from a small AI model running on the reviewer's own device (the browser's built-in model by default; a page can supply its own engine). Turned on by the reviewer, it decides for each comment whether a reply would help (ambiguity, related information or tone), streams a short reply into the thread under the name "AI assistant (on this device)", links to the author's Markdown notes where it used them, and remembers what it has looked at so it looks again only when something is added.
 - For add-ons that write AI replies: `host.setThreadNote` shows a reply as it is being written at the end of a thread; the name "AI assistant" is kept for AI replies and they are drawn with a gently glowing ring; `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported.
 
 ### Changed

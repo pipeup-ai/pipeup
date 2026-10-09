@@ -55,11 +55,11 @@ jobs:
       # The add-ons and the mailbox server are released with the core, at the same version, from the same tag.
       - name: Check and build the add-ons
         run: |
-          for pkg in ../addons ../addons/kit ../addons/share ../addons/voice ../addons/live ../../../services/mailbox; do
+          for pkg in ../addons ../addons/kit ../addons/share ../addons/voice ../addons/live ../addons/assist ../../../services/mailbox; do
             v="$(node -p "require('$pkg/package.json').version")"
             if [ "$v" != "$VERSION" ]; then echo "::error::$pkg is at $v, not $VERSION"; exit 1; fi
           done
-          for id in share voice live; do
+          for id in share voice live assist; do
             p="$(node -p "require('../addons/$id/package.json').peerDependencies.pipeup")"
             if [ "$p" != "$VERSION" ]; then echo "::error::@pipeup/$id needs pipeup $p, not $VERSION"; exit 1; fi
           done
@@ -98,7 +98,7 @@ jobs:
             echo "## Add-ons"
             echo
             echo '```sh'
-            echo "npm i @pipeup/share@$VERSION @pipeup/voice@$VERSION @pipeup/live@$VERSION"
+            echo "npm i @pipeup/share@$VERSION @pipeup/voice@$VERSION @pipeup/live@$VERSION @pipeup/assist@$VERSION"
             echo '```'
             echo
             cat "$RUNNER_TEMP/addons-sri.txt"
@@ -122,7 +122,7 @@ jobs:
         run: |
           tag=latest
           case "$VERSION" in *-*) tag=next ;; esac
-          for dir in ../addons/share ../addons/voice ../addons/live ../../../services/mailbox; do
+          for dir in ../addons/share ../addons/voice ../addons/live ../addons/assist ../../../services/mailbox; do
             (
               cd "$dir"
               name="$(node -p 'require("./package.json").name')"
