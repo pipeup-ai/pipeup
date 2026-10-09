@@ -30,3 +30,18 @@ one on a phone (mobile data, mobile data again, then the same Wi-Fi), note "Conn
 - S6 over HTTPS with a certificate your browsers trust: needs a certificate authority you trust (or approval to add a throwaway one).
 - S1 on other PrivateBin instances: only with their operators' permission.
 - A real release run: push a pre-release tag such as `v0.4.2-beta.1` (it publishes to npm).
+
+## Assist (`@pipeup/assist`)
+
+Needs desktop Chrome with its built-in model (Prompt API; about 22 GB free disk, a GPU with more than 4 GB of video
+memory or 16 GB RAM). Check `chrome://on-device-internals` if the row says "Not available".
+
+1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a
+   paragraph with that number, and "Love the title." on the heading.
+2. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
+   **Download and turn on** with a progress bar). Turn it on.
+3. The first comment should get a short reply streaming into its thread under "AI assistant (on this device)", with
+   the gently glowing ring. The compliment should get nothing.
+4. Reload: nothing is looked at again. Add a reply to the first thread: it is looked at once more.
+5. Switch the row off: no new replies. Try a page with `data-pipeup-assist-notes="notes.md"` and a notes file: a reply
+   that used it ends with a link to the heading.

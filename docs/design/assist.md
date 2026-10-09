@@ -1,6 +1,6 @@
 # Assist: short replies from a model on the reviewer's device
 
-Status: **proposal, for review** (2026-10-09, revised the same day: replies are automatic). Nothing is built.
+Status: **first version built** (2026-10-09): `@pipeup/assist` with the three scenarios, the Prompt API engine and an author-supplied engine hook, notes files, checked-thread memory, streaming into the thread, the reserved name and AI ring. Still to come: hiding or removing assistant replies, the Show link to a passage on the page, custom scenario files, the thread slot for the side panel and rail.
 Mock-ups: [assist-mockups.html](assist-mockups.html) (open it in a browser). This note follows the
 [add-ons design](addons.md): one more optional script; nothing in the core changes for people who don't use it.
 
@@ -178,3 +178,4 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 - 2026-10-09: Three reply scenarios with draft prompts (assist-prompts.md).
 - 2026-10-09: Replies are automatic, short, streamed into the thread and linked to detail, instead of private
   suggestions behind a button; notes files added; the assistant gets its own identity.
+- 2026-10-09: First version built (`libs/ts/addons/assist`); decisions 1 to 7 taken as recommended.
