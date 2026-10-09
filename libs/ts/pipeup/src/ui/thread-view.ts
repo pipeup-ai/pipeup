@@ -1,9 +1,9 @@
 import { formatAgo } from "../export/format";
-import { AI_NAME, nameOf } from "../model/animals";
+import { AI_NAME, isAiName, nameOf } from "../model/animals";
 import type { Comment, Thread } from "../model/types";
 import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
-import { clip, h, linkify } from "./dom";
+import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
 import { threadNotes } from "./notes";
 
@@ -116,7 +116,9 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       h(
         "div",
         { class: c.deleted ? "tx del" : "tx" },
-        ...(c.deleted ? ["Deleted"] : [...linkify(c.text), c.edited ? " (edited)" : ""]),
+        ...(c.deleted
+          ? ["Deleted"]
+          : [...(isAiName(c.name) ? referenced(c.text) : linkify(c.text)), c.edited ? " (edited)" : ""]),
       );
     const restText = t.resolved ? "Resolved" + (n ? ` · ${plural(n)}` : "") : n ? plural(n) : "";
     const footer = h(

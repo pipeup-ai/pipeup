@@ -84,6 +84,46 @@ function trimUrl(url: string): string {
   return url.slice(0, end);
 }
 
+/** The http(s) address of a reference line, or null (the same limits as any link). */
+function address(raw: string): string | null {
+  if (raw.length > MAX_URL || BIDI.test(raw)) return null;
+  try {
+    const u = new URL(raw);
+    return u.protocol === "http:" || u.protocol === "https:" ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * An AI reply's words with its references: a line "[1]: https://..." names an address, and "[1]" in the words
+ * becomes a link to it, so the reply stays short and shows no address. The reference lines themselves are not
+ * shown. Only AI replies get this (a person's text only ever shows its addresses as they are).
+ */
+export function referenced(text: string): (Node | string)[] {
+  const refs = new Map<string, string>();
+  const body = text
+    .split("\n")
+    .filter((line) => {
+      const m = /^\[(\d{1,2})\]:?\s+(\S+)$/.exec(line.trim());
+      const href = m?.[2] ? address(m[2]) : null;
+      if (m?.[1] && href) refs.set(m[1], href);
+      return !(m?.[1] && href);
+    })
+    .join("\n")
+    .trim();
+  if (!refs.size) return linkify(text);
+  const out: (Node | string)[] = [];
+  body.split(/(\[\d{1,2}\])/).forEach((part) => {
+    const href = refs.get(/^\[(\d{1,2})\]$/.exec(part)?.[1] ?? "");
+    if (!href) return void out.push(...linkify(part));
+    const a = h("a", { href, target: "_blank", rel: "noopener noreferrer", title: href }, part);
+    a.addEventListener("click", (e) => e.stopPropagation());
+    out.push(a);
+  });
+  return out;
+}
+
 /** Text with its http(s) addresses as links. Built from nodes: nothing is ever parsed as HTML. */
 export function linkify(text: string): (Node | string)[] {
   const out: (Node | string)[] = [];

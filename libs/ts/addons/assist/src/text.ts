@@ -53,6 +53,13 @@ export function clean(raw: string, comment: string, supplied: string): string | 
   return text;
 }
 
+/** The reply says little the passage didn't already say: most of its content words are the passage's own. */
+export function restates(reply: string, passage: string): boolean {
+  const known = new Set(words(passage));
+  const mine = words(reply);
+  return mine.length > 0 && mine.filter((w) => known.has(w)).length / mine.length >= 0.4;
+}
+
 /** A passage of the page (or of a notes file) the model may use and the add-on can point at. */
 export interface Passage {
   label: string;
@@ -69,7 +76,7 @@ const STOP = new Set(
   ),
 );
 const words = (s: string): string[] =>
-  (s.toLowerCase().match(/[a-z0-9%]{3,}/g) ?? []).filter((w) => !STOP.has(w));
+  (s.toLowerCase().match(/[a-z]{3,}|[a-z]*\d[a-z0-9%]*/g) ?? []).filter((w) => !STOP.has(w));
 
 /** The `n` passages that share the most (rarer) words with `query`, best first. Nothing in common: none. */
 export function rank(passages: readonly Passage[], query: string, n = 3): Passage[] {

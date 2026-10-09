@@ -112,3 +112,23 @@ describe("linkify", () => {
     ]);
   });
 });
+
+describe("an AI reply's references", () => {
+  it("turns [1] into a link to the address a reference line gives, and hides the line", async () => {
+    const { referenced } = await import("../../src/ui/dom");
+    const box = document.createElement("div");
+    box.append(...referenced("It is planned for Q4 [1].\n\n[1]: https://example.org/notes.md#hiring"));
+    expect(box.textContent).toBe("It is planned for Q4 [1].");
+    const a = box.querySelector("a")!;
+    expect(a.textContent).toBe("[1]");
+    expect(a.getAttribute("href")).toBe("https://example.org/notes.md#hiring");
+    expect(a.getAttribute("rel")).toBe("noopener noreferrer");
+  });
+  it("leaves a reference with no usable address as it is, and never links anything but http(s)", async () => {
+    const { referenced } = await import("../../src/ui/dom");
+    const box = document.createElement("div");
+    box.append(...referenced("See [2] and [1].\n[1]: javascript:alert(1)\n[3]: https://example.org/"));
+    expect(box.querySelector("a")).toBeNull();
+    expect(box.textContent).toContain("javascript:alert(1)");
+  });
+});

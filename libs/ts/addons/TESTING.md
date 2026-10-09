@@ -42,7 +42,7 @@ whole flow can be tried without a model.
 
 1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a
    paragraph with that number, and "Love the title." on the heading.
-2. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
+2. Turn comment mode on (Shift+Option+C); the row is in the menu only while commenting is on. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
    **Download and turn on** with a progress bar). Turn it on.
 3. The first comment should get a short reply streaming into its thread under "AI assistant (on this device)", with
    the gently glowing ring. The compliment should get nothing.

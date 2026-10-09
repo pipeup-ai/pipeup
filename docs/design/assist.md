@@ -26,7 +26,8 @@ See the mock-ups for each state.
    whether anything must be downloaded (size, source, once), what it costs in memory, that nothing leaves the device,
    and that its replies appear in the thread for anyone sharing the page. Two variants: the browser already has a
    model (one click), or a download is needed.
-2. **A menu row.** One switch row, "Assistant replies", with the other add-ons' rows. The status line says what it
+2. **A menu row.** One switch row, "Assistant replies", with the other add-ons' rows, shown only while commenting is on
+   (the assistant belongs to reviewing; it keeps working when the row is out of sight). The status line says what it
    has done ("checked 3 comments, replied to 1"). When it can't work, the row says "Not available" and why.
 3. **Nothing to click.** For each comment the model first decides, quickly, whether a reply is worth adding. Most of
    the time it isn't (a compliment, a question for a person, nothing to add) and nothing appears.

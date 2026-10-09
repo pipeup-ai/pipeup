@@ -33,11 +33,11 @@ export const decide = (m: Material): string => `${SHARED}
 Decide which kind of reply, if any, would help. Answer with one word.
 
 - ambiguity: the comment is unclear, or it points at words that can be read two ways.
-- related: the comment doubts or asks something that other parts of the document answer.
+- related: the comment doubts or asks something, and other parts of the document add something to it: a reason, a number, a date or a conflict. Not when they only repeat what the commented passage already says.
 - tone: the comment is about wording, voice, or how the text comes across.
 - none: anything else. Compliments, thanks, a question for a named person, something already answered further down the thread, or nothing in the document that helps.
 
-When in doubt, answer none.
+A "why" question that the document gives no reason for is none. When in doubt, answer none.
 
 ${read(m)}`;
 
@@ -52,13 +52,19 @@ Reply: Do you mean the July date, or the 20% lift? I can look into either.
 Comment: Which team?
 Passage: The team stays at six people through the end of the quarter.
 Reply: Do you mean the design team or the whole company? The page only says "the team".`,
-  related: `Answer from the related passages only. In one or two sentences say what the document says that bears on the comment, and name where it says it. If the related passages do not help, reply with just the word NONE. After your reply, on a new line, write "Used:" and the numbers of the passages you used.
+  related: `Answer from the related passages only. In one or two sentences say what the document says that bears on the comment, and name where it says it. Never repeat what the commented passage already says: the reviewer has read it. Reply only if the related passages add something the reviewer may not have seen (a reason, a number, a date, a conflict). If they only restate the passage, or do not help, reply with just the word NONE. After your reply, on a new line, write "Used:" and the numbers of the passages you used.
 
-Example:
+Example of a reply:
 Comment: Are you sure the team can hit this date?
 Related: [1] Risks: If onboarding slips past July, the pricing work slips with it. [2] Summary: The team stays at six people through the end of the quarter.
 Reply: The Risks section says pricing slips if onboarding slips past July, and the team stays at six people all quarter.
-Used: 1, 2`,
+Used: 1, 2
+
+Example where nothing is added:
+Comment: Why can't we hire in Q3?
+Passage: Hiring a second designer moves to Q4.
+Related: [1] Hiring: A second designer is planned for Q4, after the launch.
+Reply: NONE`,
   tone: `The comment is about how the passage comes across. In one sentence say what in the passage causes that. Then give one alternative wording in quotation marks. Keep the meaning and the facts. Do not rewrite more than the part that matters.
 
 Examples:

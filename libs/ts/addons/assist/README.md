@@ -36,6 +36,8 @@ what it reads, and that its replies appear in the thread for everyone sharing th
 
 ## What it does
 
+- **Where it is.** One switch row, "Assistant replies", in the comment control's menu, shown only while commenting is
+  on. Once turned on it keeps working when comment mode is off.
 - **Decides first.** One short call chooses one of three jobs, or none: **ambiguity** (ask which of two readings is
   meant), **related information** (say what the document says elsewhere, and where) and **tone** (one observation and
   one alternative wording). Anything else gets no reply. The prompts are in

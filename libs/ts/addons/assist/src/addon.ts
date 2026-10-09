@@ -1,9 +1,9 @@
 import { settings, type Settings } from "@pipeup/kit";
-import type { Comment, Identity, PipeupAddon, Thread } from "pipeup";
+import type { Comment, Identity, ItemHandle, MenuItem, PipeupAddon, Thread } from "pipeup";
 import { core, NAME, replyOp, type Core } from "./author";
 import { authorEngine, promptApi, type Availability, type Engine, type Session } from "./engine";
 import { decide, DECIDE_SCHEMA, write, type Material } from "./prompts";
-import { clean, rank, replyPart, scenarioOf, sections, usedOf, type Passage } from "./text";
+import { clean, rank, replyPart, restates, scenarioOf, sections, usedOf, type Passage } from "./text";
 
 /** The most replies in one thread, and the wait between two comments' replies. */
 const MAX_REPLIES = 3;
@@ -77,7 +77,10 @@ export function createAddon(): PipeupAddon {
       let looked = 0;
       let pool: Passage[] = [];
       let panel: { close(): void } | undefined;
+      let row: ItemHandle | null = null;
       const notes: Passage[] = [];
+      /** Redraws the menu row, if it is showing. */
+      const updateRow = () => (row as ItemHandle | null)?.update();
 
       const lowMemory = (): boolean => {
         const gb = (navigator as { deviceMemory?: number }).deviceMemory;
@@ -124,7 +127,7 @@ export function createAddon(): PipeupAddon {
       };
 
       /** The words of the block a comment is about. */
-      const blockOf = (t: Thread): { text: string; el: Element | null } => {
+      const blockOf = (t: Thread): { text: string; full: string; el: Element | null } => {
         let e: Element | null = null;
         try {
           const r = c.resolveAnchor?.(t.anchor, host.root, { fuzzy: false });
@@ -136,7 +139,8 @@ export function createAddon(): PipeupAddon {
         const text = (t.anchor.quote?.exact ?? block?.textContent ?? t.anchor.snapshot)
           .replace(/\s+/g, " ")
           .trim();
-        return { text: text.slice(0, 400), el: block ?? null };
+        const full = (block?.textContent ?? text).replace(/\s+/g, " ").trim();
+        return { text: text.slice(0, 400), full, el: block ?? null };
       };
 
       const getSession = async (): Promise<Session> => {
@@ -204,11 +208,13 @@ export function createAddon(): PipeupAddon {
           }
           const supplied = `${m.comment} ${m.passage} ${m.thread} ${m.related.join(" ")}`;
           let text = clean(raw, m.comment, supplied);
-          if (!text) return;
+          // A reply that only says again what the commented words say tells the reviewer nothing.
+          if (!text || restates(text, block.full)) return;
           const link = usedOf(raw)
             .map((n) => used[n - 1]?.url)
             .find(Boolean);
-          if (link) text = `${text} More: ${link}`;
+          // The address goes in a reference line; Pipeup shows "[1]" as the link.
+          if (link) text = `${text} [1]\n\n[1]: ${link}`;
           const op = await replyOp(
             c as Core,
             await identity(),
@@ -277,7 +283,7 @@ export function createAddon(): PipeupAddon {
         await store?.set("on", true);
         await loadNotes();
         status();
-        row.update();
+        updateRow();
         void pump();
       };
       const turnOff = async () => {
@@ -288,7 +294,7 @@ export function createAddon(): PipeupAddon {
         session = undefined;
         await store?.set("on", false);
         status();
-        row.update();
+        updateRow();
       };
 
       /** The consent panel: what it does, which model, what it costs, and that nothing leaves the device. */
@@ -362,7 +368,7 @@ export function createAddon(): PipeupAddon {
         panel = host.openPanel(box, { label: "Assistant replies", onClose: () => (panel = undefined) });
       };
 
-      const row = host.addMenuItem({
+      const item: MenuItem = {
         id: "assist",
         icon: ICON,
         label: () => "Assistant replies",
@@ -382,6 +388,15 @@ export function createAddon(): PipeupAddon {
             ?.get<string>("consent")
             .then((c0) => (c0 === engine.info.name && avail === "ready" ? turnOn() : ask()));
         },
+      };
+      // The row shows only while comments do (comment mode, All comments, or a comment being written): the
+      // assistant belongs to reviewing, so it stays out of the menu otherwise. It keeps working either way.
+      const offUi = host.onUi((ui) => {
+        if (ui.shown && !row) row = host.addMenuItem(item);
+        else if (!ui.shown && row) {
+          row.remove();
+          row = null;
+        }
       });
 
       // Settings, availability and what was already looked at come in the background; the row is there meanwhile.
@@ -391,7 +406,7 @@ export function createAddon(): PipeupAddon {
         checked =
           (await store.get<Record<string, string>>(`checked:${host.document.id}`).catch(() => undefined)) ??
           {};
-        row.update();
+        updateRow();
         if (avail === "ready" && (await store.get<boolean>("on").catch(() => false))) await turnOn();
       })();
 
@@ -401,6 +416,7 @@ export function createAddon(): PipeupAddon {
         window.clearTimeout(idle);
         session?.destroy();
         offChange();
+        offUi();
         document.removeEventListener("visibilitychange", onVisible);
         panel?.close();
         offStyles();

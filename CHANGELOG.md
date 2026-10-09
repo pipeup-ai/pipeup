@@ -8,7 +8,9 @@ change the API and the stored comment format.
 ## [Unreleased]
 
 ### Fixed
-- An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words.
+- An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words, and it pulses outward inside its own box, so nothing is cropped.
+- The "Assistant replies" row shows in the menu only while commenting is on.
+- Assist no longer replies with what the commented words already say, and shows a link as a numbered reference ("[1]"), not an address.
 
 ## [0.5.2] - 2026-10-09
 

@@ -43,6 +43,9 @@ async function start(page: Page) {
   await mount(page);
 }
 async function turnOn(page: Page) {
+  // The row is in the menu only while comments show.
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await expect(page.locator(".launch .mode.on")).toHaveCount(1);
   await openMenu(page);
   await page.locator(".menu.show").getByText("Assistant replies").click();
   const panel = page.locator(".xp.show");
@@ -98,7 +101,6 @@ test("its reply is drawn with the glowing AI ring, and streams in while it is wr
   await page.evaluate(() => ((window as any).__pieceMs = 2500));
   await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
   await turnOn(page);
-  await page.keyboard.press("Shift+Alt+KeyC");
   // The thread is in view (the column or a popover, whichever this page uses).
   const pop = page.locator(".layer");
   // While it is being written: the words so far, the busy ring, and "writing now".
@@ -137,6 +139,7 @@ test("with no model on this device, the row says it is not available", async ({ 
   await blank(page);
   await load(page, CORE, addon("assist"));
   await mount(page);
+  await page.keyboard.press("Shift+Alt+KeyC");
   await openMenu(page);
   await expect(page.locator(".menu.show")).toContainText("Not available");
 });
@@ -145,11 +148,26 @@ test("the AI ring sits at the reply's top right, like any avatar, not over its w
   await start(page);
   await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
   await turnOn(page);
-  await page.keyboard.press("Shift+Alt+KeyC");
   const ring = page.locator(".layer .it .av.ai");
   await expect(ring).toHaveCount(1, { timeout: 15000 });
   const box = (await ring.boundingBox())!;
   const reply = (await page.locator(".layer .it").boundingBox())!;
   // Right edge of the reply's box, where every avatar sits.
   expect(box.x + box.width).toBeGreaterThan(reply.x + reply.width - 12);
+});
+
+test("the Assistant replies row is in the menu only while commenting is on", async ({ page }) => {
+  await start(page);
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).not.toContainText("Assistant replies");
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await expect(page.locator(".launch .mode.on")).toHaveCount(1);
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).toContainText("Assistant replies");
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await expect(page.locator(".launch .mode.on")).toHaveCount(0);
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).not.toContainText("Assistant replies");
 });
