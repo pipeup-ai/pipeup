@@ -37,11 +37,16 @@ const LANG = {
   expectedOutputs: [{ type: "text", languages: ["en"] }],
 };
 
+const isChrome = (): boolean =>
+  /\bChrome\//.test(navigator.userAgent) && !/\bEdg\//.test(navigator.userAgent);
+
 /** The browser's built-in model, through the Prompt API (Chrome: Gemini Nano). Nothing leaves the device. */
 export const promptApi: Engine = {
+  // Chrome's is Gemini Nano. It comes to the machine once, shared by every site, the first time a page asks for it.
   info: {
-    name: "Your browser's built-in model",
-    maker: "your browser's maker",
+    name: isChrome() ? "Chrome's built-in model (Gemini Nano)" : "Your browser's built-in model",
+    maker: isChrome() ? "Google" : "your browser's maker",
+    download: "Once, by your browser, and shared with other sites; it is kept",
     memory: "about 1 GB while it writes, then freed",
   },
   async availability() {
