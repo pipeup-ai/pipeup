@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- A Try it page for Voice, Live and Assist (with a practice mode and a slides version) from the Add-ons page; Share points to a local demo, and the mailbox has no online try.
+
 - The Add-ons page now covers Assist (demo, Copy prompt, script tag) and the optional mailbox server that Share can use; llms.txt and the Markdown copy match.
 
 - Assist reads every slide of a deck (marked slides and reveal.js alike), the one showing, the one commented on and all the others, instead of lumping unmarked content into the slide on screen.

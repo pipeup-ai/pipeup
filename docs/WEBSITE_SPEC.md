@@ -195,3 +195,4 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-08 — Each page has its own Markdown copy: the Add-ons page's "This page as Markdown" opens addons.html.md (it pointed at the home page's).
 - 2026-10-09 — The Add-ons page gains Assist (with a demo and Copy prompt) and a plain "Your own mailbox" card for the server Share can use; llms.txt and the Markdown copy say the same.
 - 2026-10-09 — Proposed (not built): a Try it page for each add-on, linked from its card (Voice, Live, Assist, and Share once a service is chosen); none for the mailbox.
+- 2026-10-09 — Built: Try it pages for Voice, Live, Assist and Assist on slides; Share's card gives a local-demo command. Live's page asks for a second browser or private window (two tabs of one browser are one person), not a second window of the same browser.

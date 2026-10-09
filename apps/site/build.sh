@@ -25,15 +25,23 @@ while [[ $# -gt 0 ]]; do
 done
 [[ $channel == stable || $channel == next ]] || { echo "unknown channel: $channel" >&2; exit 2; }
 
+addons="$root/libs/ts/addons"
 if [[ $build_lib == 1 ]]; then
   (cd "$lib" && npm run build)
+  (cd "$addons" && npm run build)
 fi
 [[ -f "$lib/dist/pipeup.min.js" ]] || { echo "missing $lib/dist/pipeup.min.js: build the library first" >&2; exit 1; }
+
+for id in voice live assist; do
+  [[ -f "$addons/$id/dist/$id.min.js" ]] || { echo "missing $addons/$id/dist/$id.min.js: build the add-ons first" >&2; exit 1; }
+done
 
 rm -rf "$out"
 mkdir -p "$out/skills"
 cp -R "$site/index.html" "$site/addons.html" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
+mkdir -p "$out/addons"
+for id in voice live assist; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
 cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
