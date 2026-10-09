@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Assist shows related information as pills only, under "This may be related:"; hovering or focusing a pill shows the sentence it points to.
+
 - Assist reads the whole page, deck and notes once, a section at a time, keeps a short summary of each on the device, and checks the likely sections in full before replying, so a goal on a far-off or short slide is found. The menu row shows how far reading has got.
 
 - Assist reads every slide as a whole (short bullets included), so a goal on a slide can be found and pointed to with a slide pill.

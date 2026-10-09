@@ -78,6 +78,7 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
 .refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
 .ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 .ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
@@ -265,7 +266,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 }
 
 @media (prefers-reduced-motion: reduce){
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}

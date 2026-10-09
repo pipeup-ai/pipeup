@@ -34,10 +34,13 @@ See the mock-ups for each state.
 4. **A reply streams in** as a reply in the thread, in the same type as any reply, with the glowing AI ring and
    "AI assistant · on this device". The ring glows a little faster while it writes and slowly once finished. It becomes
    a real reply once finished; nothing half-written is ever left. With reduced motion the ring stays still.
-5. **Short, with a way to more.** Two or three short sentences at most. Below it, what it relied on as a few small
-   **pills**, never a list of addresses: a numbered pill ("[1] Risks") for a passage on the page or a heading in the
-   author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three show. Pressing a
-   pill goes there: a passage scrolls into view with one soft swell, a slide is shown, a notes heading opens.
+5. **Short, with a way to more.** When the document has something that bears on a comment, the reply is only a short
+   line and the **pills**, never a written-out answer: a numbered pill ("[1] Risks") for a passage on the page or a
+   heading in the author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three
+   show. **Hovering a pill (or focusing it with the keyboard) eases in a small card with the one sentence it points
+   to**, so the reviewer sees the related information without leaving the comment. Pressing a pill goes there: a
+   passage scrolls into view with one soft swell, a slide is shown, a notes heading opens. Replies that ask or
+   suggest (a question about two readings, a tone alternative) are still two or three short sentences.
    In a deck the reviewer is on one slide while the answer is often on others, so the assistant reads every slide.
 5a. **It has read the whole page.** Before it answers anything, it reads the entire page (or deck, and the author's
    notes) once, a section at a time, and keeps a short gist and the key facts of each section (goals, numbers, dates,
@@ -76,9 +79,9 @@ See the mock-ups for each state.
    that bears on it. Otherwise it stays silent.
 5. A reply is **short**: at most about 280 characters, one to three sentences, plain words, no headings or lists.
    Anything longer is not written out; the reply points to where the detail is.
-6. A reply that relies on the page, the slides or the author's notes shows each source as a small reference pill (at
-   most three), never a full address. A slide's pill carries a slide icon. Pressing a pill takes the reviewer there
-   without losing their place.
+6. Related information is shown as small reference pills (at most three), never a full address and never written out
+   again in the reply. A slide's pill carries a slide icon. Hovering or focusing a pill shows the one sentence it
+   points to; pressing it takes the reviewer there without losing their place.
 7. Replies **stream in** as they are made. Only a finished reply becomes part of the thread, so no partial reply is
    ever stored or shared.
 8. A reply is clearly marked as written by a model on the device, with its own name and mark, never under a person's
@@ -220,6 +223,8 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 
 ## Change log
 
+- 2026-10-09: Related information is shown as pills only, with the found sentence on hover or focus, instead of a
+  written-out answer.
 - 2026-10-09: Built: whole-page reading, kept gists and facts, and the close look before a reply; size budget 10 KB.
 - 2026-10-09: Reading the whole page: sections read in full and summarised once, kept on the device, then checked
   closely before a reply (requirements 16 to 19). No embedding model for now.

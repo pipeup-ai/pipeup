@@ -15,7 +15,6 @@ import {
   scenarioOf,
   sections,
   SECTION,
-  usedOf,
   type Passage,
 } from "./text";
 
@@ -28,6 +27,7 @@ const HITS = 3;
 /** The model is freed after this long unused. */
 const IDLE_MS = 5 * 60_000;
 const READING = "AI assistant is reading this…";
+const RELATED = "This may be related:";
 const SEEN = "Reviewed by AI · nothing to add";
 const BLOCKS = "p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd";
 /** A ring and a dot: the mark of an AI reply, small. */
@@ -239,6 +239,12 @@ export function createAddon(): PipeupAddon {
 
       const saveChecked = () => store?.set(`checked:${host.document.id}`, checked).catch(() => undefined);
 
+      /** Adds the assistant's reply to a thread. */
+      const post = async (t: Thread, text: string) => {
+        const op = await replyOp(c as Core, await identity(), host.document.id, t, text, host.document.ops());
+        if (await host.merge([op])) replied++;
+      };
+
       /** Looks at one thread: decides whether a reply would help, and if so writes it into the thread. */
       const handle = async (t: Thread): Promise<void> => {
         const stamp = stampOf(t);
@@ -259,13 +265,12 @@ export function createAddon(): PipeupAddon {
             .map((x) => `${isAi(x) ? "Assistant" : x.name || "Someone"}: ${x.text}`)
             .join("\n")
             .slice(0, 1200),
-          related: [],
         };
         const s = await getSession();
         const kind = scenarioOf(await s.prompt(decide(m), { schema: DECIDE_SCHEMA, signal: stopped.signal }));
         if (kind === "none") return;
-        const used: Passage[] = [];
         if (kind === "related") {
+          const used: Passage[] = [];
           // The likely sections, from everything read; then each read in full for the sentence that bears on it.
           pool = gather();
           for (const p of pool) p.extra = index[p.hash!];
@@ -280,7 +285,11 @@ export function createAddon(): PipeupAddon {
             if (used.length >= HITS) break;
           }
           if (!used.length) return;
-          m.related = used.map((p, i) => `[${i + 1}] ${p.label}: ${p.text}`);
+          // Only pointers, no written answer: each pill shows the sentence it points to when hovered.
+          return post(
+            t,
+            `${RELATED}\n\n${used.map((p, i) => `[${i + 1}]: ${pointer(p)} ${p.label.slice(0, 30)} | ${p.text.slice(0, 300)}`).join("\n")}`,
+          );
         }
         let raw = "";
         try {
@@ -290,27 +299,11 @@ export function createAddon(): PipeupAddon {
             // Not shown until there is something to read, and never the model's "none".
             if (shown && !/^none\b/i.test(shown)) host.setThreadNote(t.id, shown.slice(0, 320));
           }
-          const supplied = `${m.comment} ${m.passage} ${m.thread} ${m.related.join(" ")}`;
-          let text = clean(raw, m.comment, supplied);
+          const supplied = `${m.comment} ${m.passage} ${m.thread}`;
+          const text = clean(raw, m.comment, supplied);
           // A reply that only says again what the commented words say tells the reviewer nothing.
           if (!text || restates(text, block.full)) return;
-          // What it relied on goes in reference lines, at most three; Pipeup shows each as a small pill under the words
-          // (a slide with a slide icon), so the reply stays short and the screen is not flooded.
-          const refs = [...new Set(usedOf(raw))]
-            .map((n) => used[n - 1])
-            .filter((p): p is Passage => !!p)
-            .slice(0, 3);
-          if (refs.length)
-            text = `${text}\n\n${refs.map((p, i) => `[${i + 1}]: ${pointer(p)} ${p.label.slice(0, 30)}`).join("\n")}`;
-          const op = await replyOp(
-            c as Core,
-            await identity(),
-            host.document.id,
-            t,
-            text,
-            host.document.ops(),
-          );
-          if (await host.merge([op])) replied++;
+          await post(t, text);
         } finally {
           host.setThreadNote(t.id, null);
         }

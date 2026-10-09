@@ -10,16 +10,9 @@ export function scenarioOf(answer: string): Scenario | "none" {
   return (m?.[1]?.toLowerCase() as Scenario | "none" | undefined) ?? "none";
 }
 
-/** The passage numbers a "Used: 1, 2" line names. */
-export function usedOf(raw: string): number[] {
-  const m = /(?:^|\n)\s*used:\s*([\d,\s]+)/i.exec(raw);
-  return m ? [...new Set((m[1] ?? "").match(/\d+/g)?.map(Number) ?? [])] : [];
-}
-
-/** The reply part of an answer: no "Reply:" lead, no "Used:" line, no formatting, plain spaces. */
+/** The reply part of an answer: no "Reply:" lead, no formatting, plain spaces. */
 export function replyPart(raw: string): string {
   return raw
-    .split(/\n\s*used:/i)[0]!
     .replace(/^\s*(reply|answer)\s*:\s*/i, "")
     .replace(/^\s*[-*>\d.]+\s+/gm, "")
     .replace(/[*_`#]+/g, "")

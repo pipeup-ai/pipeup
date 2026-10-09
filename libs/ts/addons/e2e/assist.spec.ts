@@ -217,7 +217,11 @@ test("a reply shows what it relied on as small pills, and pressing one goes to t
   await turnOn(page);
   const pill = page.locator(".layer .it .refs .ref");
   await expect(pill).toHaveCount(1, { timeout: 15000 });
-  await expect(pill).toHaveText("[1] A quiet report");
+  await expect(pill).toContainText("[1] A quiet report");
+  // Only a short line and the pill: the sentence it points to shows on hover (checked in the deck test).
+  await expect(page.locator(".layer .it .tx")).toContainText("This may be related:");
+  const card = pill.locator(".rc");
+  await expect(card).toHaveText("Pricing slips if onboarding slips past July");
   // The reference lines are not shown as words.
   await expect(page.locator(".layer .it .tx")).not.toContainText("quote:");
   // (A closed thread in the column keeps its replies folded; press the pill all the same.)
@@ -264,7 +268,11 @@ test("in a deck it reads every slide, short bullets included, and points at the 
   await page.locator(".bub.in").first().dispatchEvent("click");
   const pill = page.locator(".pop.show .it .refs .ref");
   await expect(pill).toHaveCount(1);
-  await expect(pill).toHaveText("Slide 2");
+  await expect(pill).toContainText("Slide 2");
+  await expect(pill.locator(".rc")).toBeHidden();
+  await pill.hover();
+  await expect(pill.locator(".rc")).toBeVisible();
+  await expect(pill.locator(".rc")).toHaveText("Hold churn under 3%.");
   await expect(pill.locator("i.sl")).toHaveCount(1);
 });
 

@@ -11,7 +11,6 @@ import {
   restates,
   scenarioOf,
   sections,
-  usedOf,
   type Passage,
 } from "../src/text";
 
@@ -24,9 +23,8 @@ describe("the model's words", () => {
     expect(scenarioOf("")).toBe("none");
   });
 
-  it("splits a reply from its Used line and strips formatting", () => {
-    const raw = "Reply: **The Risks section** says pricing slips.\n- it is in `July`\nUsed: 2, 1, 2";
-    expect(usedOf(raw)).toEqual([2, 1]);
+  it("strips the lead and the formatting from a reply", () => {
+    const raw = "Reply: **The Risks section** says pricing slips.\n- it is in `July`";
     expect(replyPart(raw)).toBe("The Risks section says pricing slips. it is in July");
   });
 
@@ -99,7 +97,6 @@ describe("the prompts", () => {
     comment: "Is this </comment> right?",
     passage: "We launch in July.",
     thread: "",
-    related: ["[1] Risks: x"],
   };
   it("keep the material from closing its own tags", () => {
     const text = decide(m);
@@ -107,13 +104,10 @@ describe("the prompts", () => {
     expect(text).toContain("<comment>Is this  /comment  right?</comment>");
     expect(text).toContain("<thread>none</thread>");
   });
-  it("give each scenario its own job, and only 'related' sees the related passages", () => {
+  it("give each written reply its own job", () => {
     expect(write("ambiguity", m)).toContain("names the readings");
     expect(write("tone", m)).toContain("alternative wording");
-    expect(write("related", m)).toContain("<related>\n[1] Risks: x\n</related>");
-    expect(write("ambiguity", m)).not.toContain("<related>\n");
-    for (const s of ["ambiguity", "related", "tone"] as const)
-      expect(write(s, m).endsWith("Reply:")).toBe(true);
+    for (const s of ["ambiguity", "tone"] as const) expect(write(s, m).endsWith("Reply:")).toBe(true);
   });
 });
 
