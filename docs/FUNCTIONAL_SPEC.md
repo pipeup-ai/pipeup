@@ -594,6 +594,33 @@ which Pipeup discards. It also can't tell when something is missing.
   label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
   next opens Pipeup.
 
+### Making your own add-on
+
+Anyone can make an add-on and publish it under their own name, anywhere. Nothing needs the Pipeup project's
+permission, a registration, or a place in its npm scope.
+
+- **A guide, in plain words, on one page.** It explains, in this order: what an add-on is and what a page's author
+  does to include one; what an add-on can do (add a row to the menu, open a panel, show a note on a thread, show a
+  status, read the comments, and bring in other people's comments, which Pipeup checks as strictly as any); what it
+  can't do (make Pipeup accept a comment that is forged, altered or for another document); the one plain sentence
+  every add-on gives about what it sends and to whom, and that reviewers are shown it before anything is sent; how a
+  page includes the add-on; how to try it and test it; and what the Pipeup project does and doesn't stand behind (it
+  vouches for its own add-ons only). It ends with a small complete example the reader can paste and run.
+- **A template to copy.** A folder, usable without the rest of Pipeup's source, holding a small working add-on (a
+  menu row that opens a panel and says its one sentence), a page to try it on, a browser test of it, and a short
+  README with the steps to publish it under the maker's own name. A copy works and passes its own checks before
+  anything is changed.
+- **Names.** An add-on's name is its own: letters, digits and dashes, 2 to 24 characters, written by the maker (a
+  maker's name in front keeps it distinct, for example "acme-translate"). The names of the Pipeup project's add-ons
+  (share, voice, live, assist) are reserved: an add-on that uses one is refused, and the reason is given in words.
+  Two add-ons with the same name on one page: the first is used, and the second is ignored with a message.
+- **Nothing is taken on trust.** The guide, the template and the website say that add-ons from anyone else run with
+  the page's full power and that Pipeup doesn't vouch for them.
+- **Where to find it.** The guide is linked from the website's Add-ons page, the README and the add-ons folder, with
+  one line saying what it is for. The page's list of Pipeup's own add-ons is unchanged.
+- **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
+  not from Pipeup (both are for later, and the second changes the core).
+
 ## 12. Presence (live review)
 
 - While live, avatars show **who is here now**. On decks they also show **which slide each person is
@@ -876,3 +903,4 @@ which Pipeup discards. It also can't tell when something is missing.
 - 2026-10-09 — All comments is interactive: a row is a preview, and choosing it opens the thread out in the panel (reply, resolve or reopen, copy), scrolls the page to its place and draws a line from the open row to it; one thread open at a time; nothing opens on the page.
 - 2026-10-09 — The name "AI assistant" is kept for AI replies (a person can't choose it), and a reply under it is drawn with a gently glowing ring, so it is plain at a glance that a model wrote it. An add-on can show a reply as it is being written at the end of a thread.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
+- 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
