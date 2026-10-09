@@ -214,3 +214,41 @@ test("a reply shows what it relied on as small pills, and pressing one goes to t
   await pill.evaluate((el) => (el as HTMLElement).click());
   await expect(page.locator(".layer .pulse")).toHaveCount(1, { timeout: 5000 });
 });
+
+test("in a deck it reads every slide, short bullets included, and points at the slide with a pill", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as any;
+    w.pipeupAssistEngine = {
+      info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
+      availability: async () => "ready",
+      create: async () => ({
+        prompt: async () => "related",
+        async *stream() {
+          yield "The next-quarter slide sets a goal to hold churn under 3%.\nUsed: 1";
+        },
+        destroy() {},
+      }),
+    };
+  });
+  await blank(page);
+  await page.evaluate(() => {
+    document.body.innerHTML = `<main>
+      <section data-pipeup-slide="1" data-pipeup-id="s1"><h2>Revenue grew</h2><p>Q4 is a forecast that assumes the July launch.</p></section>
+      <section data-pipeup-slide="2" data-pipeup-id="s2" style="display:none"><h2>Next quarter</h2><ul><li>Ship onboarding.</li><li>Hold churn under 3%.</li></ul></section>
+    </main>`;
+  });
+  await load(page, CORE, addon("assist"));
+  await mount(page);
+  await comment(page, "[data-pipeup-id=s1] p", "Do we have a risk of churn?");
+  await turnOn(page);
+  // Slides show their threads as bubbles: open this one to read the reply.
+  await expect(page.locator(".launch .mode.on")).toHaveCount(1);
+  await expect.poll(async () => (await threads(page))[0].root.replies.length, { timeout: 15000 }).toBe(1);
+  await page.locator(".bub.in").first().dispatchEvent("click");
+  const pill = page.locator(".pop.show .it .refs .ref");
+  await expect(pill).toHaveCount(1);
+  await expect(pill).toHaveText("Slide 2");
+  await expect(pill.locator("i.sl")).toHaveCount(1);
+});

@@ -110,20 +110,23 @@ export function createAddon(): PipeupAddon {
       /** Reads the page's blocks (and the notes' sections) the assistant may draw on. */
       const gather = (): Passage[] => {
         const out: Passage[] = [];
+        // A deck's slides are read whole: one passage per slide, so a short bullet ("Hold churn under 3%.") counts.
+        const slides = new Map<string, { texts: string[]; el: Element }>();
         let heading = "";
         for (const e of host.root.querySelectorAll(BLOCKS)) {
           if (e.closest("[data-pipeup-ignore]")) continue;
           const text = (e.textContent ?? "").replace(/\s+/g, " ").trim();
           if (/^H[1-6]$/.test(e.tagName)) heading = text.slice(0, 60);
-          if (text.length < 25) continue;
           const slide = host.where(e)?.slide;
-          out.push({
-            label: slide ? `Slide ${slide}` : heading || "This page",
-            text: text.slice(0, 300),
-            el: e,
-            slide,
-          });
+          if (slide) {
+            const s = slides.get(slide) ?? { texts: [], el: e.closest("[data-pipeup-slide]") ?? e };
+            if (text) s.texts.push(text);
+            slides.set(slide, s);
+          } else if (text.length >= 12)
+            out.push({ label: heading || "This page", text: text.slice(0, 300), el: e });
         }
+        for (const [slide, s] of slides)
+          out.push({ label: `Slide ${slide}`, text: s.texts.join(" · ").slice(0, 400), el: s.el, slide });
         return [...out, ...notes];
       };
 
@@ -142,7 +145,7 @@ export function createAddon(): PipeupAddon {
       };
 
       /** The words of the block a comment is about. */
-      const blockOf = (t: Thread): { text: string; full: string; el: Element | null } => {
+      const blockOf = (t: Thread): { text: string; full: string; el: Element | null; slide?: string } => {
         let e: Element | null = null;
         try {
           const r = c.resolveAnchor?.(t.anchor, host.root, { fuzzy: false });
@@ -155,7 +158,12 @@ export function createAddon(): PipeupAddon {
           .replace(/\s+/g, " ")
           .trim();
         const full = (block?.textContent ?? text).replace(/\s+/g, " ").trim();
-        return { text: text.slice(0, 400), full, el: block ?? null };
+        return {
+          text: text.slice(0, 400),
+          full,
+          el: block ?? null,
+          slide: e ? host.where(e)?.slide : undefined,
+        };
       };
 
       const getSession = async (): Promise<Session> => {
@@ -209,7 +217,7 @@ export function createAddon(): PipeupAddon {
         if (kind === "related") {
           pool = gather();
           used = rank(
-            pool.filter((p) => p.el !== block.el),
+            pool.filter((p) => p.el !== block.el && !(p.slide && p.slide === block.slide)),
             `${m.comment} ${block.text}`,
           );
           if (!used.length) return;

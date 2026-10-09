@@ -6,7 +6,7 @@ import { avatar, faceOf } from "./animals";
 import { lost as lostIn } from "./column";
 import type { Ctx, View } from "./context";
 import { clip, h, inert } from "./dom";
-import { popoverAnchor } from "./geometry";
+import { popoverAnchor, quoteRects } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { MenuItem } from "./addons";
 import { draw, icon } from "./icons";
@@ -311,14 +311,31 @@ export function createLauncher(ctx: Ctx): View {
     if (el) ctx.hot(t.id);
   }
 
-  /** Where on the page the open thread's place is, if it can be pointed at. */
-  function target(t: Thread): { x: number; y: number } | null {
+  /**
+   * Where on the page the open thread's place is, if it can be pointed at, and which way the line arrives: at the
+   * right end of the marked words (from the panel, on the right), or at the top middle of a block or picture.
+   */
+  function target(t: Thread): { x: number; y: number; from: "right" | "top" } | null {
     const r = ctx.resolved.get(t.id);
-    const p = r && !narrow() && !lost(t) && !ctx.elsewhere(t) ? popoverAnchor(t.anchor, r) : null;
     const el = r?.element ?? r?.range?.startContainer.parentElement;
-    if (!p || el?.checkVisibility?.({ visibilityProperty: true }) === false) return null;
-    const inView = p.x >= 0 && p.x <= window.innerWidth - PANEL && p.y >= 0 && p.y <= window.innerHeight;
-    return inView ? { x: p.x, y: p.y } : null;
+    if (
+      !r ||
+      narrow() ||
+      lost(t) ||
+      ctx.elsewhere(t) ||
+      el?.checkVisibility?.({ visibilityProperty: true }) === false
+    )
+      return null;
+    const words = r.range ? quoteRects(r).at(-1) : undefined;
+    const box = r.element?.getBoundingClientRect();
+    const pin = popoverAnchor(t.anchor, r);
+    const p = words
+      ? { x: words.right, y: (words.top + words.bottom) / 2, from: "right" as const }
+      : box
+        ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
+        : pin && { x: pin.x, y: pin.y, from: "right" as const };
+    const inView = p && p.x >= 0 && p.x <= window.innerWidth - PANEL && p.y >= 0 && p.y <= window.innerHeight;
+    return inView ? p : null;
   }
 
   /** Draws the line from the open thread's header to its place, or lets it fade when there is none to point at. */
@@ -334,8 +351,22 @@ export function createLauncher(ctx: Ctx): View {
     }
     const x = box.left;
     const y = box.top + 14;
-    const bend = Math.max(40, (x - to.x) / 2);
-    wirePath.setAttribute("d", `M${x} ${y}C${x - bend} ${y} ${to.x + bend} ${to.y} ${to.x} ${to.y}`);
+    let d: string;
+    if (to.from === "right" && x - to.x > 60) {
+      // Down the right-hand margin, close to the page, then a tight turn in to the words.
+      const gx = to.x + 28;
+      const dir = to.y >= y ? 1 : -1;
+      const r = Math.min(24, Math.abs(to.y - y) / 2);
+      d = `M${x} ${y}C${x - 24} ${y} ${gx} ${y} ${gx} ${y + dir * r}L${gx} ${to.y - dir * r}C${gx} ${to.y} ${gx} ${to.y} ${to.x} ${to.y}`;
+    } else {
+      // Down the margin beside the panel, along the gap above the block, then a tight turn down onto it.
+      const lane = to.y - 8;
+      const gx = x - 40;
+      const dir = lane >= y ? 1 : -1;
+      const r = Math.min(20, Math.abs(lane - y) / 2);
+      d = `M${x} ${y}C${x - 20} ${y} ${gx} ${y} ${gx} ${y + dir * r}L${gx} ${lane - dir * r}C${gx} ${lane} ${gx} ${lane} ${gx - r} ${lane}L${to.x + 8} ${lane}C${to.x} ${lane} ${to.x} ${lane} ${to.x} ${to.y}`;
+    }
+    wirePath.setAttribute("d", d);
     wireDot.setAttribute("cx", String(to.x));
     wireDot.setAttribute("cy", String(to.y));
     wire.classList.add("show");
