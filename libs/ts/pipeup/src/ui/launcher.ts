@@ -328,7 +328,9 @@ export function createLauncher(ctx: Ctx): View {
       return null;
     const words = r.range ? quoteRects(r).at(-1) : undefined;
     // The line meets the marked row at the far right of its block, so it never crosses the text.
-    const edge = el?.closest("p,li,h1,h2,h3,h4,h5,h6,blockquote,td,th,figcaption,div")?.getBoundingClientRect().right;
+    const edge = el
+      ?.closest("p,li,h1,h2,h3,h4,h5,h6,blockquote,td,th,figcaption,div")
+      ?.getBoundingClientRect().right;
     const box = r.element?.getBoundingClientRect();
     const pin = popoverAnchor(t.anchor, r);
     const p = words
