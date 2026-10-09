@@ -1,0 +1,327 @@
+<!doctype html>
+<!-- Visual spec for the planned "assist" add-on (suggested replies from a model on the reviewer's device).
+     Mock-ups only: light mode, Pipeup's own tokens, gentle easing. Spec: docs/design/assist.md. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Assist: visual spec</title>
+    <style>
+      :root {
+        --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+        --ac: #534ab7; --as: color-mix(in srgb, var(--ac) 12%, transparent);
+        --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+        --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+      main { max-width: 1180px; margin: 0 auto; padding: 40px 32px 80px; }
+      h1 { font-size: 40px; letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; }
+      .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 40px; }
+      section { margin: 0 0 56px; }
+      h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; }
+      .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+      .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 28px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+      .frame { display: flex; flex-direction: column; gap: 10px; }
+      .cap { font-size: 12.5px; color: var(--mu); max-width: 340px; }
+      .cap b { color: var(--k); font-weight: 600; }
+      /* Pipeup's look */
+      .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; }
+      .panel { width: 320px; padding: 0; display: flex; flex-direction: column; min-height: 300px; }
+      .hd { padding: 14px 16px 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+      .hd small { font-weight: 400; color: var(--fa); }
+      .body { padding: 4px 16px 16px; }
+      .body p { margin: 0 0 10px; }
+      .muted { color: var(--mu); }
+      .fa { color: var(--fa); font-size: 12px; }
+      .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+      button { font: inherit; border-radius: 9px; padding: 7px 13px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); cursor: pointer; transition: background-color 0.2s var(--eo); }
+      button:hover { background: var(--ho); }
+      button.go { background: #111; border-color: #111; color: #fff; }
+      button.go:hover { background: #2a2a2a; }
+      button.quiet { border-color: transparent; color: var(--mu); padding: 7px 8px; }
+      .facts { margin: 10px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+      .facts li { display: grid; grid-template-columns: 92px 1fr; gap: 8px; padding: 5px 0; border-top: 1px solid var(--ru); }
+      .facts li span:first-child { color: var(--fa); }
+      /* menu */
+      .menu { width: 290px; padding: 4px; }
+      .mi { display: flex; gap: 10px; align-items: center; min-height: 34px; padding: 6px 10px; border-radius: 8px; }
+      .mi.hot { background: var(--so); }
+      .mi svg { color: var(--mu); flex: none; }
+      .mi .lb { flex: 1; }
+      .mi .kc { color: var(--fa); font-size: 12px; }
+      .sep { height: 1px; margin: 4px 10px; background: var(--ru); }
+      .sec { padding: 8px 10px 2px; font-size: 12px; color: var(--fa); }
+      .sw { position: relative; width: 26px; height: 16px; border-radius: 8px; background: var(--ln); flex: none; }
+      .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+      .sw.on { background: var(--ac); }
+      .sw.on::after { transform: translateX(10px); }
+      /* thread popover */
+      .pop { width: 400px; padding: 10px 12px 12px; }
+      .av { width: 22px; height: 22px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 600; }
+      .root { position: relative; padding-right: 30px; }
+      .root .av { position: absolute; right: 0; top: 0; }
+      .tx { font-size: 14px; }
+      .meta { display: flex; gap: 6px; align-items: center; color: var(--fa); font-size: 12px; margin: 2px 0; }
+      .ib { width: 24px; height: 22px; display: inline-grid; place-items: center; border-radius: 6px; color: var(--mu); }
+      .reply { padding: 8px 0 0 14px; }
+      .line { height: 27px; border-bottom: 1px solid var(--ln); }
+      .ask { margin: 10px 0 0 14px; display: inline-flex; align-items: center; gap: 7px; color: var(--mu); font-size: 12.5px; border: 1px solid var(--ln); border-radius: 999px; padding: 4px 11px 4px 9px; background: var(--su); }
+      .ask svg { color: var(--mu); }
+      /* the suggestion card */
+      .sg { margin: 12px 0 2px 14px; border: 1px solid var(--ln); border-left: 2px solid var(--ac); border-radius: 8px; background: var(--so); padding: 10px 12px; }
+      .sg .who { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mu); margin-bottom: 6px; }
+      .chip { width: 22px; height: 22px; border-radius: 32%; background: var(--ho); color: var(--mu); display: grid; place-items: center; }
+      .sg .t { font-size: 13.5px; }
+      .from { margin-top: 10px; border-top: 1px solid var(--ru); padding-top: 8px; font-size: 12px; }
+      .from .h { color: var(--fa); margin-bottom: 4px; }
+      .from .p { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 3px 0; }
+      .from .p q { color: var(--mu); quotes: "“" "”"; }
+      .from a { color: var(--ac); text-decoration: none; }
+      .bar { height: 3px; border-radius: 2px; background: var(--ru); overflow: hidden; margin: 8px 0 4px; }
+      .bar i { display: block; height: 100%; width: 38%; background: var(--ac); border-radius: 2px; }
+      .dots { display: inline-flex; gap: 3px; vertical-align: middle; margin-left: 4px; }
+      .dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--fa); animation: br 1.6s ease-in-out infinite; }
+      .dots i:nth-child(2) { animation-delay: 0.2s; } .dots i:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes br { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+      .note { margin: 6px 0 0; font-size: 11.5px; color: var(--fa); }
+      /* list rows */
+      .row { display: flex; gap: 10px; padding: 8px 10px; border-radius: 8px; }
+      .row small { display: block; color: var(--fa); font-size: 12px; }
+      .row .ready { color: var(--ac); }
+      .where { display: flex; gap: 10px; flex-wrap: wrap; }
+      .diff { font-size: 13px; color: var(--mu); max-width: 52em; margin-top: 14px; }
+      .diff b { color: var(--k); }
+      @media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: 0.6; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Assist: suggested replies from a model on your device</h1>
+      <p class="lede">
+        A reviewer can ask for a suggestion on a comment. A small AI model that runs on their own machine reads the
+        comment and the part of the page it is about, finds related passages elsewhere in the document, and drafts a
+        reply. Nothing leaves the device, and nothing is posted unless the reviewer posts it.
+        <b>Working name: Assist.</b>
+      </p>
+
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 4v3M14 4v3M10 17v3M14 17v3M4 10h3M4 14h3M17 10h3M17 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+        <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+        <symbol id="ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      </svg>
+
+      <section>
+        <h2>1. The first time: asked first, in plain words</h2>
+        <p class="what">
+          Nothing runs until the reviewer says yes. The panel says where the model is, what it costs the machine, and
+          that nothing leaves it. Two cases: the browser already has a model, or one has to be downloaded.
+        </p>
+        <div class="stage">
+          <div class="frame">
+            <div class="card panel">
+              <div class="hd">Suggested replies <small>Assist</small></div>
+              <div class="body">
+                <p>A small AI model on this device can draft replies to comments and point to related parts of this page.</p>
+                <p class="muted">Your comments and this page stay on this device. Nothing is sent anywhere.</p>
+                <ul class="facts">
+                  <li><span>Model</span><span>Your browser's built-in model (Gemini Nano)</span></li>
+                  <li><span>Download</span><span>None, it is already here</span></li>
+                  <li><span>Memory</span><span>About 1 GB while it writes, then freed</span></li>
+                </ul>
+                <div class="btns"><button class="go">Turn on</button><button class="quiet">Not now</button></div>
+              </div>
+            </div>
+            <div class="cap"><b>A. The browser has a model.</b> One click. Chrome's built-in model is already on the machine.</div>
+          </div>
+          <div class="frame">
+            <div class="card panel">
+              <div class="hd">Suggested replies <small>Assist</small></div>
+              <div class="body">
+                <p>A small AI model on this device can draft replies to comments and point to related parts of this page.</p>
+                <p class="muted">Your comments and this page stay on this device. Nothing is sent anywhere.</p>
+                <ul class="facts">
+                  <li><span>Model</span><span>Llama 3.2 1B, from Meta</span></li>
+                  <li><span>Download</span><span>0.7 GB, once. It is kept for next time.</span></li>
+                  <li><span>Memory</span><span>About 1 GB while it writes, then freed</span></li>
+                  <li><span>From</span><span>The page's author set the download address</span></li>
+                </ul>
+                <div class="btns"><button class="go">Download and turn on</button><button class="quiet">Not now</button></div>
+              </div>
+            </div>
+            <div class="cap"><b>B. A download is needed.</b> The size and the source are stated before anything is fetched. The page's author chose the model; the reviewer chooses whether to download it.</div>
+          </div>
+          <div class="frame">
+            <div class="card panel">
+              <div class="hd">Suggested replies <small>Assist</small></div>
+              <div class="body">
+                <p>Downloading the model, once</p>
+                <div class="bar"><i style="width:38%"></i></div>
+                <p class="fa">0.27 of 0.7 GB. You can keep reading and commenting. Suggestions start when it is ready.</p>
+                <div class="btns"><button>Stop download</button></div>
+              </div>
+            </div>
+            <div class="cap"><b>C. Downloading.</b> Quiet, in the panel; the page stays usable. Stopping is always one click.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. In the comment control's menu</h2>
+        <p class="what">One switch row, in the same place and style as the other add-ons. Its status line says where the model runs.</p>
+        <div class="stage">
+          <div class="frame">
+            <div class="card menu">
+              <div class="sec">Suggestions · on this device</div>
+              <div class="mi"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span class="lb">Kevin</span><span class="kc">Edit</span></div>
+              <div class="sep"></div>
+              <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">Copy as Markdown</span></div>
+              <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">Copy as Text</span></div>
+              <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">All comments</span><span class="kc">3</span></div>
+              <div class="mi hot"><svg width="15" height="15"><use href="#chip"/></svg><span class="lb">Suggested replies</span><span class="sw on"></span></div>
+              <div class="sep"></div>
+              <div class="mi"><svg width="15" height="15"><use href="#ok"/></svg><span class="lb">Start commenting</span><span class="sw"></span></div>
+            </div>
+            <div class="cap"><b>On.</b> The row is a switch. Hover explains it in a sentence: "Draft replies with a model on this device."</div>
+          </div>
+          <div class="frame">
+            <div class="card menu">
+              <div class="mi hot"><svg width="15" height="15"><use href="#chip"/></svg><span class="lb">Suggested replies</span><span class="kc">Not available</span></div>
+            </div>
+            <div class="card" style="width:290px;padding:10px 12px">
+              <span class="fa">Hover: "This browser has no built-in model, and the page didn't add one."</span>
+            </div>
+            <div class="cap"><b>Not available.</b> Said in words, as other add-ons do. The row stays so the reviewer knows why nothing appears.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. On a comment: ask, wait, read, then decide</h2>
+        <p class="what">
+          A small, quiet button under a thread asks for a suggestion. The suggestion appears as a card that only this
+          reviewer sees. It shows the draft, what in the page it relied on, and three plain actions. A reply is posted
+          only when the reviewer chooses Post.
+        </p>
+        <div class="stage">
+          <div class="frame">
+            <div class="card pop">
+              <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
+                <div class="meta">Lee · 2 min ago <span class="ib"><svg width="13" height="13"><use href="#copy"/></svg></span><span class="ib"><svg width="13" height="13"><use href="#ok"/></svg></span></div></div>
+              <div class="ask"><svg width="14" height="14"><use href="#chip"/></svg>Suggest a reply</div>
+              <div class="reply"><div class="line"></div></div>
+            </div>
+            <div class="cap"><b>1. Ready.</b> A small pill under the thread. It says what it does, in words.</div>
+          </div>
+          <div class="frame">
+            <div class="card pop">
+              <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
+                <div class="meta">Lee · 2 min ago</div></div>
+              <div class="sg">
+                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>Reading the comment and this page<span class="dots"><i></i><i></i><i></i></span></div>
+                <div class="t muted">Looking at "launch the new onboarding flow in July" and 2 related passages</div>
+                <div class="btns" style="margin-top:8px"><button class="quiet" style="padding-left:0">Stop</button></div>
+              </div>
+              <div class="reply"><div class="line"></div></div>
+            </div>
+            <div class="cap"><b>2. Working.</b> It says what it is looking at. The words stream in as they are written. Stop is always there.</div>
+          </div>
+          <div class="frame">
+            <div class="card pop">
+              <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
+                <div class="meta">Lee · 2 min ago</div></div>
+              <div class="sg">
+                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>Suggestion · on this device, only you see it</div>
+                <div class="t">The Risks section says the pricing work slips if onboarding slips past July. You could say July is a target, name who confirms it, and note what moves if it slips.</div>
+                <div class="from">
+                  <div class="h">From this page</div>
+                  <div class="p"><q>If onboarding slips past July, the pricing work slips with it.</q><a href="#">Show</a></div>
+                  <div class="p"><q>The team stays at six people through the end of the quarter.</q><a href="#">Show</a></div>
+                </div>
+                <div class="btns" style="margin-top:10px"><button class="go">Post as reply</button><button>Edit first</button><button class="quiet">Dismiss</button></div>
+                <p class="note">Written by a small model, so it can be wrong. Check it before you post.</p>
+              </div>
+              <div class="reply"><div class="line"></div></div>
+            </div>
+            <div class="cap"><b>3. A suggestion.</b> Private to this reviewer. "Show" scrolls to the passage and marks it. Post puts it in the thread under the reviewer's own name; Edit puts it in the reply line first.</div>
+          </div>
+          <div class="frame">
+            <div class="card pop">
+              <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
+                <div class="meta">Lee · 2 min ago</div></div>
+              <div class="reply" style="padding-top:6px">
+                <div class="root" style="padding-top:4px"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><div class="tx">July is a target. Ada confirms it after QA starts in June; if it slips, pricing moves with it.</div>
+                  <div class="meta">Kevin · just now <span>· drafted on this device</span></div></div>
+                <div class="line" style="margin-top:8px"></div>
+              </div>
+            </div>
+            <div class="cap"><b>4. Posted.</b> A normal reply, by the reviewer, with a quiet note that it was drafted on their device. If they edited it a lot, they can remove the note.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. Automatic suggestions, if the reviewer wants them</h2>
+        <p class="what">
+          Off by default. When on, a suggestion is drafted in the background for each new comment, and a ready one is
+          mentioned in All comments. Nothing is ever posted automatically.
+        </p>
+        <div class="stage">
+          <div class="frame">
+            <div class="card panel">
+              <div class="hd">Suggested replies <small>Settings</small></div>
+              <div class="body">
+                <div class="mi" style="padding-left:0"><span class="lb">Draft a suggestion for new comments</span><span class="sw on"></span></div>
+                <p class="fa">Suggestions are drafted one at a time, only while this page is open and in view.</p>
+                <ul class="facts">
+                  <li><span>Model</span><span>Gemini Nano (built in)</span></li>
+                  <li><span>Memory</span><span>Freed after 5 minutes unused</span></li>
+                  <li><span>Paused</span><span>Battery saver is on, so automatic suggestions wait</span></li>
+                </ul>
+                <div class="btns"><button>Turn off suggested replies</button></div>
+              </div>
+            </div>
+            <div class="cap"><b>Settings.</b> Limits are stated, not hidden. Battery saver, low memory and a busy page pause automatic work.</div>
+          </div>
+          <div class="frame">
+            <div class="card panel">
+              <div class="hd">All comments <small>3</small></div>
+              <div class="body" style="padding:4px 6px">
+                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Love the title.<small>Heading · Q3 plan</small></span></div>
+                <div class="row"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><span>Are you sure the team can hit this date?<small>Section "Summary" · Paragraph</small><small class="ready">Suggestion ready</small></span></div>
+                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Is that including contractors?<small>Section "Summary" · Paragraph</small></span></div>
+              </div>
+            </div>
+            <div class="cap"><b>In All comments.</b> One quiet line on a row whose suggestion is ready. Opening the row shows the card from section 3.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>5. When it can't, it says why</h2>
+        <div class="stage">
+          <div class="frame">
+            <div class="card pop" style="width:340px">
+              <div class="sg" style="margin-left:0">
+                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>No suggestion this time</div>
+                <div class="t muted">This device doesn't have the memory the model needs. Comments and replies work as usual.</div>
+              </div>
+            </div>
+            <div class="cap"><b>Too little memory</b> (or no graphics support, or a metered connection for the download). One plain sentence; nothing else changes.</div>
+          </div>
+          <div class="frame">
+            <div class="card pop" style="width:340px">
+              <div class="sg" style="margin-left:0">
+                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>That didn't work</div>
+                <div class="t muted">The model stopped before it finished. Try again, or reply yourself.</div>
+                <div class="btns" style="margin-top:8px"><button>Try again</button><button class="quiet">Dismiss</button></div>
+              </div>
+            </div>
+            <div class="cap"><b>An error.</b> No codes or stack traces; a way forward.</div>
+          </div>
+        </div>
+        <p class="diff"><b>What changes for people who don't use it:</b> nothing. The add-on is a separate script. A page without it, or a reviewer who never turns it on, sees no new button, loads no model and uses no extra memory.</p>
+      </section>
+    </main>
+  </body>
+</html>
