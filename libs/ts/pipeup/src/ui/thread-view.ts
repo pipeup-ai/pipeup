@@ -34,7 +34,8 @@ export interface ThreadView {
 }
 
 /**
- * One thread: the words first; who, when and actions ease open beneath them on hover. Replies sit one level
+ * One thread: the words first; who, when and actions ease open beneath them on hover (always shown in a popover,
+ * so its height never changes under the pointer). Replies sit one level
  * in beneath the comment, oldest first, and the thread ends with its reply line at the same indent.
  */
 export function threadView(first: Thread, actions: ThreadActions, options: ThreadViewOptions): ThreadView {
@@ -119,7 +120,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     const restText = t.resolved ? "Resolved" + (n ? ` · ${plural(n)}` : "") : n ? plural(n) : "";
     const footer = h(
       "div",
-      { class: o.variant === "column" && restText ? "ft has-rest" : "ft" },
+      { class: o.variant === "column" ? (restText ? "ft has-rest" : "ft") : "ft open" },
       o.variant === "column" && restText ? h("span", { class: "rest" }, restText) : null,
       h(
         "span",
@@ -153,7 +154,13 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           "div",
           { class: "rps" },
           ...t.root.replies.map((c) =>
-            h("div", { class: "it" }, ...face(c), words(c), h("div", { class: "rft" }, who(c))),
+            h(
+              "div",
+              { class: "it" },
+              ...face(c),
+              words(c),
+              h("div", { class: o.variant === "column" ? "rft" : "rft open" }, who(c)),
+            ),
           ),
         )
       : null;
