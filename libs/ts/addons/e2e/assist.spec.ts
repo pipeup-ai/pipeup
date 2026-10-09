@@ -84,7 +84,7 @@ test("turned on, it replies to a comment that deserves one, in its own name, and
   expect(asked.root.replies[0].author).not.toBe(await page.evaluate(() => (window as any).pu.document.me));
   // The comment it stayed quiet on says it was reviewed; the one it replied to doesn't need to.
   await expect(page.locator(".layer .seen")).toHaveCount(1);
-  await expect(page.locator(".layer .seen")).toHaveText("Reviewed by AI · nothing to add");
+  await expect(page.locator(".layer .seen")).toContainText("Reviewed by AI · nothing to add");
   await expect(page.locator(".launch .mode")).toBeVisible();
 });
 
@@ -332,4 +332,17 @@ test("a goal far from the comment is found by reading every section, and a made-
   await expect(page.locator(".launch .mode.on")).toHaveCount(1);
   await page.waitForTimeout(1500);
   expect((await threads(page))[0].root.replies).toHaveLength(0);
+});
+
+test("a thread it reviewed has a Check again, which makes it look at the thread afresh", async ({ page }) => {
+  await start(page);
+  await comment(page, "[data-pipeup-id=title]", "Love the title.");
+  await turnOn(page);
+  const seen = page.locator(".seen").first();
+  await expect(seen).toContainText("Reviewed by AI", { timeout: 15000 });
+  const decided = () =>
+    page.evaluate(() => (window as any).__calls.filter((c: string) => c === "decide").length);
+  expect(await decided()).toBe(1);
+  await seen.getByRole("button", { name: "Check again" }).dispatchEvent("click");
+  await expect.poll(decided, { timeout: 15000 }).toBe(2);
 });

@@ -56,7 +56,9 @@ See the mock-ups for each state.
    turned off.
 6a. **Reviewed, nothing to add.** A thread it looked at and stayed quiet on carries a quiet line, "Reviewed by AI ·
    nothing to add", with a still ring, so a reviewer can tell silence from "not looked at". While it reads a thread the
-   line says "AI assistant is reading this…".
+   line says "AI assistant is reading this…". The line carries a small **Check again** that makes it look at the
+   thread afresh, now, for when the page or the assistant has changed since. A thread looked at by an older version
+   of the assistant is looked at again once.
 7. **In All comments,** a quiet line on each row says what happened: "AI assistant replied", "AI assistant is
    reading", or "Checked, nothing to add".
 8. **When it can't,** one plain sentence (not enough memory, no graphics support, download refused). A failed reply
@@ -223,6 +225,7 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 
 ## Change log
 
+- 2026-10-09: "Reviewed by AI" gets a Check again; threads checked by an older version are looked at again.
 - 2026-10-09: Related information is shown as pills only, with the found sentence on hover or focus, instead of a
   written-out answer.
 - 2026-10-09: Built: whole-page reading, kept gists and facts, and the close look before a reply; size budget 10 KB.

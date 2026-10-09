@@ -53,7 +53,7 @@ const isAi = (c: Comment): boolean => c.name === NAME || c.name.startsWith("AI a
 /** The comments people wrote in a thread, in order; the assistant's own are not counted. */
 const people = (t: Thread): Comment[] => [t.root, ...t.root.replies].filter((c) => !c.deleted && !isAi(c));
 /** What a thread held when it was looked at: how many comments by people, and how many were edited. */
-const stampOf = (t: Thread): string => `${people(t).length}:${people(t).filter((c) => c.edited).length}`;
+const stampOf = (t: Thread): string => `2:${people(t).length}:${people(t).filter((c) => c.edited).length}`;
 const last = (t: Thread): Comment => t.root.replies.at(-1) ?? t.root;
 const aiCount = (t: Thread): number => t.root.replies.filter(isAi).length;
 const when = (t: Thread): number => Math.max(t.root.at, ...t.root.replies.map((r) => r.at));
@@ -109,8 +109,19 @@ export function createAddon(): PipeupAddon {
       const syncMarks = () => {
         for (const t of host.document.threads()) {
           const seen = on && !t.resolved && checked[t.id] === stampOf(t) && aiCount(t) === 0;
-          host.setThreadMark(t.id, reading === t.id ? READING : seen ? SEEN : null);
+          host.setThreadMark(
+            t.id,
+            reading === t.id ? READING : seen ? SEEN : null,
+            seen ? () => again(t.id) : undefined,
+          );
         }
+      };
+      /** "Check again": forget that a thread was looked at, so it is looked at now. */
+      const again = (id: string) => {
+        delete checked[id];
+        void saveChecked();
+        syncMarks();
+        void pump();
       };
       /** Redraws the menu row, if it is showing. */
       const updateRow = () => (row as ItemHandle | null)?.update();

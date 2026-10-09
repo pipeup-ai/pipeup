@@ -5,7 +5,7 @@ import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
-import { threadMarks, threadNotes } from "./notes";
+import { markAgain, threadMarks, threadNotes } from "./notes";
 
 export interface ThreadActions {
   reply(parentId: string, text: string): Promise<void>;
@@ -184,7 +184,16 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     // A quiet line from an add-on: it has looked at this thread (and had nothing to add, or is reading it now).
     seen?.remove();
     const mark = threadMarks.get(t.id);
+    const again = markAgain.get(t.id);
     seen = mark === undefined ? null : h("div", { class: "seen" }, h("i"), mark);
+    if (seen && again) {
+      const b = h("button", { type: "button" }, "Check again");
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        again();
+      });
+      seen.append(b);
+    }
     if (seen) inner.insertBefore(seen, line.parentNode === inner ? line : null);
     faces = nextFaces;
     // Words half-written in the reply line are never lost: a thread resolved meanwhile (by anyone) keeps its line
