@@ -11,6 +11,8 @@ Optional features for Pipeup, each one more script. The design is [docs/design/a
 | `kit/`    | private          | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
 | `test/`   | private          | A fixture add-on that uses every slot, for the browser tests                                                                          |
 
+Making your own? See the [guide](../../../docs/ADDONS_GUIDE.md) and the [template](template/): you can publish an add-on under your own name, with no permission from this project.
+
 The mailbox server for `share` is in [`services/mailbox`](../../../services/mailbox).
 
 **No dependencies.** Nothing third-party is bundled into an add-on or loaded by one at run time; only browser APIs

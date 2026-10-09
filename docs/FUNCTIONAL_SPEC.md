@@ -612,8 +612,9 @@ permission, a registration, or a place in its npm scope.
   anything is changed.
 - **Names.** An add-on's name is its own: letters, digits and dashes, 2 to 24 characters, written by the maker (a
   maker's name in front keeps it distinct, for example "acme-translate"). The names of the Pipeup project's add-ons
-  (share, voice, live, assist) are reserved: an add-on that uses one is refused, and the reason is given in words.
-  Two add-ons with the same name on one page: the first is used, and the second is ignored with a message.
+  (share, voice, live, assist) are theirs, and the guide asks everyone else not to use them. Pipeup can't tell
+  an add-on's maker from its name, so it doesn't refuse them: two add-ons with the same name on one page, the first
+  is used, and the second is ignored with a message.
 - **Nothing is taken on trust.** The guide, the template and the website say that add-ons from anyone else run with
   the page's full power and that Pipeup doesn't vouch for them.
 - **Where to find it.** The guide is linked from the website's Add-ons page, the README and the add-ons folder, with
@@ -904,3 +905,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — The name "AI assistant" is kept for AI replies (a person can't choose it), and a reply under it is drawn with a gently glowing ring, so it is plain at a glance that a model wrote it. An add-on can show a reply as it is being written at the end of a thread.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
+- 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
