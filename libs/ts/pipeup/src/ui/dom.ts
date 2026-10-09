@@ -1,3 +1,5 @@
+import { reveal } from "./notes";
+
 type Child = Node | string | null | undefined | false;
 
 /** Creates an element. Children are nodes or plain text — strings are never parsed as HTML. */
@@ -95,33 +97,61 @@ function address(raw: string): string | null {
   }
 }
 
+/** Where a reference pill may point: an http(s) address, a slide, or a passage on this page. */
+function target(raw: string): string | null {
+  if (/^slide:\d{1,4}$/.test(raw) || /^quote:\S{1,300}$/.test(raw)) return raw;
+  return address(raw);
+}
+
 /**
- * An AI reply's words with its references: a line "[1]: https://..." names an address, and "[1]" in the words
- * becomes a link to it, so the reply stays short and shows no address. The reference lines themselves are not
- * shown. Only AI replies get this (a person's text only ever shows its addresses as they are).
+ * An AI reply's words with its references. A line "[1]: <where> <label>" names one (an address, "slide:5", or
+ * "quote:<text>" for a passage on this page); the lines are not shown, and the references come out as a row of small
+ * pills under the words: a slide gets a slide icon ("Slide 5"), the rest a number ("[1] Risks"). Pressing one goes
+ * there. Only AI replies get this (a person's text only ever shows its addresses as they are).
  */
 export function referenced(text: string): (Node | string)[] {
-  const refs = new Map<string, string>();
+  const refs: { n: string; to: string; label: string }[] = [];
   const body = text
     .split("\n")
     .filter((line) => {
-      const m = /^\[(\d{1,2})\]:?\s+(\S+)$/.exec(line.trim());
-      const href = m?.[2] ? address(m[2]) : null;
-      if (m?.[1] && href) refs.set(m[1], href);
-      return !(m?.[1] && href);
+      const m = /^\[(\d{1,2})\]:?\s+(\S+)(?:\s+(.{1,40}))?$/.exec(line.trim());
+      const to = m?.[2] ? target(m[2]) : null;
+      if (m?.[1] && to) refs.push({ n: m[1], to, label: m[3]?.trim() ?? "" });
+      return !(m?.[1] && to);
     })
     .join("\n")
+    // The numbers in the words point at the pills below.
+    .replace(/\s*\[\d{1,2}\]/g, "")
     .trim();
-  if (!refs.size) return linkify(text);
-  const out: (Node | string)[] = [];
-  body.split(/(\[\d{1,2}\])/).forEach((part) => {
-    const href = refs.get(/^\[(\d{1,2})\]$/.exec(part)?.[1] ?? "");
-    if (!href) return void out.push(...linkify(part));
-    const a = h("a", { href, target: "_blank", rel: "noopener noreferrer", title: href }, part);
-    a.addEventListener("click", (e) => e.stopPropagation());
-    out.push(a);
+  if (!refs.length) return linkify(text);
+  const pills = refs.slice(0, 4).map((r) => {
+    const slide = r.to.startsWith("slide:");
+    const label = r.label || (slide ? `Slide ${r.to.slice(6)}` : `[${r.n}]`);
+    const inner = [
+      slide ? h("i", { class: "sl" }) : null,
+      h("span", {}, slide || r.label === "" ? label : `[${r.n}] ${label}`),
+    ];
+    if (/^https?:/.test(r.to)) {
+      const a = h(
+        "a",
+        { class: "ref", href: r.to, target: "_blank", rel: "noopener noreferrer", title: r.to },
+        ...inner,
+      );
+      a.addEventListener("click", (e) => e.stopPropagation());
+      return a;
+    }
+    const b = h(
+      "button",
+      { class: "ref", type: "button", title: slide ? label : `Show where: ${label}` },
+      ...inner,
+    );
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      reveal.go?.(r.to);
+    });
+    return b;
   });
-  return out;
+  return [...linkify(body), h("div", { class: "refs" }, ...pills)];
 }
 
 /** Text with its http(s) addresses as links. Built from nodes: nothing is ever parsed as HTML. */

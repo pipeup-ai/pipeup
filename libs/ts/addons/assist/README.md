@@ -61,7 +61,7 @@ The page's author may name Markdown files on the same site for it to read and li
 <html data-pipeup-doc="…" data-pipeup-assist-notes="notes.md timeline.md"></html>
 ```
 
-A reply that relied on a section ends with a link to that heading ("More: …/notes.md#timeline").
+A reply that relied on a section shows it as a small pill ("[1] notes.md › Timeline"); a slide it relied on is a pill with a slide icon ("Slide 5"). At most three, never a bare address. Pressing a pill goes there.
 
 ## Your own model
 
@@ -89,5 +89,4 @@ window.pipeupAssistEngine = {
 
 ## Not yet
 
-Hiding assistant replies from your own view, removing one, and the "Show" link to a passage on the page (replies
-name the section in words for now) are still to come.
+Hiding assistant replies from your own view and removing one are still to come.

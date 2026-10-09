@@ -85,6 +85,10 @@
       .from .p { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 3px 0; }
       .from .p q { color: var(--mu); quotes: "“" "”"; }
       .from a { color: var(--ac); text-decoration: none; }
+      .refs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+      .ref { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border: 1px solid var(--ln); border-radius: 999px; background: var(--so); color: var(--mu); font-size: 11.5px; line-height: 1.6; }
+      .ref i { width: 10px; height: 7px; border: 1.3px solid currentColor; border-radius: 2px; }
+      .ref.more { background: none; border-style: dashed; }
       .bar { height: 3px; border-radius: 2px; background: var(--ru); overflow: hidden; margin: 8px 0 4px; }
       .bar i { display: block; height: 100%; width: 38%; background: var(--ac); border-radius: 2px; }
       .dots { display: inline-flex; gap: 3px; vertical-align: middle; margin-left: 4px; }
@@ -231,14 +235,12 @@
                 <div class="root"><span class="ai" style="position:absolute;right:0;top:0">AI</span>
                   <div class="tx">The Risks section says pricing slips if onboarding slips past July. Worth saying who confirms the date.</div>
                   <div class="meta">AI assistant · on this device · just now</div>
-                  <div class="from" style="border-top:0;margin-top:4px;padding-top:0">
-                    <div class="p"><q>If onboarding slips past July, the pricing work slips with it.</q><a href="#">Show</a></div>
-                    <div class="p"><span class="muted">More in notes.md › Timeline</span><a href="#">Read</a></div>
+                  <div class="refs"><span class="ref">[1] Risks</span><span class="ref">[2] notes.md › Timeline</span></div>
                   </div></div>
                 <div class="line" style="margin-top:8px"></div>
               </div>
             </div>
-            <div class="cap"><b>2. Finished.</b> The ring keeps a slow, gentle glow, so it is plain at a glance that a model wrote this. Two or three short sentences at most. <b>Show</b> scrolls to the passage on this page and marks it. <b>Read</b> opens the author's own Markdown notes at the right heading.</div>
+            <div class="cap"><b>2. Finished.</b> The ring keeps a slow, gentle glow, so it is plain at a glance that a model wrote this. Two or three short sentences at most. What it relied on is a few small numbered pills, not a list of addresses: pressing one scrolls to that passage (and gives it one soft swell), or opens the author's Markdown notes at that heading.</div>
           </div>
           <div class="frame">
             <div class="card pop">
@@ -263,6 +265,20 @@
             </div>
             <div class="cap"><b>4. People carry on.</b> The assistant looks at a thread again only when something new is added to it (a reply or an edit), replies at most three times in one thread, and never to its own replies. A person can remove an assistant reply, or switch assistant replies off for what they see.</div>
           </div>
+          <div class="frame">
+            <div class="card pop">
+              <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are we sure about July?</div>
+                <div class="meta">Lee · on slide 6 · 2 min ago</div></div>
+              <div class="reply" style="padding-top:8px">
+                <div class="root"><span class="ai" style="position:absolute;right:0;top:0">AI</span>
+                  <div class="tx">Slide 5 says pricing slips if onboarding slips past July, and slide 2 says the Q4 forecast assumes the July launch.</div>
+                  <div class="refs"><span class="ref"><i></i>Slide 5</span><span class="ref"><i></i>Slide 2</span><span class="ref more">+1</span></div>
+                  <div class="meta">AI assistant (on this device) · just now</div></div>
+                <div class="line" style="margin-top:8px"></div>
+              </div>
+            </div>
+            <div class="cap"><b>5. In a deck.</b> The reviewer is on slide 6; the answer is spread across slides 2 and 5. Each slide it used is a pill with a small slide icon, and pressing one goes to that slide. At most three show, so the screen is not flooded; the rest are behind "+1".</div>
+</div>
         </div>
       </section>
 

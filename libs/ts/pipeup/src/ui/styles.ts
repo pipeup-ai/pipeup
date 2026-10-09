@@ -74,6 +74,11 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .av.ai.busy::after{animation-duration:1.6s}
 .root>.av.ai,.it>.av.ai{position:absolute}
 @keyframes pu-pulse-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}
+.refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;white-space:normal}
+.refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
+.refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
+.ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}

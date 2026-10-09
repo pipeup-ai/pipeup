@@ -1,6 +1,6 @@
 # Assist: short replies from a model on the reviewer's device
 
-Status: **first version built** (2026-10-09): `@pipeup/assist` with the three scenarios, the Prompt API engine and an author-supplied engine hook, notes files, checked-thread memory, streaming into the thread, the reserved name and AI ring. Still to come: hiding or removing assistant replies, the Show link to a passage on the page, custom scenario files, the thread slot for the side panel and rail.
+Status: **first version built** (2026-10-09): `@pipeup/assist` with the three scenarios, the Prompt API engine and an author-supplied engine hook, notes files, checked-thread memory, streaming into the thread, the reserved name and AI ring. Still to come: hiding or removing assistant replies,  custom scenario files, the thread slot for the side panel and rail.
 Mock-ups: [assist-mockups.html](assist-mockups.html) (open it in a browser). This note follows the
 [add-ons design](addons.md): one more optional script; nothing in the core changes for people who don't use it.
 
@@ -34,8 +34,11 @@ See the mock-ups for each state.
 4. **A reply streams in** as a reply in the thread, in the same type as any reply, with the glowing AI ring and
    "AI assistant · on this device". The ring glows a little faster while it writes and slowly once finished. It becomes
    a real reply once finished; nothing half-written is ever left. With reduced motion the ring stays still.
-5. **Short, with a way to more.** Two or three short sentences at most. Below it, plain links: **Show** (scrolls to a
-   passage on this page and marks it) and **Read** (opens the author's Markdown notes at the right heading).
+5. **Short, with a way to more.** Two or three short sentences at most. Below it, what it relied on as a few small
+   **pills**, never a list of addresses: a numbered pill ("[1] Risks") for a passage on the page or a heading in the
+   author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three show. Pressing a
+   pill goes there: a passage scrolls into view with one soft swell, a slide is shown, a notes heading opens.
+   In a deck the reviewer is on one slide while the answer is often on others, so the assistant reads every slide.
 6. **People carry on.** The assistant looks at a thread again only when something new is added to it, replies at most
    three times in one thread, and never to its own replies. A person can remove an
    assistant reply, and can switch assistant replies off for what they see. Replies already added stay when it is
@@ -65,8 +68,9 @@ See the mock-ups for each state.
    that bears on it. Otherwise it stays silent.
 5. A reply is **short**: at most about 280 characters, one to three sentences, plain words, no headings or lists.
    Anything longer is not written out; the reply points to where the detail is.
-6. A reply that relies on the page names the passage (Show). A reply that relies on the author's notes links to the
-   heading in the notes file (Read). Links open in a way that doesn't lose the reviewer's place.
+6. A reply that relies on the page, the slides or the author's notes shows each source as a small reference pill (at
+   most three), never a full address. A slide's pill carries a slide icon. Pressing a pill takes the reviewer there
+   without losing their place.
 7. Replies **stream in** as they are made. Only a finished reply becomes part of the thread, so no partial reply is
    ever stored or shared.
 8. A reply is clearly marked as written by a model on the device, with its own name and mark, never under a person's
@@ -143,8 +147,7 @@ anchors, and `host.merge` to add ops from elsewhere (the same way share and live
 - **Streaming into a thread.** While a reply is being written it is only a local, unsigned preview line at the end
   of the thread: a core slot ("thread note", like the composer note). On completion the preview is replaced by the
   real reply op. Without that slot the preview can sit in the side panel instead.
-- **Links.** "Show" uses the same scroll-and-mark the All comments panel uses; "Read" opens the notes file in a new
-  tab at a heading.
+- **Reference pills.** A reply names what it relied on in reference lines; Pipeup turns them into small pills (an address, `slide:5`, or `quote:<text>` for a passage here), and a pressed pill goes there (built; the app reveals a passage with one soft swell, or shows the slide).
 
 Related passages need no embedding model: Assist ranks the document's own blocks (and the notes file's headings)
 against the comment and its quote with plain text matching, so the download is the language model alone.

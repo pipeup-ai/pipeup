@@ -1,0 +1,194 @@
+<!doctype html>
+<html
+  lang="en"
+  data-pipeup-doc="aSsIsTdEcKdOcUmE:HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+  data-pipeup-assist-notes="notes.md"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Q3 launch deck (Assist try page, scripted model)</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #f1efe8;
+        font:
+          20px/1.5 system-ui,
+          -apple-system,
+          sans-serif;
+        color: #1d1d1f;
+      }
+      .deck {
+        width: min(70vw, 900px);
+        aspect-ratio: 16 / 9;
+        position: relative;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        border-radius: 16px;
+        padding: 48px 56px;
+        box-sizing: border-box;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+          visibility 0s linear 0.34s;
+      }
+      .slide.on {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0s;
+      }
+      .slide h1 {
+        font-size: 44px;
+        margin: 0 0 12px;
+        letter-spacing: -0.02em;
+      }
+      .slide h2 {
+        font-size: 32px;
+        margin: 0 0 20px;
+      }
+      .slide ul {
+        padding-left: 24px;
+      }
+      .slide li {
+        margin: 6px 0;
+      }
+      .bars {
+        display: flex;
+        gap: 18px;
+        align-items: flex-end;
+        height: 200px;
+      }
+      .bars div {
+        flex: 1;
+        background: #d3d1c7;
+        border-radius: 6px 6px 0 0;
+      }
+      .bars .hi {
+        background: #534ab7;
+      }
+      .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: #fff;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 16px;
+      }
+      .controls button {
+        border: 0;
+        background: none;
+        font: inherit;
+        cursor: pointer;
+        padding: 4px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <section class="slide on" data-pipeup-slide="1" data-pipeup-id="s1">
+        <h1>Q3 launch plan</h1>
+        <p>
+          Onboarding in July, pricing in August. Press Shift+Option+C, comment on any slide, then turn on
+          Assistant replies in the menu.
+        </p>
+      </section>
+      <section class="slide" data-pipeup-slide="2" data-pipeup-id="s2">
+        <h2>Revenue grew 42% year on year</h2>
+        <div class="bars" data-pipeup-id="s2-chart" data-pipeup-label="Revenue by quarter">
+          <div style="height: 45%"></div>
+          <div style="height: 58%"></div>
+          <div style="height: 71%"></div>
+          <div class="hi" style="height: 100%"></div>
+        </div>
+        <p>Q4 is a forecast that assumes the July launch.</p>
+      </section>
+      <section class="slide" data-pipeup-slide="3" data-pipeup-id="s3">
+        <h2>Week-one retention is 31%</h2>
+        <p>The target for the new onboarding flow is a 20% lift in week-one retention.</p>
+      </section>
+      <section class="slide" data-pipeup-slide="4" data-pipeup-id="s4">
+        <h2>Hiring</h2>
+        <ul>
+          <li>No second designer until Q4.</li>
+          <li>The budget is held until the July launch.</li>
+        </ul>
+      </section>
+      <section class="slide" data-pipeup-slide="5" data-pipeup-id="s5">
+        <h2>Risks</h2>
+        <ul>
+          <li>If onboarding slips past July, the pricing work slips with it.</li>
+          <li>QA needs two engineers in June.</li>
+        </ul>
+      </section>
+      <section class="slide" data-pipeup-slide="6" data-pipeup-id="s6">
+        <h2>Next quarter</h2>
+        <ul>
+          <li>Ship onboarding in July.</li>
+          <li>Pricing changes in August.</li>
+          <li>Hold churn under 3%.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="controls" data-pipeup-ignore>
+      <button id="prev" aria-label="Previous slide">←</button><span id="count">1 / 6</span
+      ><button id="next" aria-label="Next slide">→</button>
+    </div>
+    <script>
+      const slides = [...document.querySelectorAll(".slide")];
+      let n = 0;
+      function go(i) {
+        n = Math.max(0, Math.min(slides.length - 1, i));
+        slides.forEach((s, k) => s.classList.toggle("on", k === n));
+        document.getElementById("count").textContent = `${n + 1} / ${slides.length}`;
+      }
+      document.getElementById("prev").onclick = () => go(n - 1);
+      document.getElementById("next").onclick = () => go(n + 1);
+      addEventListener("keydown", (e) => {
+        if (e.target.closest?.("input,textarea,[contenteditable]")) return;
+        if (e.key === "ArrowRight") go(n + 1);
+        if (e.key === "ArrowLeft") go(n - 1);
+      });
+    </script>
+    <script>
+      // A scripted stand-in for a model, so the flow can be tried without one: it answers a comment that asks about a
+      // date or a number with a short reply that points at the slides it relied on, and says nothing to the rest.
+      window.pipeupAssistEngine = {
+        info: { name: "Scripted test model", maker: "Pipeup (no AI)", download: "None", memory: "none" },
+        availability: async () => "ready",
+        create: async () => ({
+          prompt: async (text) =>
+            /(\d|date|July|sure)/i.test(text.split("<comment>").pop()) ? "related" : "none",
+          async *stream() {
+            for (const piece of [
+              "If onboarding slips past July, pricing slips with it, ",
+              "and the Q4 forecast assumes the July launch.\nUsed: 1, 2, 3",
+            ]) {
+              await new Promise((r) => setTimeout(r, 500));
+              yield piece;
+            }
+          },
+          destroy() {},
+        }),
+      };
+    </script>
+    <script src="../../assist/dist/pipeup+assist.min.js"></script>
+    <script>
+      Pipeup.onReveal((view) => {
+        const i = parseInt(view.slide, 10) - 1;
+        if (i >= 0) go(i);
+      });
+    </script>
+  </body>
+</html>

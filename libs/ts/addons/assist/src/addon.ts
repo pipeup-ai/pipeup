@@ -26,6 +26,10 @@ const CSS = `.assist-p{margin:0 0 10px}.assist-note{color:var(--pu-faint)}
 .assist-btns button:hover,.assist-btns button:focus-visible{background:var(--pu-hover);outline:none}
 .assist-btns button:disabled{opacity:.5;cursor:default}.assist-btns .assist-go{color:var(--pu-accent)}`;
 
+/** Where a reference pill goes: the notes' heading, the slide, or the passage on this page. */
+const pointer = (p: Passage): string =>
+  p.url ?? (p.slide ? `slide:${p.slide}` : `quote:${encodeURIComponent(p.text.slice(0, 40))}`);
+
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const isAi = (c: Comment): boolean => c.name === NAME || c.name.startsWith("AI assistant ");
 
@@ -117,6 +121,7 @@ export function createAddon(): PipeupAddon {
             label: slide ? `Slide ${slide}` : heading || "This page",
             text: text.slice(0, 300),
             el: e,
+            slide,
           });
         }
         return [...out, ...notes];
@@ -205,7 +210,7 @@ export function createAddon(): PipeupAddon {
           pool = gather();
           used = rank(
             pool.filter((p) => p.el !== block.el),
-            `${m.comment} ${t.anchor.quote?.exact ?? ""}`,
+            `${m.comment} ${block.text}`,
           );
           if (!used.length) return;
           m.related = used.map((p, i) => `[${i + 1}] ${p.label}: ${p.text}`);
@@ -222,11 +227,14 @@ export function createAddon(): PipeupAddon {
           let text = clean(raw, m.comment, supplied);
           // A reply that only says again what the commented words say tells the reviewer nothing.
           if (!text || restates(text, block.full)) return;
-          const link = usedOf(raw)
-            .map((n) => used[n - 1]?.url)
-            .find(Boolean);
-          // The address goes in a reference line; Pipeup shows "[1]" as the link.
-          if (link) text = `${text} [1]\n\n[1]: ${link}`;
+          // What it relied on goes in reference lines, at most three; Pipeup shows each as a small pill under the words
+          // (a slide with a slide icon), so the reply stays short and the screen is not flooded.
+          const refs = [...new Set(usedOf(raw))]
+            .map((n) => used[n - 1])
+            .filter((p): p is Passage => !!p)
+            .slice(0, 3);
+          if (refs.length)
+            text = `${text}\n\n${refs.map((p, i) => `[${i + 1}]: ${pointer(p)} ${p.label.slice(0, 30)}`).join("\n")}`;
           const op = await replyOp(
             c as Core,
             await identity(),

@@ -37,7 +37,7 @@ Needs desktop Chrome with its built-in model (Prompt API; about 22 GB free disk,
 memory or 16 GB RAM). Check `chrome://on-device-internals` if the row says "Not available".
 
 Try pages (after `npm run build` here and in `../pipeup`, then `python3 -m http.server 8895` in this folder):
-`http://localhost:8895/examples/assist/page.html` uses the browser's own model; `page-fake.html` uses a scripted stand-in, so the
+`http://localhost:8895/examples/assist/page.html` uses the browser's own model; `deck.html` is a six-slide deck (comment on slide 6, and the answer may be on slides 2 to 5); `*-fake.html` use a scripted stand-in, so the
 whole flow can be tried without a model.
 
 1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a

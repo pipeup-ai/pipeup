@@ -174,3 +174,43 @@ test("the Assistant replies row is in the menu only while commenting is on", asy
   await openMenu(page);
   await expect(page.locator(".menu.show")).not.toContainText("Assistant replies");
 });
+
+test("a reply shows what it relied on as small pills, and pressing one goes to the passage", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as any;
+    w.pipeupAssistEngine = {
+      info: { name: "Test model", maker: "Pipeup tests", memory: "none" },
+      availability: async () => "ready",
+      create: async () => ({
+        prompt: async () => "related",
+        async *stream() {
+          yield "Pricing slips if onboarding slips past July.\nUsed: 1";
+        },
+        destroy() {},
+      }),
+    };
+  });
+  await blank(page);
+  await page.evaluate(() => {
+    document
+      .querySelector("main")!
+      .insertAdjacentHTML(
+        "beforeend",
+        '<p data-pipeup-id="p3">Pricing slips if onboarding slips past July, and QA needs two engineers in June.</p>',
+      );
+  });
+  await load(page, CORE, addon("assist"));
+  await mount(page);
+  await comment(page, "[data-pipeup-id=p1]", "Are we sure about the onboarding date in July?");
+  await turnOn(page);
+  const pill = page.locator(".layer .it .refs .ref");
+  await expect(pill).toHaveCount(1, { timeout: 15000 });
+  await expect(pill).toHaveText("[1] A quiet report");
+  // The reference lines are not shown as words.
+  await expect(page.locator(".layer .it .tx")).not.toContainText("quote:");
+  // (A closed thread in the column keeps its replies folded; press the pill all the same.)
+  await pill.evaluate((el) => (el as HTMLElement).click());
+  await expect(page.locator(".layer .pulse")).toHaveCount(1, { timeout: 5000 });
+});

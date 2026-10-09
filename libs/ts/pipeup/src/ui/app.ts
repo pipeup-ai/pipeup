@@ -20,6 +20,7 @@ import { createHere } from "./here";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
+import { reveal } from "./notes";
 import { applyTheme, readTheme } from "./theme";
 import type { ThreadActions } from "./thread-view";
 
@@ -631,7 +632,10 @@ export function startApp(o: AppOptions): App {
   function pulse(id: string): void {
     const r = resolved.get(id);
     if (!r || r.state === "orphaned") return;
-    const rects = r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : [];
+    swell(r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : []);
+  }
+
+  function swell(rects: readonly DOMRect[]): void {
     for (const q of rects.slice(0, 6)) {
       const p = h("div", { class: "pulse" });
       fit(p, q, 4);
@@ -639,6 +643,18 @@ export function startApp(o: AppOptions): App {
       window.setTimeout(() => p.remove(), 1300);
     }
   }
+
+  /** A reference pill pressed: go to the slide, or scroll to the passage and give it one soft swell. */
+  reveal.go = (to) => {
+    if (to.startsWith("slide:")) return void here.navigate({ slide: to.slice(6) });
+    const want = decodeURIComponent(to.slice(6)).replace(/\s+/g, " ").toLowerCase();
+    const found = [
+      ...o.root.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd"),
+    ].find((e) => (e.textContent ?? "").replace(/\s+/g, " ").toLowerCase().includes(want));
+    if (!found) return;
+    found.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+    window.setTimeout(() => swell([found.getBoundingClientRect()]), reduced ? 0 : 450);
+  };
 
   function buildViews(): void {
     for (const v of views) v.destroy();
@@ -736,6 +752,7 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(mutationTimer);
       window.clearTimeout(deferredTimer);
       observer.disconnect();
+      reveal.go = undefined;
       sizeObserver.disconnect();
       themeObserver.disconnect();
       offChange();
