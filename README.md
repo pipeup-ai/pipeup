@@ -6,7 +6,7 @@ accounts and no servers: comments stay in each reviewer's browser, and **Copy as
 Markdown that says exactly where each comment is, ready to send to the author or paste into an AI
 agent.
 
-> **Status: alpha (0.5.2).** The API and the stored comment format may change before 1.0. Pin an
+> **Status: alpha (0.5.3).** The API and the stored comment format may change before 1.0. Pin an
 > exact version.
 
 - Website: https://pipeup-ai.github.io/pipeup/
@@ -25,7 +25,7 @@ Give the page a document key once, then load the pinned script just before `</bo
 <html data-pipeup-doc="<key>">
   ...
   <script
-    src="https://cdn.jsdelivr.net/npm/pipeup@0.5.2/dist/pipeup.min.js"
+    src="https://cdn.jsdelivr.net/npm/pipeup@0.5.3/dist/pipeup.min.js"
     integrity="sha384-…"
     crossorigin="anonymous"
   ></script>

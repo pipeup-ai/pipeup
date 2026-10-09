@@ -7,20 +7,18 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-10-09
+
+### Added
 - A Try it page for Voice, Live and Assist (with a practice mode and a slides version) from the Add-ons page; Share points to a local demo, and the mailbox has no online try.
-
 - A guide (docs/ADDONS_GUIDE.md) and a copy-ready template (libs/ts/addons/template) for making and publishing your own add-on under your own name.
-
 - The Add-ons page now covers Assist (demo, Copy prompt, script tag) and the optional mailbox server that Share can use; llms.txt and the Markdown copy match.
 
+### Changed
 - Assist reads every slide of a deck (marked slides and reveal.js alike), the one showing, the one commented on and all the others, instead of lumping unmarked content into the slide on screen.
-
 - "Reviewed by AI · nothing to add" has a small Check again that makes Assist look at the thread afresh; threads checked by an older Assist are looked at once more.
-
 - Assist shows related information as pills only, under "This may be related:"; hovering or focusing a pill shows the sentence it points to.
-
 - Assist reads the whole page, deck and notes once, a section at a time, keeps a short summary of each on the device, and checks the likely sections in full before replying, so a goal on a far-off or short slide is found. The menu row shows how far reading has got.
-
 - Assist reads every slide as a whole (short bullets included), so a goal on a slide can be found and pointed to with a slide pill.
 - The line from an open All comments row now runs down the margin beside the panel and turns in to the far right of the marked words' row, or along the gap above the block, instead of cutting across the page.
 
@@ -227,6 +225,7 @@ The first public release.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
 [Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...HEAD
+[0.5.3]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/pipeup-ai/pipeup/compare/v0.4.1...v0.5.0

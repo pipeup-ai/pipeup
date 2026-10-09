@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/share",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Share Pipeup comments through an encrypted service (PrivateBin or your own HTTP mailbox).",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -30,7 +30,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.5.2"
+    "pipeup": "0.5.3"
   },
   "pipeup": {
     "network": {
