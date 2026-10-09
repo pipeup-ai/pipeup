@@ -91,12 +91,42 @@ use. The page:
 - Ends with a plain card, "Your own mailbox" (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's card links to it.
 - Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, the assistant reading, then a reply that is only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
 - Says, in one line near the top, that people can make and publish their own add-ons, and links the guide (docs/ADDONS_GUIDE.md); Pipeup's own list is unchanged.
+- Has a **Try it** link on each add-on card, leading to a try page for that add-on (see "Add-on try pages" below).
 - Flows the full width of the window like the home page, text beside its demo.
 - Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
 - Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
   choose a sharing service for them.
+
+### Add-on try pages
+
+Each add-on on the Add-ons page can be tried for real, on a page of its own that runs Pipeup with **that add-on and
+no other**. They are made like the existing Try pages (a short example, a slim bar back to the site, commentable like
+the rest of the site) and are reached from a **Try it** link on the add-on's card.
+
+- **A short "what to do" at the top** of each page: the two or three steps to see the add-on work, what it sends and
+  to whom (the same sentence as its card), and what it needs (a browser, a second window).
+- **The add-on is the site's own copy**, the same version the card shows, so a try page never changes under a
+  visitor. The pre-release copy's try pages use the pre-release add-ons.
+- **Comments stay on the visitor's device** except where the add-on sends them, and the add-on asks first, exactly as
+  it would on any page.
+- **Voice**: a page to dictate a comment on. If the browser has no speech engine, the page says so in words instead
+  of showing a button that does nothing.
+- **Live**: a page that offers "Open a second window" onto the same example, so one person can see both cursors and
+  the people present. It asks each window before connecting, and says public relays only introduce the windows to
+  each other.
+- **Assist**: a page that uses the browser's own model where there is one (Chrome on a computer), and says plainly
+  what it needs and that a model may be downloaded once. Where there is none, the page offers a clearly labelled
+  **practice mode** with a scripted pretend assistant, so the flow can still be seen. A second page does the same for
+  a slide deck.
+- **Share**: a page can only be tried online if comments have somewhere to go. Until the project chooses a service
+  it is willing to point visitors at, the card says "Try it on your own computer" and shows the one command that
+  opens a local demo (which runs its own sharing service on the visitor's machine). A page that sends to a public
+  service would say so in plain words and ask the visitor first.
+- **Your own mailbox** has no online try page: it needs a server of the visitor's own. Its card says so and points to
+  its guide and the local demo.
+- Light mode, easing like the rest of the site, and working without scripts of their own beyond the add-on.
 
 ## 4. Look and feel
 
@@ -166,3 +196,4 @@ use. The page:
 - 2026-10-08 — Each page has its own Markdown copy: the Add-ons page's "This page as Markdown" opens addons.html.md (it pointed at the home page's).
 - 2026-10-09 — The Add-ons page gains Assist (with a demo and Copy prompt) and a plain "Your own mailbox" card for the server Share can use; llms.txt and the Markdown copy say the same.
 - 2026-10-09 — The Add-ons page links the guide for making your own add-on.
+- 2026-10-09 — Proposed (not built): a Try it page for each add-on, linked from its card (Voice, Live, Assist, and Share once a service is chosen); none for the mailbox.
