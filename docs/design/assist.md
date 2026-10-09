@@ -39,6 +39,14 @@ See the mock-ups for each state.
    author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three show. Pressing a
    pill goes there: a passage scrolls into view with one soft swell, a slide is shown, a notes heading opens.
    In a deck the reviewer is on one slide while the answer is often on others, so the assistant reads every slide.
+5a. **It has read the whole page.** Before it answers anything, it reads the entire page (or deck, and the author's
+   notes) once, a section at a time, and keeps a short gist and the key facts of each section (goals, numbers, dates,
+   decisions) on the device. While it does, the row says "Reading the page… 4 of 12", and it answers comments as
+   soon as it has read what it needs. It reads again only the sections that have changed. A goal on slide 6 is found
+   because slide 6 has been read, not because a few words happened to match.
+5b. **It checks before it speaks.** For a comment that may need information from the document, it takes the likely
+   sections and reads each in full, one at a time, looking for the exact sentence that bears on the comment. It
+   replies only when it found one, and the pill points at that sentence.
 6. **People carry on.** The assistant looks at a thread again only when something new is added to it, replies at most
    three times in one thread, and never to its own replies. A person can remove an
    assistant reply, and can switch assistant replies off for what they see. Replies already added stay when it is
@@ -90,6 +98,21 @@ See the mock-ups for each state.
 14. It works with a mouse, the keyboard and screen readers. A streaming reply is announced once when it is finished,
     not word by word. Showing and hiding eases; with reduced motion things only fade.
 15. Where no model is available (phones, older browsers), Assist says it is not available and does nothing.
+
+16. **Nothing is missed for being short or far away.** Every section of the page, every slide and every notes
+    section is read in full, however short, and whole slides count as one section. Nothing is cut to a few hundred
+    characters before the model sees it; long sections are read in parts.
+17. **Read once, kept on the device.** The first reading makes a short gist and the key facts for each section. These
+    are kept on this device for the next visit and used for every comment. Only sections whose words changed are read
+    again. Nothing is sent anywhere.
+18. **The reading is gentle.** It runs in the background, one section at a time, under the same rules as replies
+    (waits when the page is hidden, the battery is low or memory is short), and can be stopped by turning
+    the assistant off. Comments can be answered while it is still reading, using what has been read so far; a
+    comment never waits for the whole page.
+19. **Look closely before replying.** For each comment that may need the document, the likely sections (chosen from
+    every gist, fact and section's words, not just the first few matches) are each read in full against the comment,
+    up to eight, looking for a sentence that bears on it. A reply uses only sentences found this way, and a pill
+    points at the section holding one. When none is found, it stays quiet.
 
 ## The prompts
 
@@ -179,6 +202,8 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 
 ## Change log
 
+- 2026-10-09: Reading the whole page: sections read in full and summarised once, kept on the device, then checked
+  closely before a reply (requirements 16 to 19). No embedding model for now.
 - 2026-10-09: Proposal with mock-ups.
 - 2026-10-09: Threads checked are remembered (looked at again only when something is added); an AI reply is marked
   with a gently glowing ring and "AI assistant", replacing the chip glyph.
