@@ -1,6 +1,6 @@
 # Pipeup add-ons
 
-Pipeup on its own needs none of these, and sends nothing anywhere. An add-on is one extra script the page's author chooses; each asks reviewers first. In beta.
+Pipeup on its own needs none of these, and sends nothing anywhere. An add-on is one extra script the page's author chooses; each asks reviewers first. In beta. Making your own? The guide is at https://github.com/pipeup-ai/pipeup/blob/main/docs/ADDONS_GUIDE.md.
 
 Add one only when the author asks for that feature, tell them in plain words what it sends and to whom, and never pick a sharing service for them. Edit only the HTML file: there is nothing to download, run or look up. Keep `data-pipeup-doc` exactly as it is.
 
