@@ -14,8 +14,9 @@ passage on the page, or to the author's own Markdown notes.
 Not goals: a chat window, summarising a whole document, replies to the assistant's own replies, or anything that
 sends comments or page text to a server.
 
-Working name: **Assist** (`@pipeup/assist`). Plain words everywhere ("Assistant replies"). No sparkle icons: the
-assistant is shown with a concrete glyph (a chip) and the words "on this device".
+Working name: **Assist** (`@pipeup/assist`). Plain words everywhere ("Assistant replies"). No sparkle icons.
+An AI reply is unmistakable: its avatar is a plain white disc with the letters **AI** inside a violet **ring that
+glows gently**, and its line reads "AI assistant · on this device".
 
 ## What the reviewer sees
 
@@ -29,14 +30,17 @@ See the mock-ups for each state.
    has done ("checked 3 comments, replied to 1"). When it can't work, the row says "Not available" and why.
 3. **Nothing to click.** For each comment the model first decides, quickly, whether a reply is worth adding. Most of
    the time it isn't (a compliment, a question for a person, nothing to add) and nothing appears.
-4. **A reply streams in** as a reply in the thread, in the same type as any reply, marked with the chip and
-   "Assistant · on this device". It becomes a real reply once finished; nothing half-written is ever left.
+4. **A reply streams in** as a reply in the thread, in the same type as any reply, with the glowing AI ring and
+   "AI assistant · on this device". The ring glows a little faster while it writes and slowly once finished. It becomes
+   a real reply once finished; nothing half-written is ever left. With reduced motion the ring stays still.
 5. **Short, with a way to more.** Two or three short sentences at most. Below it, plain links: **Show** (scrolls to a
    passage on this page and marks it) and **Read** (opens the author's Markdown notes at the right heading).
-6. **People carry on.** The assistant replies once per thread and never to its own replies. A person can remove an
+6. **People carry on.** The assistant looks at a thread again only when something new is added to it, replies at most
+   three times in one thread, and never to its own replies. A person can remove an
    assistant reply, and can switch assistant replies off for what they see. Replies already added stay when it is
    turned off.
-7. **In All comments,** a quiet line on rows it has handled ("Assistant replied") or is reading.
+7. **In All comments,** a quiet line on each row says what happened: "AI assistant replied", "AI assistant is
+   reading", or "Checked, nothing to add".
 8. **When it can't,** one plain sentence (not enough memory, no graphics support, download refused). A failed reply
    adds nothing and it tries again with the next comment. Comments work as usual.
 
@@ -50,7 +54,9 @@ See the mock-ups for each state.
 3. Comments and page text are never sent anywhere. The only network use is the model download (started only after
    the reviewer agrees, stoppable, kept for next time) and, if the author named one, reading a Markdown notes file
    from the page's own site.
-4. For each comment without an assistant reply, the model first decides whether a reply is worth adding. It
+4. The assistant **remembers, on this device, which threads it has looked at and how much each held**. It looks at
+   a thread again only when something has been added to it (a new reply or an edit), never just because the page was
+   reloaded or reopened. For a thread it hasn't looked at, the model first decides whether a reply is worth adding. It
    replies only when it can say something useful: a way to address the comment, or information from the document
    that bears on it. Otherwise it stays silent.
 5. A reply is **short**: at most about 280 characters, one to three sentences, plain words, no headings or lists.
@@ -60,10 +66,11 @@ See the mock-ups for each state.
 7. Replies **stream in** as they are made. Only a finished reply becomes part of the thread, so no partial reply is
    ever stored or shared.
 8. A reply is clearly marked as written by a model on the device, with its own name and mark, never under a person's
-   name. The assistant adds **at most one reply per thread** and never replies to an assistant reply. It never edits
+   name. The assistant adds **at most three replies in a thread**, never more than one per addition, and never replies to
+   an assistant reply. It never edits
    or removes anyone's comment.
-9. Several devices with Assist on don't pile up replies: a device doesn't reply to a thread that already has an
-   assistant reply, and replies are paced.
+9. Several devices with Assist on don't pile up replies: a device doesn't reply to a thread when an assistant
+   reply to the latest addition already exists, and replies are paced.
 10. The model's words are shown as text, never as markup. Comment text and page text are untrusted: they can't
     make the model do anything but write a short reply, and a limit on length and frequency applies whatever they say.
 11. **Small on the machine.** One model at a time; one comment at a time; the model is freed after a few minutes
@@ -116,9 +123,9 @@ anchors, and `host.merge` to add ops from elsewhere (the same way share and live
 
 - **A reply by the assistant, not by a person.** The assistant has **its own signing key**, kept in the add-on's
   settings, and adds its replies as ordinary signed reply ops through `host.merge`. They are shared and exported
-  like any reply. It needs no change to the op format. The thread view shows a reply with the assistant's name and a
-  letter avatar; showing the chip glyph instead needs a small core hook (an optional avatar and name for an author
-  key an add-on registers). To be measured.
+  like any reply. It needs no change to the op format. The glowing AI ring needs a small core hook: an author key an
+  add-on registers can carry its own name and avatar. The glow is an opacity and scale change on a pseudo-element
+  (cheap to draw), and is still with reduced motion. To be measured.
 - **Streaming into a thread.** While a reply is being written it is only a local, unsigned preview line at the end
   of the thread: a core slot ("thread note", like the composer note). On completion the preview is replaced by the
   real reply op. Without that slot the preview can sit in the side panel instead.
@@ -146,8 +153,9 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 |---|---|---|
 | 1 | Engines | Built-in Prompt API by default, plus the author-supplied engine interface; no WebLLM inside Assist |
 | 2 | How the assistant appears in a thread | Its own identity and key, replies as real ops (shared, exported), marked "Assistant · on this device" |
-| 3 | Two devices both with Assist on | First reply wins: skip a thread that already has an assistant reply, with a short random wait when sharing |
-| 4 | A thread slot for the streaming preview, and an author mark/avatar hook | Yes, each measured; fall back to the side panel and a letter avatar |
+| 3 | Two devices both with Assist on | First reply wins: skip an addition that already has an assistant reply, with a short random wait when sharing |
+| 3a | Remembering what was checked | Per document, in the add-on's own settings on this device: thread id and how many comments it held at the last look; only growth triggers another look |
+| 4 | A thread slot for the streaming preview, and an author name and avatar hook (for the AI ring) | Yes, each measured; fall back to the side panel and a plain "AI" letter avatar |
 | 5 | Notes files | One or more Markdown files on the page's own site, named by the author, read only after consent |
 | 6 | Which comments it considers | Every comment without an assistant reply that arrives or is already there when it is switched on, newest first, one at a time |
 | 7 | Name | Assist (alternatives: Helper) |
@@ -155,5 +163,7 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 ## Change log
 
 - 2026-10-09: Proposal with mock-ups.
+- 2026-10-09: Threads checked are remembered (looked at again only when something is added); an AI reply is marked
+  with a gently glowing ring and "AI assistant", replacing the chip glyph.
 - 2026-10-09: Replies are automatic, short, streamed into the thread and linked to detail, instead of private
   suggestions behind a button; notes files added; the assistant gets its own identity.

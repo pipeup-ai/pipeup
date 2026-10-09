@@ -71,7 +71,14 @@
       /* the suggestion card */
       .sg { margin: 12px 0 2px 14px; border: 1px solid var(--ln); border-left: 2px solid var(--ac); border-radius: 8px; background: var(--so); padding: 10px 12px; }
       .sg .who { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mu); margin-bottom: 6px; }
-      .chip { width: 22px; height: 22px; border-radius: 32%; background: var(--ho); color: var(--mu); display: grid; place-items: center; }
+      /* The AI mark: a plain white disc with a violet ring that glows gently. The glow is an opacity and scale change
+         on a pseudo-element (smooth and cheap); with reduced motion the ring stays still. */
+      .ai { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--ac); display: grid; place-items: center;
+        font-size: 9px; font-weight: 700; letter-spacing: 0.02em; box-shadow: 0 0 0 1.5px var(--ac); flex: none; }
+      .ai::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 9px 1px rgba(83, 74, 183, 0.45); opacity: 0.3;
+        animation: breathe 3.8s ease-in-out infinite; pointer-events: none; }
+      .ai.busy::after { animation-duration: 2.2s; }
+      @keyframes breathe { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
       .sg .t { font-size: 13.5px; }
       .from { margin-top: 10px; border-top: 1px solid var(--ru); padding-top: 8px; font-size: 12px; }
       .from .h { color: var(--fa); margin-bottom: 4px; }
@@ -92,7 +99,7 @@
       .where { display: flex; gap: 10px; flex-wrap: wrap; }
       .diff { font-size: 13px; color: var(--mu); max-width: 52em; margin-top: 14px; }
       .diff b { color: var(--k); }
-      @media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: 0.6; } }
+      @media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: 0.6; } .ai::after { animation: none; opacity: 0.5; } }
     </style>
   </head>
   <body>
@@ -106,8 +113,8 @@
       </p>
 
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <symbol id="chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M10 4v3M14 4v3M10 17v3M14 17v3M4 10h3M4 14h3M17 10h3M17 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
         <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+        <symbol id="ring" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1" opacity=".45"/></symbol>
         <symbol id="ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       </svg>
 
@@ -178,7 +185,7 @@
               <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">Copy as Markdown</span></div>
               <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">Copy as Text</span></div>
               <div class="mi"><svg width="15" height="15"><use href="#copy"/></svg><span class="lb">All comments</span><span class="kc">3</span></div>
-              <div class="mi hot"><svg width="15" height="15"><use href="#chip"/></svg><span class="lb">Assistant replies</span><span class="sw on"></span></div>
+              <div class="mi hot"><svg width="15" height="15"><use href="#ring"/></svg><span class="lb">Assistant replies</span><span class="sw on"></span></div>
               <div class="sep"></div>
               <div class="mi"><svg width="15" height="15"><use href="#ok"/></svg><span class="lb">Start commenting</span><span class="sw"></span></div>
             </div>
@@ -186,7 +193,7 @@
           </div>
           <div class="frame">
             <div class="card menu">
-              <div class="mi hot"><svg width="15" height="15"><use href="#chip"/></svg><span class="lb">Assistant replies</span><span class="kc">Not available</span></div>
+              <div class="mi hot"><svg width="15" height="15"><use href="#ring"/></svg><span class="lb">Assistant replies</span><span class="kc">Not available</span></div>
             </div>
             <div class="card" style="width:290px;padding:10px 12px">
               <span class="fa">Hover: "This browser has no built-in model, and the page didn't add one."</span>
@@ -208,22 +215,22 @@
               <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
                 <div class="meta">Lee · 2 min ago</div></div>
               <div class="reply" style="padding-top:8px">
-                <div class="root"><span class="chip" style="position:absolute;right:0;top:0"><svg width="14" height="14"><use href="#chip"/></svg></span>
+                <div class="root"><span class="ai busy" style="position:absolute;right:0;top:0">AI</span>
                   <div class="tx">The Risks section says pricing slips if onboarding slips past July<span class="dots" style="margin-left:2px"><i></i><i></i><i></i></span></div>
-                  <div class="meta">Assistant · writing now</div></div>
+                  <div class="meta">AI assistant · writing now</div></div>
                 <div class="line" style="margin-top:8px"></div>
               </div>
             </div>
-            <div class="cap"><b>1. Streaming in.</b> The words appear as they are made, in the thread, in the same type as any reply. It becomes a real reply when it is finished. No spinner, no extra card.</div>
+            <div class="cap"><b>1. Streaming in.</b> The words appear as they are made, in the thread, in the same type as any reply. The AI mark's ring glows a little faster while it writes. It becomes a real reply when it is finished. No spinner, no extra card.</div>
           </div>
           <div class="frame">
             <div class="card pop">
               <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
                 <div class="meta">Lee · 2 min ago</div></div>
               <div class="reply" style="padding-top:8px">
-                <div class="root"><span class="chip" style="position:absolute;right:0;top:0"><svg width="14" height="14"><use href="#chip"/></svg></span>
+                <div class="root"><span class="ai" style="position:absolute;right:0;top:0">AI</span>
                   <div class="tx">The Risks section says pricing slips if onboarding slips past July. Worth saying who confirms the date.</div>
-                  <div class="meta">Assistant · on this device · just now</div>
+                  <div class="meta">AI assistant · on this device · just now</div>
                   <div class="from" style="border-top:0;margin-top:4px;padding-top:0">
                     <div class="p"><q>If onboarding slips past July, the pricing work slips with it.</q><a href="#">Show</a></div>
                     <div class="p"><span class="muted">More in notes.md › Timeline</span><a href="#">Read</a></div>
@@ -231,7 +238,7 @@
                 <div class="line" style="margin-top:8px"></div>
               </div>
             </div>
-            <div class="cap"><b>2. Finished.</b> Two or three short sentences at most. <b>Show</b> scrolls to the passage on this page and marks it. <b>Read</b> opens the author's own Markdown notes at the right heading.</div>
+            <div class="cap"><b>2. Finished.</b> The ring keeps a slow, gentle glow, so it is plain at a glance that a model wrote this. Two or three short sentences at most. <b>Show</b> scrolls to the passage on this page and marks it. <b>Read</b> opens the author's own Markdown notes at the right heading.</div>
           </div>
           <div class="frame">
             <div class="card pop">
@@ -239,22 +246,22 @@
                 <div class="meta">Kevin · 1 min ago</div></div>
               <div class="reply"><div class="line"></div></div>
             </div>
-            <div class="cap"><b>3. Staying quiet.</b> A compliment, a question for a person, or something with nothing to add: no reply, and nothing to dismiss. The menu's status line counts what it checked.</div>
+            <div class="cap"><b>3. Staying quiet.</b> A compliment, a question for a person, or something with nothing to add: no reply, and nothing to dismiss. It remembers it looked, and does not look again until something is added.</div>
           </div>
           <div class="frame">
             <div class="card pop">
               <div class="root"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><div class="tx">Are you sure the team can hit this date?</div>
                 <div class="meta">Lee · 2 min ago</div></div>
               <div class="reply" style="padding-top:8px">
-                <div class="root"><span class="chip" style="position:absolute;right:0;top:0"><svg width="14" height="14"><use href="#chip"/></svg></span>
+                <div class="root"><span class="ai" style="position:absolute;right:0;top:0">AI</span>
                   <div class="tx">The Risks section says pricing slips if onboarding slips past July.</div>
-                  <div class="meta">Assistant · on this device · 3 min ago <span class="ib" style="width:auto;padding:0 4px">Remove</span></div></div>
+                  <div class="meta">AI assistant · on this device · 3 min ago <span class="ib" style="width:auto;padding:0 4px">Remove</span></div></div>
                 <div class="root" style="padding-top:6px"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><div class="tx">Good catch. I will check with Ada.</div>
                   <div class="meta">Kevin · just now</div></div>
                 <div class="line" style="margin-top:8px"></div>
               </div>
             </div>
-            <div class="cap"><b>4. People carry on.</b> The assistant replies once to a thread and never to its own replies. A person can remove an assistant reply, or switch assistant replies off for what they see.</div>
+            <div class="cap"><b>4. People carry on.</b> The assistant looks at a thread again only when something new is added to it (a reply or an edit), replies at most three times in one thread, and never to its own replies. A person can remove an assistant reply, or switch assistant replies off for what they see.</div>
           </div>
         </div>
       </section>
@@ -287,12 +294,12 @@
             <div class="card panel">
               <div class="hd">All comments <small>3</small></div>
               <div class="body" style="padding:4px 6px">
-                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Love the title.<small>Heading · Q3 plan</small></span></div>
-                <div class="row"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><span>Are you sure the team can hit this date?<small>Section "Summary" · Paragraph</small><small class="ready">Assistant replied</small></span></div>
-                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Is that including contractors?<small>Section "Summary" · Paragraph</small><small class="ready">Assistant is reading</small></span></div>
+                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Love the title.<small>Heading · Q3 plan</small><small>Checked, nothing to add</small></span></div>
+                <div class="row"><span class="av" style="background:#fdebd3;color:#a05a0a">L</span><span>Are you sure the team can hit this date?<small>Section "Summary" · Paragraph</small><small class="ready">AI assistant replied</small></span></div>
+                <div class="row"><span class="av" style="background:#e1f5ee;color:#0f6e56">K</span><span>Is that including contractors?<small>Section "Summary" · Paragraph</small><small class="ready">AI assistant is reading</small></span></div>
               </div>
             </div>
-            <div class="cap"><b>In All comments.</b> One quiet line on rows the assistant has handled or is reading.</div>
+            <div class="cap"><b>In All comments.</b> One quiet line on each row says what happened: replied, reading, or checked with nothing to add. A thread is looked at again only when it has grown.</div>
           </div>
         </div>
       </section>
@@ -303,7 +310,7 @@
           <div class="frame">
             <div class="card pop" style="width:340px">
               <div class="sg" style="margin-left:0">
-                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>Assistant replies are off on this device</div>
+                <div class="who"><span class="ai">AI</span>Assistant replies are off on this device</div>
                 <div class="t muted">This device doesn't have the memory the model needs. Comments and replies work as usual.</div>
               </div>
             </div>
@@ -312,7 +319,7 @@
           <div class="frame">
             <div class="card pop" style="width:340px">
               <div class="sg" style="margin-left:0">
-                <div class="who"><span class="chip"><svg width="14" height="14"><use href="#chip"/></svg></span>That didn't work</div>
+                <div class="who"><span class="ai">AI</span>That didn't work</div>
                 <div class="t muted">The model stopped before it finished, so nothing was added. It will try again with the next comment.</div>
               </div>
             </div>
