@@ -162,6 +162,24 @@ Reply:
 
 Stays quiet when: the comment doesn't actually concern tone, or there is nothing in the passage to point at.
 
+## Reading the page, and looking closely
+
+Two more short prompts, both in `prompts.ts`:
+
+- **Gist** (once per section, background): "Write what it is about in one short sentence, then list its key facts
+  (goals, numbers, dates, decisions, names) separated by semicolons", answered as `Gist:` and `Facts:` lines. Kept
+  on the device to find the section again; never shown.
+- **Verify** (per likely section, per related comment): "Find the one sentence in the section that bears on the
+  comment ... Copy that sentence exactly. If there is none, answer NONE." The add-on keeps the sentence only if it is
+  in the section word for word and says something the commented passage doesn't. The reply is then written from those
+  sentences, and the pill points at them.
+
+## Related information is pointers, not prose
+
+For the related scenario there is no write step any more. The close look above yields up to three sentences that are
+really in the document; the reply is the fixed line "This may be related:" and one pill per sentence, and the
+sentence is shown when the pill is hovered or focused. Nothing is paraphrased, so nothing can be misreported.
+
 ## After the model answers (done by the add-on, not the model)
 
 - Cut to the length rule; if it can't be made short without losing sense, drop it.

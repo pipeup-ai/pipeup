@@ -62,6 +62,7 @@
         padding: 12px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--strong);
         transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
       }
+      a.btn { text-decoration: none; }
       .btn:hover { background: var(--bone); }
       .btn:not(.primary) { border-color: #b4b2a8; }
       .btn:not(.primary):hover { border-color: #8f8d84; }
@@ -134,6 +135,26 @@
       .sh .a .cb { left: 6px; top: 112px; width: 148px; } .sh.s2 .a .cb { opacity: 1; transform: none; } .sh.s3 .a .cb { opacity: 0; transform: translateY(6px); }
       .sh .b .cb { left: 6px; top: 112px; width: 148px; } .sh.s7 .b .cb { opacity: 1; transform: none; }
       .sh .cursor { transform: translate(60px, 170px); } .sh.s1 .cursor { transform: translate(110px, 92px); } .sh.s3 .cursor { transform: translate(150px, 200px); }
+      /* Assist */
+      .as .w { left: 40px; top: 24px; width: 320px; height: 250px; }
+      .as .hl { top: 66px; width: 150px; } .as.s1 .hl { background: var(--amber); }
+      .as .pin { left: 172px; top: 50px; } .as.s2 .pin { opacity: 1; transform: none; }
+      .as .cb { left: 118px; top: 92px; width: 190px; } .as.s2 .cb { opacity: 1; transform: none; }
+      .as .ring { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--violet); font: 700 6px/1 var(--sans); color: var(--violet); font-style: normal; flex: none; }
+      .as .rd, .as .rp, .as .rc { position: absolute; opacity: 0; transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); transform: translateY(5px); }
+      .as .rd { left: 126px; top: 156px; display: flex; gap: 6px; align-items: center; font-size: 10.5px; color: var(--muted); }
+      .as.s3 .rd { opacity: 1; transform: none; } .as.s4 .rd { opacity: 0; }
+      .as .rp { left: 118px; top: 150px; width: 190px; padding: 9px 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+      .as.s4 .rp { opacity: 1; transform: none; }
+      .as .rp .who { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+      .as .rp .lead { font-size: 11.5px; color: var(--strong); margin-bottom: 7px; }
+      .as .pl { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bone); font-size: 10.5px; color: var(--muted); transition: background-color 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease); }
+      .as .pl .sl { width: 10px; height: 7px; border: 1.3px solid currentColor; border-radius: 2px; }
+      .as.s5 .pl { background: #ece9fb; color: var(--violet); border-color: var(--violet); }
+      .as .rc { left: 126px; top: 236px; padding: 5px 9px; font-size: 10.5px; color: var(--strong); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 14px rgba(40,38,30,.14); }
+      .as.s5 .rc { opacity: 1; transform: none; } .as.s6 .rc { opacity: 0; }
+      .as .cursor { transform: translate(90px, 220px); } .as.s1 .cursor { transform: translate(150px, 84px); } .as.s4 .cursor { transform: translate(290px, 250px); } .as.s5 .cursor { transform: translate(152px, 218px); }
+      .addon.plain { grid-template-columns: 1fr; }
       /* Voice */
       .vo .w { left: 40px; top: 24px; width: 320px; height: 250px; }
       .vo .hl { top: 66px; width: 150px; } .vo.s1 .hl { background: var(--amber); }
@@ -191,7 +212,7 @@
         <div class="text">
           <h2>Share</h2>
           <p class="one">Comments reach everyone who has the page.</p>
-          <p class="fact"><b>Sends</b> Sealed comments, to a service you pick: a PrivateBin or your own mailbox.</p>
+          <p class="fact"><b>Sends</b> Sealed comments, to a service you pick: a PrivateBin or <a href="#mailbox">your own mailbox</a>.</p>
           <p class="fact"><b>Asks first</b> Nothing is shared until the reviewer chooses to.</p>
           <div class="actions">
             <button class="btn primary" type="button" data-copy="share-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
@@ -252,6 +273,41 @@
           </div></div>
       </section>
 
+      <section class="addon" data-pipeup-id="assist">
+        <div class="text">
+          <h2>Assist</h2>
+          <p class="one">A small AI model on the reviewer's device reads the whole page and points to related parts of it.</p>
+          <p class="fact"><b>Sends</b> Nothing. The model runs on the device, and your browser may download it once.</p>
+          <p class="fact"><b>Asks first</b> Each reviewer, with the model, its size and what it reads, before it turns on.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="assist-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="assist-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+        <div class="demo" data-len="10000" data-steps='[[700,"s1"],[1200,"s2"],[3600,"s3"],[5000,"s4"],[6500,"s5"],[8300,"s6"]]' data-type="1500,3000" aria-hidden="true">
+          <div class="stage as">
+            <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:42px;width:170px"></div><div class="ln" style="top:58px;width:210px"></div><div class="hl"></div><div class="ln" style="top:96px;width:190px"></div><div class="ln" style="top:112px;width:230px"></div><div class="ln" style="top:128px;width:120px"></div><div class="pin"></div></div>
+            <div class="cb" data-say="What about churn?"><div class="who"><span class="av" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Owl</div><div class="txt"></div></div>
+            <div class="rd"><i class="ring"></i>AI assistant is reading this…</div>
+            <div class="rp"><div class="who"><i class="ring">AI</i>AI assistant</div><div class="lead">This may be related:</div><span class="pl"><i class="sl"></i>Slide 6</span></div>
+            <div class="rc">Hold churn under 3%.</div>
+            <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+          </div></div>
+      </section>
+      <section class="addon plain" id="mailbox" data-pipeup-id="mailbox">
+        <div class="text">
+          <h2>Your own mailbox</h2>
+          <p class="one">A small server you run for Share, so even sealed comments stay inside your organisation.</p>
+          <p class="fact"><b>Sends</b> Sealed comments, to a server you run. It holds ciphertext and never sees the key.</p>
+          <p class="fact"><b>Asks first</b> Nothing changes for reviewers: Share still asks before anything is sent.</p>
+          <p class="fact"><b>Needs</b> Node 22 or newer, and an HTTPS proxy in front of it. Pipeup doesn't run a mailbox for anyone.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="mailbox-cmd"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy command</span></button>
+            <a class="btn" href="https://github.com/pipeup-ai/pipeup/tree/main/services/mailbox#readme">Read the guide</a>
+          </div>
+        </div>
+      </section>
+
       <footer>
         <div class="more-links">
         <a class="agents-link" href="addons.html">Add-ons</a>
@@ -273,6 +329,7 @@
       const ADDONS_VERSION = "0.5.2"; // tools/set-version.sh keeps this in step with the release
       const tag = (pkg, file) => `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"><\/script>`;
       const OPEN = "Edit only the HTML file: this is a text change, so there is nothing to download, run or look up. If my page already has data-pipeup-doc on the <html> element, leave it exactly as it is.";
+      const MAILBOX = 'CREATE_TOKEN="$(openssl rand -base64 24)" DATA_DIR=./pipeup-mailbox npx @pipeup/mailbox';
       const prompts = {
         share: () => [
           "My HTML page already uses Pipeup for comments. I want to let reviewers see each other's comments. Please add the Pipeup Share add-on.",
@@ -292,6 +349,15 @@
           `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/voice", "voice.min.js")}`,
           "",
           "Leave everything else on the page as it is.",
+        ].join("\n"),
+        assist: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Assist add-on, so a small AI model on each reviewer's own device can read the page and point to related parts of it when they comment.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/assist", "assist.min.js")}`,
+          "",
+          "Nothing is sent anywhere: the model runs on the reviewer's device, and each reviewer is asked before it turns on. Leave everything else on the page as it is.",
         ].join("\n"),
         live: () => [
           "My HTML page already uses Pipeup for comments. Please add the Pipeup Live add-on, so reviewers can see who else is on the page.",
@@ -333,7 +399,7 @@
       for (const b of document.querySelectorAll("[data-copy]")) {
         b.addEventListener("click", async () => {
           const [id, what] = b.dataset.copy.split("-");
-          const text = what === "tag" ? tag("@pipeup/" + id, id + ".min.js") : prompts[id]();
+          const text = what === "cmd" ? MAILBOX : what === "tag" ? tag("@pipeup/" + id, id + ".min.js") : prompts[id]();
           try { await navigator.clipboard.writeText(text); } catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
           const label = b.querySelector(".label");
           const was = label.textContent;

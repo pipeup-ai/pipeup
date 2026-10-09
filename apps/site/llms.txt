@@ -18,7 +18,7 @@
 
 ## Add-ons (only when the author asks)
 
-Pipeup itself sends nothing anywhere. Optional add-ons are extra scripts, each saying what it sends: `@pipeup/share` (comments reach everyone who has the page, through an encrypted service the author picks), `@pipeup/voice` (dictating comments with the browser's own speech engine), `@pipeup/live` (live comments and presence, peer to peer). Add one only when the author asks for that feature, tell them in plain words what it sends and to whom, and never pick a sharing service for them. When you rewrite a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are; a new document gets a new `data-pipeup-doc` and no `data-pipeup-share`. Never put a stop key in a page.
+Pipeup itself sends nothing anywhere. Optional add-ons are extra scripts, each saying what it sends: `@pipeup/share` (comments reach everyone who has the page, through an encrypted service the author picks), `@pipeup/voice` (dictating comments with the browser's own speech engine), `@pipeup/live` (live comments and presence, peer to peer), `@pipeup/assist` (a small AI model on the reviewer's device reads the page and points to related parts of it; nothing is sent anywhere). Authors who want sharing without a public service can run their own mailbox (`npx @pipeup/mailbox`, a server, not a page script); you only ever put the address they give you on `data-pipeup-share`. Add one only when the author asks for that feature, tell them in plain words what it sends and to whom, and never pick a sharing service for them. When you rewrite a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are; a new document gets a new `data-pipeup-doc` and no `data-pipeup-share`. Never put a stop key in a page.
 
 ## Files
 

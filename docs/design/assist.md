@@ -34,18 +34,31 @@ See the mock-ups for each state.
 4. **A reply streams in** as a reply in the thread, in the same type as any reply, with the glowing AI ring and
    "AI assistant · on this device". The ring glows a little faster while it writes and slowly once finished. It becomes
    a real reply once finished; nothing half-written is ever left. With reduced motion the ring stays still.
-5. **Short, with a way to more.** Two or three short sentences at most. Below it, what it relied on as a few small
-   **pills**, never a list of addresses: a numbered pill ("[1] Risks") for a passage on the page or a heading in the
-   author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three show. Pressing a
-   pill goes there: a passage scrolls into view with one soft swell, a slide is shown, a notes heading opens.
+5. **Short, with a way to more.** When the document has something that bears on a comment, the reply is only a short
+   line and the **pills**, never a written-out answer: a numbered pill ("[1] Risks") for a passage on the page or a
+   heading in the author's notes, and for a slide a pill with a small slide icon ("[▭] Slide 5"). At most three
+   show. **Hovering a pill (or focusing it with the keyboard) eases in a small card with the one sentence it points
+   to**, so the reviewer sees the related information without leaving the comment. Pressing a pill goes there: a
+   passage scrolls into view with one soft swell, a slide is shown, a notes heading opens. Replies that ask or
+   suggest (a question about two readings, a tone alternative) are still two or three short sentences.
    In a deck the reviewer is on one slide while the answer is often on others, so the assistant reads every slide.
+5a. **It has read the whole page.** Before it answers anything, it reads the entire page (or deck, and the author's
+   notes) once, a section at a time, and keeps a short gist and the key facts of each section (goals, numbers, dates,
+   decisions) on the device. While it does, the row says "Reading the page… 4 of 12", and it answers comments as
+   soon as it has read what it needs. It reads again only the sections that have changed. A goal on slide 6 is found
+   because slide 6 has been read, not because a few words happened to match.
+5b. **It checks before it speaks.** For a comment that may need information from the document, it takes the likely
+   sections and reads each in full, one at a time, looking for the exact sentence that bears on the comment. It
+   replies only when it found one, and the pill points at that sentence.
 6. **People carry on.** The assistant looks at a thread again only when something new is added to it, replies at most
    three times in one thread, and never to its own replies. A person can remove an
    assistant reply, and can switch assistant replies off for what they see. Replies already added stay when it is
    turned off.
 6a. **Reviewed, nothing to add.** A thread it looked at and stayed quiet on carries a quiet line, "Reviewed by AI ·
    nothing to add", with a still ring, so a reviewer can tell silence from "not looked at". While it reads a thread the
-   line says "AI assistant is reading this…".
+   line says "AI assistant is reading this…". The line carries a small **Check again** that makes it look at the
+   thread afresh, now, for when the page or the assistant has changed since. A thread looked at by an older version
+   of the assistant is looked at again once.
 7. **In All comments,** a quiet line on each row says what happened: "AI assistant replied", "AI assistant is
    reading", or "Checked, nothing to add".
 8. **When it can't,** one plain sentence (not enough memory, no graphics support, download refused). A failed reply
@@ -68,9 +81,9 @@ See the mock-ups for each state.
    that bears on it. Otherwise it stays silent.
 5. A reply is **short**: at most about 280 characters, one to three sentences, plain words, no headings or lists.
    Anything longer is not written out; the reply points to where the detail is.
-6. A reply that relies on the page, the slides or the author's notes shows each source as a small reference pill (at
-   most three), never a full address. A slide's pill carries a slide icon. Pressing a pill takes the reviewer there
-   without losing their place.
+6. Related information is shown as small reference pills (at most three), never a full address and never written out
+   again in the reply. A slide's pill carries a slide icon. Hovering or focusing a pill shows the one sentence it
+   points to; pressing it takes the reviewer there without losing their place.
 7. Replies **stream in** as they are made. Only a finished reply becomes part of the thread, so no partial reply is
    ever stored or shared.
 8. A reply is clearly marked as written by a model on the device, with its own name and mark, never under a person's
@@ -90,6 +103,21 @@ See the mock-ups for each state.
 14. It works with a mouse, the keyboard and screen readers. A streaming reply is announced once when it is finished,
     not word by word. Showing and hiding eases; with reduced motion things only fade.
 15. Where no model is available (phones, older browsers), Assist says it is not available and does nothing.
+
+16. **Nothing is missed for being short or far away.** Every section of the page, every slide and every notes
+    section is read in full, however short, and whole slides count as one section. Nothing is cut to a few hundred
+    characters before the model sees it; long sections are read in parts.
+17. **Read once, kept on the device.** The first reading makes a short gist and the key facts for each section. These
+    are kept on this device for the next visit and used for every comment. Only sections whose words changed are read
+    again. Nothing is sent anywhere.
+18. **The reading is gentle.** It runs in the background, one section at a time, under the same rules as replies
+    (waits when the page is hidden, the battery is low or memory is short), and can be stopped by turning
+    the assistant off. Comments can be answered while it is still reading, using what has been read so far; a
+    comment never waits for the whole page.
+19. **Look closely before replying.** For each comment that may need the document, the likely sections (chosen from
+    every gist, fact and section's words, not just the first few matches) are each read in full against the comment,
+    up to eight, looking for a sentence that bears on it. A reply uses only sentences found this way, and a pill
+    points at the section holding one. When none is found, it stays quiet.
 
 ## The prompts
 
@@ -152,6 +180,24 @@ anchors, and `host.merge` to add ops from elsewhere (the same way share and live
 Related passages need no embedding model: Assist ranks the document's own blocks (and the notes file's headings)
 against the comment and its quote with plain text matching, so the download is the language model alone.
 
+## Reading the whole page (how it is built)
+
+- **Sections.** The add-on cuts the page into sections that each fit a small model (about 1,500 characters): a
+  heading and what follows it, a whole slide, or a notes section. Longer ones are cut at sentence ends and every
+  part is kept. A section's fingerprint is a short hash of its label and words.
+- **First reading.** For each section the model writes a gist and key facts (prompt `gist`). They are kept in the
+  add-on's settings on this device, by fingerprint, for the document; a changed section gets a new fingerprint and is
+  read again, and fingerprints no longer on the page are dropped. A section that cannot be read is marked so and is
+  not tried again; it can still be found by its own words.
+- **Order of work.** One loop does one thing at a time: a comment waiting for a look comes first, then the next
+  unread section. So a comment never waits for the whole page. It pauses under the same rules as replies.
+- **Close look.** For a "related" comment, the sections are ranked on their words, gist and facts (word endings
+  folded), the best eight are each shown to the model in full (prompt `verify`), and the model copies out one
+  sentence or says NONE. A sentence counts only if it really is in that section and does not just restate the commented
+  passage. Up to three become the numbered passages the reply may use; none means no reply.
+- **Menu row.** While reading, the row's count says "Reading 4 of 12" and the status line says the same.
+- **Size.** The add-on's budget goes from 8 KB to 10 KB gzip (now 8.75 KB).
+
 ## Notes files
 
 The author may name one or more Markdown files on the page's own site (for example `data-pipeup-assist-notes="notes.md"`)
@@ -179,6 +225,12 @@ only, after the reviewer has agreed, and the consent panel names them. Headings 
 
 ## Change log
 
+- 2026-10-09: "Reviewed by AI" gets a Check again; threads checked by an older version are looked at again.
+- 2026-10-09: Related information is shown as pills only, with the found sentence on hover or focus, instead of a
+  written-out answer.
+- 2026-10-09: Built: whole-page reading, kept gists and facts, and the close look before a reply; size budget 10 KB.
+- 2026-10-09: Reading the whole page: sections read in full and summarised once, kept on the device, then checked
+  closely before a reply (requirements 16 to 19). No embedding model for now.
 - 2026-10-09: Proposal with mock-ups.
 - 2026-10-09: Threads checked are remembered (looked at again only when something is added); an AI reply is marked
   with a gently glowing ring and "AI assistant", replacing the chip glyph.

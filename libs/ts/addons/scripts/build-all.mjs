@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 // Gzip budgets (add-ons design §15); a combined file is checked against core + add-on.
-const BUDGETS = { share: 8.5 * 1024, voice: 4 * 1024, live: 11 * 1024, assist: 8 * 1024 };
+const BUDGETS = { share: 8.5 * 1024, voice: 4 * 1024, live: 11 * 1024, assist: 10 * 1024 };
 const CORE = 42 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;

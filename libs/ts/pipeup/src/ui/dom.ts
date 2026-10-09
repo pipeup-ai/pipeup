@@ -110,13 +110,13 @@ function target(raw: string): string | null {
  * there. Only AI replies get this (a person's text only ever shows its addresses as they are).
  */
 export function referenced(text: string): (Node | string)[] {
-  const refs: { n: string; to: string; label: string }[] = [];
+  const refs: { n: string; to: string; label: string; says: string }[] = [];
   const body = text
     .split("\n")
     .filter((line) => {
-      const m = /^\[(\d{1,2})\]:?\s+(\S+)(?:\s+(.{1,40}))?$/.exec(line.trim());
+      const m = /^\[(\d{1,2})\]:?\s+(\S+)(?:\s+([^|]{1,40}?))?(?:\s*\|\s*(.{1,300}))?$/.exec(line.trim());
       const to = m?.[2] ? target(m[2]) : null;
-      if (m?.[1] && to) refs.push({ n: m[1], to, label: m[3]?.trim() ?? "" });
+      if (m?.[1] && to) refs.push({ n: m[1], to, label: m[3]?.trim() ?? "", says: m[4]?.trim() ?? "" });
       return !(m?.[1] && to);
     })
     .join("\n")
@@ -130,11 +130,19 @@ export function referenced(text: string): (Node | string)[] {
     const inner = [
       slide ? h("i", { class: "sl" }) : null,
       h("span", {}, slide || r.label === "" ? label : `[${r.n}] ${label}`),
+      // The sentence it points to: a small card that eases in on hover or focus (text only, never markup).
+      r.says ? h("span", { class: "rc", role: "tooltip" }, r.says) : null,
     ];
     if (/^https?:/.test(r.to)) {
       const a = h(
         "a",
-        { class: "ref", href: r.to, target: "_blank", rel: "noopener noreferrer", title: r.to },
+        {
+          class: "ref",
+          href: r.to,
+          target: "_blank",
+          rel: "noopener noreferrer",
+          title: r.says ? undefined : r.to,
+        },
         ...inner,
       );
       a.addEventListener("click", (e) => e.stopPropagation());
@@ -142,7 +150,7 @@ export function referenced(text: string): (Node | string)[] {
     }
     const b = h(
       "button",
-      { class: "ref", type: "button", title: slide ? label : `Show where: ${label}` },
+      { class: "ref", type: "button", title: r.says ? undefined : slide ? label : `Show where: ${label}` },
       ...inner,
     );
     b.addEventListener("click", (e) => {

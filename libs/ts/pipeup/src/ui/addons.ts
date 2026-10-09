@@ -2,7 +2,7 @@ import type { Listener, PipeupDocument } from "../document";
 import { animalName } from "../model/animals";
 import type { SignedOp, Thread } from "../model/types";
 import { avatar } from "./animals";
-import { threadMarks, threadNotes } from "./notes";
+import { markAgain, threadMarks, threadNotes } from "./notes";
 import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
@@ -161,7 +161,7 @@ export interface AddonHost {
    */
   setThreadNote(thread: string, text: string | null): void;
   /** A quiet line at the end of a thread, with a still AI ring ("Reviewed by AI · nothing to add"); null removes it. */
-  setThreadMark(thread: string, text: string | null): void;
+  setThreadMark(thread: string, text: string | null, again?: () => void): void;
   addComposerTool(tool: ComposerTool): Off;
   openPanel(content: Node, options: PanelOptions): PanelHandle;
   addStyles(css: string): Off;
@@ -273,14 +273,17 @@ export class Surface {
     this.repaint();
   }
 
-  setMark(id: string, thread: string, text: string | null): void {
+  setMark(id: string, thread: string, text: string | null, again?: () => void): void {
     const mine = this.marked.get(id) ?? this.marked.set(id, new Set()).get(id)!;
     if (text === null) {
+      markAgain.delete(thread);
       if (!threadMarks.delete(thread)) return;
       mine.delete(thread);
     } else {
-      if (threadMarks.get(thread) === text) return;
+      if (threadMarks.get(thread) === text && !!markAgain.get(thread) === !!again) return;
       threadMarks.set(thread, text);
+      if (again) markAgain.set(thread, again);
+      else markAgain.delete(thread);
       mine.add(thread);
     }
     this.repaint();
@@ -506,7 +509,10 @@ export class Surface {
     for (const m of [this.notes, this.statuses, this.pending]) m.delete(id);
     for (const thread of this.writing.get(id) ?? []) threadNotes.delete(thread);
     this.writing.delete(id);
-    for (const thread of this.marked.get(id) ?? []) threadMarks.delete(thread);
+    for (const thread of this.marked.get(id) ?? []) {
+      threadMarks.delete(thread);
+      markAgain.delete(thread);
+    }
     this.marked.delete(id);
     this.repaint();
     this.changed(true);
@@ -660,7 +666,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     announce: live((text) => surface.addSay(text)),
     setComposerNote: live((text) => surface.setIn(surface.notes, id, text)),
     setThreadNote: live((thread, text) => surface.setThread(id, thread, text)),
-    setThreadMark: live((thread, text) => surface.setMark(id, thread, text)),
+    setThreadMark: live((thread, text, again) => surface.setMark(id, thread, text, again)),
     addComposerTool: live((tool) => surface.addTool(id, tool)),
     openPanel: live((content, o) => surface.panel(id, content, o)),
     addStyles: live((css) => surface.addSheet(id, css)),
