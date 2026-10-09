@@ -42,3 +42,7 @@ export const animalName = (author: string): string =>
 
 /** What to call a comment's writer: their name, or their animal until they add one. */
 export const nameOf = (c: { author: string; name: string }): string => c.name || animalName(c.author);
+
+/** The name an assistant's replies carry: a person can't choose it, and a reply under it is drawn as an AI's. */
+export const AI_NAME = "AI assistant";
+export const isAiName = (name: string): boolean => name === AI_NAME || name.startsWith(`${AI_NAME} `);

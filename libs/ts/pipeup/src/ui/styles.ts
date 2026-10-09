@@ -67,6 +67,16 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 /* Ten colours (.c0 Red to .c9 Grey, as COLOURS): a soft tint and a dark drawing, swapped round on dark pages. */
 .av{--av-l:92%;--av-d:30%;--s:60%;background:hsl(var(--h) var(--s) var(--av-l));color:hsl(var(--h) var(--s) var(--av-d))}
 .dark .av{--av-l:20%;--av-d:78%}
+/* An AI's reply: a plain disc with a violet ring that glows gently (opacity and scale on a pseudo-element). */
+.av.ai{position:relative;border-radius:50%;background:var(--su);color:var(--pu-accent);font-size:9px;letter-spacing:.02em;box-shadow:0 0 0 1.5px var(--pu-accent)}
+.av.ai::after{content:"";position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 9px 1px color-mix(in srgb,var(--pu-accent) 45%,transparent);opacity:.3;animation:pu-breathe 3.8s var(--eio) infinite;pointer-events:none}
+.av.ai.busy::after{animation-duration:2.2s}
+@keyframes pu-breathe{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+.ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
+.ghost .dots i{width:4px;height:4px;border-radius:50%;background:var(--fa);animation:pu-dot 1.6s var(--eio) infinite}
+.ghost .dots i:nth-child(2){animation-delay:.2s}
+.ghost .dots i:nth-child(3){animation-delay:.4s}
+@keyframes pu-dot{0%,100%{opacity:.25}50%{opacity:1}}
 .c0{--h:0}.c1{--h:25}.c2{--h:50}.c3{--h:130}.c4{--h:175}.c5{--h:215}.c6{--h:270}.c7{--h:330}.c8{--h:28;--s:35%}.c9{--h:220;--s:8%}
 .me{flex:none;display:grid}
 .me>.av{grid-area:1/1;width:26px;height:26px;font-size:13px}
@@ -248,6 +258,8 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}
 .av,.nf{transform:none!important}
+.av.ai::after{animation:none;opacity:.5}
+.ghost .dots i{animation:none;opacity:.6}
 @keyframes pu-pulse{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}
 }
 `;

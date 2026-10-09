@@ -1756,3 +1756,4 @@ gets into the core").
 - 2026-10-08: first by-hand test of live. The People panel now lists "You (name)" first and shows each person's animal
   and colour (the avatar is drawn from the name they gave, not from their display name, so unnamed people show their
   animal instead of a letter). `AddonDocument` gains a read-only `name`. The live budget is 11 KB (was 10.5 KB).
+- 2026-10-09: `host.setThreadNote(thread, text | null)` shows an add-on's reply as it is being written at the end of a thread (not a comment until the add-on merges the signed op). The name "AI assistant" (and "AI assistant …") is kept for AI replies: a person can't choose it, and a reply under it is drawn with a gently glowing AI ring. `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported so an add-on can author replies under its own key. Cost: +0.4 KB gzip. For the Assist add-on ([assist.md](assist.md)).

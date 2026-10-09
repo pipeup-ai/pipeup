@@ -126,6 +126,8 @@ Assist can't include or fetch it. The proposal:
 
 ## What the core would need
 
+*Built (2026-10-09, `feat/assist-core`): the reserved name and the AI ring, `host.setThreadNote`, and the exported op helpers (+0.4 KB gzip).*
+
 Assist can use what exists: the menu row, status, panel, notices, `host.root` to read the page, the comment text and
 anchors, and `host.merge` to add ops from elsewhere (the same way share and live do).
 

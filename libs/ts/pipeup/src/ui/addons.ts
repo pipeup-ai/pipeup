@@ -2,6 +2,7 @@ import type { Listener, PipeupDocument } from "../document";
 import { animalName } from "../model/animals";
 import type { SignedOp, Thread } from "../model/types";
 import { avatar } from "./animals";
+import { threadNotes } from "./notes";
 import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
@@ -154,6 +155,11 @@ export interface AddonHost {
   notify(text: string): void;
   announce(text: string): void;
   setComposerNote(text: string | null): void;
+  /**
+   * Shows `text` at the end of a thread as a reply being written (an AI's, streaming in); null removes it. It is
+   * only shown: the real reply is a signed op the add-on merges when it is finished.
+   */
+  setThreadNote(thread: string, text: string | null): void;
   addComposerTool(tool: ComposerTool): Off;
   openPanel(content: Node, options: PanelOptions): PanelHandle;
   addStyles(css: string): Off;
@@ -185,6 +191,9 @@ export class Surface {
   rev = 0;
   readonly menuRows: MenuItem[] = [];
   readonly notes = new Map<string, string>();
+  /** The threads each add-on is writing into, so its notes go with it. */
+  private readonly writing = new Map<string, Set<string>>();
+  private paint = 0;
   readonly statuses = new Map<string, Status>();
   private readonly toolList: ComposerTool[] = [];
   private readonly frames = new Set<() => void>();
@@ -246,6 +255,27 @@ export class Surface {
         this.changed(true);
       }),
     };
+  }
+
+  /** Shows (or, with null, removes) the reply an add-on is writing into a thread; the views pick it up next frame. */
+  setThread(id: string, thread: string, text: string | null): void {
+    const mine = this.writing.get(id) ?? this.writing.set(id, new Set()).get(id)!;
+    if (text === null) {
+      threadNotes.delete(thread);
+      mine.delete(thread);
+    } else {
+      threadNotes.set(thread, text);
+      mine.add(thread);
+    }
+    this.repaint();
+  }
+
+  private repaint(): void {
+    if (this.paint) return;
+    this.paint = window.requestAnimationFrame(() => {
+      this.paint = 0;
+      this.ctx.render();
+    });
   }
 
   /** Sets (or, with null, removes) one add-on's note or status. */
@@ -458,6 +488,9 @@ export class Surface {
     this.overlays.get(id)?.remove();
     this.overlays.delete(id);
     for (const m of [this.notes, this.statuses, this.pending]) m.delete(id);
+    for (const thread of this.writing.get(id) ?? []) threadNotes.delete(thread);
+    this.writing.delete(id);
+    this.repaint();
     this.changed(true);
   }
 
@@ -608,6 +641,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     notify: live((text) => surface.notice(id, text)),
     announce: live((text) => surface.addSay(text)),
     setComposerNote: live((text) => surface.setIn(surface.notes, id, text)),
+    setThreadNote: live((thread, text) => surface.setThread(id, thread, text)),
     addComposerTool: live((tool) => surface.addTool(id, tool)),
     openPanel: live((content, o) => surface.panel(id, content, o)),
     addStyles: live((css) => surface.addSheet(id, css)),
