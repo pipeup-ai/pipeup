@@ -28,6 +28,7 @@ export const PUBLIC_NAMES = [
   "notify",
   "announce",
   "setComposerNote",
+  "setThreadNote",
   "addComposerTool",
   "openPanel",
   "addStyles",

@@ -5,6 +5,7 @@ import { ANIMAL_ICONS, avatar, initial } from "../../src/ui/animals";
 import { composer } from "../../src/ui/composer";
 import { renderDraft } from "../../src/ui/draft-view";
 import { threadView, type ThreadActions } from "../../src/ui/thread-view";
+import { threadNotes } from "../../src/ui/notes";
 import type { Comment, Thread } from "../../src/model/types";
 
 const NOW = 1_000_000_000_000;
@@ -384,5 +385,25 @@ describe("threadView avatars", () => {
     view.update(thread({ root: { ...anon, name: "Sam", text: "again" } }));
     expect([...view.element.querySelectorAll(".root > .av")].at(-1)).toBe(named);
     expect(view.element.querySelector(".root .who")!.textContent).toBe("Sam · 5m ago");
+  });
+});
+
+describe("an AI's replies", () => {
+  it("are drawn with the AI ring, and a reply being written shows at the end of the thread", () => {
+    const t = thread({
+      root: c("t1", "Jamie", "Sure?", [c("r1", "AI assistant (on this device)", "Risks says no.")]),
+    });
+    const view = threadView(t, actions(), { variant: "popover", now: () => NOW });
+    expect(view.element.querySelector(".it .av.ai")?.textContent).toBe("AI");
+    expect(view.element.querySelector(".ghost")).toBeNull();
+    threadNotes.set("t1", "Writing so far");
+    view.update(t);
+    const ghost = view.element.querySelector(".ghost")!;
+    expect(ghost.textContent).toContain("Writing so far");
+    expect(ghost.querySelector(".av.ai.busy")).not.toBeNull();
+    expect(ghost.textContent).toContain("AI assistant · writing now");
+    threadNotes.delete("t1");
+    view.update(t);
+    expect(view.element.querySelector(".ghost")).toBeNull();
   });
 });

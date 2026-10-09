@@ -1,5 +1,6 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
 import { OpLog, type NewOp } from "./model/log";
+import { isAiName } from "./model/animals";
 import { LIMITS, MAX_TEXT } from "./model/ops";
 import type { Anchor, Comment, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
@@ -268,5 +269,6 @@ function checkName(name: string): string {
   // One line: a pasted newline or tab can't split a name.
   const n = name.replace(/\s+/g, " ").trim();
   if (!n || n.length > MAX_NAME) throw new Error(`pipeup: choose a name of 1 to ${MAX_NAME} characters`);
+  if (isAiName(n)) throw new Error("pipeup: that name is kept for AI replies; choose another");
   return n;
 }
