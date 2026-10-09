@@ -717,13 +717,14 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       if (l && bar.nextElementSibling !== l && !onMarker() && !bar.contains(focused()))
         for (const el of [outline, ...markers, bar]) ctx.layer.insertBefore(el, l);
       const d = ctx.state.draft;
-      // The box closed (Esc, sent, dropped) or another one took over: the block lets go with it.
+      // The box closed (Esc, sent, dropped) or another one took over: the block lets go with it. An open thread
+      // takes the place too, so the outline and the naming bar never sit over its popover.
       if (drafted && d !== drafted) {
         drafted = null;
         choose(null);
         // With the cursor in use it comes back on its block, and takes focus back if the draft left it nowhere.
         if (cur) go(cur, lost());
-      } else if (d && !drafted && (target || chosen)) choose(null);
+      } else if ((d || ctx.state.active) && !drafted && (target || chosen)) choose(null);
     },
     frame() {
       place();

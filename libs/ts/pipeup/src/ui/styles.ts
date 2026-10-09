@@ -30,7 +30,7 @@ svg{display:block}
 .ft,.rft{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--in) var(--eo),opacity var(--in) var(--eo)}
 .ft>*,.rft>*{overflow:hidden;min-height:0;display:flex;align-items:center}
 .root:hover>.ft,.root:focus-within>.ft,.it:hover>.rft,.it:focus-within>.rft{grid-template-rows:1fr;opacity:1}
-.ft.has-rest{grid-template-rows:1fr;opacity:1}
+.ft.has-rest,.ft.open,.rft.open{grid-template-rows:1fr;opacity:1}
 .ft.has-rest>*{grid-area:1/1}
 .ft .hover{opacity:0;transition:opacity var(--in) var(--eo)}
 .ft .rest{transition:opacity var(--in) var(--eo)}
