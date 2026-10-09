@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The Add-ons page now covers Assist (demo, Copy prompt, script tag) and the optional mailbox server that Share can use; llms.txt and the Markdown copy match.
+
 - Assist reads every slide of a deck (marked slides and reveal.js alike), the one showing, the one commented on and all the others, instead of lumping unmarked content into the slide on screen.
 
 - "Reviewed by AI · nothing to add" has a small Check again that makes Assist look at the thread afresh; threads checked by an older Assist are looked at once more.

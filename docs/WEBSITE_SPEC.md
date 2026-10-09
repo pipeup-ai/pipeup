@@ -83,12 +83,13 @@ use. The page:
 
 - Says first that the core needs none of them and sends nothing anywhere, and that an add-on is an extra step the page's
   author chooses, never something a reviewer is moved into.
-- Has one short card per add-on (Share, Voice, Live), each in plain words: what it does, **what it sends and to
+- Has one short card per add-on (Share, Voice, Live, Assist), each in plain words: what it does, **what it sends and to
   whom**, what the reviewer is asked first, and its script tag. Share also says the author picks the service (a
   PrivateBin or their own mailbox) and that it never picks one for them; Live says it is peer to peer and asks each
   reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
-  maker.
-- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
+  maker; Assist says nothing is sent (the model runs on the reviewer's device, and the browser may download it once) and that each reviewer is asked first.
+- Ends with a plain card, "Your own mailbox" (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's card links to it.
+- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, the assistant reading, then a reply that is only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
 - Flows the full width of the window like the home page, text beside its demo.
 - Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
@@ -162,3 +163,4 @@ use. The page:
 - 2026-10-08 — In the home showcase the pointer hides while the comment is typed and shows again from the same spot; clicking Send shows the button pressed, the comment settles with a soft halo and the send icon flies off, and the pointer fades out afterwards.
 - 2026-10-08 — The Add-ons page matches the home page's width, header and footer links (Add-ons and the For agents menu, without the facts line): one row per add-on, words left and its demo right, short "Sends" and "Asks first" lines, and the same dark Copy prompt button plus a Copy script tag button that behave alike. The mark is drawn larger with a heavier stroke so it stays crisp on low-resolution screens.
 - 2026-10-08 — Each page has its own Markdown copy: the Add-ons page's "This page as Markdown" opens addons.html.md (it pointed at the home page's).
+- 2026-10-09 — The Add-ons page gains Assist (with a demo and Copy prompt) and a plain "Your own mailbox" card for the server Share can use; llms.txt and the Markdown copy say the same.
