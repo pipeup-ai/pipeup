@@ -141,6 +141,25 @@ If your company wants comments to go somewhere it controls, there are two ways. 
 
 For your own add-on, the script is one file your company hosts, in any of these ways: on your intranet or artifact store, through a private package registry under your own scope, or beside the page. Pin it, list it in `data-pipeup-addons`, and review it like any code on your pages, because it runs with the page's full power. The sentence you write in `network.says` is what reviewers are shown first, so say what goes to your own servers.
 
+### Ways to get a review into Git
+
+| Way                                                                          | Needs a server? | Who commits                                                 | Good for                                             |
+| ---------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| The company's service uses the GitHub API (**Send to Git**)                  | Yes             | The service, on a branch with a pull request                | Teams: sign-in, a record of who saved what           |
+| The same service runs `git push` with a deploy key                           | Yes             | The service                                                 | Any Git host, including self-hosted                  |
+| The service uses another host's API (GitLab, Bitbucket, Azure DevOps, Gitea) | Yes             | The service                                                 | Teams on those hosts                                 |
+| GitHub's prefilled "new file" page (**Save to GitHub**)                      | No              | The reviewer, in GitHub's own editor with their own sign-in | Short reviews, nothing to run                        |
+| GitHub's prefilled "new issue" page                                          | No              | The reviewer                                                | Reviews as issues that an agent or workflow picks up |
+| Save into a local clone (the browser's file saving, Chrome and Edge)         | No              | The reviewer, or a hook                                     | A developer on their own machine                     |
+| Download the file and commit it                                              | No              | The reviewer, by hand                                       | Zero setup, rarely done consistently                 |
+| **Copy as Markdown**, pasted to an agent or an issue                         | No              | The agent or the reviewer                                   | What works today                                     |
+
+The two examples show the first and fourth. Start with Save to GitHub if you want to see it work in minutes; use Send to Git when reviews are long or you need sign-in and a record.
+
+### Example: Save to GitHub
+
+[Save to GitHub](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/save-to-github) is the other example (also **not from the Pipeup project**): **no server and no token**. Its menu row opens GitHub's own "new file" page in a new tab with the review filled in as Markdown (the file's path comes from the page's name and the time). The reviewer signs in to GitHub as themselves and presses its commit button, or "propose changes" if they can't write to the repository. It asks first, and it never posts, edits or resolves a comment. The page names the repository: `<html data-pipeup-save-to-github="your-org/reviews">` (optional branch, folder and, for GitHub Enterprise Server, host). A review too long for an address is copied for the reviewer to paste instead, and it says so.
+
 ### Example: Send to Git
 
 [Send to Git](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git) is a complete add-on written the way a company would write one. **It is not from the Pipeup project.** It adds a **Send to Git** row. It asks first, then sends the review as the Markdown that Copy as Markdown makes to a service your company runs, which files it in Git for later processing and for AI to work from. It never holds a Git token, never changes the page, and never posts, edits or resolves a comment.
@@ -155,7 +174,7 @@ The browser never talks to GitHub. A small service your company runs sits betwee
 2. **A fine-grained access token** on a bot account, limited to one repository, for a pilot.
 3. **A GitHub Actions workflow** started by a webhook, for short reviews (about 64 KB at most).
 
-GitHub Enterprise Server works the same at your own address. The example includes a **reference service** for GitHub (no outside code: read it, copy it) and a **setup skill** for agents (`pipeup-send-to-git-setup`) that walks an engineer's agent through the steps: it can generate the service and the page settings, and it can't approve the GitHub App's permissions for you, because only you can. It never asks for a token to be pasted into a page or a chat.
+GitHub Enterprise Server works the same at your own address. The example includes a **reference service** for GitHub (no outside code: read it, copy it), a helper that **makes the GitHub App with two button presses by you** (GitHub's own "create an app from a manifest" flow: you press "Create GitHub App" and then "Install", choosing only the review repository; the key goes to a file only you can read), and a **setup skill** for agents (`pipeup-send-to-git-setup`) that covers both examples: it starts by asking which fits and which repository, and does the rest, apart from your two button presses, because only you can approve permissions. It never asks for a token to be pasted into a page or a chat.
 
 ## What the Pipeup project stands behind
 

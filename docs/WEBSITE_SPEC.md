@@ -118,11 +118,15 @@ use. The page:
   with its own add-ons), that nothing needs the Pipeup project's permission and that Pipeup doesn't vouch for add-ons
   from anyone else; a **Read the guide** button to the guide page, and a **Copy command** button that copies the one
   command that makes a copy of the template.
-- Shows, under it, **one example from another company**: a card for "Send to Git" (it sends a review's feedback to the company, where it is filed in Git as a Markdown file) clearly labelled "Example: not from
-  Pipeup", with the same Copy-prompt-less layout as the other cards, a short animated scene of its menu row and
-  consent note, a **Copy prompt** button (a prompt for the person's AI agent that sets Send to Git up with them, following the setup
-  skill: it asks which repository and whether to try it on this computer first or set it up for a team, never asks for a token
-  in the chat or a page, and leaves approvals to the person), a **Try it** link to its try page, and a link to its source in the repository.
+- Shows, under it, **two examples from another company**, each a card clearly labelled "Example: not from Pipeup", with a
+  short animated scene of its menu row and consent note, a **Try it** link to its try page, a link to its source in the
+  repository, and a **Copy prompt** button (a prompt for the person's AI agent that sets the example up with them, following
+  the setup skill: it asks which repository, never asks for a token in the chat or a page, and leaves approvals to the
+  person):
+  - **Save to GitHub** (needs no server and no token): opens GitHub's new-file page with the review filled in. Shown first,
+    because it is the quickest to start.
+  - **Send to Git** (needs the company's own service): sends a review's feedback to the company, where it is filed in Git as a
+    Markdown file. Its prompt asks whether to try it on this computer first or set it up for a team.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
 - Gives agents the safe way to add an add-on on every surface: each add-on's Copy prompt and Copy script tag add the
@@ -185,13 +189,16 @@ so the two never differ). It:
   copying a command. llms.txt, the agent skill and the npm README point to it, so an agent asked to make an add-on
   finds it.
 
-### The example add-on's try page
+### The example add-ons' try pages
 
-"Send to Git" has a try page like the other add-ons' (a short example document, the comment shortcut, a "what to do"
-box). It runs Pipeup with the example loaded from the site's own copy, standing in for a company server. The service
-address it is given is a demonstration one: pressing **Send to Git** shows, in a panel, exactly what would be
-sent and says nothing left the browser. The page says this is an example of an add-on from another company, and that the
-reviewer is asked first as with any add-on.
+Each example has a try page like the other add-ons' (a short example document, the comment shortcut, a "what to do" box). It
+runs Pipeup with the example loaded from the site's own copy, standing in for a company. The page says this is an example of
+an add-on from another company, and that the reviewer is asked first as with any add-on.
+
+- **Send to Git**: the service address it is given is a demonstration one: pressing **Send to Git** shows, in a panel,
+  exactly what would be sent and says nothing left the browser.
+- **Save to GitHub**: pressing **Save to GitHub** shows, in a panel, the address it would open and the file it would fill in
+  (nothing is opened in demonstration mode), and offers **Open it for real** in a repository the visitor names, to see GitHub's own page.
 
 ## 4. Look and feel
 
@@ -274,3 +281,5 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — Proposed (not built): the guide page covers setting up the GitHub side of Send to Git and points to the setup skill, the reference service and the contract checker.
 - 2026-10-10 — Built: the guide page (addons-guide.html, one source with its Markdown copy), the Make-your-own and Send to Git cards on the Add-ons page, the Send to Git try page, and the add-on prompts and Markdown copies carry the integrity hash, the allow-list and the policy advice.
 - 2026-10-10 — Send to Git's card has a Copy prompt that has the person's AI agent set it up with them; the setup skill has a ten-minute fast path to try it on one computer first.
+- 2026-10-10 — Proposed (not built): the Add-ons page shows two examples (Save to GitHub, Send to Git), each with a Copy prompt, and each has a try page.
+- 2026-10-10 — Built: the Add-ons page shows Save to GitHub and Send to Git (each with a Copy prompt, a scene and a try page).
