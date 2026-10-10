@@ -1,0 +1,11 @@
+{
+  "name": "save-to-github-example",
+  "private": true,
+  "version": "0.1.0",
+  "description": "An example of an add-on a company writes for itself: open GitHub's new-file page with the review filled in. Needs no server and no token. Not from the Pipeup project.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

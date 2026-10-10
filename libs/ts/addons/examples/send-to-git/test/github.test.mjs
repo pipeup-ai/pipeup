@@ -1,6 +1,9 @@
 import { spawn } from "node:child_process";
 import { createVerify, generateKeyPairSync } from "node:crypto";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createServer as listen } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -120,6 +123,28 @@ describe("the GitHub reference service", () => {
       createVerify("RSA-SHA256").update(`${head}.${body}`).verify(publicKey, Buffer.from(sig, "base64url")),
     ).toBe(true);
     expect(gh.calls.slice(1).every((c) => c.auth === "Bearer installation-token")).toBe(true);
+  });
+});
+
+describe("settings made by create-app.mjs", () => {
+  it("reads the App's key from a file and its settings from send-to-git.env", async () => {
+    const gh = await fakeGitHub();
+    const dir = mkdtempSync(join(tmpdir(), "stg-env-"));
+    const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+    writeFileSync(join(dir, "app.pem"), privateKey.export({ type: "pkcs8", format: "pem" }).toString(), {
+      mode: 0o600,
+    });
+    writeFileSync(
+      join(dir, "send-to-git.env"),
+      `APP_ID=123\nINSTALLATION_ID=42\nPRIVATE_KEY_FILE=${join(dir, "app.pem")}\n`,
+    );
+    const { save } = await load({ GITHUB_API: gh.api, ENV_FILE: join(dir, "send-to-git.env") });
+    const out = await save({ review, path, user: "sam" });
+    gh.server.close();
+    delete process.env.ENV_FILE;
+    for (const k of ["APP_ID", "INSTALLATION_ID", "PRIVATE_KEY_FILE"]) delete process.env[k];
+    expect(out.pr).toBe("https://github.example/co/reviews/pull/7");
+    expect(gh.calls[0].path).toBe("/app/installations/42/access_tokens");
   });
 });
 

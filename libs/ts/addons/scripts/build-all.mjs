@@ -36,4 +36,8 @@ execFileSync("node", [`${here}../examples/send-to-git/build.mjs`], {
   cwd: `${here}../examples/send-to-git`,
   stdio: "inherit",
 });
+execFileSync("node", [`${here}../examples/save-to-github/build.mjs`], {
+  cwd: `${here}../examples/save-to-github`,
+  stdio: "inherit",
+});
 if (over) process.exit(1);

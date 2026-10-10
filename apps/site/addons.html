@@ -175,6 +175,25 @@
       .vo .state { position: absolute; left: 38px; bottom: 9px; font-size: 10px; color: var(--muted); opacity: 0; transition: opacity 0.3s var(--ease); }
       .vo.s3:not(.s4) .state { opacity: 1; }
       .vo .cursor { transform: translate(90px, 220px); } .vo.s1 .cursor { transform: translate(150px, 84px); } .vo.s2 .cursor { transform: translate(296px, 114px); } .vo.s5 .cursor { transform: translate(300px, 230px); }
+      /* Save to GitHub (an example from another company) */
+      .sgh .w { left: 20px; top: 20px; width: 200px; height: 240px; }
+      .sgh .hl { top: 70px; width: 120px; } .sgh.s1 .hl { background: var(--amber); }
+      .sgh .mn { position: absolute; left: 150px; top: 60px; width: 150px; padding: 5px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.08); opacity: 0; transform: translateY(6px); transition: opacity 0.3s var(--ease), transform 0.4s var(--ease); }
+      .sgh .mr { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 7px; font-size: 10.5px; color: var(--ink); } .sgh .mr b { font-size: 10px; color: var(--muted); font-weight: 500; }
+      .sgh .mr.on { background: var(--bone); color: var(--strong); font-weight: 600; }
+      .sgh.s1 .mn { opacity: 1; transform: none; } .sgh.s2 .mn { opacity: 0; transform: translateY(6px); }
+      .sgh .pn { position: absolute; left: 118px; top: 48px; width: 262px; padding: 10px 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.08); font-size: 10.5px; opacity: 0; transform: translateY(6px); transition: opacity 0.3s var(--ease), transform 0.4s var(--ease); }
+      .sgh .pn .t { color: var(--ink); margin-bottom: 6px; } .sgh .pn .bx { padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--strong); margin-bottom: 8px; }
+      .sgh .pn .bt { display: flex; gap: 6px; } .sgh .pn .bt span { padding: 3px 10px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); } .sgh .pn .bt .go { color: var(--violet); border-color: var(--violet); transition: background-color 0.3s var(--ease); }
+      .sgh.s2 .pn { opacity: 1; transform: none; } .sgh.s3 .pn .go { background: #ece9fb; } .sgh.s4 .pn { opacity: 0; }
+      .sgh .tab { position: absolute; left: 70px; top: 40px; width: 310px; background: var(--paper); border: 1px solid #b4b2a8; border-radius: 10px; box-shadow: 0 10px 28px rgba(40,38,30,.16); overflow: hidden; opacity: 0; transform: translateY(8px) scale(0.98); transition: opacity 0.35s var(--ease), transform 0.45s var(--ease); z-index: 3; }
+      .sgh .tab .bar { display: flex; align-items: center; gap: 4px; padding: 6px 10px; background: #f3f2ed; border-bottom: 1px solid var(--line); font-size: 9px; color: var(--muted); } .sgh .tab .bar i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); } .sgh .tab .bar span { margin-left: 8px; }
+      .sgh .tab .fn { margin: 10px 12px 6px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; font: 10px/1.4 var(--mono); color: var(--strong); }
+      .sgh .tab .md { margin: 0 12px 10px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: #fafaf8; font: 9.5px/1.5 var(--mono); color: var(--ink); min-height: 66px; }
+      .sgh .tab .cm { margin: 0 12px 12px; } .sgh .tab .cm span { display: inline-block; padding: 4px 12px; border-radius: 6px; background: #2da44e; color: #fff; font-size: 10.5px; font-weight: 600; transition: transform 0.3s var(--ease); }
+      .sgh .tab .ok { position: absolute; right: 12px; bottom: 14px; font-size: 10.5px; color: #1a7f37; font-weight: 600; opacity: 0; transition: opacity 0.35s var(--ease); }
+      .sgh.s4 .tab { opacity: 1; transform: none; } .sgh.s5 .tab .cm span { transform: scale(0.94); } .sgh.s5 .tab .ok { opacity: 1; }
+      .sgh .cursor { transform: translate(60px, 230px); } .sgh.s1 .cursor { transform: translate(172px, 96px); } .sgh.s3 .cursor { transform: translate(150px, 132px); } .sgh.s4 .cursor { transform: translate(120px, 150px); } .sgh.s5 .cursor { transform: translate(100px, 200px); }
       /* Send to Git (an example from another company) */
       .eg { display: inline-block; margin: 0 0 8px; padding: 2px 10px; border-radius: 999px; background: var(--amber); color: #7a4a05; font-size: 12.5px; font-weight: 600; }
       .sg .w { left: 20px; top: 20px; width: 200px; height: 240px; }
@@ -348,6 +367,28 @@
           </div>
         </div>
       </section>
+      <section class="addon" id="save-to-github" data-pipeup-id="save-to-github">
+        <div class="text">
+          <p class="eg">Example: not from Pipeup</p>
+          <h2>Save to GitHub</h2>
+          <p class="one">The quickest way to get a review into Git: it opens GitHub's own "new file" page with the review filled in. No server, no token.</p>
+          <p class="fact"><b>Sends</b> Nothing from here. It opens a GitHub link; you sign in to GitHub and press its commit button yourself.</p>
+          <p class="fact"><b>Asks first</b> It says what it will fill in and where, and you confirm.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="sgh-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <a class="btn" href="try/save-to-github.html">Try it</a>
+            <a class="btn" href="https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/save-to-github">Read the source</a>
+          </div>
+        </div>
+        <div class="demo" data-len="10000" data-steps='[[700,"s1"],[2100,"s2"],[4000,"s3"],[4800,"s4"],[7000,"s5"]]' data-type="9999,9999" aria-hidden="true">
+          <div class="stage sgh">
+            <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:42px;width:170px"></div><div class="ln" style="top:58px;width:210px"></div><div class="hl"></div><div class="ln" style="top:96px;width:190px"></div><div class="ln" style="top:112px;width:140px"></div></div>
+            <div class="mn"><span class="mr">Assistant replies</span><span class="mr on">Save to GitHub<b>2</b></span></div>
+            <div class="pn"><div class="t">This will open GitHub in a new tab with 2 open comments filled in as:</div><div class="bx">reviews/launch-plan/20261010-093005-sam.md</div><div class="bt"><span class="go">Open GitHub</span><span>Cancel</span></div></div>
+            <div class="tab"><div class="bar"><i></i><i></i><i></i><span>github.com/your-org/reviews/new/main</span></div><div class="fn">reviews/launch-plan/20261010-093005-sam.md</div><div class="md">&#35; Review comments: Q3 launch plan<br />- Sam: Is this date firm?</div><div class="cm"><span>Commit changes</span></div><div class="ok">&#10003; Committed</div></div>
+            <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+          </div></div>
+      </section>
       <section class="addon" id="send-to-git" data-pipeup-id="send-to-git">
         <div class="text">
           <p class="eg">Example: not from Pipeup</p>
@@ -408,6 +449,14 @@
       const MAILBOX = 'CREATE_TOKEN="$(openssl rand -base64 24)" DATA_DIR=./pipeup-mailbox npx @pipeup/mailbox';
       const SKILL = "https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md";
       const prompts = {
+        sgh: () => [
+          "I want to add Pipeup's Save to GitHub example to my HTML page, so reviewers can save a review as a Markdown file in a GitHub repository: it opens GitHub's own \"new file\" page with the review filled in (no server, no token). Please set it up with me, following this skill:",
+          SKILL,
+          "",
+          "Start by asking me which GitHub repository to use (and the branch), and which HTML page. Then do the setup step by step, and tell me what a command does before you run it.",
+          "",
+          "Rules: never ask me to paste a token, key or password into this chat or into any page. Keep data-pipeup-doc exactly as it is. Don't change my pages except as the skill says.",
+        ].join("\n"),
         stg: () => [
           "I want to try Pipeup's Send to Git example: an add-on that saves a review as a Markdown file in a GitHub repository, through a small service that I run. Please set it up with me, following this skill:",
           SKILL,

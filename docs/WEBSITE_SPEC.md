@@ -282,3 +282,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-10 — Built: the guide page (addons-guide.html, one source with its Markdown copy), the Make-your-own and Send to Git cards on the Add-ons page, the Send to Git try page, and the add-on prompts and Markdown copies carry the integrity hash, the allow-list and the policy advice.
 - 2026-10-10 — Send to Git's card has a Copy prompt that has the person's AI agent set it up with them; the setup skill has a ten-minute fast path to try it on one computer first.
 - 2026-10-10 — Proposed (not built): the Add-ons page shows two examples (Save to GitHub, Send to Git), each with a Copy prompt, and each has a try page.
+- 2026-10-10 — Built: the Add-ons page shows Save to GitHub and Send to Git (each with a Copy prompt, a scene and a try page).

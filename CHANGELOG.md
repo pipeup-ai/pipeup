@@ -12,6 +12,8 @@ change the API and the stored comment format.
 - A guide page for making your own add-on (`addons-guide.html`, from `docs/ADDONS_GUIDE.md`), including using add-ons inside a company, what an add-on works with, and keeping add-ons intentional; a Make-your-own card on the Add-ons page; the template now builds one bundled, pinned file.
 - **Send to Git**, an example of an add-on a company writes for itself (not from the Pipeup project): it sends a review as Markdown to a service the company runs, which files it in Git. It comes with a stand-in service, a GitHub reference service, a contract checker and a try page, and the agent skill `pipeup-send-to-git-setup`.
 - Send to Git's card on the Add-ons page has a Copy prompt: paste it to an AI agent and it sets Send to Git up with you (the skill has a fast path for trying it on your own computer first).
+- **Save to GitHub**, a second example add-on (not from the Pipeup project) that needs no server and no token: it opens GitHub's own new-file page with the review filled in. With a try page, a card and a Copy prompt on the Add-ons page.
+- Send to Git: `service/create-app.mjs` makes the GitHub App with two button presses (GitHub's manifest flow) and keeps its key in a private file; the service reads it. The setup skill now covers both examples.
 - Send to Git can be tried against a real GitHub repository on your own computer: `README` steps, `DEV_USER` for the sign-in stand-in, and `SERVICE_URL` for the demo page.
 - The Add-ons page's prompts, `llms.txt`, the integrate skill and each add-on's README tell agents to pin add-on scripts with their integrity hash, list the add-on in `data-pipeup-addons`, and tell the author about a content security policy.
 
