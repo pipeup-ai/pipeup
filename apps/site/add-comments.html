@@ -88,7 +88,7 @@
       .copied .ic { display: none; }
             .back { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 18px; font-size: 14.5px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .back svg { transition: transform 0.26s var(--ease); } .back:hover { color: var(--strong); } .back:hover svg { transform: translateX(-3px); }
-      main .scn section.walk { border-top: 0; margin-top: 0; padding: 4px 0 40px; }
+      main .scn section.walk { border-top: 0; margin-top: 0; padding: 4px 0 20px; }
       @media (prefers-reduced-motion: reduce) { .agents-menu { transform: none !important; } }
       footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
     </style>
@@ -111,7 +111,14 @@
       <div class="scn">
       <section class="walk" id="add-comments" data-pipeup-id="scene-add">
         <div class="whead"><div class="wt"><h1>Someone sent you an HTML file.</h1>
-        <p class="sub">Comment on it right in your browser. If it doesn't have comments built in yet, your AI assistant can add them in a minute.</p></div><div class="showcase2">
+        <p class="sub">Add comments to your copy, then send them back.</p>
+          <ol class="wsteps">
+            <li><span class="n">1</span><span class="t"><b>Open it</b> See a round comment button? Skip to 3.</span></li>
+            <li><span class="n">2</span><span class="t"><b>No button?</b> Ask your AI. <button class="btn primary sm" type="button" data-scopy="a"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button></span></li>
+            <li><span class="n">3</span><span class="t"><b>Comment</b> Select words, or press <kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd> and click anything.</span></li>
+            <li><span class="n">4</span><span class="t"><b>Send it back</b> <b>Copy as Markdown</b>, then paste it in a message.</span></li>
+          </ol>
+          <p class="wnote">Comments stay in your browser until you send them.</p></div><div class="showcase2">
           <div class="demo" data-len="16000" data-variants="mail,slack" data-steps='[[300,"s0"],[1000,"k1"],[2000,"p1"],[2000,"s1"],[2900,"k2"],[3900,"p2"],[3900,"s2"],[5000,"s3"],[5400,"k3"],[6300,"p3"],[6300,"cy"],[6700,"k4"],[6700,"s4"],[7700,"dr"],[7700,"p4"],[8300,"s4b"],[9900,"s5"],[10200,"k5"],[11300,"p5"],[11300,"s6"],[12300,"s7"]]' data-compose='[{"text":"Add comments with Pipeup","from":8300,"to":9500,"clear":11300}]' aria-hidden="true">
             <div class="stage d1 ag" data-v="mail">
               <div class="app src mailw"><div class="bar"><b>Mail</b><span>Inbox</span></div>
@@ -143,30 +150,6 @@
             </div>
           </div>
         </div></div>
-        <ol class="steps">
-          <li class="step">
-            <div class="pic"><div class="doc"><i></i><i class="s"></i><i></i><i class="s"></i></div><span class="bub" style="right:22px;bottom:16px"></span></div>
-            <h3>Open it</h3>
-            <p>Double-click the file. If you see a small round comment button at the bottom right, you're set: skip to step 3.</p>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="chat me">Add comments to this page</div><div class="chat bot">Done. Open it again.</div></div>
-            <h3>No button? Ask your AI</h3>
-            <p>Paste this into Claude, ChatGPT or Codex along with the file. It adds comments to your copy.</p>
-            <button class="btn primary" type="button" data-scopy="a"><span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="label">Copy prompt</span></button>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="doc"><i></i><i class="phl"></i><i class="s"></i><i></i></div><span class="pop" style="left:88px;top:40px">Is this date firm?</span></div>
-            <h3>Comment</h3>
-            <p>Select some words, or press <b>Shift+Option+C</b> (Shift+Alt+C on Windows) and click anything. Write what you think.</p>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="doc"><i></i><i class="s"></i></div><span class="ai" style="right:20px;top:34px">.md</span><span class="arrow" style="left:100px;width:44px;top:56px"></span></div>
-            <h3>Send it back</h3>
-            <p>Open the comment button's menu and choose <b>Copy as Markdown</b>. Paste it in a message or email to whoever sent the file.</p>
-          </li>
-        </ol>
-        <p class="note">Your comments stay in your browser until you copy and send them. Nothing is uploaded anywhere.</p>
       </section>
 
 

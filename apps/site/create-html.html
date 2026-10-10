@@ -88,7 +88,7 @@
       .copied .ic { display: none; }
             .back { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 18px; font-size: 14.5px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .back svg { transition: transform 0.26s var(--ease); } .back:hover { color: var(--strong); } .back:hover svg { transform: translateX(-3px); }
-      main .scn section.walk { border-top: 0; margin-top: 0; padding: 4px 0 40px; }
+      main .scn section.walk { border-top: 0; margin-top: 0; padding: 4px 0 20px; }
       @media (prefers-reduced-motion: reduce) { .agents-menu { transform: none !important; } }
       footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
     </style>
@@ -111,7 +111,14 @@
       <div class="scn">
       <section class="walk" id="create-html" data-pipeup-id="scene-create">
         <div class="whead"><div class="wt"><h1>You're creating an HTML page to share.</h1>
-        <p class="sub">Have your AI add Pipeup as it builds the page. Anyone you share it with can comment on it, and their feedback comes back ready for your AI to apply.</p></div><div class="showcase2">
+        <p class="sub">Have your AI build in comments, then apply what people say.</p>
+          <ol class="wsteps">
+            <li><span class="n">1</span><span class="t"><b>Tell your AI</b> Add Pipeup to the page: <button class="btn primary sm" type="button" data-scopy="b"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button></span></li>
+            <li><span class="n">2</span><span class="t"><b>Share the file</b> Email, chat or a drive. It works from disk.</span></li>
+            <li><span class="n">3</span><span class="t"><b>People comment</b> Right on the page. They send you their comments.</span></li>
+            <li><span class="n">4</span><span class="t"><b>Paste into your AI</b> Each comment says where it is, so it applies cleanly.</span></li>
+          </ol>
+          <p class="wnote">You decide how comments travel.</p></div><div class="showcase2">
           <div class="demo" data-len="13500" data-variants="claude,codex" data-steps='[[1500,"k1"],[2600,"p1"],[2600,"s1"],[3500,"s2"],[3900,"k2"],[5800,"s3"],[6400,"k3"],[7600,"p2"],[7600,"s4"],[8700,"s5"],[11500,"s6"]]' data-compose='[{"text":"Make me a report to share","from":500,"to":1500,"clear":2600},{"text":"Add comments with Pipeup","from":4300,"to":5400,"clear":7600}]' aria-hidden="true">
             <div class="stage d2 ag" data-v="claude">
               <div class="app"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></span></div>
@@ -127,30 +134,6 @@
             </div>
           </div>
         </div></div>
-        <ol class="steps">
-          <li class="step">
-            <div class="pic"><div class="chat me">Build my launch plan page</div><div class="chat bot">Done, with comments built in.</div></div>
-            <h3>Tell your AI</h3>
-            <p>Add this to your request, or paste it afterwards. It puts Pipeup in the page.</p>
-            <button class="btn primary" type="button" data-scopy="b"><span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="label">Copy prompt</span></button>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="doc"><i></i><i class="s"></i><i></i></div><span class="ai" style="right:20px;top:34px">.html</span><span class="arrow" style="left:100px;width:44px;top:56px"></span></div>
-            <h3>Share the file</h3>
-            <p>Email it, post it in Slack, put it on a drive or a website. It works straight from the file, and nobody installs anything.</p>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="doc"><i></i><i class="phl"></i><i class="s"></i><i></i></div><span class="pop" style="left:88px;top:40px">Cut this line?</span><span class="bub" style="right:22px;bottom:16px"></span></div>
-            <h3>People comment</h3>
-            <p>Your reviewers select words and write, right on the page. They send you their comments the way they like.</p>
-          </li>
-          <li class="step">
-            <div class="pic"><div class="chat me">Apply this feedback</div><div class="chat bot">3 changes made.</div></div>
-            <h3>Paste into your AI</h3>
-            <p>Each comment says exactly where it is, so your AI makes the changes without guessing.</p>
-          </li>
-        </ol>
-        <p class="note">You decide how comments travel. By default they stay in each reviewer's browser until they send them.</p>
       </section>
 
 
