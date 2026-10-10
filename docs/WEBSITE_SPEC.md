@@ -20,14 +20,16 @@ visitor how to add it. Functional requirements only.
    there are two ways people meet Pipeup. Each is a short looping animated scene with just a title (in the accent colour) and a
    "Show me how" link that scrolls to its steps; no small labels or repeated sentences. The page leads with these pictures, not with a list of features.
    - **"Someone sent me an HTML file"** (I want to give feedback). Two stories, one per loop, in turn. First, an
-     email arrives and is opened, the HTML attachment is downloaded, and the file is put into Claude's message box with
-     "Add comments to this page", typed and sent; Claude says it is done. Second, an HTML file arrives in a Slack
-     message, is downloaded, and is put into Codex the same way. Each agent has its highlight colour (Claude's orange,
-     Codex's blue).
+     email arrives and is opened, the HTML attachment is downloaded, and the file is dragged into Claude's message
+     box; "Add comments with Pipeup" is typed, the prompt is pasted in (a paste key hint shows), and it is sent;
+     Claude says it is done. Second, an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a
+     channel, a file card with a download button), is downloaded, and goes into Codex the same way. Each agent has its
+     highlight colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses,
+     and each press shows a ring.
    - **"I'm making an HTML page to share"** (I want feedback). The scene shows a conversation with an AI agent (Claude,
-     then Codex, in turn, each in its own highlight colour: Claude's orange, Codex's blue): "Make me a report to
-     share" typed in the message box and sent, the agent's report, the prompt pasted into the message box and sent,
-     and the agent saying comments are built in. Everything lines up on the same edges and the text is drawn sharp.
+     then Codex, in turn): "Make me a report to share" typed in the message box and sent, the agent's report, then
+     "Add comments with Pipeup" typed, the prompt pasted in and sent, and the agent saying comments are built in.
+     Everything lines up on the same edges and the text is drawn sharp.
    The scenes are light, ease everything, pause when out of view, and with reduced motion show their finished moment.
 2. **The two walkthroughs**, one under the other, each four steps with a small picture and plain words:
    - **Got a file**: open it (if a round comment button shows, skip ahead); if not, **Copy prompt** and paste it

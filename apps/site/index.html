@@ -146,27 +146,38 @@
       .ag { --ac: #d97757; --tint: #fbeee8; }
       .ag[data-v=codex], .ag[data-v=slack] { --ac: #3d6bf5; --tint: #e7eefe; }
       .ag .n { display: none; } .d2[data-v=claude] .n-claude, .d2[data-v=codex] .n-codex, .d1[data-v=mail] .n-mail, .d1[data-v=slack] .n-slack { display: inline; }
-      .ag .bar.agentbar, .agentwin .bar, .d2 .bar { justify-content: center; }
+      .agentwin .bar, .d2 .bar { justify-content: center; }
       .ag .dots2 { display: flex; gap: 5px; position: absolute; left: 12px; } .ag .dots2 i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
       .ag .agent { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; } .ag .agent b { color: var(--strong); }
       .ag .glyph { width: 8px; height: 8px; border-radius: 50%; background: var(--ac); }
       .ag .thread { position: absolute; left: 0; right: 0; top: 30px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-      .ag .m { max-width: 80%; font-size: 11.5px; line-height: 16px; padding: 4px 10px; border-radius: 10px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
+      .ag .m { display: none; max-width: 86%; font-size: 11.5px; line-height: 16px; padding: 4px 10px; border-radius: 10px; align-items: center; gap: 8px; }
+      @keyframes msgin { from { opacity: 0; transform: translateY(8px); } }
       .ag .m.u { align-self: flex-end; background: var(--tint); color: var(--strong); }
       .ag .m.a { align-self: flex-start; background: #fff; border: 1px solid var(--line); color: var(--ink); }
-      .ag .m .att { display: flex; margin: 3px 0 5px; width: max-content; } .ag .att svg { color: var(--ac); }
+      .ag .m .att { display: inline-flex; margin: 2px 0; width: max-content; } .ag .m .row2 { display: flex; gap: 6px; margin: 2px 0 3px; } .ag .att svg { color: var(--ac); }
+      .ag .pasted { color: var(--muted); background: rgba(255,255,255,.7); font-size: 10.5px; padding: 2px 8px; }
+      .ag .pl { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 0; } .ag .pl i { display: block; height: 5px; border-radius: 3px; background: #c9c7bf; } .ag .pl i.s { width: 55%; }
       .ag .comp { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 34px; border: 1px solid #c4c2b9; border-radius: 10px; padding: 0 44px 0 12px; display: flex; align-items: center; transition: padding-left 0.35s var(--ease); }
       .ag .comp .ph, .ag .comp .typed { font-size: 11.5px; line-height: 16px; } .ag .comp .ph { color: var(--faint); } .ag .comp .typed { color: var(--strong); white-space: nowrap; }
-      .ag .comp .typed:empty { display: none; }
+      .ag .comp .typed:empty { display: none; } .ag .comp .typed:not(:empty) ~ .ph { display: none; }
       .ag.tp .comp .typed::after { content: ""; display: inline-block; width: 1.5px; height: 12px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
       .ag .send { position: absolute; right: 6px; top: 5px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #d9d8d1; color: #fff; transition: background-color 0.3s var(--ease), transform 0.3s var(--ease); }
       .ag.tp .comp .ph { display: none; } .ag.tp .send { background: var(--ac); }
-      .ag .cursor { transition: opacity 0.3s var(--ease), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
-      /* Scene 1: a file arrives (an email, then a Slack message), is downloaded, and goes into Claude, then Codex */
+      .ag .paste { position: absolute; left: -1px; bottom: calc(100% + 8px); width: 160px; padding: 6px 10px; border: 1px solid #b4b2a8; border-radius: 9px; background: #fbfaf7; font-size: 10.5px; color: var(--muted); opacity: 0; transform: translateY(-12px); transition: opacity 0.3s var(--ease), transform 0.45s var(--ease); }
+      .ag .paste b { font-weight: 600; color: var(--strong); } .ag .paste .pl { margin: 5px 0 0; }
+      .ag .key { position: absolute; right: 2px; bottom: calc(100% + 16px); display: inline-flex; gap: 3px; opacity: 0; transform: translateY(4px); transition: opacity 0.25s var(--ease), transform 0.3s var(--ease); }
+      .ag .key b { min-width: 18px; height: 20px; padding: 0 4px; display: grid; place-items: center; font: 600 11px/1 var(--sans); color: var(--strong); background: #f7f6f3; border: 1px solid #c4c2b9; border-bottom-width: 2px; border-radius: 5px; }
+      /* The pointer: it moves, then presses (a ring spreads from it), and may carry a file */
+      .ag .cursor { position: absolute; left: 0; top: 0; z-index: 6; transition: opacity 0.3s var(--ease), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+      .ag .cursor .tap { position: absolute; left: -9px; top: -9px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--violet); opacity: 0; pointer-events: none; }
+      .ag .carry { position: absolute; left: 14px; top: -30px; width: max-content; white-space: nowrap; opacity: 0; transition: opacity 0.25s var(--ease); box-shadow: 0 4px 12px rgba(40,38,30,.18); }
+      @keyframes tap { 0% { transform: scale(0.4); opacity: 0.9; } 100% { transform: scale(1.6); opacity: 0; } }
+      .ag.p1 .cursor .tap, .ag.p2 .cursor .tap, .ag.p3 .cursor .tap, .ag.p4 .cursor .tap, .ag.p5 .cursor .tap { animation: tap 0.5s var(--ease) both; }
+      /* Scene 1: a file arrives (an email, then a Slack message), is downloaded, dragged into Claude, then Codex, with a prompt pasted */
       .d1 .src { opacity: 0; transform: translateY(8px); transition: opacity 0.4s var(--ease), transform 0.45s var(--ease); }
-      .d1[data-v=mail] .mailw, .d1[data-v=slack] .slackw { }
       .d1[data-v=mail].s0 .mailw, .d1[data-v=slack].s0 .slackw { opacity: 1; transform: none; }
-      .d1.s4 .src { opacity: 0; transform: translateX(-14px); }
+      .d1[data-v].s4 .src { opacity: 0; transform: translateX(-14px); }
       .d1 .oldrow { position: absolute; left: 14px; right: 14px; height: 24px; top: 42px; } .d1 .oldrow.two { top: 70px; } .d1 .oldrow i { display: block; height: 6px; width: 70%; border-radius: 3px; background: var(--line); margin-bottom: 6px; } .d1 .oldrow i.s { width: 45%; }
       .d1 .row.new { position: absolute; left: 8px; right: 8px; top: 98px; height: 30px; border-radius: 8px; background: #fff; border: 1px solid #c4c2b9; padding: 0 10px; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--strong); opacity: 0; transform: translateY(-14px); transition: opacity 0.4s var(--ease), transform 0.5s var(--ease), background-color 0.3s var(--ease); }
       .d1 .row.new b { font-weight: 600; } .d1 .row.new .sj { color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .d1 .row.new em { color: var(--muted); display: inline-flex; }
@@ -176,35 +187,51 @@
       .d1 .open .ln { position: absolute; left: 14px; height: 7px; border-radius: 4px; background: var(--line); }
       .d1 .open .att { position: absolute; left: 14px; top: 104px; }
       .d1 .att.get svg:last-child { color: var(--muted); margin-left: 2px; } .d1 .att.get svg:first-child { color: var(--violet); }
-      .d1 .msg { display: flex; gap: 9px; padding: 14px 14px; } .d1 .msg .nm { font-size: 11.5px; font-weight: 600; color: var(--strong); } .d1 .msg .nm i { font-style: normal; font-weight: 400; color: var(--faint); margin-left: 6px; }
-      .d1 .msg .tx { font-size: 12px; margin: 2px 0 8px; color: var(--ink); } .d1 .msg .av { width: 26px; height: 26px; border-radius: 8px; } .d1 .msg .att { margin-top: 2px; }
-      .d1 .dl { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 36px; border-radius: 10px; background: var(--strong); color: #fff; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 11.5px; opacity: 0; transform: translateY(8px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
+      /* Slack: a purple sidebar, a white channel, a message with its file */
+      .d1 .slackw { background: #fff; }
+      .sk-top { height: 24px; background: #3f0e40; display: flex; align-items: center; justify-content: center; }
+      .sk-search { width: 150px; height: 15px; border-radius: 5px; background: rgba(255,255,255,.22); color: rgba(255,255,255,.85); font-size: 9.5px; line-height: 15px; text-align: center; }
+      .sk-body { position: absolute; left: 0; right: 0; top: 24px; bottom: 0; display: flex; }
+      .sk-side { width: 104px; flex: none; background: #4a154b; color: #d9c7da; padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; font-size: 10px; }
+      .sk-side b { color: #fff; font-weight: 700; font-size: 11.5px; padding: 0 6px 8px; } .sk-side span { padding: 3px 6px; border-radius: 5px; } .sk-side .on { background: #7b3a7d; color: #fff; font-weight: 600; } .sk-side .dm { margin-top: 8px; }
+      .sk-main { flex: 1; min-width: 0; position: relative; }
+      .sk-head { height: 28px; padding: 0 12px; display: flex; align-items: center; font-size: 11.5px; font-weight: 700; color: var(--strong); border-bottom: 1px solid #e5e3dc; }
+      .sk-msg { display: flex; gap: 8px; padding: 12px 12px; } .sk-msg .av { width: 28px; height: 28px; border-radius: 6px; flex: none; }
+      .sk-msg .nm { font-size: 11.5px; font-weight: 700; color: var(--strong); } .sk-msg .nm i { font-style: normal; font-weight: 400; color: var(--faint); font-size: 9.5px; margin-left: 5px; }
+      .sk-msg .tx { font-size: 11.5px; margin: 1px 0 7px; color: var(--ink); }
+      .sk-file { display: flex; align-items: center; gap: 8px; width: 176px; padding: 6px 8px; border: 1px solid #d6d3ca; border-radius: 8px; background: #fff; }
+      .sk-file .ft { width: 24px; height: 28px; border-radius: 4px; background: #ece6f3; display: grid; place-items: center; color: #6b2d73; flex: none; }
+      .sk-file .fn { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 13px; } .sk-file .fn b { font-size: 11px; font-weight: 600; color: #1264a3; } .sk-file .fn i { font-style: normal; font-size: 9.5px; color: var(--faint); }
+      .sk-file .fd { display: grid; place-items: center; width: 20px; height: 20px; border: 1px solid #d6d3ca; border-radius: 5px; color: var(--muted); }
+      .sk-comp { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 30px; border: 1px solid #c4c2b9; border-radius: 7px; padding: 0 10px; display: flex; align-items: center; font-size: 10.5px; color: var(--faint); }
+      .d1 .dl { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 36px; border-radius: 10px; background: var(--strong); color: #fff; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 11.5px; opacity: 0; transform: translateY(8px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); z-index: 3; }
       .d1 .dl .dn { display: inline-flex; color: #fff; } .d1 .dl .nm { flex: 0 0 auto; }
       .d1 .dl .pg { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,.25); overflow: hidden; } .d1 .dl .pg i { display: block; height: 100%; width: 0; background: #fff; transition: width 1.1s var(--ease); }
       .d1 .dl .ok { display: none; align-items: center; gap: 5px; margin-left: auto; }
       .d1.s2 .dl { opacity: 1; transform: none; } .d1.s2 .dl .pg i { width: 100%; } .d1.s3 .dl .pg { display: none; } .d1.s3 .dl .ok { display: inline-flex; }
       .d1 .agentwin { opacity: 0; transform: translateX(14px); transition: opacity 0.4s var(--ease), transform 0.45s var(--ease); } .d1.s4 .agentwin { opacity: 1; transform: none; }
-      .d1 .fchip { position: absolute; left: 8px; top: 5px; opacity: 0; transform: translate(-26px, -34px); transition: opacity 0.35s var(--ease), transform 0.5s var(--ease), margin 0.3s var(--ease); }
-      .d1.s4 .fchip { opacity: 1; transform: none; } .d1.s4:not(.s5) .comp { padding-left: 150px; } .d1.s5 .fchip { opacity: 0; transform: translateY(-16px); }
-      .d1.s4:not(.s5) .comp .ph { display: none; }
-      .d1.s4:not(.s5) .send { background: var(--ac); }
-      .d1.s5 .u1, .d1.s6 .a1 { opacity: 1; transform: none; }
+      .d1 .fchip { position: absolute; left: 8px; top: 5px; opacity: 0; transform: translateY(-8px) scale(0.96); transition: opacity 0.3s var(--ease), transform 0.35s var(--ease); }
+      .d1.dr .fchip { opacity: 1; transform: none; } .d1.dr:not(.s6) .comp { padding-left: 150px; } .d1.s6 .fchip { opacity: 0; transform: translateY(-16px); }
+      .d1.dr:not(.s6) .comp .ph { display: none; } .d1.dr:not(.s6) .send { background: var(--ac); }
+      .d1.s5:not(.s6) .paste { opacity: 1; transform: none; } .d1.s6 .paste { opacity: 0; transform: translateY(-20px); }
+      .d1.s5:not(.s6) .key { opacity: 1; transform: none; }
+      .d1.s6 .u1 { display: block; animation: msgin 0.4s var(--ease) both; } .d1.s7 .a1 { display: block; animation: msgin 0.4s var(--ease) both; }
+      .d1.carrying .carry { opacity: 1; }
       .d1 .cursor { opacity: 0; transform: translate(250px, 200px); }
       .d1.s0 .cursor { opacity: 1; }
-      .d1[data-v=mail].k1 .cursor { transform: translate(120px, 118px); } .d1[data-v=mail].k2 .cursor { transform: translate(112px, 150px); }
-      .d1[data-v=slack].k1 .cursor { transform: translate(210px, 132px); } .d1[data-v=slack].k2 .cursor { transform: translate(100px, 112px); }
-      .d1.k3 .cursor { transform: translate(120px, 212px); } .d1.k4 .cursor { transform: translate(344px, 234px); } .d1.s6 .cursor { opacity: 0; }
-      .d1.k4:not(.s5) .send { transform: scale(1.12); }
-      /* Scene 2: a conversation with your AI agent (Claude, then Codex): type the ask, send it, paste the prompt, send it */
-      .d2 .agent { } 
-      .d2.s1 .u1, .d2.s2 .a1, .d2.s4 .u2, .d2.s5 .a2 { opacity: 1; transform: none; }
+      .d1[data-v=mail].k1 .cursor { transform: translate(130px, 122px); } .d1[data-v=mail].k2 .cursor { transform: translate(96px, 154px); }
+      .d1[data-v=slack].k1 .cursor { transform: translate(212px, 128px); } .d1[data-v=slack].k2 .cursor { transform: translate(322px, 134px); }
+      .d1[data-v=slack].p1 .cursor .tap { animation: none; }
+      .d1[data-v].k3 .cursor { transform: translate(36px, 244px); } .d1[data-v].k4 .cursor { transform: translate(70px, 232px); } .d1[data-v].k5 .cursor { transform: translate(347px, 232px); } .d1.s7 .cursor { opacity: 0; }
+      .d1.k5:not(.s6) .send { transform: scale(1.12); }
+      /* Scene 2: a conversation with your AI agent (Claude, then Codex): type the ask, send it, type and paste the prompt, send it */
+      .d2.s1 .u1, .d2.s4 .u2 { display: flex; animation: msgin 0.4s var(--ease) both; } .d2.s2 .a1, .d2.s5 .a2 { display: flex; animation: msgin 0.4s var(--ease) both; }
       .d2.tp .comp .ph, .d2.s3:not(.s4) .comp .ph { display: none; }
       .d2.s3:not(.s4) .send { background: var(--ac); } .d2.k1:not(.s1) .send, .d2.k3:not(.s4) .send { transform: scale(1.12); }
-      .d2 .paste { position: absolute; left: -1px; bottom: calc(100% + 8px); width: 160px; padding: 6px 10px; border: 1px solid #b4b2a8; border-radius: 9px; background: #fbfaf7; font-size: 10.5px; color: var(--muted); opacity: 0; transform: translateY(-12px); transition: opacity 0.3s var(--ease), transform 0.45s var(--ease); }
-      .d2 .paste b { font-weight: 600; color: var(--strong); } .d2 .paste .pl { display: flex; flex-direction: column; gap: 4px; margin: 5px 0 0; } .d2 .paste .pl i { display: block; height: 5px; border-radius: 3px; background: #c9c7bf; } .d2 .paste .pl i.s { width: 55%; }
-      .d2.s3 .paste { opacity: 1; transform: none; } .d2.s4 .paste { opacity: 0; transform: translateY(-20px); }
+      .d2.s3:not(.s4) .paste { opacity: 1; transform: none; } .d2.s4 .paste { opacity: 0; transform: translateY(-20px); }
+      .d2.s3:not(.s4) .key { opacity: 1; transform: none; }
       .d2 .cursor { opacity: 1; transform: translate(250px, 215px); }
-      .d2.k1 .cursor { transform: translate(344px, 234px); } .d2.k2 .cursor { transform: translate(120px, 214px); } .d2.k3 .cursor { transform: translate(344px, 234px); } .d2.s6 .cursor { opacity: 0; }
+      .d2.k1 .cursor { transform: translate(347px, 232px); } .d2.k2 .cursor { transform: translate(120px, 232px); } .d2.k3 .cursor { transform: translate(347px, 232px); } .d2.s6 .cursor { opacity: 0; }
 
       /* A scenario: four steps in a row, each with a small picture */
       .scene { padding: 64px 0 8px; border-top: 1px solid var(--line); margin-top: 56px; scroll-margin-top: 12px; }
@@ -264,7 +291,7 @@
 
       <div class="doors">
         <a class="door" href="#got-a-file" data-pipeup-id="door-file" data-pipeup-label="I got a file">
-          <div class="demo" data-len="14000" data-variants="mail,slack" data-steps='[[300,"s0"],[1700,"k1"],[1900,"s1"],[3300,"k2"],[3800,"s2"],[5000,"s3"],[5600,"k3"],[5800,"s4"],[8500,"k4"],[9000,"s5"],[10000,"s6"]]' data-compose='{"text":"Add comments to this page","from":7000,"to":8400,"clear":9000}' aria-hidden="true">
+          <div class="demo" data-len="16000" data-variants="mail,slack" data-steps='[[300,"s0"],[1000,"k1"],[2000,"p1"],[2000,"s1"],[2900,"k2"],[3900,"p2"],[3900,"s2"],[5000,"s3"],[5400,"k3"],[6300,"p3"],[6300,"cy"],[6700,"k4"],[6700,"s4"],[7700,"dr"],[7700,"p4"],[8300,"s4b"],[9900,"s5"],[10200,"k5"],[11300,"p5"],[11300,"s6"],[12300,"s7"]]' data-compose='[{"text":"Add comments with Pipeup","from":8300,"to":9500,"clear":11300}]' aria-hidden="true">
             <div class="stage d1 ag" data-v="mail">
               <div class="app src mailw"><div class="bar"><b>Mail</b><span>Inbox</span></div>
                 <div class="oldrow"><i></i><i class="s"></i></div><div class="oldrow two"><i></i><i class="s"></i></div>
@@ -272,18 +299,26 @@
                 <div class="open"><div class="mh"><b>Ada</b> to you<span class="sj">Launch plan, for your thoughts</span></div><div class="ln" style="top:62px;width:250px"></div><div class="ln" style="top:78px;width:200px"></div><div class="att get"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></div></div>
                 <div class="dl"><span class="dn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="nm">launch-plan.html</span><span class="pg"><i></i></span><span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Downloaded</span></div>
               </div>
-              <div class="app src slackw"><div class="bar"><b># design-review</b><span>Slack</span></div>
-                <div class="msg"><span class="av" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><div><div class="nm">Ada <i>10:42</i></div><div class="tx">Can you look at this before Friday?</div><div class="att get"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></div></div></div>
+              <div class="app src slackw">
+                <div class="sk-top"><span class="sk-search">Search Acme</span></div>
+                <div class="sk-body">
+                  <div class="sk-side"><b>Acme</b><span># general</span><span class="on"># design-review</span><span># launch</span><span class="dm">Ada</span></div>
+                  <div class="sk-main"><div class="sk-head"># design-review</div>
+                    <div class="sk-msg"><span class="av" style="background:#e8d4f2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b2d73" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><div><div class="nm">Ada <i>10:42 AM</i></div><div class="tx">Can you look at this before Friday?</div>
+                      <div class="sk-file get"><span class="ft"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="fn"><b>launch-plan.html</b><i>HTML</i></span><span class="fd"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></span></div></div></div>
+                    <div class="sk-comp">Message #design-review</div>
+                  </div>
+                </div>
                 <div class="dl"><span class="dn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="nm">launch-plan.html</span><span class="pg"><i></i></span><span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Downloaded</span></div>
               </div>
               <div class="app agentwin"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-mail">Claude</b><b class="n n-slack">Codex</b></span></div>
                 <div class="thread">
-                  <div class="m u u1"><div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</div>Add comments to this page</div>
+                  <div class="m u u1"><div class="row2"><span class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span><span class="pasted att"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>Pasted prompt</span></div>Add comments with Pipeup</div>
                   <div class="m a a1">Done. Open it again and comment.</div>
                 </div>
-                <div class="comp"><span class="fchip att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span><span class="typed"></span><span class="ph">Message</span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
+                <div class="comp"><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div><span class="fchip att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span><span class="typed"></span><span class="ph">Message</span><span class="key"><b>⌘</b><b>V</b></span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
               </div>
-              <span class="cursor"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+              <span class="cursor"><i class="tap"></i><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg><span class="carry att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span></span>
             </div>
           </div>
           <div class="body">
@@ -292,18 +327,18 @@
           </div>
         </a>
         <a class="door" href="#making-a-file" data-pipeup-id="door-making" data-pipeup-label="I'm making a file">
-          <div class="demo" data-len="12500" data-variants="claude,codex" data-steps='[[1500,"k1"],[1900,"s1"],[2800,"s2"],[3900,"k2"],[4400,"s3"],[5800,"k3"],[6200,"s4"],[7400,"s5"],[10200,"s6"]]' data-compose='{"text":"Make me a report to share","from":500,"to":1500,"clear":1900}' aria-hidden="true">
+          <div class="demo" data-len="13500" data-variants="claude,codex" data-steps='[[1500,"k1"],[2600,"p1"],[2600,"s1"],[3500,"s2"],[3900,"k2"],[5800,"s3"],[6400,"k3"],[7600,"p2"],[7600,"s4"],[8700,"s5"],[11500,"s6"]]' data-compose='[{"text":"Make me a report to share","from":500,"to":1500,"clear":2600},{"text":"Add comments with Pipeup","from":4300,"to":5400,"clear":7600}]' aria-hidden="true">
             <div class="stage d2 ag" data-v="claude">
-              <div class="app agentwin2"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></span></div>
+              <div class="app"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></span></div>
                 <div class="thread">
                   <div class="m u u1">Make me a report to share</div>
-                  <div class="m a a1">Here's your report.<div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>report.html</div></div>
-                  <div class="m u u2">Add Pipeup so people can comment.</div>
+                  <div class="m a a1">Here's your report.<span class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>report.html</span></div>
+                  <div class="m u u2">Add comments with Pipeup<span class="pasted att"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>Pasted prompt</span></div>
                   <div class="m a a2">Done. Comments are built in.</div>
                 </div>
-                <div class="comp"><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div><span class="typed"></span><span class="ph">Message</span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
+                <div class="comp"><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div><span class="typed"></span><span class="ph">Message</span><span class="key"><b>⌘</b><b>V</b></span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
               </div>
-              <span class="cursor"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+              <span class="cursor"><i class="tap"></i><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
             </div>
           </div>
           <div class="body">
@@ -449,14 +484,22 @@
         const typed = compose && demo.querySelector(".typed");
         const at = (t) => {
           if (compose) {
-            const n = Math.round(Math.max(0, Math.min(1, (t - compose.from) / (compose.to - compose.from))) * compose.text.length);
-            typed.textContent = t >= compose.clear ? "" : compose.text.slice(0, n);
-            stage.classList.toggle("tp", t >= compose.from && t < compose.clear);
+            let text = "", typing = false;
+            for (const c of compose) {
+              if (t < c.from || t >= c.clear) continue;
+              const n = Math.round(Math.max(0, Math.min(1, (t - c.from) / (c.to - c.from))) * c.text.length);
+              text = c.text.slice(0, n); typing = t < c.to + 200;
+            }
+            typed.textContent = text;
+            stage.classList.toggle("tp", typing);
           }
           for (const [ms, cls] of steps) stage.classList.toggle(cls, t >= ms);
+          stage.classList.toggle("carrying", stage.classList.contains("cy") && !stage.classList.contains("dr"));
           stage.classList.toggle("out", t >= len - 500);
           if (box) { const n = Math.round(Math.max(0, Math.min(1, (t - from) / (to - from))) * box.dataset.say.length); txt.textContent = box.dataset.say.slice(0, n); box.classList.toggle("sent", t >= to); }
         };
+        const still = new URLSearchParams(location.search).get("t"); // e.g. ?t=6000&v=slack shows that moment, for checking
+        if (still) { const v = new URLSearchParams(location.search).get("v"); if (v && demo.dataset.variants) stage.dataset.v = v; at(+still); continue; }
         if (reduced) { at(len - 600); continue; }
         let start = 0, raf = 0, seen = false;
         const vs = (demo.dataset.variants || "").split(",").filter(Boolean);
