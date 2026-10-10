@@ -49,31 +49,55 @@
       .stage .cb { position: absolute; width: 168px; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; box-shadow: 0 2px 8px rgba(0,0,0,.05); opacity: 0; transform: translateY(6px); transition: opacity 0.3s var(--ease), transform 0.4s var(--ease); }
       .stage .cb .who { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); margin: 0 0 4px; }
       .stage .cb .txt { font-size: 11.5px; line-height: 1.35; color: var(--strong); min-height: 15px; }
-      .stage .cb[data-say] .txt::after { content: ""; display: inline-block; width: 1.5px; height: 12px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
-      .stage .cb.sent .txt::after { display: none; } @keyframes blink { 50% { opacity: 0; } }
+      .stage [data-say] .txt::after { content: ""; display: inline-block; width: 1.5px; height: 12px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+      .stage .sent .txt::after { display: none; } @keyframes blink { 50% { opacity: 0; } }
       .stage .cursor { position: absolute; left: 0; top: 0; z-index: 5; transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
       .stage .chat { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 6px 10px; font-size: 11px; color: var(--strong); opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
       .stage .chat.bot { background: #fbfaf7; color: var(--muted); }
       .stage .pin { position: absolute; width: 14px; height: 14px; border-radius: 50% 50% 50% 3px; background: var(--violet); opacity: 0; transform: scale(0.4); transform-origin: 2px 12px; transition: opacity 0.26s var(--ease), transform 0.34s var(--ease); }
-      /* Scene 1: a file arrives, you comment, you copy it back */
-      .d1 .mail { position: absolute; left: 22px; top: 14px; display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; }
-      .d1 .mail b { font-weight: 500; color: var(--strong); }
-      .d1 .w { left: 22px; top: 48px; width: 356px; height: 196px; }
-      .d1 .hl { top: 76px; width: 170px; } .d1.s1 .hl { background: #f3dc9a; }
+      /* Scene 1: a file arrives (a message, an email, or a file on your computer), opens in the browser, you comment and copy */
+      .stage[data-v] .arr, .stage .n { display: none; }
+      .d1 .arr { position: absolute; left: 22px; top: 22px; width: 356px; opacity: 0; transform: translateY(8px); transition: opacity 0.4s var(--ease), transform 0.45s var(--ease); }
+      .d1[data-v=im] .arr.im, .d1[data-v=mail] .arr.mail, .d1[data-v=file] .arr.file { display: block; }
+      .d1.s0 .arr { opacity: 1; transform: none; } .d1.s1 .arr { opacity: 0; transform: scale(0.96); }
+      .app { background: #fff; border: 1px solid #c4c2b9; border-radius: 10px; box-shadow: 0 6px 20px rgba(40,38,30,.10); overflow: hidden; position: relative; }
+      .app .bar { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: #f3f2ed; border-bottom: 1px solid var(--line); font-size: 11px; color: var(--muted); } .app .bar b { font-weight: 600; color: var(--strong); }
+      .arr .app { height: 190px; }
+      .msg { display: flex; gap: 9px; padding: 14px 14px; } .msg .nm { font-size: 11.5px; font-weight: 600; color: var(--strong); } .msg .nm i { font-style: normal; font-weight: 400; color: var(--faint); margin-left: 6px; }
+      .msg .tx { font-size: 12px; margin: 2px 0 8px; color: var(--ink); }
+      .msg .av { width: 26px; height: 26px; border-radius: 8px; }
+      .att { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid #c4c2b9; border-radius: 8px; font-size: 11.5px; color: var(--strong); background: #fff; }
+      .arr .mh { padding: 12px 14px 0; font-size: 11.5px; color: var(--muted); } .arr .mh b { color: var(--strong); } .arr .mh .sj { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--strong); }
+      .arr.mail .att.m { position: absolute; left: 14px; bottom: 14px; }
+      .arr .ico { display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 34px; font-size: 11.5px; color: var(--strong); }
+      .arr .ico .pg { width: 46px; height: 56px; border: 1px solid #c4c2b9; border-radius: 6px; display: grid; place-items: center; background: #fff; }
+      .d1 .w { left: 22px; top: 24px; width: 356px; height: 226px; opacity: 0; transform: scale(0.97); transition: opacity 0.4s var(--ease), transform 0.45s var(--ease); } .d1.s1 .w { opacity: 1; transform: none; }
+      .d1 .url { position: absolute; left: 62px; right: 14px; top: 6px; height: 16px; border-radius: 8px; background: #f3f2ed; font-size: 9.5px; line-height: 16px; padding-left: 9px; color: var(--muted); }
+      .d1 .hl { top: 90px; width: 170px; } .d1.s2 .hl { background: #f3dc9a; }
       .d1 .fab { position: absolute; right: 12px; bottom: 12px; width: 26px; height: 26px; border-radius: 50%; background: var(--strong); transition: transform 0.4s var(--ease); } .d1.s3 .fab { transform: scale(1.12); }
-      .d1 .cb { left: 150px; top: 112px; } .d1.s2 .cb { opacity: 1; transform: none; }
-      .d1 .chip { position: absolute; left: 70px; bottom: 26px; background: var(--strong); color: #fff; font-size: 11.5px; padding: 6px 12px; border-radius: 999px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); } .d1.s4 .chip { opacity: 1; transform: none; }
-      .d1 .cursor { transform: translate(60px, 200px); } .d1.s1 .cursor { transform: translate(90px, 92px); } .d1.s3 .cursor { transform: translate(342px, 214px); }
-      /* Scene 2: your AI builds it, people comment, you hand the comments back */
-      .d2 .chat.me { left: 14px; top: 14px; } .d2.s1 .chat.me:not(.two) { opacity: 1; transform: none; }
-      .d2 .w { left: 22px; top: 52px; width: 230px; height: 200px; opacity: 0; transition: opacity 0.4s var(--ease); } .d2.s2 .w { opacity: 1; }
-      .d2 .hl { top: 76px; width: 130px; } .d2.s3 .hl { background: #f3dc9a; }
-      .d2 .p1 { left: 154px; top: 70px; } .d2.s3 .p1 { opacity: 1; transform: none; }
-      .d2 .p2 { left: 128px; top: 106px; } .d2.s4 .p2 { opacity: 1; transform: none; }
-      .d2 .c1 { left: 214px; top: 62px; width: 170px; } .d2.s3 .c1 { opacity: 1; transform: none; }
-      .d2 .c2 { left: 214px; top: 122px; width: 170px; } .d2.s4 .c2 { opacity: 1; transform: none; }
-      .d2 .chat.two { left: 214px; top: 190px; } .d2.s5 .chat.two { opacity: 1; transform: none; }
-      .d2 .chat.bot { left: 214px; top: 222px; } .d2.s6 .chat.bot { opacity: 1; transform: none; }
+      .d1 .cb { left: 150px; top: 124px; } .d1.s2 .cb { opacity: 1; transform: none; }
+      .d1 .chip { position: absolute; left: 70px; bottom: 30px; background: var(--strong); color: #fff; font-size: 11.5px; padding: 6px 12px; border-radius: 999px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); } .d1.s4 .chip { opacity: 1; transform: none; }
+      .d1 .cursor { opacity: 0; transform: translate(240px, 120px); transition: opacity 0.3s var(--ease), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+      .d1.s0 .cursor { opacity: 1; } .d1[data-v=im].s0 .cursor { transform: translate(170px, 118px); } .d1[data-v=mail].s0 .cursor { transform: translate(60px, 168px); } .d1[data-v=file].s0 .cursor { transform: translate(190px, 120px); }
+      .d1.s1 .cursor { transform: translate(90px, 106px); } .d1.s3 .cursor { transform: translate(342px, 218px); }
+      /* Scene 2: a conversation with your AI agent (Claude, then Codex): ask for a page, paste the prompt */
+      .d2[data-v=claude] .n-claude, .d2[data-v=codex] .n-codex { display: inline; }
+      .d2 .app { position: absolute; left: 22px; top: 14px; width: 356px; height: 242px; }
+      .d2 .dots2 { display: flex; gap: 5px; position: absolute; left: 11px; } .d2 .dots2 i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+      .d2 .bar { justify-content: center; } .d2 .n { font-size: 11px; }
+      .d2[data-v=codex] .bar { background: #1c1c1c; border-color: #1c1c1c; color: #bbb; } .d2[data-v=codex] .bar b { color: #fff; } .d2[data-v=codex] .dots2 i { background: #555; }
+      .d2 .m { position: absolute; max-width: 250px; font-size: 11.5px; line-height: 1.4; padding: 6px 10px; border-radius: 10px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
+      .d2 .m.u { right: 14px; background: #eeede7; color: var(--strong); } .d2 .m.a { left: 14px; background: #fff; border: 1px solid var(--line); color: var(--ink); }
+      .d2 .u1 { top: 38px; } .d2 .a1 { top: 68px; } .d2 .u2 { top: 126px; } .d2 .a2 { top: 160px; }
+      .d2.s1 .u1, .d2.s2 .a1, .d2.s4 .u2, .d2.s5 .a2 { opacity: 1; transform: none; }
+      .d2 .m .att { display: flex; margin-top: 5px; width: max-content; } .d2 .att.ok { border-color: #8fd0b3; background: #f1faf5; }
+      .d2 .pl { display: flex; flex-direction: column; gap: 4px; margin: 2px 0 6px; } .d2 .pl i { display: block; height: 5px; border-radius: 3px; background: #c9c7bf; } .d2 .pl i.s { width: 55%; }
+      .d2 .comp { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 34px; border: 1px solid #c4c2b9; border-radius: 10px; padding: 8px 12px; }
+      .d2 .comp .ph { font-size: 11px; color: var(--faint); }
+      .d2 .paste { position: absolute; left: 8px; top: -50px; width: 150px; padding: 5px 9px; border: 1px solid #b4b2a8; border-radius: 8px; background: #fbfaf7; font-size: 10px; color: var(--muted); opacity: 0; transform: translateY(-14px) scale(0.96); transition: opacity 0.3s var(--ease), transform 0.45s var(--ease); }
+      .d2 .paste b { font-weight: 600; color: var(--strong); } .d2 .paste .pl { margin: 4px 0 0; }
+      .d2.s3 .paste { opacity: 1; transform: none; } .d2.s4 .paste { opacity: 0; transform: translateY(-22px); }
+      .d2 .cursor { transform: translate(250px, 230px); } .d2.s3 .cursor { transform: translate(170px, 214px); } .d2.s4 .cursor { transform: translate(340px, 236px); } .d2.s6 .cursor { opacity: 0; }
 
       /* A scenario: four steps in a row, each with a small picture */
       .scene { padding: 64px 0 8px; border-top: 1px solid var(--line); margin-top: 56px; scroll-margin-top: 12px; }
@@ -128,10 +152,15 @@
 
       <div class="doors">
         <a class="door" href="#got-a-file">
-          <div class="demo" data-len="9500" data-steps='[[500,"s1"],[1300,"s2"],[4400,"s3"],[5600,"s4"]]' data-type="1800,3600" aria-hidden="true">
-            <div class="stage d1">
-              <div class="mail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 8l9 6 9-6"/></svg>Ada sent you <b>launch-plan.html</b></div>
-              <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:40px;width:190px"></div><div class="ln" style="top:56px;width:230px"></div><div class="hl"></div><div class="ln" style="top:94px;width:200px"></div><div class="ln" style="top:110px;width:140px"></div><div class="fab"></div></div>
+          <div class="demo" data-len="11000" data-variants="im,mail,file" data-steps='[[300,"s0"],[2600,"s1"],[3400,"s2"],[7000,"s3"],[7800,"s4"]]' data-type="3700,5400" aria-hidden="true">
+            <div class="stage d1" data-v="im">
+              <div class="arr im"><div class="app"><div class="bar"><b># messages</b><span>Ada</span></div>
+                <div class="msg"><span class="av" style="background:#dbe7fb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><div><div class="nm">Ada <i>10:42</i></div><div class="tx">Can you look at this before Friday?</div><div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</div></div></div></div></div>
+              <div class="arr mail"><div class="app"><div class="bar"><b>Inbox</b><span>Mail</span></div>
+                <div class="mh"><b>Ada</b> to you<br/><span class="sj">Launch plan, for your thoughts</span></div><div class="ln" style="top:84px;width:240px"></div><div class="ln" style="top:100px;width:190px"></div><div class="att m"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</div></div></div>
+              <div class="arr file"><div class="app"><div class="bar"><b>Downloads</b><span>Finder</span></div>
+                <div class="ico"><div class="pg"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></div><span>launch-plan.html</span></div></div></div>
+              <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="url">launch-plan.html</div><div class="ln" style="top:50px;width:190px"></div><div class="ln" style="top:66px;width:230px"></div><div class="hl"></div><div class="ln" style="top:104px;width:200px"></div><div class="ln" style="top:120px;width:140px"></div><div class="fab"></div></div>
               <div class="cb" data-say="Is this date firm?"><div class="who"><span class="av" style="background:#fdebd3"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>You</div><div class="txt"></div></div>
               <div class="chip">Copied as Markdown, ready to send back</div>
               <span class="cursor"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
@@ -145,14 +174,16 @@
           </div>
         </a>
         <a class="door" href="#making-a-file">
-          <div class="demo" data-len="9500" data-steps='[[400,"s1"],[1400,"s2"],[2600,"s3"],[3800,"s4"],[5400,"s5"],[6800,"s6"]]' data-type="9999,9999" aria-hidden="true">
-            <div class="stage d2">
-              <div class="chat me">Build my launch plan page, with comments built in</div>
-              <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:40px;width:150px"></div><div class="ln" style="top:56px;width:180px"></div><div class="hl"></div><div class="ln" style="top:94px;width:160px"></div><div class="ln" style="top:110px;width:120px"></div><div class="pin p1"></div><div class="pin p2"></div></div>
-              <div class="cb c1"><div class="who"><span class="av" style="background:#dbe7fb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82c4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Sam</div><div class="txt">Add the Q3 figure.</div></div>
-              <div class="cb c2"><div class="who"><span class="av" style="background:#e1f5ee"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span>Lee</div><div class="txt">Cut this line?</div></div>
-              <div class="chat me two">Apply this feedback</div>
-              <div class="chat bot">2 changes made.</div>
+          <div class="demo" data-len="12500" data-variants="claude,codex" data-steps='[[450,"s1"],[2100,"s2"],[3600,"s3"],[6200,"s4"],[7400,"s5"],[10000,"s6"]]' data-type="700,1700" aria-hidden="true">
+            <div class="stage d2" data-v="claude">
+              <div class="app"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></div>
+                <div class="m u u1" data-say="Make me a report to share"><span class="txt"></span></div>
+                <div class="m a a1">Here's your report.<div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>report.html</div></div>
+                <div class="m u u2">Add Pipeup so people can comment.</div>
+                <div class="m a a2">Done. Comments are built in.</div>
+                <div class="comp"><span class="ph">Message</span><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div></div>
+              </div>
+              <span class="cursor"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
             </div>
           </div>
           <div class="body">
@@ -270,7 +301,7 @@
         const steps = JSON.parse(demo.dataset.steps);
         const len = +demo.dataset.len;
         const [from, to] = demo.dataset.type.split(",").map(Number);
-        const box = demo.querySelector(".cb[data-say]");
+        const box = demo.querySelector("[data-say]");
         const txt = box && box.querySelector(".txt");
         const fit = () => { const k = demo.clientWidth / 400; stage.style.transform = `scale(${k})`; demo.style.height = 270 * k + "px"; };
         fit(); addEventListener("resize", fit);
@@ -281,7 +312,12 @@
         };
         if (reduced) { at(len - 600); continue; }
         let start = 0, raf = 0, seen = false;
-        const frame = (now) => { at((now - start) % len); raf = requestAnimationFrame(frame); };
+        const vs = (demo.dataset.variants || "").split(",").filter(Boolean);
+        const frame = (now) => {
+          const n = Math.floor((now - start) / len);
+          if (vs.length) stage.dataset.v = vs[n % vs.length];
+          at((now - start) % len); raf = requestAnimationFrame(frame);
+        };
         new IntersectionObserver(([e]) => {
           if (e.isIntersecting && !seen) { seen = true; start = performance.now(); raf = requestAnimationFrame(frame); }
           else if (!e.isIntersecting && seen) { seen = false; cancelAnimationFrame(raf); }
