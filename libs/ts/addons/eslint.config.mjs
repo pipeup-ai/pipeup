@@ -1,7 +1,7 @@
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["**/dist/**", "**/node_modules/**", "test-results/**"] },
+  { ignores: ["**/dist/**", "**/node_modules/**", "test-results/**", "examples/**/reviews-repo/**"] },
   ...tseslint.configs.recommended,
   { rules: { "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }] } },
   { files: ["e2e/**", "**/test/**"], rules: { "@typescript-eslint/no-explicit-any": "off" } },
