@@ -74,7 +74,7 @@ visitor how to add it. Functional requirements only.
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
 4. **Footer**: always at the bottom of the window, with the facts that matter (one file and its size, no dependencies,
-   works from disk, stays on your device) on the left and one **For agents** link on the right. Clicking
+   works from disk, stays on your device) on the left and, on the right, an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
@@ -216,3 +216,4 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-10 — The home page is rebuilt around the two ways people meet Pipeup (someone sent me a file; I'm making a page to share): two animated scenes on the first screen and a walkthrough for each, with a Copy prompt written for each. The showcase and the Install menu are gone from the first screen; the footer, For agents menu and GitHub link are unchanged.
 - 2026-10-10 — The home page goes back to the feature showcase on the first screen, with two buttons (Add comments to an HTML; Create comment-enabled HTML) that scroll to a walkthrough and animated scene for each way people meet Pipeup. It replaces the two animated doors; the footer, For agents menu and GitHub link are unchanged.
 - 2026-10-10 — The two scenario buttons lead to pages of their own (Add comments to an HTML; Create comment-enabled HTML), each with a back link, instead of scrolling the home page; the text is top-aligned with its animation.
+- 2026-10-10 — The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out; the icon tilts a little on hover.

@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out.
+
+- The footer's Add-ons link has a puzzle-piece icon so it stands out.
+
 - The home page's two buttons open their own pages (Add comments to an HTML; Create comment-enabled HTML), each with a back link, instead of scrolling; their text is top-aligned with the animation.
 
 - The home page keeps the feature showcase on the first screen and adds two buttons (Add comments to an HTML; Create comment-enabled HTML) that scroll to an animated walkthrough for each; the footer and For agents menu are unchanged.

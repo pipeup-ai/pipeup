@@ -37,6 +37,11 @@
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
+      .more-links { align-items: center; }
+      .addons-link { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px 5px 10px; border-radius: 999px; background: #f1effc; color: var(--strong); font-weight: 500; transition: background-color 0.2s var(--ease), color 0.2s var(--ease); }
+      .addons-link:hover, .addons-link:focus-visible { background: #e6e2fa; color: var(--strong); }
+      .addons-link svg { width: 17px; height: 17px; color: var(--violet); transition: transform 0.26s var(--ease); }
+      .addons-link:hover svg, .addons-link:focus-visible svg { transform: rotate(-8deg) scale(1.08); }
       .agents-menu {
         position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; padding: 6px; background: var(--paper);
         border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
@@ -169,7 +174,7 @@
 
       <footer>
         <div class="more-links">
-        <a class="agents-link" href="addons.html">Add-ons</a>
+        <a class="agents-link addons-link" href="addons.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4a2 2 0 1 1 4 0v1h3a1 1 0 0 1 1 1v3h-1a2 2 0 1 0 0 4h1v3a1 1 0 0 1-1 1h-3v-1a2 2 0 1 0-4 0v1H7a1 1 0 0 1-1-1v-3h1a2 2 0 1 0 0-4H6V6a1 1 0 0 1 1-1h3V4z"/></svg>Add-ons</a>
         <div class="agents">
           <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
           <div class="agents-menu" role="menu" aria-label="For agents">
