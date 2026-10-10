@@ -28,7 +28,7 @@ const CREDENTIALS = "data-pipeup-send-to-git-credentials";
 const SAYS =
   "Sends this page's open comments, as one Markdown file, to the address the page names, only after you confirm. Nothing else is sent.";
 const CSS = `.stg-p{margin:0 0 10px}.stg-note{color:var(--pu-faint)}
-.stg-box{margin:0 0 12px;padding:8px 10px;border:1px solid var(--pu-line);border-radius:8px;font-size:12.5px;word-break:break-all}
+.stg-box{margin:0 0 12px;padding:8px 10px;border:1px solid var(--pu-line);border-radius:8px;font-size:12.5px;overflow-wrap:anywhere}
 .stg-pre{margin:0 0 12px;max-height:150px;overflow:auto;padding:8px 10px;border:1px solid var(--pu-line);border-radius:8px;font:11.5px/1.45 ui-monospace,monospace;white-space:pre-wrap}
 .stg-btns{display:flex;gap:8px;flex-wrap:wrap}
 .stg-btns button{font:inherit;color:inherit;background:none;cursor:pointer;padding:6px 12px;border:1px solid var(--pu-line);border-radius:8px;transition:background-color .2s var(--pu-ease),opacity .2s var(--pu-ease)}
