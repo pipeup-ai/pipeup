@@ -641,16 +641,28 @@ permission, a registration, or a place in its npm scope.
   from one Pipeup version to the next (the add-on's API number, and the form of a signed comment) and what an add-on
   must do when it meets a newer one (stay off and say why). The add-on's types, published with Pipeup, are the
   reference and the guide points to them.
+- **Reading comments needs no encryption.** Comments are plain text in the reviewer's browser; Share seals them only
+  while they travel through a service the company doesn't control. An add-on that sends them to the company's own
+  system, over a secure connection, needs no crypto. The guide says so, and says when sealing is worth writing (a
+  store the company doesn't control).
+- **The review as a Markdown file.** Pipeup already writes a review as Markdown that says exactly where each comment
+  is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
+  company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
 - **A worked example from "another company".** The repository holds a complete example add-on written the way a
-  company would write one, outside the Pipeup project's names: "Acme Tracker". It adds one row to the menu, "Send to
-  Acme tracker", that sends the open comments to the tracker address the page names. Before anything is sent it
-  asks, saying what it will send and to where. It sends over a secure connection only (or to the reviewer's own
-  computer, for trying it), says in words how it went, and never posts, edits or resolves a comment on anyone's
-  behalf. **Its side of the integration is written down as a small contract**, in the example's README: the address,
-  the request (a list of open comments, each with its text, who and when, where on the page and a link back), the
-  answer it expects, and how it treats an error, so a company knows what its own tracker must accept. It comes with a
-  tiny stand-in tracker that follows the contract, to run on the same computer, and which shows what it received. The
-  example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out.
+  company would write one, outside the Pipeup project's names: "Acme Archive". It adds one row to the menu, "Save
+  review to Acme Git", that sends the review as that Markdown file to a service the page names, which saves it in the
+  company's Git repository for later processing and AI work. Before anything is sent it asks, saying what it will
+  send and to where. It sends over a secure connection only (or to the reviewer's own computer, for trying it), says
+  in words how it went (including where the file was saved), and never posts, edits or resolves a comment on anyone's
+  behalf. The add-on never holds a Git password or token: the company's own service does the saving. **Its side of
+  the integration is written down as a small contract**, in the example's README: the address, the request (the page's
+  title and address, when, and the Markdown), the answer it expects (the saved path and commit), and how it treats an
+  error, so a company knows what its own service must accept. It comes with a tiny stand-in service that follows the
+  contract: run on the same computer, it saves each review as a Markdown file in a local Git repository and commits it.
+  The example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out. The
+  guide also lists the other ways to get a review into Git (the reviewer saves the file and commits it themselves; the
+  add-on saves into a folder on the reviewer's computer where supported) and says why the company's own service is the
+  better choice at scale.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -938,4 +950,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
-- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Acme Tracker), not under the Pipeup project's names (section 11a).
+- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Acme Archive, saving the review as Markdown into Git), not under the Pipeup project's names (section 11a).
