@@ -611,7 +611,7 @@ permission, a registration, or a place in its npm scope.
   README with the steps to publish it under the maker's own name. A copy works and passes its own checks before
   anything is changed.
 - **Names.** An add-on's name is its own: letters, digits and dashes, 2 to 24 characters, written by the maker (a
-  maker's name in front keeps it distinct, for example "acme-translate"). The names of the Pipeup project's add-ons
+  maker's name in front keeps it distinct, for example "myteam-translate"). The names of the Pipeup project's add-ons
   (share, voice, live, assist) are theirs, and the guide asks everyone else not to use them. Pipeup can't tell
   an add-on's maker from its name, so it doesn't refuse them: two add-ons with the same name on one page, the first
   is used, and the second is ignored with a message.
@@ -649,8 +649,8 @@ permission, a registration, or a place in its npm scope.
   is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
   company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
 - **A worked example from "another company".** The repository holds a complete example add-on written the way a
-  company would write one, outside the Pipeup project's names: "Acme Archive". It adds one row to the menu, "Save
-  review to Acme Git", that sends the review as that Markdown file to a service the page names, which saves it in the
+  company would write one, outside the Pipeup project's names and carrying no real company's name: "Feedback to Git". It adds one row to the menu, "Send
+  feedback to Git", that sends the review as that Markdown file to a service the page names, which saves it in the
   company's Git repository for later processing and AI work. Before anything is sent it asks, saying what it will
   send and to where. It sends over a secure connection only (or to the reviewer's own computer, for trying it), says
   in words how it went (including where the file was saved), and never posts, edits or resolves a comment on anyone's
@@ -667,7 +667,7 @@ permission, a registration, or a place in its npm scope.
   so nothing here can stop someone who can already edit the page. The aim is to stop add-ons the author didn't choose
   (a stray or copied-in script) and to help authors and companies lock down what runs:
   - **An allow-list the author sets.** The page's author can name the add-ons that may run, in one attribute on the
-    page (`data-pipeup-addons="share,acme-archive"`). When it is there, only those add-ons run; any other is ignored,
+    page (`data-pipeup-addons="share,feedback-to-git"`). When it is there, only those add-ons run; any other is ignored,
     shows in the add-on list as off with the reason "this page doesn't allow it", and puts one plain line in the
     console. A value of "none" lets no add-on run. When the attribute is absent, every add-on runs as today, so
     existing pages keep working. Reviewers see no change.
@@ -975,5 +975,5 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
-- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Acme Archive, saving the review as Markdown into Git), not under the Pipeup project's names (section 11a).
+- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Feedback to Git, sending the feedback as Markdown to be filed in Git), not under the Pipeup project's names (section 11a).
 - 2026-10-10 — Proposed (not built): an allow-list the author sets for which add-ons run, pinning and content-security-policy guidance, one bundled file for companies, and every agent-facing surface updated to apply them (section 11a). Said plainly as best effort.
