@@ -1,0 +1,188 @@
+<!doctype html>
+<!-- Pipeup's add-ons page. Spec: docs/WEBSITE_SPEC.md ("Add-ons page"). Light only. Built by apps/site/build.sh. -->
+<html lang="en" data-pipeup-doc="pIpEuPaDdCoMmEnT:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add comments to an HTML · Pipeup</title>
+    <meta name="description" content="Someone sent you an HTML file? Comment on it right in your browser, and send your comments back." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/add-comments.html" />
+    <link rel="alternate" type="text/markdown" href="add-comments.html.md" title="This page as Markdown" />
+    <style>
+      @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+      :root {
+        --ink: #2f3437; --strong: #111111; --muted: #55544f; --faint: #7d7c76;
+        --line: #d2d0c8; --bone: #eeede7; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
+        --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
+        --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --move: cubic-bezier(0.4, 0, 0.2, 1);
+        --exit: cubic-bezier(0.4, 0, 1, 1);
+      }
+      * { box-sizing: border-box; }
+      html { background: var(--paper); }
+      body { margin: 0; font: 16px/1.55 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+      main { max-width: 1120px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
+      main > footer { margin-top: auto; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+      .mark { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      /* The GitHub link, top right: the mark and its name, in the muted ink until hovered. */
+      .gh { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .gh svg { display: block; transition: transform 0.26s var(--ease); }
+      .gh:hover, .gh:focus-visible { color: var(--strong); }
+      .gh:hover svg { transform: translateY(-1px); }
+      .more-links { margin-left: auto; display: flex; gap: 22px; align-items: baseline; }
+      .agents { position: relative; }
+      .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
+      .agents-menu {
+        position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; padding: 6px; background: var(--paper);
+        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        opacity: 0; transform: translateY(4px); visibility: hidden;
+        transition: opacity 0.2s var(--exit), transform 0.2s var(--exit), visibility 0s linear 0.2s;
+      }
+      /* A short bridge so the pointer can travel from the link up to the menu. */
+      .agents-menu::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 12px; }
+      .agents:hover .agents-menu, .agents:focus-within .agents-menu, .agents.open .agents-menu {
+        opacity: 1; transform: none; visibility: visible; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease), visibility 0s;
+      }
+      .agents-menu a { display: block; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: var(--strong); text-decoration: none; transition: background-color 0.15s var(--ease); }
+      .agents-menu a:hover, .agents-menu a:focus-visible { background: var(--bone); outline: none; }
+      a { color: var(--strong); text-underline-offset: 3px; text-decoration-color: var(--line); }
+      a:hover { text-decoration-color: var(--strong); }
+      .mark { text-decoration: none; }
+      h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
+      .intro { padding: 32px 0 40px; }
+      .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: none; }
+      .lede b { font-weight: 500; color: var(--ink); }
+      .btn {
+        appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
+        padding: 12px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--strong);
+        transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+      }
+      a.btn { text-decoration: none; }
+      .btn:hover { background: var(--bone); }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
+      .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
+      .btn.primary:hover { background: #2a2a2a; }
+      .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .btn:hover { background: var(--bone); }
+      .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
+      .btn.primary:hover { background: #2a2a2a; }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
+      .btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .ok { display: none; }
+      .copied .ok { display: block; animation: pop 0.3s var(--ease); }
+      @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
+      .copied .ic { display: none; }
+            .back { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 18px; font-size: 14.5px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
+      .back svg { transition: transform 0.26s var(--ease); } .back:hover { color: var(--strong); } .back:hover svg { transform: translateX(-3px); }
+      main .scn section.walk { border-top: 0; margin-top: 0; padding-top: 4px; }
+      @media (prefers-reduced-motion: reduce) { .agents-menu { transform: none !important; } }
+    </style>
+    <link rel="stylesheet" href="walk.css" />
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <a class="mark" href="./" aria-label="Pipeup home">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" shape-rendering="geometricPrecision" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          Pipeup
+        </a>
+        <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" /></svg>
+          GitHub
+        </a>
+      </header>
+      <a class="back" href="./"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Pipeup</a>
+
+      <div class="scn">
+      <section class="walk" id="add-comments" data-pipeup-id="scene-add">
+        <div class="whead"><div class="wt"><h1>Someone sent you an HTML file.</h1>
+        <p class="sub">Comment on it right in your browser. If it doesn't have comments built in yet, your AI assistant can add them in a minute.</p></div><div class="showcase2">
+          <div class="demo" data-len="16000" data-variants="mail,slack" data-steps='[[300,"s0"],[1000,"k1"],[2000,"p1"],[2000,"s1"],[2900,"k2"],[3900,"p2"],[3900,"s2"],[5000,"s3"],[5400,"k3"],[6300,"p3"],[6300,"cy"],[6700,"k4"],[6700,"s4"],[7700,"dr"],[7700,"p4"],[8300,"s4b"],[9900,"s5"],[10200,"k5"],[11300,"p5"],[11300,"s6"],[12300,"s7"]]' data-compose='[{"text":"Add comments with Pipeup","from":8300,"to":9500,"clear":11300}]' aria-hidden="true">
+            <div class="stage d1 ag" data-v="mail">
+              <div class="app src mailw"><div class="bar"><b>Mail</b><span>Inbox</span></div>
+                <div class="oldrow"><i></i><i class="s"></i></div><div class="oldrow two"><i></i><i class="s"></i></div>
+                <div class="row new"><b>Ada</b><span class="sj">Launch plan, for your thoughts</span><em><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11l-8 8a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/></svg></em></div>
+                <div class="open"><div class="mh"><b>Ada</b> to you<span class="sj">Launch plan, for your thoughts</span></div><div class="pln" style="top:62px;width:250px"></div><div class="pln" style="top:78px;width:200px"></div><div class="att get"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></div></div>
+                <div class="dl"><span class="dn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="nm">launch-plan.html</span><span class="pg"><i></i></span><span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Downloaded</span></div>
+              </div>
+              <div class="app src slackw">
+                <div class="sk-top"><span class="sk-search">Search Acme</span></div>
+                <div class="sk-body">
+                  <div class="sk-side"><b>Acme</b><span># general</span><span class="on"># design-review</span><span># launch</span><span class="dm">Ada</span></div>
+                  <div class="sk-main"><div class="sk-head"># design-review</div>
+                    <div class="sk-msg"><span class="av" style="background:#e8d4f2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b2d73" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><div><div class="nm">Ada <i>10:42 AM</i></div><div class="tx">Can you look at this before Friday?</div>
+                      <div class="sk-file get"><span class="ft"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="fn"><b>launch-plan.html</b><i>HTML</i></span><span class="fd"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></span></div></div></div>
+                    <div class="sk-comp">Message #design-review</div>
+                  </div>
+                </div>
+                <div class="dl"><span class="dn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg></span><span class="nm">launch-plan.html</span><span class="pg"><i></i></span><span class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Downloaded</span></div>
+              </div>
+              <div class="app agentwin"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-mail">Claude</b><b class="n n-slack">Codex</b></span></div>
+                <div class="thread">
+                  <div class="m u u1"><div class="row2"><span class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span><span class="pasted att"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/></svg>Pasted prompt</span></div>Add comments with Pipeup</div>
+                  <div class="m a a1">Done. Open it again and comment.</div>
+                </div>
+                <div class="comp"><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div><span class="fchip att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span><span class="typed"></span><span class="ph">Message</span><span class="key"><b>⌘</b><b>V</b></span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
+              </div>
+              <span class="pcur"><i class="tap"></i><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg><span class="carry att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>launch-plan.html</span></span>
+            </div>
+          </div>
+        </div></div>
+        <ol class="steps">
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="s"></i><i></i><i class="s"></i></div><span class="bub" style="right:22px;bottom:16px"></span></div>
+            <h3>Open it</h3>
+            <p>Double-click the file. If you see a small round comment button at the bottom right, you're set: skip to step 3.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="chat me">Add comments to this page</div><div class="chat bot">Done. Open it again.</div></div>
+            <h3>No button? Ask your AI</h3>
+            <p>Paste this into Claude, ChatGPT or Codex along with the file. It adds comments to your copy.</p>
+            <button class="btn primary" type="button" data-scopy="a"><span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="label">Copy prompt</span></button>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="phl"></i><i class="s"></i><i></i></div><span class="pop" style="left:88px;top:40px">Is this date firm?</span></div>
+            <h3>Comment</h3>
+            <p>Select some words, or press <b>Shift+Option+C</b> (Shift+Alt+C on Windows) and click anything. Write what you think.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="s"></i></div><span class="ai" style="right:20px;top:34px">.md</span><span class="arrow" style="left:100px;width:44px;top:56px"></span></div>
+            <h3>Send it back</h3>
+            <p>Open the comment button's menu and choose <b>Copy as Markdown</b>. Paste it in a message or email to whoever sent the file.</p>
+          </li>
+        </ol>
+        <p class="note">Your comments stay in your browser until you copy and send them. Nothing is uploaded anywhere.</p>
+      </section>
+
+
+
+      </div>
+
+      <footer>
+        <div class="more-links">
+        <a class="agents-link" href="addons.html">Add-ons</a>
+        <div class="agents">
+          <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
+          <div class="agents-menu" role="menu" aria-label="For agents">
+            <a role="menuitem" href="llms.txt" title="A short guide for AI agents">llms.txt</a>
+            <a role="menuitem" href="llms-full.txt" title="The guide and every skill, in one file">llms-full.txt</a>
+            <a role="menuitem" href="add-comments.html.md" title="This page as plain Markdown">This page as Markdown</a>
+            <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
+          </div>
+        </div>
+        </div>
+      </footer>
+    </main>
+    <script src="walk.js"></script>
+    <script src="pipeup.min.js"></script>
+  </body>
+</html>
