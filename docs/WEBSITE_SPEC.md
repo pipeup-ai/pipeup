@@ -19,10 +19,11 @@ visitor how to add it. Functional requirements only.
 1. **First screen**: the headline "Feedback for any HTML.", one sentence, and **two pictures to choose from**, because
    there are two ways people meet Pipeup. Each is a short looping animated scene with just a title (in the accent colour) and a
    "Show me how" link that scrolls to its steps; no small labels or repeated sentences. The page leads with these pictures, not with a list of features.
-   - **"Someone sent me an HTML file"** (I want to give feedback). The scene shows the file arriving, by a chat
-     message, an email, or as a file on the computer (one per loop, in turn); opening in the browser; a comment being
-     typed on a highlighted line; the comment button pressed; and a note that the comments are copied as Markdown,
-     ready to send back.
+   - **"Someone sent me an HTML file"** (I want to give feedback). Two stories, one per loop, in turn. First, an
+     email arrives and is opened, the HTML attachment is downloaded, and the file is put into Claude's message box with
+     "Add comments to this page", typed and sent; Claude says it is done. Second, an HTML file arrives in a Slack
+     message, is downloaded, and is put into Codex the same way. Each agent has its highlight colour (Claude's orange,
+     Codex's blue).
    - **"I'm making an HTML page to share"** (I want feedback). The scene shows a conversation with an AI agent (Claude,
      then Codex, in turn, each in its own highlight colour: Claude's orange, Codex's blue): "Make me a report to
      share" typed in the message box and sent, the agent's report, the prompt pasted into the message box and sent,
