@@ -38,11 +38,11 @@ done
 
 rm -rf "$out"
 mkdir -p "$out/skills"
-cp -R "$site/index.html" "$site/addons.html" "$site/fonts" "$out/"
+cp -R "$site/index.html" "$site/addons.html" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
 for id in voice live assist; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
-cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
+cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/add-comments.html.md" "$site/create-html.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 

@@ -26,6 +26,8 @@ The site is https://pipeup-ai.github.io/pipeup/; the source is https://github.co
 
 - [Everything in one file](https://pipeup-ai.github.io/pipeup/llms-full.txt): this guide plus all three skills.
 - [This site as Markdown](https://pipeup-ai.github.io/pipeup/index.html.md): the home page's content.
+- [Add comments to an HTML, as Markdown](https://pipeup-ai.github.io/pipeup/add-comments.html.md): someone sent you an HTML file and you want to give feedback.
+- [Create comment-enabled HTML, as Markdown](https://pipeup-ai.github.io/pipeup/create-html.html.md): you are making a page to share and want feedback.
 - [Add-ons as Markdown](https://pipeup-ai.github.io/pipeup/addons.html.md): what each add-on sends, and how to add it.
 
 - [Integration skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md): how to add Pipeup to a page, by page type, with every option.
