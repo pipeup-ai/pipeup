@@ -356,7 +356,8 @@
           <p class="fact"><b>Sends</b> The open comments as one Markdown file, to the address the page names. It never holds a Git token.</p>
           <p class="fact"><b>Asks first</b> It says what it will send and where, and you confirm.</p>
           <div class="actions">
-            <a class="btn primary" href="try/send-to-git.html">Try it</a>
+            <button class="btn primary" type="button" data-copy="stg-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <a class="btn" href="try/send-to-git.html">Try it</a>
             <a class="btn" href="https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git">Read the source</a>
           </div>
         </div>
@@ -405,7 +406,16 @@
       const OPEN = "Edit only the HTML file: this is a text change, so there is nothing to download, run or look up. If my page already has data-pipeup-doc on the <html> element, leave it exactly as it is.";
       const SHARE_DEMO = "git clone https://github.com/pipeup-ai/pipeup && cd pipeup/libs/ts/pipeup && npm ci && npm run build && cd ../addons && npm ci && npm run demo";
       const MAILBOX = 'CREATE_TOKEN="$(openssl rand -base64 24)" DATA_DIR=./pipeup-mailbox npx @pipeup/mailbox';
+      const SKILL = "https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md";
       const prompts = {
+        stg: () => [
+          "I want to try Pipeup's Send to Git example: an add-on that saves a review as a Markdown file in a GitHub repository, through a small service that I run. Please set it up with me, following this skill:",
+          SKILL,
+          "",
+          "Start by asking me which GitHub repository to use, and whether I want to try it on this computer first or set it up for my team. Then guide me step by step, and tell me what a command does before you run it.",
+          "",
+          "Rules: never ask me to paste a token, key or password into this chat or into any page; tell me where to set it instead. Anything that needs my approval, such as creating a GitHub App or its permissions, I will do myself. Don't change my pages except as the skill says.",
+        ].join("\n"),
         share: () => [
           "My HTML page already uses Pipeup for comments. I want to let reviewers see each other's comments. Please add the Pipeup Share add-on.",
           "",

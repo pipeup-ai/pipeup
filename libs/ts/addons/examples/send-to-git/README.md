@@ -22,7 +22,7 @@ file appears in a real Git repository (a temporary one; the path is printed) and
 
 ## Make it save into a real GitHub repository
 
-To see the real thing, with a repository you can open on GitHub:
+**Lowest friction:** copy the prompt on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons.html#send-to-git) (the Send to Git card) and give it to your AI agent. It follows the `pipeup-send-to-git-setup` skill and does the steps below with you. Or do them by hand, to see the real thing with a repository you can open on GitHub:
 
 1. **Make a test repository** (for example `your-org/reviews`) with a `main` branch.
 2. **Make an access token**: on GitHub, Settings, Developer settings, Fine-grained personal access tokens. Choose **only that

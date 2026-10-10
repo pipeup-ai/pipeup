@@ -120,7 +120,9 @@ use. The page:
   command that makes a copy of the template.
 - Shows, under it, **one example from another company**: a card for "Send to Git" (it sends a review's feedback to the company, where it is filed in Git as a Markdown file) clearly labelled "Example: not from
   Pipeup", with the same Copy-prompt-less layout as the other cards, a short animated scene of its menu row and
-  consent note, a **Try it** link to its try page, and a link to its source in the repository.
+  consent note, a **Copy prompt** button (a prompt for the person's AI agent that sets Send to Git up with them, following the setup
+  skill: it asks which repository and whether to try it on this computer first or set it up for a team, never asks for a token
+  in the chat or a page, and leaves approvals to the person), a **Try it** link to its try page, and a link to its source in the repository.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
 - Gives agents the safe way to add an add-on on every surface: each add-on's Copy prompt and Copy script tag add the
@@ -271,3 +273,4 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.
 - 2026-10-10 — Proposed (not built): the guide page covers setting up the GitHub side of Send to Git and points to the setup skill, the reference service and the contract checker.
 - 2026-10-10 — Built: the guide page (addons-guide.html, one source with its Markdown copy), the Make-your-own and Send to Git cards on the Add-ons page, the Send to Git try page, and the add-on prompts and Markdown copies carry the integrity hash, the allow-list and the policy advice.
+- 2026-10-10 — Send to Git's card has a Copy prompt that has the person's AI agent set it up with them; the setup skill has a ten-minute fast path to try it on one computer first.

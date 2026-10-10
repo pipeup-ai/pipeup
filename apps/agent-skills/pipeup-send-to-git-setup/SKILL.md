@@ -23,7 +23,24 @@ Guide: https://pipeup-ai.github.io/pipeup/addons-guide.html.md
 - **Ask before choosing the repository, the branch and the page's address.** Don't invent them.
 - This is best effort safety, not a guarantee: say so. A script on a page runs with the page's full power.
 
-## Steps
+## Fast path: try it on this computer first
+
+If the person wants to see it work before involving their company, do this instead of the full steps (about ten minutes). Ask which
+GitHub repository to use (a test repository is best) and tell them what each command does before you run it.
+
+1. **Get the example and build it** (needs Node 22 or newer and git): in a folder they choose, `git clone --depth 1 https://github.com/pipeup-ai/pipeup`,
+   then in `libs/ts/pipeup` run `npm ci && npm run build`, and in `libs/ts/addons` run `npm ci && node examples/send-to-git/build.mjs`.
+2. **The access token is theirs to make and keep.** Tell them: on GitHub, Settings, Developer settings, Fine-grained personal access tokens;
+   choose only the test repository; Contents: Read and write, and Pull requests: Read and write. **They start the service
+   themselves, in their own terminal, so the token never passes through this chat**:
+   `cd libs/ts/addons/examples/send-to-git && REPO=<owner/name> ORIGIN=http://localhost:8789 DEV_USER=<their name> GITHUB_TOKEN=<their token> PORT=8788 node service/github.mjs`
+   (`DEV_USER` stands in for the company sign-in; it is for their own computer only).
+3. **You start the page**: `SERVICE_URL=http://127.0.0.1:8788/reviews node demo.mjs` in the same folder, and give them the address it prints.
+4. **They try it**: press Shift+Option+C, comment, open the menu, choose Send to Git, confirm. The panel shows a pull request link;
+   have them open it and check the Markdown file is there. Optionally run the checker (it saves a few test files too).
+5. Then offer the full steps below to set it up for their team.
+
+## Steps (for a team)
 
 1. **Is the Share add-on with the company's own mailbox enough?** If the need is only "comments must stay inside the
    company", it is: use `@pipeup/share` with a mailbox the company runs (`npx @pipeup/mailbox`, see the mailbox README) and
