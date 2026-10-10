@@ -172,6 +172,10 @@ so the two never differ). It:
   with the template; **using add-ons inside a company** (first, whether the Share add-on with the company's own
   mailbox is enough; then hosting your own script, pinning it, who decides what runs, reviewing it, the sentence
   reviewers see); the worked example and its integration contract; and what the project stands behind.
+- Has, in its company section, how to set up the GitHub side of Send to Git (the options, best first, and what the company's own
+  service does), links to the reference service and the contract checker in the repository, and a line telling people
+  they can hand the setup skill to their agent. The skill is served like the other agent skills and listed in llms.txt
+  and llms-full.txt.
 - Shows its code in readable blocks that can be copied, and links the template and the example in the repository.
 - Says plainly, near the top and again at the end, that add-ons from anyone else run with the page's full power and
   that Pipeup doesn't vouch for them.
@@ -265,3 +269,4 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).
 - 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Send to Git) with its own card and try page, and a company section in the guide.
 - 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.
+- 2026-10-10 — Proposed (not built): the guide page covers setting up the GitHub side of Send to Git and points to the setup skill, the reference service and the contract checker.

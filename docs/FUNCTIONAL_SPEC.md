@@ -688,6 +688,24 @@ permission, a registration, or a place in its npm scope.
     the home page; the guide; and each add-on's README and the template's README.
   - **Not part of this change:** a list in the menu that shows reviewers which add-ons are active (and which are not
     from Pipeup), and running add-ons in a sandboxed frame; both are for later, and the first changes the core.
+- **Setting up the company's side (GitHub).** The browser never talks to GitHub. A small service the company runs sits
+  between: it knows who is sending (through the company's sign-in), checks the request, chooses the file's path itself
+  so a request can't write elsewhere, limits size and rate, keeps a record, writes the Markdown to the repository, and
+  answers with the saved path and commit (or pull request). The guide describes the ways to give that service access,
+  best first: a **GitHub App** installed on only the review repository, writing to a branch and opening a pull request
+  (never pushing to the main branch); a fine-grained access token on a bot account, limited to one repository, for a
+  pilot; a GitHub Actions workflow started by a webhook for short reviews. It says why the add-on never holds a token
+  and why the page never calls GitHub directly. GitHub Enterprise Server works the same at the company's own address.
+  Parts shipped with the example, so a company starts from something that works:
+  - **A GitHub-backed reference service**, beside the stand-in one, that follows the same written contract, written
+    without outside code (like the mailbox reference server), so a company can read all of it.
+  - **A contract checker**: one command that sends a sample review to a company's service and says, in words, whether
+    it follows the contract (so a company knows its own version works before pointing a page at it).
+  - **A setup skill for agents**, shipped with Pipeup's agent skills, that walks a company engineer's agent through:
+    choosing the GitHub option, creating the GitHub App from a manifest the person approves (the agent can't approve
+    permissions for them), generating the service from the reference one, setting its settings, giving the page the
+    service address, the allow-list entry and the matching content security policy line, and running the checker. It
+    never asks for a token to be pasted into a page or a chat.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -977,3 +995,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
 - 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Send to Git, sending the feedback as Markdown to be filed in Git), not under the Pipeup project's names (section 11a).
 - 2026-10-10 — Proposed (not built): an allow-list the author sets for which add-ons run, pinning and content-security-policy guidance, one bundled file for companies, and every agent-facing surface updated to apply them (section 11a). Said plainly as best effort.
+- 2026-10-10 — Proposed (not built): how a company sets up the GitHub side of Send to Git (a GitHub App and a small service, or a bot token, or a webhook-started workflow), with a GitHub-backed reference service, a contract checker and a setup skill for agents (section 11a).
