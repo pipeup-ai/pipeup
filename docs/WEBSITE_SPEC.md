@@ -270,3 +270,4 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Send to Git) with its own card and try page, and a company section in the guide.
 - 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.
 - 2026-10-10 — Proposed (not built): the guide page covers setting up the GitHub side of Send to Git and points to the setup skill, the reference service and the contract checker.
+- 2026-10-10 — Built: the guide page (addons-guide.html, one source with its Markdown copy), the Make-your-own and Send to Git cards on the Add-ons page, the Send to Git try page, and the add-on prompts and Markdown copies carry the integrity hash, the allow-list and the policy advice.

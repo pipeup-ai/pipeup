@@ -38,3 +38,10 @@ author's. A peer whose hello does not verify is dropped.
 
 `@pipeup/live/headless` exports `Mesh`, `createMesh(document, secret)` and `loopback(a, b)`: the same document
 sync over any channel that can send a string, for agents and tests. No WebRTC.
+
+## Keeping it intentional
+
+Pin the script with its integrity hash (it is in the release notes), list the add-ons that may run on the page
+(`<html data-pipeup-addons="live">`; without the attribute every add-on runs), and set a content security policy that allows
+scripts only from the page and the CDN and connections only to the meeting-point relays (`wss://relay.damus.io`, `wss://nos.lol`, `wss://relay.primal.net`) and peer connections. This is best effort: it stops add-ons you didn't
+choose, not a page that is already compromised. See the [guide](../../../docs/ADDONS_GUIDE.md).

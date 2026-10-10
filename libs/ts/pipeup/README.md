@@ -28,6 +28,13 @@ Each release's notes on GitHub give the `integrity` value
 (`node scripts/sri.mjs` prints it for a local build). Make a document key with
 `await Pipeup.newDocumentAttribute()` and keep it once people have commented.
 
+**Add-ons.** Optional extra scripts add features (`@pipeup/share`, `voice`, `live`, `assist`), and anyone can write their own
+(a company's, for example) without the Pipeup project's permission: see the
+[guide](https://pipeup-ai.github.io/pipeup/addons-guide.html). Add-ons run with the page's full power, so keep them
+intentional (best effort): pin each script with its `integrity` hash, name the add-ons that may run with
+`<html data-pipeup-addons="share,voice">` (without the attribute every add-on runs; `none` lets none run), and set a content
+security policy for the hosts you intend. Add-ons from anyone else are not vouched for by the Pipeup project.
+
 Install with `npm i pipeup`. From a bundler (no side effects; call `mount` yourself):
 
 ```js

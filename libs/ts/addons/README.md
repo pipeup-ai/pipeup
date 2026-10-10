@@ -11,7 +11,7 @@ Optional features for Pipeup, each one more script. The design is [docs/design/a
 | `kit/`    | private          | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
 | `test/`   | private          | A fixture add-on that uses every slot, for the browser tests                                                                          |
 
-Making your own? See the [guide](../../../docs/ADDONS_GUIDE.md) and the [template](template/): you can publish an add-on under your own name, with no permission from this project.
+Making your own? See the [guide](../../../docs/ADDONS_GUIDE.md) and the [template](template/): you can publish an add-on under your own name, with no permission from this project. [`examples/send-to-git`](examples/send-to-git/) is a complete example of an add-on a company writes for itself (it saves a review as Markdown in Git through the company's own service), with a stand-in service, a GitHub reference service and a contract checker. It is not from this project.
 
 The mailbox server for `share` is in [`services/mailbox`](../../../services/mailbox).
 

@@ -4,12 +4,12 @@ import type { PipeupAddon } from "pipeup";
  * A small, complete add-on: one row in Pipeup's menu that opens a panel with a short note.
  *
  * Change the id first. It is yours: lower-case letters, digits and dashes, 2 to 24 characters, starting with a
- * letter. A maker's name in front keeps it distinct ("acme-hello"). The names share, voice, live and assist are
+ * letter. A maker's name in front keeps it distinct ("myteam-hello"). The names share, voice, live and assist are
  * the Pipeup project's own; please don't use them.
  */
 export function createAddon(): PipeupAddon {
   return {
-    id: "acme-hello",
+    id: "myteam-hello",
     // The add-on API this was written for. Pipeup keeps an add-on off, with a reason, if it doesn't match.
     api: 1,
     version: "0.1.0",

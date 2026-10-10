@@ -1,5 +1,5 @@
 {
-  "name": "acme-hello-addon",
+  "name": "myteam-hello-addon",
   "version": "0.1.0",
   "description": "A starting point for your own Pipeup add-on. Rename it, change what it does, publish it under your own name.",
   "license": "MIT",

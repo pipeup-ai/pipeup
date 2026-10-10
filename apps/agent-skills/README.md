@@ -10,12 +10,14 @@ do not work yet; the rest work today by copy and paste.
 | [pipeup-integrate](pipeup-integrate/SKILL.md) | Making or editing an HTML document, deck or page that people will review |
 | [pipeup-summarise](pipeup-summarise/SKILL.md) | Someone has feedback on a page and wants it understood |
 | [pipeup-apply](pipeup-apply/SKILL.md) | Someone wants the feedback acted on |
+| [pipeup-send-to-git-setup](pipeup-send-to-git-setup/SKILL.md) | A company wants reviews saved as Markdown in its own Git, through its own service |
 
 The website publishes them for agents to fetch:
 
 - https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md
 - https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md
 - https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md
+- https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md
 
 ## The contract these skills assume
 

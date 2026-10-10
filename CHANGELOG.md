@@ -7,6 +7,12 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+- A page can list the add-ons that may run: `<html data-pipeup-addons="share,my-addon">` (`none` lets none run; without it every add-on runs). Any other add-on stays off, with the reason "this page doesn't allow it". Best effort: it stops add-ons the author didn't choose, not a page that is already compromised.
+- A guide page for making your own add-on (`addons-guide.html`, from `docs/ADDONS_GUIDE.md`), including using add-ons inside a company, what an add-on works with, and keeping add-ons intentional; a Make-your-own card on the Add-ons page; the template now builds one bundled, pinned file.
+- **Send to Git**, an example of an add-on a company writes for itself (not from the Pipeup project): it sends a review as Markdown to a service the company runs, which files it in Git. It comes with a stand-in service, a GitHub reference service, a contract checker and a try page, and the agent skill `pipeup-send-to-git-setup`.
+- The Add-ons page's prompts, `llms.txt`, the integrate skill and each add-on's README tell agents to pin add-on scripts with their integrity hash, list the add-on in `data-pipeup-addons`, and tell the author about a content security policy.
+
 - The file in the walkthrough scenes looks like an HTML file: a larger page icon with a code mark and an orange HTML badge.
 
 - The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
