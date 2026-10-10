@@ -17,8 +17,8 @@ visitor how to add it. Functional requirements only.
 ## 3. Content (one page, dense but calm, with little scrolling)
 
 1. **First screen**: the headline "Feedback for any HTML.", one sentence, and **two pictures to choose from**, because
-   there are two ways people meet Pipeup. Each is a short looping animated scene with a title, one line and a
-   "Show me how" link that scrolls to its steps. The page leads with these pictures, not with a list of features.
+   there are two ways people meet Pipeup. Each is a short looping animated scene with just a title (in the accent colour) and a
+   "Show me how" link that scrolls to its steps; no small labels or repeated sentences. The page leads with these pictures, not with a list of features.
    - **"Someone sent me an HTML file"** (I want to give feedback). The scene shows the file arriving, by a chat
      message, an email, or as a file on the computer (one per loop, in turn); opening in the browser; a comment being
      typed on a highlighted line; the comment button pressed; and a note that the comments are copied as Markdown,
