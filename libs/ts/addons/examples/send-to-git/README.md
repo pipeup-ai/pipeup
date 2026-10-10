@@ -20,6 +20,34 @@ Open the address it prints, press Shift+Option+C, comment, open the menu, choose
 file appears in a real Git repository (a temporary one; the path is printed) and is committed:
 `git -C <that path> log --stat`.
 
+## Make it save into a real GitHub repository
+
+To see the real thing, with a repository you can open on GitHub:
+
+1. **Make a test repository** (for example `your-org/reviews`) with a `main` branch.
+2. **Make an access token**: on GitHub, Settings, Developer settings, Fine-grained personal access tokens. Choose **only that
+   repository**, with **Contents: Read and write** and **Pull requests: Read and write**. (For a team, use a GitHub App
+   instead; see "Setting up the GitHub side".)
+3. **Run the service** on your computer (Node 22 or newer). The token stays in this terminal and never goes in a page:
+
+   ```sh
+   REPO=your-org/reviews ORIGIN=http://localhost:8789 DEV_USER=sam GITHUB_TOKEN=<your token> \
+     PORT=8788 node service/github.mjs
+   ```
+
+   `DEV_USER` stands in for the company sign-in, for trying it on your own computer only.
+
+4. **Run the page**, pointed at that service:
+
+   ```sh
+   SERVICE_URL=http://127.0.0.1:8788/reviews node demo.mjs
+   ```
+
+5. **Open the address it prints**, press Shift+Option+C, comment, open the menu, choose **Send to Git** and confirm. The panel
+   shows the pull request. Open it on GitHub: the review is there as a Markdown file under `reviews/`.
+6. **Check the service** (optional): `node service/check.mjs http://127.0.0.1:8788/reviews --origin http://localhost:8789 --header "x-company-user: sam"`.
+   Note the checker saves a few test files too.
+
 ## The pieces
 
 | File                   | What it is                                                                                             |

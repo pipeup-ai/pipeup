@@ -9,6 +9,8 @@
 //   MODE             "pr" (default: a branch and a pull request) or "direct" (commit to BASE_BRANCH)
 //   ORIGIN           the one page address allowed to call this service (required)
 //   USER_HEADER      the header your sign-in proxy sets (default x-company-user)
+//   DEV_USER         ONLY for trying it on your own computer, with no sign-in proxy: treat every request as this person.
+//                    Never set it on a service anyone else can reach.
 //   Credentials, one of:
 //   GITHUB_TOKEN     a fine-grained access token limited to REPO (contents and pull requests: write), for a pilot
 //   APP_ID, INSTALLATION_ID, PRIVATE_KEY   a GitHub App installed on REPO (best): PRIVATE_KEY is its PEM text
@@ -105,7 +107,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     throw new Error("Set REPO (owner/name) and ORIGIN (the page's address); see the top of this file.");
   if (!env("GITHUB_TOKEN") && !(env("APP_ID") && env("INSTALLATION_ID") && env("PRIVATE_KEY")))
     throw new Error("Set GITHUB_TOKEN, or APP_ID, INSTALLATION_ID and PRIVATE_KEY.");
-  const who = (req) => req.headers[USER_HEADER] || null;
+  if (env("DEV_USER"))
+    console.warn(
+      `DEV_USER is set: every request is treated as "${env("DEV_USER")}". Use it only on your own computer.`,
+    );
+  const who = (req) => req.headers[USER_HEADER] || env("DEV_USER") || null;
   createServer(handler({ save, who, origin: ORIGIN })).listen(Number(env("PORT", "8788")), () =>
     console.log(`Send to Git service for ${REPO} on port ${env("PORT", "8788")}`),
   );

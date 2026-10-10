@@ -1,5 +1,7 @@
+import { spawn } from "node:child_process";
 import { createVerify, generateKeyPairSync } from "node:crypto";
 import { createServer } from "node:http";
+import { createServer as listen } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 /** A stand-in for GitHub's API, recording what the reference service asks of it. */
@@ -30,6 +32,15 @@ async function fakeGitHub() {
   await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
   return { calls, server, api: `http://127.0.0.1:${server.address().port}` };
 }
+
+/** A port nothing is using, so a stray server on this computer can't be the one that answers. */
+const freePort = () =>
+  new Promise((ok) => {
+    const s = listen().listen(0, "127.0.0.1", () => {
+      const { port } = s.address();
+      s.close(() => ok(port));
+    });
+  });
 
 const review = {
   title: "Q3 launch plan",
@@ -109,5 +120,72 @@ describe("the GitHub reference service", () => {
       createVerify("RSA-SHA256").update(`${head}.${body}`).verify(publicKey, Buffer.from(sig, "base64url")),
     ).toBe(true);
     expect(gh.calls.slice(1).every((c) => c.auth === "Bearer installation-token")).toBe(true);
+  });
+});
+
+describe("the GitHub service, run as a program", () => {
+  it("answers a review from the page with a pull request, for the person the sign-in names", async () => {
+    const gh = await fakeGitHub();
+    const port = await freePort();
+    const child = spawn("node", ["service/github.mjs"], {
+      cwd: new URL("..", import.meta.url).pathname,
+      env: {
+        ...process.env,
+        REPO: "co/reviews",
+        ORIGIN: "http://localhost:8789",
+        GITHUB_API: gh.api,
+        GITHUB_TOKEN: "t",
+        PORT: String(port),
+        USER_HEADER: "x-company-user",
+      },
+    });
+    await new Promise((ok) =>
+      child.stdout.on("data", (d) => String(d).includes("Send to Git service") && ok()),
+    );
+    const url = `http://127.0.0.1:${port}/reviews`;
+    const post = (headers) =>
+      fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: "http://localhost:8789", ...headers },
+        body: JSON.stringify({ ...review, exportedAt: new Date().toISOString() }),
+      });
+    const unsigned = await post({});
+    const signed = await post({ "x-company-user": "Sam Lee" });
+    const out = await signed.json();
+    child.kill();
+    gh.server.close();
+    expect(unsigned.status).toBe(401);
+    expect(signed.status).toBe(201);
+    expect(signed.headers.get("access-control-allow-origin")).toBe("http://localhost:8789");
+    expect(out.pr).toBe("https://github.example/co/reviews/pull/7");
+    expect(out.path).toMatch(/^reviews\/launch-plan\/.+-sam-lee-[0-9a-f]{4}\.md$/);
+  });
+
+  it("with DEV_USER set (only for trying it on your own computer), takes every request as that person", async () => {
+    const gh = await fakeGitHub();
+    const port = await freePort();
+    const child = spawn("node", ["service/github.mjs"], {
+      cwd: new URL("..", import.meta.url).pathname,
+      env: {
+        ...process.env,
+        REPO: "co/reviews",
+        ORIGIN: "http://localhost:8789",
+        GITHUB_API: gh.api,
+        GITHUB_TOKEN: "t",
+        PORT: String(port),
+        DEV_USER: "sam",
+      },
+    });
+    await new Promise((ok) =>
+      child.stdout.on("data", (d) => String(d).includes("Send to Git service") && ok()),
+    );
+    const res = await fetch(`http://127.0.0.1:${port}/reviews`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...review, exportedAt: new Date().toISOString() }),
+    });
+    child.kill();
+    gh.server.close();
+    expect(res.status).toBe(201);
   });
 });
