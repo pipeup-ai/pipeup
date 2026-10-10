@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The two walkthrough pages' footer matches the Add-ons page: a rule above it and the Add-ons and For agents links on the right (For agents offers that page's Markdown copy).
+
 - The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out.
 
 - The footer's Add-ons link has a puzzle-piece icon so it stands out.
