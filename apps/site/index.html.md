@@ -7,7 +7,9 @@ People comment right on an HTML page, and send their comments back. No accounts,
 - **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
 
-## Someone sent you an HTML file
+On the home page, the first screen shows Pipeup on a document, slides, a website and with the keyboard, and two buttons: **1. Add comments to an HTML** and **2. Create comment-enabled HTML**. Each scrolls to its walkthrough below.
+
+## 1. Add comments to an HTML (someone sent you an HTML file)
 
 You want to read it and give feedback.
 
@@ -18,7 +20,7 @@ You want to read it and give feedback.
 
 Comments stay in your browser until you copy and send them.
 
-## You are making an HTML page to share
+## 2. Create comment-enabled HTML (you are making a page to share)
 
 You want feedback on it.
 
