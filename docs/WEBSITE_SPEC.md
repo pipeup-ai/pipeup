@@ -39,8 +39,8 @@ visitor how to add it. Functional requirements only.
    "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
 2. **The two walkthrough pages**, `add-comments.html` and `create-html.html`, one for each button, kept focused like the
    Add-ons page: the same header and footer, a **back link** ("← Pipeup") above the heading, and each with its own Markdown
-   copy. Each has a heading and a sentence on the left, top-aligned with an animated scene on the right, and four steps with a
-   small picture and plain words below:
+   copy. Each has a heading and a sentence on the left, top-aligned with an animated scene on the right, and, instead of cards, **four one-line steps** under the sentence (brief words, the Copy prompt button inside its
+   step), so the whole page fits one screen with no scrolling, like the home page:
    - **Add comments to an HTML** ("Someone sent you an HTML file"). The scene shows two stories, one per loop, in turn:
      an email arrives and is opened, the HTML attachment is downloaded, and the file is dragged into Claude's message
      box; "Add comments with Pipeup" is typed, the prompt is pasted in (a paste key hint shows) and it is sent; Claude
@@ -217,3 +217,5 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-10 — The home page goes back to the feature showcase on the first screen, with two buttons (Add comments to an HTML; Create comment-enabled HTML) that scroll to a walkthrough and animated scene for each way people meet Pipeup. It replaces the two animated doors; the footer, For agents menu and GitHub link are unchanged.
 - 2026-10-10 — The two scenario buttons lead to pages of their own (Add comments to an HTML; Create comment-enabled HTML), each with a back link, instead of scrolling the home page; the text is top-aligned with its animation.
 - 2026-10-10 — The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out; the icon tilts a little on hover.
+- 2026-10-10 — The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
+- 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).
