@@ -158,9 +158,11 @@ own Markdown copy (`addons-guide.html.md`) that says the same as the page (it is
 so the two never differ). It:
 
 - Reads top to bottom in the guide's order: what an add-on is; what it can do (a small table of the slots, one line
-  each); what it can't do; saying what you send; names; trying and testing it with the template; **using add-ons
-  inside a company** (hosting the script yourself, pinning it, who decides what runs, reviewing it, the sentence
-  reviewers see); the worked example; and what the project stands behind.
+  each); what it can't do; **what an add-on works with** (the document's threads and comments, hearing changes, the
+  signed comments, signing, and what stays fixed between versions); saying what you send; names; trying and testing it
+  with the template; **using add-ons inside a company** (first, whether the Share add-on with the company's own
+  mailbox is enough; then hosting your own script, pinning it, who decides what runs, reviewing it, the sentence
+  reviewers see); the worked example and its integration contract; and what the project stands behind.
 - Shows its code in readable blocks that can be copied, and links the template and the example in the repository.
 - Says plainly, near the top and again at the end, that add-ons from anyone else run with the page's full power and
   that Pipeup doesn't vouch for them.
