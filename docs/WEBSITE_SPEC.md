@@ -81,6 +81,11 @@ visitor how to add it. Functional requirements only.
 
 There is no separate set-up section: the two walkthroughs cover it.
 
+**Add-on safety, for agents**: wherever the site tells an agent to add an add-on (llms.txt, llms-full.txt, the integrate
+skill, the Add-ons page's prompts and its Markdown copy, the guide page and its Markdown copy), it also tells the agent to pin
+the script with its integrity hash, to put only the add-ons the author asked for in the allow-list attribute, and to
+suggest a content security policy to the author. It says this is best effort.
+
 **For agents**: the site serves, at stable addresses and linked from the page and its footer:
 a short guide (llms.txt), the guide and all agent skills in one file (llms-full.txt), the page
 itself as Markdown, the agent skills, the script, a robots.txt that welcomes every agent, and
@@ -118,6 +123,10 @@ use. The page:
   consent note, a **Try it** link to its try page, and a link to its source in the repository.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
+- Gives agents the safe way to add an add-on on every surface: each add-on's Copy prompt and Copy script tag add the
+  pinned script with its integrity hash and list only that add-on in the page's allow-list attribute, and say what
+  to tell the author about a content security policy; the Markdown copy of the page, llms.txt and the agent skill say
+  the same.
 - Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
   choose a sharing service for them.
 
@@ -255,3 +264,4 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
 - 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).
 - 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Acme Archive) with its own card and try page, and a company section in the guide.
+- 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.

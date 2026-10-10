@@ -663,6 +663,31 @@ permission, a registration, or a place in its npm scope.
   guide also lists the other ways to get a review into Git (the reviewer saves the file and commits it themselves; the
   add-on saves into a folder on the reviewer's computer where supported) and says why the company's own service is the
   better choice at scale.
+- **Keeping add-ons intentional (best effort).** An add-on is a script on the page and runs with the page's full power,
+  so nothing here can stop someone who can already edit the page. The aim is to stop add-ons the author didn't choose
+  (a stray or copied-in script) and to help authors and companies lock down what runs:
+  - **An allow-list the author sets.** The page's author can name the add-ons that may run, in one attribute on the
+    page (`data-pipeup-addons="share,acme-archive"`). When it is there, only those add-ons run; any other is ignored,
+    shows in the add-on list as off with the reason "this page doesn't allow it", and puts one plain line in the
+    console. A value of "none" lets no add-on run. When the attribute is absent, every add-on runs as today, so
+    existing pages keep working. Reviewers see no change.
+  - **Pinned and checked scripts.** Authors are told to pin each add-on's script to a fixed version with its integrity
+    hash (or to host one bundled file and pin that), and to set a content security policy that allows only the
+    script and network hosts they intend, because an add-on's "what it sends" sentence is a statement and a policy is
+    what enforces it. For Pipeup's own add-ons the guide gives the exact policy lines from their declared hosts.
+  - **One bundled file.** For companies the guide recommends one file that holds Pipeup and the add-on together,
+    hosted by the company and pinned. The template builds that file and prints its integrity hash.
+  - **Said plainly.** The guide, the website and the agent files say this is best effort: it protects against stray
+    scripts, not against a page that is already compromised, and an add-on's name can't prove who made it (the
+    first add-on with a name wins).
+  - **Agents do the setting up.** Everything an agent reads about adding an add-on tells it to add the pinned script
+    with its integrity hash, to list only the add-ons the author asked for in the allow-list attribute, and to
+    suggest the matching content security policy for the author to apply (never to apply one that could break the
+    page without saying so). The surfaces are: llms.txt and llms-full.txt; the integrate agent skill; each add-on's
+    Copy prompt and script-tag button on the Add-ons page; the Markdown copies of the Add-ons page, the guide page and
+    the home page; the guide; and each add-on's README and the template's README.
+  - **Not part of this change:** a list in the menu that shows reviewers which add-ons are active (and which are not
+    from Pipeup), and running add-ons in a sandboxed frame; both are for later, and the first changes the core.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -951,3 +976,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
 - 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Acme Archive, saving the review as Markdown into Git), not under the Pipeup project's names (section 11a).
+- 2026-10-10 — Proposed (not built): an allow-list the author sets for which add-ons run, pinning and content-security-policy guidance, one bundled file for companies, and every agent-facing surface updated to apply them (section 11a). Said plainly as best effort.
