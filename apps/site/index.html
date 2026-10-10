@@ -164,24 +164,32 @@
       .d1 .cursor { opacity: 0; transform: translate(240px, 120px); transition: opacity 0.3s var(--ease), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
       .d1.s0 .cursor { opacity: 1; } .d1[data-v=im].s0 .cursor { transform: translate(170px, 118px); } .d1[data-v=mail].s0 .cursor { transform: translate(60px, 168px); } .d1[data-v=file].s0 .cursor { transform: translate(190px, 120px); }
       .d1.s1 .cursor { transform: translate(90px, 106px); } .d1.s3 .cursor { transform: translate(342px, 218px); }
-      /* Scene 2: a conversation with your AI agent (Claude, then Codex): ask for a page, paste the prompt */
-      .d2[data-v=claude] .n-claude, .d2[data-v=codex] .n-codex { display: inline; }
-      .d2 .app { position: absolute; left: 22px; top: 14px; width: 356px; height: 242px; }
-      .d2 .dots2 { display: flex; gap: 5px; position: absolute; left: 11px; } .d2 .dots2 i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
-      .d2 .bar { justify-content: center; } .d2 .n { font-size: 11px; }
-      .d2[data-v=codex] .bar { background: #1c1c1c; border-color: #1c1c1c; color: #bbb; } .d2[data-v=codex] .bar b { color: #fff; } .d2[data-v=codex] .dots2 i { background: #555; }
-      .d2 .m { position: absolute; max-width: 250px; font-size: 11.5px; line-height: 1.4; padding: 6px 10px; border-radius: 10px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
-      .d2 .m.u { right: 14px; background: #eeede7; color: var(--strong); } .d2 .m.a { left: 14px; background: #fff; border: 1px solid var(--line); color: var(--ink); }
-      .d2 .u1 { top: 38px; } .d2 .a1 { top: 68px; } .d2 .u2 { top: 126px; } .d2 .a2 { top: 160px; }
+      /* Scene 2: a conversation with your AI agent (Claude, then Codex): type the ask, send it, paste the prompt, send it */
+      .d2 { --ac: #d97757; --tint: #fbeee8; }
+      .d2[data-v=codex] { --ac: #3d6bf5; --tint: #e7eefe; }
+      .d2 .n { display: none; } .d2[data-v=claude] .n-claude, .d2[data-v=codex] .n-codex { display: inline; }
+      .d2 .app { position: absolute; left: 22px; top: 10px; width: 356px; height: 250px; }
+      .d2 .bar { justify-content: center; height: 30px; padding: 0 12px; }
+      .d2 .dots2 { display: flex; gap: 5px; position: absolute; left: 12px; } .d2 .dots2 i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+      .d2 .agent { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; } .d2 .agent b { color: var(--strong); }
+      .d2 .glyph { width: 8px; height: 8px; border-radius: 50%; background: var(--ac); }
+      .d2 .thread { position: absolute; left: 0; right: 0; top: 30px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+      .d2 .m { max-width: 80%; font-size: 11.5px; line-height: 16px; padding: 4px 10px; border-radius: 10px; opacity: 0; transform: translateY(6px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
+      .d2 .m.u { align-self: flex-end; background: var(--tint); color: var(--strong); }
+      .d2 .m.a { align-self: flex-start; background: #fff; border: 1px solid var(--line); color: var(--ink); padding: 4px 10px; }
+      .d2 .m .att { display: flex; margin: 5px 0 2px; width: max-content; padding: 3px 9px; color: var(--ac); } .d2 .m .att { color: var(--strong); } .d2 .m .att svg { color: var(--ac); }
       .d2.s1 .u1, .d2.s2 .a1, .d2.s4 .u2, .d2.s5 .a2 { opacity: 1; transform: none; }
-      .d2 .m .att { display: flex; margin-top: 5px; width: max-content; } .d2 .att.ok { border-color: #8fd0b3; background: #f1faf5; }
-      .d2 .pl { display: flex; flex-direction: column; gap: 4px; margin: 2px 0 6px; } .d2 .pl i { display: block; height: 5px; border-radius: 3px; background: #c9c7bf; } .d2 .pl i.s { width: 55%; }
-      .d2 .comp { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 34px; border: 1px solid #c4c2b9; border-radius: 10px; padding: 8px 12px; }
-      .d2 .comp .ph { font-size: 11px; color: var(--faint); }
-      .d2 .paste { position: absolute; left: 8px; top: -50px; width: 150px; padding: 5px 9px; border: 1px solid #b4b2a8; border-radius: 8px; background: #fbfaf7; font-size: 10px; color: var(--muted); opacity: 0; transform: translateY(-14px) scale(0.96); transition: opacity 0.3s var(--ease), transform 0.45s var(--ease); }
-      .d2 .paste b { font-weight: 600; color: var(--strong); } .d2 .paste .pl { margin: 4px 0 0; }
-      .d2.s3 .paste { opacity: 1; transform: none; } .d2.s4 .paste { opacity: 0; transform: translateY(-22px); }
-      .d2 .cursor { transform: translate(250px, 230px); } .d2.s3 .cursor { transform: translate(170px, 214px); } .d2.s4 .cursor { transform: translate(340px, 236px); } .d2.s6 .cursor { opacity: 0; }
+      .d2 .comp { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 34px; border: 1px solid #c4c2b9; border-radius: 10px; padding: 0 44px 0 12px; display: flex; align-items: center; }
+      .d2 .comp .ph, .d2 .comp .typed { font-size: 11.5px; line-height: 16px; } .d2 .comp .ph { color: var(--faint); } .d2 .comp .typed { color: var(--strong); white-space: nowrap; }
+      .d2 .comp .typed:empty { display: none; } .d2.tp .comp .ph, .d2.s3:not(.s4) .comp .ph { display: none; }
+      .d2.tp .comp .typed::after { content: ""; display: inline-block; width: 1.5px; height: 12px; background: var(--strong); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+      .d2 .send { position: absolute; right: 6px; top: 5px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: #d9d8d1; color: #fff; transition: background-color 0.3s var(--ease), transform 0.3s var(--ease); }
+      .d2.tp .send, .d2.s3:not(.s4) .send { background: var(--ac); } .d2.k1:not(.s1) .send, .d2.k3:not(.s4) .send { transform: scale(1.12); }
+      .d2 .paste { position: absolute; left: -1px; bottom: calc(100% + 8px); width: 160px; padding: 6px 10px; border: 1px solid #b4b2a8; border-radius: 9px; background: #fbfaf7; font-size: 10.5px; color: var(--muted); opacity: 0; transform: translateY(-12px); transition: opacity 0.3s var(--ease), transform 0.45s var(--ease); }
+      .d2 .paste b { font-weight: 600; color: var(--strong); } .d2 .paste .pl { display: flex; flex-direction: column; gap: 4px; margin: 5px 0 0; } .d2 .paste .pl i { display: block; height: 5px; border-radius: 3px; background: #c9c7bf; } .d2 .paste .pl i.s { width: 55%; }
+      .d2.s3 .paste { opacity: 1; transform: none; } .d2.s4 .paste { opacity: 0; transform: translateY(-20px); }
+      .d2 .cursor { opacity: 1; transform: translate(250px, 215px); transition: opacity 0.3s var(--ease), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+      .d2.k1 .cursor { transform: translate(344px, 234px); } .d2.k2 .cursor { transform: translate(120px, 214px); } .d2.k3 .cursor { transform: translate(344px, 234px); } .d2.s6 .cursor { opacity: 0; }
 
       /* A scenario: four steps in a row, each with a small picture */
       .scene { padding: 64px 0 8px; border-top: 1px solid var(--line); margin-top: 56px; scroll-margin-top: 12px; }
@@ -261,14 +269,16 @@
           </div>
         </a>
         <a class="door" href="#making-a-file" data-pipeup-id="door-making" data-pipeup-label="I'm making a file">
-          <div class="demo" data-len="12500" data-variants="claude,codex" data-steps='[[450,"s1"],[2100,"s2"],[3600,"s3"],[6200,"s4"],[7400,"s5"],[10000,"s6"]]' data-type="700,1700" aria-hidden="true">
+          <div class="demo" data-len="12500" data-variants="claude,codex" data-steps='[[1500,"k1"],[1900,"s1"],[2800,"s2"],[3900,"k2"],[4400,"s3"],[5800,"k3"],[6200,"s4"],[7400,"s5"],[10200,"s6"]]' data-compose='{"text":"Make me a report to share","from":500,"to":1500,"clear":1900}' aria-hidden="true">
             <div class="stage d2" data-v="claude">
-              <div class="app"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></div>
-                <div class="m u u1" data-say="Make me a report to share"><span class="txt"></span></div>
-                <div class="m a a1">Here's your report.<div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>report.html</div></div>
-                <div class="m u u2">Add Pipeup so people can comment.</div>
-                <div class="m a a2">Done. Comments are built in.</div>
-                <div class="comp"><span class="ph">Message</span><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div></div>
+              <div class="app"><div class="bar"><span class="dots2"><i></i><i></i><i></i></span><span class="agent"><i class="glyph"></i><b class="n n-claude">Claude</b><b class="n n-codex">Codex</b></span></div>
+                <div class="thread">
+                  <div class="m u u1">Make me a report to share</div>
+                  <div class="m a a1">Here's your report.<div class="att"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9.5 13l-2 2 2 2M14.5 13l2 2-2 2"/></svg>report.html</div></div>
+                  <div class="m u u2">Add Pipeup so people can comment.</div>
+                  <div class="m a a2">Done. Comments are built in.</div>
+                </div>
+                <div class="comp"><div class="paste"><b>Pasted prompt</b><div class="pl"><i></i><i></i><i class="s"></i></div></div><span class="typed"></span><span class="ph">Message</span><span class="send"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 11l6-6 6 6"/></svg></span></div>
               </div>
               <span class="cursor"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
             </div>
@@ -406,12 +416,20 @@
         const stage = demo.querySelector(".stage");
         const steps = JSON.parse(demo.dataset.steps);
         const len = +demo.dataset.len;
-        const [from, to] = demo.dataset.type.split(",").map(Number);
+        const [from, to] = (demo.dataset.type || "0,1").split(",").map(Number);
         const box = demo.querySelector("[data-say]");
         const txt = box && box.querySelector(".txt");
-        const fit = () => { const k = demo.clientWidth / 400; stage.style.transform = `scale(${k})`; demo.style.height = 270 * k + "px"; };
+        const zoomed = CSS.supports("zoom", "1");
+        const fit = () => { const k = demo.clientWidth / 400; if (zoomed) stage.style.zoom = k; else stage.style.transform = `scale(${k})`; demo.style.height = 270 * k + "px"; };
         fit(); addEventListener("resize", fit);
+        const compose = demo.dataset.compose ? JSON.parse(demo.dataset.compose) : null;
+        const typed = compose && demo.querySelector(".typed");
         const at = (t) => {
+          if (compose) {
+            const n = Math.round(Math.max(0, Math.min(1, (t - compose.from) / (compose.to - compose.from))) * compose.text.length);
+            typed.textContent = t >= compose.clear ? "" : compose.text.slice(0, n);
+            stage.classList.toggle("tp", t >= compose.from && t < compose.clear);
+          }
           for (const [ms, cls] of steps) stage.classList.toggle(cls, t >= ms);
           stage.classList.toggle("out", t >= len - 500);
           if (box) { const n = Math.round(Math.max(0, Math.min(1, (t - from) / (to - from))) * box.dataset.say.length); txt.textContent = box.dataset.say.slice(0, n); box.classList.toggle("sent", t >= to); }

@@ -24,8 +24,9 @@ visitor how to add it. Functional requirements only.
      typed on a highlighted line; the comment button pressed; and a note that the comments are copied as Markdown,
      ready to send back.
    - **"I'm making an HTML page to share"** (I want feedback). The scene shows a conversation with an AI agent (Claude,
-     then Codex, in turn): "Make me a report to share", the agent's report, the prompt pasted into the message box
-     and sent, and the agent saying comments are built in.
+     then Codex, in turn, each in its own highlight colour: Claude's orange, Codex's blue): "Make me a report to
+     share" typed in the message box and sent, the agent's report, the prompt pasted into the message box and sent,
+     and the agent saying comments are built in. Everything lines up on the same edges and the text is drawn sharp.
    The scenes are light, ease everything, pause when out of view, and with reduced motion show their finished moment.
 2. **The two walkthroughs**, one under the other, each four steps with a small picture and plain words:
    - **Got a file**: open it (if a round comment button shows, skip ahead); if not, **Copy prompt** and paste it
