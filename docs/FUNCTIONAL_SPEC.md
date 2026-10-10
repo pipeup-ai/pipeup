@@ -628,12 +628,28 @@ permission, a registration, or a place in its npm scope.
   add-on like any code on its pages, because it runs with the page's full power; and the company's own sentence about
   what it sends (to its own servers) is what reviewers are shown first. Nothing leaves the company unless the add-on
   says so.
+- **Two ways to send comments somewhere your company controls.** The guide starts its company section with the choice:
+  1. **No new code**: use the Share add-on with the company's own mailbox (a server the company runs that keeps only
+     sealed comments it can't read, speaking the published mailbox contract). This is the safe default for "comments
+     must stay inside the company".
+  2. **Your own add-on**: for what the mailbox can't do, such as turning comments into tickets, filing them in the
+     company's document system, or using the company's sign-in. This is what the worked example shows.
+- **What an add-on works with, written down.** The guide describes, in plain words, what an add-on is given and can
+  rely on: the document's threads (each with where it is on the page, whether it is resolved, and its comments with
+  who wrote them, when, and whether edited or deleted), a way to hear when they change, the signed comments underneath
+  for add-ons that carry them somewhere, and a way to sign something as the reviewer. It says which parts are fixed
+  from one Pipeup version to the next (the add-on's API number, and the form of a signed comment) and what an add-on
+  must do when it meets a newer one (stay off and say why). The add-on's types, published with Pipeup, are the
+  reference and the guide points to them.
 - **A worked example from "another company".** The repository holds a complete example add-on written the way a
   company would write one, outside the Pipeup project's names: "Acme Tracker". It adds one row to the menu, "Send to
-  Acme tracker", that sends the open comments' text to the tracker address the page names. Before anything is sent it
+  Acme tracker", that sends the open comments to the tracker address the page names. Before anything is sent it
   asks, saying what it will send and to where. It sends over a secure connection only (or to the reviewer's own
   computer, for trying it), says in words how it went, and never posts, edits or resolves a comment on anyone's
-  behalf. It comes with a tiny stand-in tracker to run on the same computer, which shows what it received. The
+  behalf. **Its side of the integration is written down as a small contract**, in the example's README: the address,
+  the request (a list of open comments, each with its text, who and when, where on the page and a link back), the
+  answer it expects, and how it treats an error, so a company knows what its own tracker must accept. It comes with a
+  tiny stand-in tracker that follows the contract, to run on the same computer, and which shows what it received. The
   example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
