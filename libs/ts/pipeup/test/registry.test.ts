@@ -13,8 +13,41 @@ const base = (id: string, over: Partial<PipeupAddon> = {}): PipeupAddon => ({
 });
 
 afterEach(() => {
+  document.documentElement.removeAttribute("data-pipeup-addons");
   delete (globalThis as { pipeupAddons?: unknown }).pipeupAddons;
   vi.restoreAllMocks();
+});
+
+describe("a page's list of the add-ons that may run", () => {
+  it("lets every add-on run when the page has no list", () => {
+    use(base("allow-a"));
+    expect(addons().find((a) => a.id === "allow-a")?.state).toBe("waiting");
+  });
+
+  it("keeps the others off, saying so, when the page lists some", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.documentElement.setAttribute("data-pipeup-addons", "allow-b, allow-c");
+    use(base("allow-b"));
+    use(base("allow-c"));
+    use(base("allow-d"));
+    expect(addons().find((a) => a.id === "allow-b")?.state).toBe("waiting");
+    expect(addons().find((a) => a.id === "allow-c")?.state).toBe("waiting");
+    expect(addons().find((a) => a.id === "allow-d")).toMatchObject({
+      state: "off",
+      reason: "this page doesn't allow it",
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("lets none run when the list says none, and ids must match exactly", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    document.documentElement.setAttribute("data-pipeup-addons", "none");
+    use(base("allow-e"));
+    expect(addons().find((a) => a.id === "allow-e")?.state).toBe("off");
+    document.documentElement.setAttribute("data-pipeup-addons", "allow-f2");
+    use(base("allow-f"));
+    expect(addons().find((a) => a.id === "allow-f")?.state).toBe("off");
+  });
 });
 
 describe("registering add-ons", () => {

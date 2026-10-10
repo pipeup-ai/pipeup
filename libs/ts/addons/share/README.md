@@ -106,3 +106,10 @@ reviewer; it sends only its own comments (plus ones received from the shared cop
 - Works from `file://`, `http(s)` pages and hosted pages. The browser build refuses `http:` addresses.
 - Size: about 8 KB gzip.
 - Licence: MIT.
+
+## Keeping it intentional
+
+Pin the script with its integrity hash (it is in the release notes), list the add-ons that may run on the page
+(`<html data-pipeup-addons="share">`; without the attribute every add-on runs), and set a content security policy that allows
+scripts only from the page and the CDN and connections only to the sharing address you name. This is best effort: it stops add-ons you didn't
+choose, not a page that is already compromised. See the [guide](../../../docs/ADDONS_GUIDE.md).

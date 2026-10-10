@@ -60,6 +60,13 @@ browsers' rule, and Pipeup's own choice above isn't asked again.
 - It announces "Listening" and "Stopped listening" to screen readers. Pipeup holds announcements while you
   are writing, so they may be heard only after you finish the comment.
 
+## Keeping it intentional
+
+Pin the script with its integrity hash (it is in the release notes), list the add-ons that may run on the page
+(`<html data-pipeup-addons="voice">`; without the attribute every add-on runs), and set a content security policy that allows
+scripts only from the page and the CDN and connections only to nowhere new (the browser's speech engine does the listening). This is best effort: it stops add-ons you didn't
+choose, not a page that is already compromised. See the [guide](../../../docs/ADDONS_GUIDE.md).
+
 ## Licence
 
 MIT

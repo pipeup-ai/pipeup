@@ -93,3 +93,10 @@ window.pipeupAssistEngine = {
 ## Not yet
 
 Hiding assistant replies from your own view and removing one are still to come.
+
+## Keeping it intentional
+
+Pin the script with its integrity hash (it is in the release notes), list the add-ons that may run on the page
+(`<html data-pipeup-addons="assist">`; without the attribute every add-on runs), and set a content security policy that allows
+scripts only from the page and the CDN and connections only to nowhere new (the model runs on the reviewer's device). This is best effort: it stops add-ons you didn't
+choose, not a page that is already compromised. See the [guide](../../../docs/ADDONS_GUIDE.md).

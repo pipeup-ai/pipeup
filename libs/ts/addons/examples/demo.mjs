@@ -27,7 +27,7 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <title>Pipeup add-ons: try page</title>
 <style>
-  body { font: 17px/1.6 Georgia, serif; max-width: 640px; margin: 48px auto; padding: 0 20px; color: #222; background: #fff; }
+  body { font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; color: #222; background: #fff; }
   h1 { font-size: 28px; line-height: 1.2; }
   .note { font: 14px/1.5 system-ui, sans-serif; color: #5f5e5a; }
 </style>

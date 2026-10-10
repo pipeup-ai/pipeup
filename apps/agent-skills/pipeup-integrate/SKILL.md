@@ -185,6 +185,15 @@ page opened from disk and in any script order, and they are released with Pipeup
 - **When you rewrite or regenerate a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are.** A
   new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
   comments of different documents never mix.
+- **Keep add-ons intentional (best effort).** When you add an add-on: pin its script with its `integrity` hash; add its id to
+  `data-pipeup-addons` on `<html>` (append to an existing list and keep every entry it has, never remove one), so only the
+  add-ons the author chose run on the page; and tell the author, in your reply, about a Content-Security-Policy that
+  allows scripts only from the page and the CDN and connections only to the hosts the add-on names. Don't apply the policy
+  yourself: a strict one can break a page. This stops stray scripts, not a page that is already compromised.
+- **Other people's add-ons** (a company's own) run with the page's full power and Pipeup doesn't vouch for them. Add one only
+  when the author names it and says where it is hosted; pin it and list it the same way. To help a company make one, see
+  the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git, use the skill
+  pipeup-send-to-git-setup.
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
   about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
 
@@ -197,6 +206,7 @@ Markup on the page:
 | `data-pipeup-doc` | `<html>` | The document's identity and key. Added by `pipeup init`; never change it. |
 | `data-pipeup-reserve` | `<html>` | The page reserves a 320 px comment gutter on the right and lays itself out with `var(--pipeup-gutter, 0px)` (documents you create). |
 | `--pipeup-panel` (read it, don't set it) | page CSS | While All comments is open, Pipeup moves the page over by the panel's width and publishes that width here. Normal content moves by itself; give fixed or sticky bars `right: var(--pipeup-panel, 0px)` (or offset centred ones by half of it) and size things in `%`, not `vw`, so nothing sits under the panel. |
+| `data-pipeup-addons` | `<html>` | Which add-ons may run, by id (`share,voice`; `none` for none). Without it every add-on runs. Keep every entry; add yours. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |

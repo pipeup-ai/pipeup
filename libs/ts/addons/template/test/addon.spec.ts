@@ -9,7 +9,7 @@ test("the add-on is on, says what it sends, and its row opens a panel", async ({
 
   // Pipeup knows the add-on, it is on, and it gave its one sentence about what it sends.
   const info = await page.evaluate(() =>
-    (window as any).Pipeup.addons().find((a: any) => a.id === "acme-hello"),
+    (window as any).Pipeup.addons().find((a: any) => a.id === "myteam-hello"),
   );
   expect(info.state).toBe("on");
   expect(info.network.says).toMatch(/\S/);
