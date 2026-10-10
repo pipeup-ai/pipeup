@@ -118,7 +118,7 @@ use. The page:
   with its own add-ons), that nothing needs the Pipeup project's permission and that Pipeup doesn't vouch for add-ons
   from anyone else; a **Read the guide** button to the guide page, and a **Copy command** button that copies the one
   command that makes a copy of the template.
-- Shows, under it, **one example from another company**: a card for "Feedback to Git" (it sends a review's feedback to the company, where it is filed in Git as a Markdown file) clearly labelled "Example: not from
+- Shows, under it, **one example from another company**: a card for "Send to Git" (it sends a review's feedback to the company, where it is filed in Git as a Markdown file) clearly labelled "Example: not from
   Pipeup", with the same Copy-prompt-less layout as the other cards, a short animated scene of its menu row and
   consent note, a **Try it** link to its try page, and a link to its source in the repository.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
@@ -181,9 +181,9 @@ so the two never differ). It:
 
 ### The example add-on's try page
 
-"Feedback to Git" has a try page like the other add-ons' (a short example document, the comment shortcut, a "what to do"
+"Send to Git" has a try page like the other add-ons' (a short example document, the comment shortcut, a "what to do"
 box). It runs Pipeup with the example loaded from the site's own copy, standing in for a company server. The service
-address it is given is a demonstration one: pressing **Send feedback to Git** shows, in a panel, exactly what would be
+address it is given is a demonstration one: pressing **Send to Git** shows, in a panel, exactly what would be
 sent and says nothing left the browser. The page says this is an example of an add-on from another company, and that the
 reviewer is asked first as with any add-on.
 
@@ -263,5 +263,5 @@ reviewer is asked first as with any add-on.
 - 2026-10-10 — The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out; the icon tilts a little on hover.
 - 2026-10-10 — The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
 - 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).
-- 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Feedback to Git) with its own card and try page, and a company section in the guide.
+- 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Send to Git) with its own card and try page, and a company section in the guide.
 - 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.
