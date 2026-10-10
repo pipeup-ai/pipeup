@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeup: feedback for any HTML (prototype)</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <style>
+      @font-face { font-family: "Geist"; src: url("../fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
+      :root {
+        --ink: #2f3437; --strong: #111; --muted: #55544f; --faint: #7d7c76; --line: #d2d0c8; --bone: #eeede7; --paper: #fff;
+        --amber: #fbf3db; --violet: #534ab7; --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      }
+      * { box-sizing: border-box; }
+      html { background: var(--paper); scroll-behavior: smooth; }
+      body { margin: 0; font: 16px/1.55 var(--sans); color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; }
+      main { max-width: 1040px; margin: 0 auto; padding: 0 32px 40px; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+      .mark { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      .gh { font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); } .gh:hover { color: var(--strong); }
+      a { color: var(--strong); text-underline-offset: 3px; text-decoration-color: var(--line); }
+      h1 { font-size: clamp(40px, 5.4vw, 60px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
+      .hero { padding: 40px 0 36px; max-width: 760px; }
+      .lede { font-size: 20px; color: var(--muted); margin: 18px 0 0; max-width: 30em; }
+      .lede b { font-weight: 500; color: var(--ink); }
+
+      /* Two doors: which one are you? */
+      .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      .door { display: block; text-decoration: none; padding: 26px 26px 24px; border: 1px solid #b4b2a8; border-radius: 16px; background: var(--paper); color: var(--ink);
+        transition: border-color 0.2s var(--ease), transform 0.26s var(--ease), box-shadow 0.26s var(--ease); }
+      .door:hover, .door:focus-visible { border-color: var(--strong); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(40, 38, 30, 0.08); outline: none; }
+      .door .who { font-size: 13px; font-weight: 500; color: var(--violet); letter-spacing: 0.02em; margin: 0 0 8px; }
+      .door h2 { font-size: 25px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; color: var(--strong); margin: 0 0 8px; }
+      .door p { margin: 0; color: var(--muted); font-size: 16px; }
+      .door .go { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-weight: 500; color: var(--strong); font-size: 15px; }
+      .door .go svg { transition: transform 0.26s var(--ease); } .door:hover .go svg { transform: translateY(2px); }
+
+      /* A scenario: four steps in a row, each with a small picture */
+      .scene { padding: 64px 0 8px; border-top: 1px solid var(--line); margin-top: 56px; scroll-margin-top: 12px; }
+      .scene .who { font-size: 13px; font-weight: 500; color: var(--violet); margin: 0 0 8px; }
+      .scene h2 { font-size: clamp(28px, 3.4vw, 38px); font-weight: 600; letter-spacing: -0.04em; line-height: 1.08; color: var(--strong); margin: 0 0 10px; }
+      .scene .sub { font-size: 18px; color: var(--muted); margin: 0 0 32px; max-width: 34em; }
+      .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; counter-reset: s; }
+      .step { counter-increment: s; border: 1px solid var(--line); border-radius: 14px; padding: 16px 16px 18px; background: var(--paper); display: flex; flex-direction: column; }
+      .step .pic { height: 112px; border-radius: 10px; background: var(--bone); margin-bottom: 14px; position: relative; overflow: hidden; }
+      .step h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--strong); margin: 0 0 4px; }
+      .step h3::before { content: counter(s) "  "; color: var(--violet); }
+      .step p { margin: 0; font-size: 14.5px; color: var(--muted); }
+      .step .btn { margin-top: 14px; align-self: flex-start; }
+      .note { margin: 18px 0 0; font-size: 15px; color: var(--muted); }
+
+      /* The little pictures */
+      .doc { position: absolute; left: 18px; top: 14px; width: 74px; height: 84px; background: #fff; border: 1px solid #c4c2b9; border-radius: 6px; padding: 10px 8px; }
+      .doc i { display: block; height: 5px; border-radius: 3px; background: var(--line); margin-bottom: 7px; } .doc i.s { width: 60%; } .doc i.hl { background: #f3dc9a; }
+      .bub { position: absolute; width: 22px; height: 22px; border-radius: 50% 50% 50% 3px; background: var(--violet); }
+      .pop { position: absolute; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 11px; color: var(--strong); box-shadow: 0 2px 8px rgba(0,0,0,.06); white-space: nowrap; }
+      .ai { position: absolute; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: #fff; border: 1px solid #c4c2b9; font-size: 11px; font-weight: 600; color: var(--strong); }
+      .arrow { position: absolute; height: 0; border-top: 1.5px dashed #b4b2a8; }
+      .chat { position: absolute; left: 14px; right: 14px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 11px; color: var(--strong); }
+      .chat.me { top: 14px; } .chat.bot { top: 58px; color: var(--muted); background: #fbfaf7; }
+      .btn { appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 14.5px var(--sans); border-radius: 9px; padding: 10px 14px; cursor: pointer; border: 1px solid #b4b2a8; background: var(--paper); color: var(--strong); text-decoration: none;
+        transition: background-color 0.2s var(--ease), transform 0.2s var(--ease); }
+      .btn:hover { background: var(--bone); } .btn:active { transform: scale(0.98); }
+      .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; } .btn.primary:hover { background: #2a2a2a; }
+      .btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .ok { display: none; } .copied .ok { display: block; } .copied .ic { display: none; }
+
+      .try { margin-top: 72px; padding: 28px; border-radius: 16px; background: var(--bone); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+      .try h2 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.03em; color: var(--strong); } .try p { margin: 0; color: var(--muted); }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--muted); }
+      footer a { color: var(--muted); text-decoration: none; margin-left: 18px; } footer a:hover { color: var(--strong); }
+      @media (max-width: 920px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 640px) { .doors { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr; } main { padding: 0 20px 32px; } }
+      @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <span class="mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>Pipeup</span>
+        <a class="gh" href="https://github.com/pipeup-ai/pipeup">GitHub</a>
+      </header>
+
+      <section class="hero">
+        <h1>Feedback for<br />any HTML.</h1>
+        <p class="lede">Comment right on an HTML page, and send your comments back. <b>No accounts, nothing to sign up for.</b> Which of these are you?</p>
+      </section>
+
+      <div class="doors">
+        <a class="door" href="#got-a-file">
+          <p class="who">I got a file</p>
+          <h2>Someone sent me an HTML file</h2>
+          <p>I want to read it and tell them what I think.</p>
+          <span class="go">Show me how <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+        </a>
+        <a class="door" href="#making-a-file">
+          <p class="who">I'm making a file</p>
+          <h2>I'm making an HTML page to share</h2>
+          <p>An AI is helping me build it, and I want feedback.</p>
+          <span class="go">Show me how <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+        </a>
+      </div>
+
+      <section class="scene" id="got-a-file">
+        <p class="who">I got a file</p>
+        <h2>Someone sent you an HTML file.</h2>
+        <p class="sub">Comment on it right in your browser. If it doesn't have comments built in yet, your AI assistant can add them in a minute.</p>
+        <ol class="steps">
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="s"></i><i></i><i class="s"></i></div><span class="bub" style="right:22px;bottom:16px"></span></div>
+            <h3>Open it</h3>
+            <p>Double-click the file. If you see a small round comment button at the bottom right, you're set: skip to step 3.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="chat me">Add comments to this page</div><div class="chat bot">Done. Open it again.</div></div>
+            <h3>No button? Ask your AI</h3>
+            <p>Paste this into Claude, ChatGPT or Codex along with the file. It adds comments to your copy.</p>
+            <button class="btn primary" type="button" data-copy="a"><span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="label">Copy prompt</span></button>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="hl"></i><i class="s"></i><i></i></div><span class="pop" style="left:88px;top:40px">Is this date firm?</span></div>
+            <h3>Comment</h3>
+            <p>Select some words, or press <b>Shift+Option+C</b> (Shift+Alt+C on Windows) and click anything. Write what you think.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="s"></i></div><span class="ai" style="right:20px;top:34px">.md</span><span class="arrow" style="left:100px;width:44px;top:56px"></span></div>
+            <h3>Send it back</h3>
+            <p>Open the comment button's menu and choose <b>Copy as Markdown</b>. Paste it in a message or email to whoever sent the file.</p>
+          </li>
+        </ol>
+        <p class="note">Your comments stay in your browser until you copy and send them. Nothing is uploaded anywhere.</p>
+      </section>
+
+      <section class="scene" id="making-a-file">
+        <p class="who">I'm making a file</p>
+        <h2>You're creating an HTML page to share.</h2>
+        <p class="sub">Have your AI add Pipeup as it builds the page. Anyone you share it with can comment on it, and their feedback comes back ready for your AI to apply.</p>
+        <ol class="steps">
+          <li class="step">
+            <div class="pic"><div class="chat me">Build my launch plan page</div><div class="chat bot">Done, with comments built in.</div></div>
+            <h3>Tell your AI</h3>
+            <p>Add this to your request, or paste it afterwards. It puts Pipeup in the page.</p>
+            <button class="btn primary" type="button" data-copy="b"><span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="label">Copy prompt</span></button>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="s"></i><i></i></div><span class="ai" style="right:20px;top:34px">.html</span><span class="arrow" style="left:100px;width:44px;top:56px"></span></div>
+            <h3>Share the file</h3>
+            <p>Email it, post it in Slack, put it on a drive or a website. It works straight from the file, and nobody installs anything.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="doc"><i></i><i class="hl"></i><i class="s"></i><i></i></div><span class="pop" style="left:88px;top:40px">Cut this line?</span><span class="bub" style="right:22px;bottom:16px"></span></div>
+            <h3>People comment</h3>
+            <p>Your reviewers select words and write, right on the page. They send you their comments the way they like.</p>
+          </li>
+          <li class="step">
+            <div class="pic"><div class="chat me">Apply this feedback</div><div class="chat bot">3 changes made.</div></div>
+            <h3>Paste into your AI</h3>
+            <p>Each comment says exactly where it is, so your AI makes the changes without guessing.</p>
+          </li>
+        </ol>
+        <p class="note">You decide how comments travel. By default they stay in each reviewer's browser until they send them.</p>
+      </section>
+
+      <section class="try">
+        <div>
+          <h2>Want to see it first?</h2>
+          <p>Try it on a real page: press Shift+Option+C and click anything.</p>
+        </div>
+        <a class="btn primary" href="../try/document.html">Try it on a page</a>
+      </section>
+
+      <footer>
+        <span>Free and open source. No accounts, no servers.</span>
+        <span><a href="../addons.html">Add-ons</a><a href="../llms.txt">For agents</a><a href="https://github.com/pipeup-ai/pipeup">GitHub</a></span>
+      </footer>
+    </main>
+    <script>
+      const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.5.3/dist/pipeup.min.js"><\/script>';
+      const GUIDE = "https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md";
+      const prompts = {
+        a: () => [
+          "Someone sent me this HTML file and I'd like to comment on it. Please add Pipeup to my copy so I can comment right on the page.",
+          "",
+          `1. Edit only the HTML file (there is nothing to download or run): add ${TAG} just before </body>.`,
+          '2. If the <html> element has no data-pipeup-doc attribute, add one (a key made with await Pipeup.newDocumentAttribute()). If it already has one, leave it exactly as it is.',
+          "3. Don't change the page's layout or styling.",
+          "",
+          `When you are done, tell me how to start commenting. The full guide: ${GUIDE}`,
+        ].join("\n"),
+        b: () => [
+          "When you create this HTML page, add Pipeup so the people I share it with can comment on it right on the page.",
+          "",
+          `1. Add ${TAG} just before </body>. Edit only the HTML file: there is nothing to download or run.`,
+          '2. Add data-pipeup-doc="<a key made with await Pipeup.newDocumentAttribute()>" to the <html> element, and keep it exactly as it is from then on.',
+          "3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.",
+          "4. Don't change the page's layout to make room for Pipeup.",
+          "",
+          "Later I will paste comments copied from Pipeup (Copy as Markdown); apply each one to the page.",
+          `The full guide: ${GUIDE}`,
+        ].join("\n"),
+      };
+      for (const b of document.querySelectorAll("[data-copy]")) {
+        b.addEventListener("click", async () => {
+          const text = prompts[b.dataset.copy]();
+          try { await navigator.clipboard.writeText(text); } catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
+          const label = b.querySelector(".label"); const was = label.textContent;
+          b.classList.add("copied"); label.textContent = "Copied";
+          setTimeout(() => { b.classList.remove("copied"); label.textContent = was; }, 2000);
+        });
+      }
+    </script>
+  </body>
+</html>
