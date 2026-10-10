@@ -161,3 +161,16 @@
 .scn .wsteps kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 4px; margin: 0 1px; font: 500 12px/1 var(--sans); color: var(--ink); background: #f7f6f3; border: 1px solid #d2d0c8; border-bottom-width: 2px; border-radius: 5px; vertical-align: 1px; }
 .scn .btn.sm { padding: 6px 12px; font-size: 13.5px; gap: 7px; border-radius: 8px; }
 .scn .wnote { margin: 16px 0 0; font-size: 14px; color: var(--faint); }
+
+/* The HTML file icon: a page with a fold and an HTML badge, so it reads as an HTML file at a glance. */
+.scn .fi { display: block; flex: none; width: 20px; height: 24px; }
+.scn .att { gap: 7px; }
+.scn .att .fi { margin: -3px 0; }
+.scn .dl .dn .fi { width: 20px; height: 24px; }
+.scn .sk-file .ft { width: 32px; height: 38px; background: none; border-radius: 0; }
+.scn .sk-file .ft .fi { width: 30px; height: 36px; }
+.scn .sk-file { gap: 10px; width: 188px; padding: 7px 9px; }
+.scn .fchip { padding: 1px 9px; }
+.scn .fchip .fi { width: 18px; height: 22px; margin: 0; }
+.scn .fchip { display: flex; align-items: center; height: 26px; }
+.scn .fchip .fi { display: block; }

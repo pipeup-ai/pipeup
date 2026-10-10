@@ -218,3 +218,4 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-10 — The two scenario buttons lead to pages of their own (Add comments to an HTML; Create comment-enabled HTML), each with a back link, instead of scrolling the home page; the text is top-aligned with its animation.
 - 2026-10-10 — The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out; the icon tilts a little on hover.
 - 2026-10-10 — The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
+- 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).

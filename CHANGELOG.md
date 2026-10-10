@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The file in the walkthrough scenes looks like an HTML file: a larger page icon with a code mark and an orange HTML badge.
+
 - The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
 
 - The two walkthrough pages' footer matches the Add-ons page: a rule above it and the Add-ons and For agents links on the right (For agents offers that page's Markdown copy).
