@@ -611,7 +611,7 @@ permission, a registration, or a place in its npm scope.
   README with the steps to publish it under the maker's own name. A copy works and passes its own checks before
   anything is changed.
 - **Names.** An add-on's name is its own: letters, digits and dashes, 2 to 24 characters, written by the maker (a
-  maker's name in front keeps it distinct, for example "acme-translate"). The names of the Pipeup project's add-ons
+  maker's name in front keeps it distinct, for example "myteam-translate"). The names of the Pipeup project's add-ons
   (share, voice, live, assist) are theirs, and the guide asks everyone else not to use them. Pipeup can't tell
   an add-on's maker from its name, so it doesn't refuse them: two add-ons with the same name on one page, the first
   is used, and the second is ignored with a message.
@@ -619,6 +619,93 @@ permission, a registration, or a place in its npm scope.
   the page's full power and that Pipeup doesn't vouch for them.
 - **Where to find it.** The guide is linked from the website's Add-ons page, the README and the add-ons folder, with
   one line saying what it is for. The page's list of Pipeup's own add-ons is unchanged.
+- **Using add-ons inside a company.** The guide has a short section for companies that want their own add-ons (a
+  link to their ticket tracker or document system, their own sign-in, their own review rules) without publishing
+  anything under the Pipeup project's name. It says, in plain words: the add-on is one script file the company hosts
+  itself (on its intranet or artifact store, through a private package registry under its own scope, or beside the
+  page); the page pins it (a fixed version and an integrity hash) so it can't change underneath reviewers; the
+  page's author decides which scripts run, so only the add-ons the company includes ever do; the company reviews the
+  add-on like any code on its pages, because it runs with the page's full power; and the company's own sentence about
+  what it sends (to its own servers) is what reviewers are shown first. Nothing leaves the company unless the add-on
+  says so.
+- **Two ways to send comments somewhere your company controls.** The guide starts its company section with the choice:
+  1. **No new code**: use the Share add-on with the company's own mailbox (a server the company runs that keeps only
+     sealed comments it can't read, speaking the published mailbox contract). This is the safe default for "comments
+     must stay inside the company".
+  2. **Your own add-on**: for what the mailbox can't do, such as turning comments into tickets, filing them in the
+     company's document system, or using the company's sign-in. This is what the worked example shows.
+- **What an add-on works with, written down.** The guide describes, in plain words, what an add-on is given and can
+  rely on: the document's threads (each with where it is on the page, whether it is resolved, and its comments with
+  who wrote them, when, and whether edited or deleted), a way to hear when they change, the signed comments underneath
+  for add-ons that carry them somewhere, and a way to sign something as the reviewer. It says which parts are fixed
+  from one Pipeup version to the next (the add-on's API number, and the form of a signed comment) and what an add-on
+  must do when it meets a newer one (stay off and say why). The add-on's types, published with Pipeup, are the
+  reference and the guide points to them.
+- **Reading comments needs no encryption.** Comments are plain text in the reviewer's browser; Share seals them only
+  while they travel through a service the company doesn't control. An add-on that sends them to the company's own
+  system, over a secure connection, needs no crypto. The guide says so, and says when sealing is worth writing (a
+  store the company doesn't control).
+- **The review as a Markdown file.** Pipeup already writes a review as Markdown that says exactly where each comment
+  is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
+  company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
+- **A worked example from "another company".** The repository holds a complete example add-on written the way a
+  company would write one, outside the Pipeup project's names and carrying no real company's name: "Send to Git". It adds one row to the menu, "Send
+  to Git", that sends the review as that Markdown file to a service the page names, which saves it in the
+  company's Git repository for later processing and AI work. Before anything is sent it asks, saying what it will
+  send and to where. It sends over a secure connection only (or to the reviewer's own computer, for trying it), says
+  in words how it went (including where the file was saved), and never posts, edits or resolves a comment on anyone's
+  behalf. The add-on never holds a Git password or token: the company's own service does the saving. **Its side of
+  the integration is written down as a small contract**, in the example's README: the address, the request (the page's
+  title and address, when, and the Markdown), the answer it expects (the saved path and commit), and how it treats an
+  error, so a company knows what its own service must accept. It comes with a tiny stand-in service that follows the
+  contract: run on the same computer, it saves each review as a Markdown file in a local Git repository and commits it.
+  The example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out. The
+  guide also lists the other ways to get a review into Git (the reviewer saves the file and commits it themselves; the
+  add-on saves into a folder on the reviewer's computer where supported) and says why the company's own service is the
+  better choice at scale.
+- **Keeping add-ons intentional (best effort).** An add-on is a script on the page and runs with the page's full power,
+  so nothing here can stop someone who can already edit the page. The aim is to stop add-ons the author didn't choose
+  (a stray or copied-in script) and to help authors and companies lock down what runs:
+  - **An allow-list the author sets.** The page's author can name the add-ons that may run, in one attribute on the
+    page (`data-pipeup-addons="share,send-to-git"`). When it is there, only those add-ons run; any other is ignored,
+    shows in the add-on list as off with the reason "this page doesn't allow it", and puts one plain line in the
+    console. A value of "none" lets no add-on run. When the attribute is absent, every add-on runs as today, so
+    existing pages keep working. Reviewers see no change.
+  - **Pinned and checked scripts.** Authors are told to pin each add-on's script to a fixed version with its integrity
+    hash (or to host one bundled file and pin that), and to set a content security policy that allows only the
+    script and network hosts they intend, because an add-on's "what it sends" sentence is a statement and a policy is
+    what enforces it. For Pipeup's own add-ons the guide gives the exact policy lines from their declared hosts.
+  - **One bundled file.** For companies the guide recommends one file that holds Pipeup and the add-on together,
+    hosted by the company and pinned. The template builds that file and prints its integrity hash.
+  - **Said plainly.** The guide, the website and the agent files say this is best effort: it protects against stray
+    scripts, not against a page that is already compromised, and an add-on's name can't prove who made it (the
+    first add-on with a name wins).
+  - **Agents do the setting up.** Everything an agent reads about adding an add-on tells it to add the pinned script
+    with its integrity hash, to list only the add-ons the author asked for in the allow-list attribute, and to
+    suggest the matching content security policy for the author to apply (never to apply one that could break the
+    page without saying so). The surfaces are: llms.txt and llms-full.txt; the integrate agent skill; each add-on's
+    Copy prompt and script-tag button on the Add-ons page; the Markdown copies of the Add-ons page, the guide page and
+    the home page; the guide; and each add-on's README and the template's README.
+  - **Not part of this change:** a list in the menu that shows reviewers which add-ons are active (and which are not
+    from Pipeup), and running add-ons in a sandboxed frame; both are for later, and the first changes the core.
+- **Setting up the company's side (GitHub).** The browser never talks to GitHub. A small service the company runs sits
+  between: it knows who is sending (through the company's sign-in), checks the request, chooses the file's path itself
+  so a request can't write elsewhere, limits size and rate, keeps a record, writes the Markdown to the repository, and
+  answers with the saved path and commit (or pull request). The guide describes the ways to give that service access,
+  best first: a **GitHub App** installed on only the review repository, writing to a branch and opening a pull request
+  (never pushing to the main branch); a fine-grained access token on a bot account, limited to one repository, for a
+  pilot; a GitHub Actions workflow started by a webhook for short reviews. It says why the add-on never holds a token
+  and why the page never calls GitHub directly. GitHub Enterprise Server works the same at the company's own address.
+  Parts shipped with the example, so a company starts from something that works:
+  - **A GitHub-backed reference service**, beside the stand-in one, that follows the same written contract, written
+    without outside code (like the mailbox reference server), so a company can read all of it.
+  - **A contract checker**: one command that sends a sample review to a company's service and says, in words, whether
+    it follows the contract (so a company knows its own version works before pointing a page at it).
+  - **A setup skill for agents**, shipped with Pipeup's agent skills, that walks a company engineer's agent through:
+    choosing the GitHub option, creating the GitHub App from a manifest the person approves (the agent can't approve
+    permissions for them), generating the service from the reference one, setting its settings, giving the page the
+    service address, the allow-list entry and the matching content security policy line, and running the checker. It
+    never asks for a token to be pasted into a page or a chat.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -906,3 +993,6 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
+- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Send to Git, sending the feedback as Markdown to be filed in Git), not under the Pipeup project's names (section 11a).
+- 2026-10-10 — Proposed (not built): an allow-list the author sets for which add-ons run, pinning and content-security-policy guidance, one bundled file for companies, and every agent-facing surface updated to apply them (section 11a). Said plainly as best effort.
+- 2026-10-10 — Proposed (not built): how a company sets up the GitHub side of Send to Git (a GitHub App and a small service, or a bot token, or a webhook-started workflow), with a GitHub-backed reference service, a contract checker and a setup skill for agents (section 11a).

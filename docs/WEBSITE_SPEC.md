@@ -81,6 +81,11 @@ visitor how to add it. Functional requirements only.
 
 There is no separate set-up section: the two walkthroughs cover it.
 
+**Add-on safety, for agents**: wherever the site tells an agent to add an add-on (llms.txt, llms-full.txt, the integrate
+skill, the Add-ons page's prompts and its Markdown copy, the guide page and its Markdown copy), it also tells the agent to pin
+the script with its integrity hash, to put only the add-ons the author asked for in the allow-list attribute, and to
+suggest a content security policy to the author. It says this is best effort.
+
 **For agents**: the site serves, at stable addresses and linked from the page and its footer:
 a short guide (llms.txt), the guide and all agent skills in one file (llms-full.txt), the page
 itself as Markdown, the agent skills, the script, a robots.txt that welcomes every agent, and
@@ -109,8 +114,19 @@ use. The page:
 - Has a **Try it** link on each add-on card, leading to a try page for that add-on (see "Add-on try pages" below).
 - Flows the full width of the window like the home page, text beside its demo.
 - Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
+- Ends with a **Make your own** card, plain like the mailbox card (no demo): who it is for (anyone, including a company
+  with its own add-ons), that nothing needs the Pipeup project's permission and that Pipeup doesn't vouch for add-ons
+  from anyone else; a **Read the guide** button to the guide page, and a **Copy command** button that copies the one
+  command that makes a copy of the template.
+- Shows, under it, **one example from another company**: a card for "Send to Git" (it sends a review's feedback to the company, where it is filed in Git as a Markdown file) clearly labelled "Example: not from
+  Pipeup", with the same Copy-prompt-less layout as the other cards, a short animated scene of its menu row and
+  consent note, a **Try it** link to its try page, and a link to its source in the repository.
 - Is light mode, eases like the rest of the site, can be commented on like the rest of the site, and works without
   scripts of its own.
+- Gives agents the safe way to add an add-on on every surface: each add-on's Copy prompt and Copy script tag add the
+  pinned script with its integrity hash and list only that add-on in the page's allow-list attribute, and say what
+  to tell the author about a content security policy; the Markdown copy of the page, llms.txt and the agent skill say
+  the same.
 - Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
   choose a sharing service for them.
 
@@ -142,6 +158,38 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - **Your own mailbox** has no online try page: it needs a server of the visitor's own. Its card says so and points to
   its guide and the local demo.
 - Light mode, easing like the rest of the site, and working without scripts of their own beyond the add-on.
+
+### The guide page
+
+The guide for making your own add-on has a page on the site, `addons-guide.html`, reached from the Add-ons page's "Make
+your own" card, and kept focused like the Add-ons page: the same header and footer, a back link ("← Add-ons"), and its
+own Markdown copy (`addons-guide.html.md`) that says the same as the page (it is the repository's guide, shown two ways,
+so the two never differ). It:
+
+- Reads top to bottom in the guide's order: what an add-on is; what it can do (a small table of the slots, one line
+  each); what it can't do; **what an add-on works with** (the document's threads and comments, hearing changes, the
+  signed comments, signing, and what stays fixed between versions); saying what you send; names; trying and testing it
+  with the template; **using add-ons inside a company** (first, whether the Share add-on with the company's own
+  mailbox is enough; then hosting your own script, pinning it, who decides what runs, reviewing it, the sentence
+  reviewers see); the worked example and its integration contract; and what the project stands behind.
+- Has, in its company section, how to set up the GitHub side of Send to Git (the options, best first, and what the company's own
+  service does), links to the reference service and the contract checker in the repository, and a line telling people
+  they can hand the setup skill to their agent. The skill is served like the other agent skills and listed in llms.txt
+  and llms-full.txt.
+- Shows its code in readable blocks that can be copied, and links the template and the example in the repository.
+- Says plainly, near the top and again at the end, that add-ons from anyone else run with the page's full power and
+  that Pipeup doesn't vouch for them.
+- Is light mode, eases like the rest of the site, can be commented on, and works without scripts of its own beyond
+  copying a command. llms.txt, the agent skill and the npm README point to it, so an agent asked to make an add-on
+  finds it.
+
+### The example add-on's try page
+
+"Send to Git" has a try page like the other add-ons' (a short example document, the comment shortcut, a "what to do"
+box). It runs Pipeup with the example loaded from the site's own copy, standing in for a company server. The service
+address it is given is a demonstration one: pressing **Send to Git** shows, in a panel, exactly what would be
+sent and says nothing left the browser. The page says this is an example of an add-on from another company, and that the
+reviewer is asked first as with any add-on.
 
 ## 4. Look and feel
 
@@ -219,3 +267,6 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-10 — The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out; the icon tilts a little on hover.
 - 2026-10-10 — The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
 - 2026-10-10 — On the walkthrough pages, the file in every scene is drawn as an HTML file: a larger page icon with a folded corner, a code mark and an orange HTML badge (bigger still on the Slack file card).
+- 2026-10-10 — Proposed (not built): a guide page on the site with a Make-your-own card on the Add-ons page, a worked example add-on from another company (Send to Git) with its own card and try page, and a company section in the guide.
+- 2026-10-10 — Proposed (not built): every agent-facing surface tells agents to pin add-on scripts, set the allow-list attribute and suggest a content security policy.
+- 2026-10-10 — Proposed (not built): the guide page covers setting up the GitHub side of Send to Git and points to the setup skill, the reference service and the contract checker.
