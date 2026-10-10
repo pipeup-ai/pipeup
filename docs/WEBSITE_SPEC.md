@@ -16,35 +16,31 @@ visitor how to add it. Functional requirements only.
 
 ## 3. Content (one page, dense but calm, with little scrolling)
 
-1. **First screen**: the headline "Feedback for any HTML." and one sentence on the value, set
-   left-aligned beside the showcase with their tops aligned (stacked on phones). Under them:
-   - **Copy prompt**: one click copies a ready-to-paste prompt that adds Pipeup
-     to the reader's HTML file, including a fresh document key made in their browser, so there is
-     nothing to fill in. The button's icon becomes a check and its label reads "Copied" for a moment,
-     and a short note says to paste it into Claude or Codex.
-   - **Install**, directly below and the same width: opens a short menu of ways to install: Claude Code (a command that installs
-     the skill), Codex (a command that adds it to AGENTS.md), any other agent (llms.txt), the script
-     tag for adding it by hand, and a download of the script. Choosing one copies or opens it.
-   - The comment shortcut, so visitors can try Pipeup on this page.
-   - One calm line on where it lives and where feedback goes: nothing to install (one script added
-     to the HTML file, or loaded from a CDN, and an AI agent can add it); comments stay in the
-     reviewer's own browser on their device and are never sent to any server; feedback leaves only
-     when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves. The
-     page's Markdown copy and llms.txt say the same.
-2. **The showcase**: a looping demo that swipes between a **document**, **slides**, a
-   **website** and the **keyboard**, changing every 10 seconds, each showing a comment being added, with a cursor that
-   moves only to act and holds still while the comment is typed. The keyboard scene uses no pointer
-   at all: Pipeup's block cursor (its outline and naming bar) moves through a small page while each
-   key pressed appears on screen with what it does, like a screencast's key overlay: the comment
-   shortcut (Comment mode), Tab (Next block) twice, ↑ (Around it), ↓ (Back in), Enter (Comment, and
-   a comment is typed), Enter (Send) and Esc (Done). Key captions ease in and out; the shortcut is
-   shown the way the visitor's keyboard labels it. Each scene's page is laid out at
-   full width; when the comment opens, the view slides sideways to make room, like a horizontal
-   scroll. Visitors can **pause** it, jump to any of the four, or swipe on a touch screen. With
-   reduced motion it doesn't move on its own. In comment mode the showcase is commented on as one whole block (its moving parts are never
-   picked on their own), while its tabs, pause and Try keep working.
-   Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
-   "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
+1. **First screen**: the headline "Feedback for any HTML.", one sentence, and **two pictures to choose from**, because
+   there are two ways people meet Pipeup. Each is a short looping animated scene with a title, one line and a
+   "Show me how" link that scrolls to its steps. The page leads with these pictures, not with a list of features.
+   - **"Someone sent me an HTML file"** (I want to give feedback). The scene shows the file arriving, by a chat
+     message, an email, or as a file on the computer (one per loop, in turn); opening in the browser; a comment being
+     typed on a highlighted line; the comment button pressed; and a note that the comments are copied as Markdown,
+     ready to send back.
+   - **"I'm making an HTML page to share"** (I want feedback). The scene shows a conversation with an AI agent (Claude,
+     then Codex, in turn): "Make me a report to share", the agent's report, the prompt pasted into the message box
+     and sent, and the agent saying comments are built in.
+   The scenes are light, ease everything, pause when out of view, and with reduced motion show their finished moment.
+2. **The two walkthroughs**, one under the other, each four steps with a small picture and plain words:
+   - **Got a file**: open it (if a round comment button shows, skip ahead); if not, **Copy prompt** and paste it
+     into an AI assistant along with the file, which adds comments to the reader's copy; comment (select words, or
+     press the comment shortcut and click anything); send it back with **Copy as Markdown**. It says comments stay
+     in the browser until copied and sent.
+   - **Making a file**: **Copy prompt** and add it to the request to an AI, so it builds Pipeup into the page; share
+     the file anywhere; people comment on the page; paste their comments into the AI, which knows where each one goes.
+     It says the author decides how comments travel.
+   Each **Copy prompt** copies a prompt written for that situation, including a fresh document key made in the reader's
+   browser when the file has none. Its icon becomes a check and its label reads "Copied" for a moment. A final
+   **Try it on a page** link leads to the document example, so visitors can try Pipeup on a real page, and the page
+   itself runs Pipeup, so it can be commented on. The page's Markdown copy and llms.txt say the same.
+   Ways to install for a particular agent (Claude Code, Codex, the script tag, a download) are reached through
+   **For agents** in the footer.
 3. **Try pages**: one real example each, running Pipeup, each with a very different look so
    visitors see Pipeup fit in anywhere:
    - **Document**: a short guide to how Pipeup works, laid out like a familiar word-processor page
@@ -64,7 +60,7 @@ visitor how to add it. Functional requirements only.
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
 
-There is no separate set-up section: the two actions cover it.
+There is no separate set-up section: the two walkthroughs cover it.
 
 **For agents**: the site serves, at stable addresses and linked from the page and its footer:
 a short guide (llms.txt), the guide and all agent skills in one file (llms-full.txt), the page
@@ -198,3 +194,4 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-09 — The Add-ons page links the guide for making your own add-on.
 - 2026-10-09 — Proposed (not built): a Try it page for each add-on, linked from its card (Voice, Live, Assist, and Share once a service is chosen); none for the mailbox.
 - 2026-10-09 — Built: Try it pages for Voice, Live, Assist and Assist on slides; Share's card gives a local-demo command. Live's page asks for a second browser or private window (two tabs of one browser are one person), not a second window of the same browser.
+- 2026-10-10 — The home page is rebuilt around the two ways people meet Pipeup (someone sent me a file; I'm making a page to share): two animated scenes on the first screen and a walkthrough for each, with a Copy prompt written for each. The showcase and the Install menu are gone from the first screen; the footer, For agents menu and GitHub link are unchanged.

@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The website's home page is rebuilt around the two ways people meet Pipeup: someone sent me an HTML file, and I'm making a page to share. Two animated scenes on the first screen, a walkthrough with a Copy prompt for each.
+
 ## [0.5.3] - 2026-10-09
 
 ### Added

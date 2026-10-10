@@ -66,7 +66,7 @@ or as one combined file such as `pipeup+share.min.js`:
 
 ### With an AI agent
 
-The website's **Copy prompt** button gives a prompt to paste into Claude, Codex or another coding
+The website's **Copy prompt** buttons give a prompt to paste into Claude, Codex or another coding
 agent. To install the skill instead:
 
 ```sh
