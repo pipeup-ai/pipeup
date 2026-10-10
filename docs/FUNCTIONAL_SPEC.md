@@ -619,6 +619,22 @@ permission, a registration, or a place in its npm scope.
   the page's full power and that Pipeup doesn't vouch for them.
 - **Where to find it.** The guide is linked from the website's Add-ons page, the README and the add-ons folder, with
   one line saying what it is for. The page's list of Pipeup's own add-ons is unchanged.
+- **Using add-ons inside a company.** The guide has a short section for companies that want their own add-ons (a
+  link to their ticket tracker or document system, their own sign-in, their own review rules) without publishing
+  anything under the Pipeup project's name. It says, in plain words: the add-on is one script file the company hosts
+  itself (on its intranet or artifact store, through a private package registry under its own scope, or beside the
+  page); the page pins it (a fixed version and an integrity hash) so it can't change underneath reviewers; the
+  page's author decides which scripts run, so only the add-ons the company includes ever do; the company reviews the
+  add-on like any code on its pages, because it runs with the page's full power; and the company's own sentence about
+  what it sends (to its own servers) is what reviewers are shown first. Nothing leaves the company unless the add-on
+  says so.
+- **A worked example from "another company".** The repository holds a complete example add-on written the way a
+  company would write one, outside the Pipeup project's names: "Acme Tracker". It adds one row to the menu, "Send to
+  Acme tracker", that sends the open comments' text to the tracker address the page names. Before anything is sent it
+  asks, saying what it will send and to where. It sends over a secure connection only (or to the reviewer's own
+  computer, for trying it), says in words how it went, and never posts, edits or resolves a comment on anyone's
+  behalf. It comes with a tiny stand-in tracker to run on the same computer, which shows what it received. The
+  example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -906,3 +922,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
 - 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
 - 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
+- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Acme Tracker), not under the Pipeup project's names (section 11a).
