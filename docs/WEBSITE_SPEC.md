@@ -16,35 +16,48 @@ visitor how to add it. Functional requirements only.
 
 ## 3. Content (one page, dense but calm, with little scrolling)
 
-1. **First screen**: the headline "Feedback for any HTML.", one sentence, and **two pictures to choose from**, because
-   there are two ways people meet Pipeup. Each is a short looping animated scene with just a title (in the accent colour) and a
-   "Show me how" link that scrolls to its steps; no small labels or repeated sentences. The page leads with these pictures, not with a list of features.
-   - **"Someone sent me an HTML file"** (I want to give feedback). Two stories, one per loop, in turn. First, an
-     email arrives and is opened, the HTML attachment is downloaded, and the file is dragged into Claude's message
-     box; "Add comments with Pipeup" is typed, the prompt is pasted in (a paste key hint shows), and it is sent;
-     Claude says it is done. Second, an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a
-     channel, a file card with a download button), is downloaded, and goes into Codex the same way. Each agent has its
-     highlight colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses,
-     and each press shows a ring.
-   - **"I'm making an HTML page to share"** (I want feedback). The scene shows a conversation with an AI agent (Claude,
-     then Codex, in turn): "Make me a report to share" typed in the message box and sent, the agent's report, then
-     "Add comments with Pipeup" typed, the prompt pasted in and sent, and the agent saying comments are built in.
-     Everything lines up on the same edges and the text is drawn sharp.
-   The scenes are light, ease everything, pause when out of view, and with reduced motion show their finished moment.
-2. **The two walkthroughs**, one under the other, each four steps with a small picture and plain words:
-   - **Got a file**: open it (if a round comment button shows, skip ahead); if not, **Copy prompt** and paste it
-     into an AI assistant along with the file, which adds comments to the reader's copy; comment (select words, or
-     press the comment shortcut and click anything); send it back with **Copy as Markdown**. It says comments stay
-     in the browser until copied and sent.
-   - **Making a file**: **Copy prompt** and add it to the request to an AI, so it builds Pipeup into the page; share
-     the file anywhere; people comment on the page; paste their comments into the AI, which knows where each one goes.
-     It says the author decides how comments travel.
-   Each **Copy prompt** copies a prompt written for that situation, including a fresh document key made in the reader's
-   browser when the file has none. Its icon becomes a check and its label reads "Copied" for a moment. A final
-   **Try it on a page** link leads to the document example, so visitors can try Pipeup on a real page, and the page
-   itself runs Pipeup, so it can be commented on. The page's Markdown copy and llms.txt say the same.
-   Ways to install for a particular agent (Claude Code, Codex, the script tag, a download) are reached through
-   **For agents** in the footer.
+1. **First screen**: the headline "Feedback for any HTML.", one sentence on the value, and the **showcase** beside
+   them (tops aligned; stacked on phones). Under the sentence are **two buttons**, one for each way people meet
+   Pipeup, each with a small down arrow and an eased scroll to its section:
+   - **1. Add comments to an HTML**: someone sent me a file and I want to give feedback.
+   - **2. Create comment-enabled HTML**: I'm making a page to share and I want feedback.
+   Under the buttons, the comment shortcut, so visitors can try Pipeup on this page. The page's Markdown copy and
+   llms.txt say the same, and that nothing leaves the reviewer's device until they copy and send it themselves.
+   **The showcase**: a looping demo that swipes between a **document**, **slides**, a
+   **website** and the **keyboard**, changing every 10 seconds, each showing a comment being added, with a cursor that
+   moves only to act and holds still while the comment is typed. The keyboard scene uses no pointer
+   at all: Pipeup's block cursor (its outline and naming bar) moves through a small page while each
+   key pressed appears on screen with what it does, like a screencast's key overlay: the comment
+   shortcut (Comment mode), Tab (Next block) twice, ↑ (Around it), ↓ (Back in), Enter (Comment, and
+   a comment is typed), Enter (Send) and Esc (Done). Key captions ease in and out; the shortcut is
+   shown the way the visitor's keyboard labels it. Each scene's page is laid out at
+   full width; when the comment opens, the view slides sideways to make room, like a horizontal
+   scroll. Visitors can **pause** it, jump to any of the four, or swipe on a touch screen. With
+   reduced motion it doesn't move on its own. In comment mode the showcase is commented on as one whole block (its moving parts are never
+   picked on their own), while its tabs, pause and Try keep working.
+   Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
+   "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
+2. **The two walkthroughs**, one under the other, one for each button. Each has a heading and a sentence on the left, an
+   animated scene on the right, and four steps with a small picture and plain words below:
+   - **Add comments to an HTML** ("Someone sent you an HTML file"). The scene shows two stories, one per loop, in turn:
+     an email arrives and is opened, the HTML attachment is downloaded, and the file is dragged into Claude's message
+     box; "Add comments with Pipeup" is typed, the prompt is pasted in (a paste key hint shows) and it is sent; Claude
+     says it is done. Then an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a channel, a file
+     card with a download button), is downloaded, and goes into Codex the same way. Each agent has its highlight
+     colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses, and each
+     press shows a ring. The steps: open it (if a round comment button shows, skip ahead); if not, **Copy prompt**
+     and paste it into an AI assistant along with the file; comment; send it back with **Copy as Markdown**. It says
+     comments stay in the browser until copied and sent.
+   - **Create comment-enabled HTML** ("You're creating an HTML page to share"). The scene shows a conversation with an AI
+     agent (Claude, then Codex, in turn): "Make me a report to share" typed in the message box and sent, the agent's
+     report, then "Add comments with Pipeup" typed, the prompt pasted in and sent, and the agent saying comments are
+     built in. The steps: **Copy prompt** and add it to the request; share the file anywhere; people comment on the
+     page; paste their comments into the AI. It says the author decides how comments travel.
+   Everything lines up on the same edges and the text is drawn sharp. The scenes are light, ease everything, pause when
+   out of view, and with reduced motion show their finished moment. Each **Copy prompt** copies a prompt written for
+   that situation, including a fresh document key made in the reader's browser when the file has none; its icon
+   becomes a check and its label reads "Copied" for a moment. Ways to install for a particular agent (Claude Code,
+   Codex, the script tag, a download) are reached through **For agents** in the footer.
 3. **Try pages**: one real example each, running Pipeup, each with a very different look so
    visitors see Pipeup fit in anywhere:
    - **Document**: a short guide to how Pipeup works, laid out like a familiar word-processor page
@@ -199,3 +212,4 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
 - 2026-10-09 — Proposed (not built): a Try it page for each add-on, linked from its card (Voice, Live, Assist, and Share once a service is chosen); none for the mailbox.
 - 2026-10-09 — Built: Try it pages for Voice, Live, Assist and Assist on slides; Share's card gives a local-demo command. Live's page asks for a second browser or private window (two tabs of one browser are one person), not a second window of the same browser.
 - 2026-10-10 — The home page is rebuilt around the two ways people meet Pipeup (someone sent me a file; I'm making a page to share): two animated scenes on the first screen and a walkthrough for each, with a Copy prompt written for each. The showcase and the Install menu are gone from the first screen; the footer, For agents menu and GitHub link are unchanged.
+- 2026-10-10 — The home page goes back to the feature showcase on the first screen, with two buttons (Add comments to an HTML; Create comment-enabled HTML) that scroll to a walkthrough and animated scene for each way people meet Pipeup. It replaces the two animated doors; the footer, For agents menu and GitHub link are unchanged.
