@@ -13,7 +13,7 @@ Comments reach everyone who has the page.
 - **Sends**: sealed comments, to a service the author picks: a PrivateBin or their own mailbox (see below). The service can't read them.
 - **Asks first**: nothing is shared until the reviewer chooses to.
 - **Try it**: on your own computer, with a local demo and its own sharing service (no online try page, so nothing goes to a public service).
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/share@0.5.3/dist/share.min.js" integrity="{{SRI:share}}" crossorigin="anonymous"></script>`, and put the sharing address the author gives you on the `<html>` element as `data-pipeup-share="<address>"`, exactly as written. Ask the author for the address; don't make one up or try it.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/share@0.5.4/dist/share.min.js" integrity="{{SRI:share}}" crossorigin="anonymous"></script>`, and put the sharing address the author gives you on the `<html>` element as `data-pipeup-share="<address>"`, exactly as written. Ask the author for the address; don't make one up or try it.
 
 ## Voice
 
@@ -22,7 +22,7 @@ Dictate a comment instead of typing it.
 - **Sends**: nothing of its own. The browser's own speech engine does the listening, and in some browsers it sends the audio to its maker.
 - **Asks first**: a short note, then the browser's own microphone prompt.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/voice.html
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@0.5.3/dist/voice.min.js" integrity="{{SRI:voice}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@0.5.4/dist/voice.min.js" integrity="{{SRI:voice}}" crossorigin="anonymous"></script>`.
 
 ## Live
 
@@ -31,7 +31,7 @@ See who else is on the page, and where.
 - **Sends**: presence and comments, browser to browser. Public relays only introduce the reviewers to each other.
 - **Asks first**: each reviewer, before anything connects.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/live.html (open it in two browsers)
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/live@0.5.3/dist/live.min.js" integrity="{{SRI:live}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/live@0.5.4/dist/live.min.js" integrity="{{SRI:live}}" crossorigin="anonymous"></script>`.
 
 ## Assist
 
@@ -40,7 +40,7 @@ A small AI model on the reviewer's device reads the whole page and points to rel
 - **Sends**: nothing. The model runs on the device, and the browser may download it once.
 - **Asks first**: each reviewer, with the model, its size and what it reads, before it turns on.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/assist.html, or on slides: https://pipeup-ai.github.io/pipeup/try/assist-deck.html
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/assist@0.5.3/dist/assist.min.js" integrity="{{SRI:assist}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/assist@0.5.4/dist/assist.min.js" integrity="{{SRI:assist}}" crossorigin="anonymous"></script>`.
 
 ## Your own mailbox
 

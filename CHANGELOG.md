@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-10-10
+
 ### Added
 - A page can list the add-ons that may run: `<html data-pipeup-addons="share,my-addon">` (`none` lets none run; without it every add-on runs). Any other add-on stays off, with the reason "this page doesn't allow it". Best effort: it stops add-ons the author didn't choose, not a page that is already compromised.
 - A guide page for making your own add-on (`addons-guide.html`, from `docs/ADDONS_GUIDE.md`), including using add-ons inside a company, what an add-on works with, and keeping add-ons intentional; a Make-your-own card on the Add-ons page; the template now builds one bundled, pinned file.
@@ -17,20 +19,13 @@ change the API and the stored comment format.
 - Send to Git can be tried against a real GitHub repository on your own computer: `README` steps, `DEV_USER` for the sign-in stand-in, and `SERVICE_URL` for the demo page.
 - The Add-ons page's prompts, `llms.txt`, the integrate skill and each add-on's README tell agents to pin add-on scripts with their integrity hash, list the add-on in `data-pipeup-addons`, and tell the author about a content security policy.
 
+### Changed (the website)
 - The file in the walkthrough scenes looks like an HTML file: a larger page icon with a code mark and an orange HTML badge.
-
 - The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
-
 - The two walkthrough pages' footer matches the Add-ons page: a rule above it and the Add-ons and For agents links on the right (For agents offers that page's Markdown copy).
-
 - The footer's Add-ons link is a soft violet pill with a puzzle-piece icon so it stands out.
-
-- The footer's Add-ons link has a puzzle-piece icon so it stands out.
-
 - The home page's two buttons open their own pages (Add comments to an HTML; Create comment-enabled HTML), each with a back link, instead of scrolling; their text is top-aligned with the animation.
-
 - The home page keeps the feature showcase on the first screen and adds two buttons (Add comments to an HTML; Create comment-enabled HTML) that scroll to an animated walkthrough for each; the footer and For agents menu are unchanged.
-
 - The website's home page is rebuilt around the two ways people meet Pipeup: someone sent me an HTML file, and I'm making a page to share. Two animated scenes on the first screen, a walkthrough with a Copy prompt for each.
 
 ## [0.5.3] - 2026-10-09
@@ -251,6 +246,7 @@ The first public release.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
 [Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...HEAD
+[0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/pipeup-ai/pipeup/compare/v0.5.0...v0.5.1
