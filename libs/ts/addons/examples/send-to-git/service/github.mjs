@@ -13,12 +13,26 @@
 //                    Never set it on a service anyone else can reach.
 //   Credentials, one of:
 //   GITHUB_TOKEN     a fine-grained access token limited to REPO (contents and pull requests: write), for a pilot
-//   APP_ID, INSTALLATION_ID, PRIVATE_KEY   a GitHub App installed on REPO (best): PRIVATE_KEY is its PEM text
+//   APP_ID, INSTALLATION_ID, and PRIVATE_KEY (its PEM text) or PRIVATE_KEY_FILE (a file holding it)   a GitHub App installed on REPO (best)
+//                    node service/create-app.mjs makes the App and writes these into ./send-to-git.env for you
 import { createSign } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { handler } from "./lib.mjs";
 
+// Settings may also come from ./send-to-git.env (KEY=value lines), which create-app.mjs writes for you.
+try {
+  for (const line of readFileSync(process.env.ENV_FILE ?? "send-to-git.env", "utf8").split("\n")) {
+    const m = /^([A-Z_]+)=(.*)$/.exec(line.trim());
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
+  }
+} catch {
+  /* no settings file: the environment alone */
+}
 const env = (k, d) => process.env[k] ?? d;
+/** The App's private key: the PEM text, or a file holding it (PRIVATE_KEY_FILE, kept private on this computer). */
+const privateKey = () =>
+  env("PRIVATE_KEY_FILE") ? readFileSync(env("PRIVATE_KEY_FILE"), "utf8") : env("PRIVATE_KEY");
 const API = env("GITHUB_API", "https://api.github.com").replace(/\/$/, "");
 const REPO = env("REPO");
 const BASE = env("BASE_BRANCH", "main");
@@ -36,7 +50,7 @@ async function token() {
   const body = b64u(JSON.stringify({ iat: now - 30, exp: now + 540, iss: env("APP_ID") }));
   const sig = createSign("RSA-SHA256")
     .update(`${head}.${body}`)
-    .sign(env("PRIVATE_KEY").replace(/\\n/g, "\n"))
+    .sign(privateKey().replace(/\\n/g, "\n"))
     .toString("base64url");
   const res = await gh(
     `/app/installations/${env("INSTALLATION_ID")}/access_tokens`,
@@ -105,7 +119,10 @@ async function save({ review, path, user }) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   if (!REPO || !ORIGIN)
     throw new Error("Set REPO (owner/name) and ORIGIN (the page's address); see the top of this file.");
-  if (!env("GITHUB_TOKEN") && !(env("APP_ID") && env("INSTALLATION_ID") && env("PRIVATE_KEY")))
+  if (
+    !env("GITHUB_TOKEN") &&
+    !(env("APP_ID") && env("INSTALLATION_ID") && (env("PRIVATE_KEY") || env("PRIVATE_KEY_FILE")))
+  )
     throw new Error("Set GITHUB_TOKEN, or APP_ID, INSTALLATION_ID and PRIVATE_KEY.");
   if (env("DEV_USER"))
     console.warn(

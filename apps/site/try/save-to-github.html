@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="sAvEtOgItHuBtRyP:UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU" data-pipeup-addons="save-to-github" data-pipeup-save-to-github="demo:">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Try Save to GitHub (an example add-on)</title>
+    <meta name="description" content="Save to GitHub is an example of an add-on a company writes for itself. It opens GitHub with a review filled in as a Markdown file: no server, no token." />
+    <style>
+      body { font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; color: #222; background: #fff; }
+      h1 { font-size: 30px; } h2 { font-size: 21px; margin-top: 32px; }
+      .steps { font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #3d3c38; background: #f7f6f3; border: 1px solid #e3e1da; border-radius: 12px; padding: 14px 18px; margin: 0 0 28px; }
+      .steps h2 { font-size: 15px; margin: 0 0 6px; font-weight: 600; color: #111; }
+      .steps ol { margin: 0 0 8px; padding-left: 20px; } .steps li { margin: 0 0 3px; }
+      .steps p { margin: 0 0 4px; color: #5f5e5a; } .steps p b { color: #111; font-weight: 600; }
+      .steps a { color: #534ab7; }
+      .tag { display: inline-block; font: 600 12px system-ui, sans-serif; color: #7a4a05; background: #fbf3db; border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <aside class="steps" data-pipeup-ignore aria-label="How to try Save to GitHub">
+        <span class="tag">Example: not from Pipeup</span>
+        <h2>Try Save to GitHub</h2>
+        <ol>
+          <li>Press <b>Shift+Option+C</b> (Shift+Alt+C on Windows), select some words and write a comment.</li>
+          <li>Open the comment control's menu and choose <b>Save to GitHub</b>. Name a repository you can write to, and it shows the address it would open and the file it would fill in.</li>
+          <li>Press <b>Open GitHub</b> to see GitHub's own "new file" page with the review filled in. You commit it yourself; nothing is sent from here.</li>
+        </ol>
+        <p><b>What it is</b> An add-on a company writes for itself. It needs no server and no token: GitHub's own page and your own sign-in do the saving.</p>
+        <p><b>Use it for real</b> <a href="../addons.html#save-to-github">Copy the prompt</a> and give it to your AI agent: it adds the add-on to your page. It only needs the repository's name. For long reviews or a team, see <a href="send-to-git.html">Send to Git</a> or <a href="../addons-guide.html">the guide</a>.</p>
+      </aside>
+      <h1 data-pipeup-id="title">Q3 launch plan</h1>
+      <h2 data-pipeup-id="summary-h">Summary</h2>
+      <p data-pipeup-id="p1">We will launch the new onboarding flow in July, targeting a 20% lift in week-one retention, and follow with pricing changes in August.</p>
+      <p data-pipeup-id="p2">The team stays at six people through the end of the quarter. Hiring a second designer moves to Q4.</p>
+      <h2 data-pipeup-id="risks-h">Risks</h2>
+      <p data-pipeup-id="p3">If onboarding slips past July, the pricing work slips with it.</p>
+    </main>
+    <script src="../pipeup.min.js"></script>
+    <script src="../addons/save-to-github.min.js"></script>
+  </body>
+</html>

@@ -32,6 +32,7 @@ if [[ $build_lib == 1 ]]; then
 fi
 [[ -f "$lib/dist/pipeup.min.js" ]] || { echo "missing $lib/dist/pipeup.min.js: build the library first" >&2; exit 1; }
 
+[[ -f "$addons/examples/save-to-github/dist/save-to-github.min.js" ]] || { echo "missing the Save to GitHub example build: build the add-ons first" >&2; exit 1; }
 [[ -f "$addons/examples/send-to-git/dist/send-to-git.min.js" ]] || { echo "missing the Send to Git example build: build the add-ons first" >&2; exit 1; }
 for id in voice live assist; do
   [[ -f "$addons/$id/dist/$id.min.js" ]] || { echo "missing $addons/$id/dist/$id.min.js: build the add-ons first" >&2; exit 1; }
@@ -43,7 +44,7 @@ cp -R "$site/index.html" "$site/addons.html" "$site/add-comments.html" "$site/cr
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
 for id in voice live assist; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
-cp "$addons/examples/send-to-git/dist/send-to-git.min.js" "$out/addons/"
+cp "$addons/examples/send-to-git/dist/send-to-git.min.js" "$addons/examples/save-to-github/dist/save-to-github.min.js" "$out/addons/"
 cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/add-comments.html.md" "$site/create-html.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"

@@ -706,6 +706,32 @@ permission, a registration, or a place in its npm scope.
     permissions for them), generating the service from the reference one, setting its settings, giving the page the
     service address, the allow-list entry and the matching content security policy line, and running the checker. It
     never asks for a token to be pasted into a page or a chat.
+- **Two worked examples, for two situations.** Both are written the way a company would write them, outside the Pipeup
+  project's names, and clearly labelled as not from the project:
+  1. **"Send to Git"** (needs the company's own service): the reviewer's comments go to a service the company runs, which
+     files them in Git. For teams: sign-in, a record of who saved what, pull requests.
+  2. **"Save to GitHub"** (needs no server and no token): one menu row opens GitHub's own "new file" page in a new tab with
+     the review already filled in (the Markdown that Copy as Markdown makes, in a file path chosen from the page's name
+     and the time). The reviewer signs in to GitHub as themselves and presses GitHub's commit button (or "propose
+     changes", when they can't write to the repository). It asks first, saying what will be filled in and where. The
+     page names the repository, and optionally the branch and folder, and, for GitHub Enterprise Server, the host. When
+     the review is too long to travel in an address, it copies the Markdown for the reviewer to paste and opens the same
+     page with the file name filled in, and says so in words. It never holds or sees a token, and never posts, edits or
+     resolves a comment.
+- **Choosing a way, written down.** The guide's company section lists the ways to get a review into Git and when each fits: the
+  company's service using the GitHub API (pull requests, sign-in, records); the same service running Git itself with a
+  deploy key (any Git host); the host's API for another host (GitLab, Bitbucket, Azure DevOps, Gitea); GitHub's prefilled new-file or new-issue
+  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy as Markdown pasted to an
+  agent or an issue. It names what needs a server and says which of them the examples show.
+- **As little friction as possible: the agent does the setting up.** Each example has one Copy prompt that gives the person's AI
+  agent everything it needs (the setup skill). The setup skill covers both examples and starts by asking which fits (no server,
+  or the company's service) and which repository. For "Save to GitHub" the agent only edits the page and tells the person
+  what to expect: the person has nothing to approve and no token to make. For "Send to Git" the agent does everything it
+  can: it gets the example, builds it, and runs the service and the page; the few things only the person can do are kept
+  to one click each: approving the GitHub App (the agent starts GitHub's own "create an app from a manifest" flow, which
+  asks the person to press one button, and keeps the app's key in a private file on their computer, never in the chat or a
+  page) and installing it on the repository. The skill says plainly which steps are the person's and why. It never asks for a
+  token to be pasted anywhere.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
 
@@ -998,3 +1024,5 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-10 — Proposed (not built): how a company sets up the GitHub side of Send to Git (a GitHub App and a small service, or a bot token, or a webhook-started workflow), with a GitHub-backed reference service, a contract checker and a setup skill for agents (section 11a).
 - 2026-10-10 — Built: the allow-list attribute, the guide and its page, the template's bundled file, the Send to Git example (stand-in and GitHub reference services, contract checker, try page), the setup skill, and every agent surface updated (section 11a).
 - 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
+- 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
+- 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).

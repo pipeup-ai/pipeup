@@ -192,7 +192,7 @@ page opened from disk and in any script order, and they are released with Pipeup
   yourself: a strict one can break a page. This stops stray scripts, not a page that is already compromised.
 - **Other people's add-ons** (a company's own) run with the page's full power and Pipeup doesn't vouch for them. Add one only
   when the author names it and says where it is hosted; pin it and list it the same way. To help a company make one, see
-  the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git, use the skill
+  the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git (Save to GitHub, or Send to Git through a company service), use the skill
   pipeup-send-to-git-setup.
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
   about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.

@@ -10,7 +10,7 @@ do not work yet; the rest work today by copy and paste.
 | [pipeup-integrate](pipeup-integrate/SKILL.md) | Making or editing an HTML document, deck or page that people will review |
 | [pipeup-summarise](pipeup-summarise/SKILL.md) | Someone has feedback on a page and wants it understood |
 | [pipeup-apply](pipeup-apply/SKILL.md) | Someone wants the feedback acted on |
-| [pipeup-send-to-git-setup](pipeup-send-to-git-setup/SKILL.md) | A company wants reviews saved as Markdown in its own Git, through its own service |
+| [pipeup-send-to-git-setup](pipeup-send-to-git-setup/SKILL.md) | Someone wants reviews saved as Markdown in their own Git: Save to GitHub (no server) or Send to Git (a company service) |
 
 The website publishes them for agents to fetch:
 
