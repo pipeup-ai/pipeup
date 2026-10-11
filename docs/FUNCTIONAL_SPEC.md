@@ -831,6 +831,35 @@ permission, a registration, or a place in its npm scope.
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
 
+### 15a. Installing the skills
+
+Today an agent has to be pasted a prompt and fetch each skill. The skills become something a person
+installs once, after which the agent uses them on its own whenever the task calls for it.
+
+- **A Claude Code plugin.** One plugin holds every Pipeup skill. A person adds the project as a plugin
+  source and installs the plugin with two commands, then asks for what they want ("add comments to this
+  page") without pasting anything. Updates arrive the way any plugin's do.
+- **One command for any agent.** A small installer, run with one command, puts the same skills where
+  Claude Code and Codex look for them: for the person (every project) or for the current project only,
+  the person's choice. It says in plain words what it will write and where, asks before replacing a
+  skill the person has changed, and can update and remove what it installed. It never changes anything
+  else on the computer, and it runs with no account and no network call beyond fetching itself.
+- **Codex** reads the same skills through the installer. Anything more specific to Codex is added only
+  after checking what Codex supports at the time.
+- **Same skills everywhere.** The plugin, the installer, the website's copies and the copy-and-paste
+  prompts all carry the same text, so they cannot disagree. Each says which Pipeup version it was
+  written for.
+- **A skill for adding Pipeup.** A new skill, "add Pipeup to this page", does what the prompts do
+  today in one place: it adds Pipeup pinned to an exact version with its integrity hash, asks which
+  add-ons the page wants (none by default), sets the allow-list for them and tells the author about a
+  content security policy. The other skills point to it rather than repeating it.
+- **The prompt stays** as the fallback for an agent with nothing installed, and for a chat that can't
+  install anything. Each page that offers it shows the install commands first.
+- **Out of date wording is removed.** The skills no longer say the command-line steps are "arriving
+  later" when a step works today by copy and paste.
+- The installer and the plugin hold no runtime code for a page: they carry text and nothing that runs
+  on a reviewer's page. Neither sends anything about the person anywhere.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -1026,3 +1055,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
+- 2026-10-11 — Proposed (not built): the skills are installed once as a Claude Code plugin or with one command for Claude Code and Codex, plus a skill for adding Pipeup that the prompts and other skills point to (section 15a).
