@@ -564,6 +564,23 @@ export function addons(): readonly AddonInfo[] {
   return firstCore ? firstCore.addons() : [...entries.values()].map((e) => ({ ...e.info }));
 }
 
+/**
+ * The page's own list of the add-ons that may run: data-pipeup-addons="share,my-addon" ("none" lets none run).
+ * Without the attribute every add-on runs. It stops add-ons the author didn't choose; it can't stop a script that
+ * can already edit the page.
+ */
+function allowed(id: string): boolean {
+  const list =
+    typeof document === "undefined" ? null : document.documentElement.getAttribute("data-pipeup-addons");
+  return (
+    list === null ||
+    list
+      .toLowerCase()
+      .split(/[\s,]+/)
+      .includes(id)
+  );
+}
+
 /** Registers an add-on: it sets up now if Pipeup is mounted, else when it mounts. */
 export function use(addon: PipeupAddon): void {
   if (firstCore) return firstCore.use(addon);
@@ -589,7 +606,11 @@ export function use(addon: PipeupAddon): void {
     state: "waiting",
   };
   const missing = (a.needs ?? []).find((c) => !CAPABILITIES.includes(c));
-  if (a.api !== ADDON_API) {
+  if (!allowed(a.id)) {
+    info.state = "off";
+    info.reason = "this page doesn't allow it";
+    warn(`the add-on "${a.id}" is not in this page's data-pipeup-addons list, so it is off`);
+  } else if (a.api !== ADDON_API) {
     info.state = "off";
     info.reason = `needs add-on API ${String(a.api)}; this Pipeup has ${ADDON_API}`;
   } else if (missing) {

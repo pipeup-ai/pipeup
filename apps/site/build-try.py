@@ -66,7 +66,7 @@ BAR = """
 """
 
 # The add-on try pages: Pipeup with one add-on each. Their bar goes back to the Add-ons page and lists the others.
-ADDON_PAGES = [("voice", "Voice"), ("live", "Live"), ("assist", "Assist"), ("assist-deck", "Assist (slides)")]
+ADDON_PAGES = [("voice", "Voice"), ("live", "Live"), ("assist", "Assist"), ("assist-deck", "Assist (slides)"), ("send-to-git", "Send to Git (example)")]
 for extra in ("assist-practice.js",):
     (out / extra).write_text((site / "try" / extra).read_text())
 

@@ -31,4 +31,9 @@ for (const id of Object.keys(BUDGETS)) {
     }
   }
 }
+// The example a company would write for itself (Send to Git): built with the others so its tests and the site can use it.
+execFileSync("node", [`${here}../examples/send-to-git/build.mjs`], {
+  cwd: `${here}../examples/send-to-git`,
+  stdio: "inherit",
+});
 if (over) process.exit(1);

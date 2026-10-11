@@ -1,0 +1,13 @@
+{
+  "name": "send-to-git-example",
+  "private": true,
+  "version": "0.1.0",
+  "description": "An example of an add-on a company writes for itself: send a review, as Markdown, to a service that files it in Git. Not from the Pipeup project.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "demo": "node demo.mjs",
+    "check-service": "node service/check.mjs"
+  }
+}

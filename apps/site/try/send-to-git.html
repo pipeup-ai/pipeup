@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="sEnDtOgItTrYpAgE:TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" data-pipeup-addons="send-to-git" data-pipeup-send-to-git-url="demo:">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Try Send to Git (an example add-on)</title>
+    <meta name="description" content="Send to Git is an example of an add-on a company writes for itself. It sends a review as Markdown to a service that files it in Git." />
+    <style>
+      body { font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 640px; margin: 48px auto; padding: 0 20px; color: #222; background: #fff; }
+      h1 { font-size: 30px; } h2 { font-size: 21px; margin-top: 32px; }
+      .steps { font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #3d3c38; background: #f7f6f3; border: 1px solid #e3e1da; border-radius: 12px; padding: 14px 18px; margin: 0 0 28px; }
+      .steps h2 { font-size: 15px; margin: 0 0 6px; font-weight: 600; color: #111; }
+      .steps ol { margin: 0 0 8px; padding-left: 20px; } .steps li { margin: 0 0 3px; }
+      .steps p { margin: 0 0 4px; color: #5f5e5a; } .steps p b { color: #111; font-weight: 600; }
+      .steps a { color: #534ab7; }
+      .tag { display: inline-block; font: 600 12px system-ui, sans-serif; color: #7a4a05; background: #fbf3db; border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <aside class="steps" data-pipeup-ignore aria-label="How to try Send to Git">
+        <span class="tag">Example: not from Pipeup</span>
+        <h2>Try Send to Git</h2>
+        <ol>
+          <li>Press <b>Shift+Option+C</b> (Shift+Alt+C on Windows), select some words and write a comment.</li>
+          <li>Open the comment control's menu and choose <b>Send to Git</b>. It tells you what it would send, and asks first.</li>
+          <li>Press <b>Send</b>. Here you see exactly what would be sent. Nothing leaves your browser.</li>
+        </ol>
+        <p><b>What it is</b> An add-on a company writes for itself. It sends the review, as the Markdown that Copy as Markdown makes, to a service the company runs, which files it in Git. It never holds a Git token.</p>
+        <p><b>Make it real</b> <a href="../addons.html#send-to-git">Copy the prompt</a> and give it to your AI agent: it sets up a service that really saves the file in a GitHub repository, with you. Or <a href="https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git">run it yourself</a>, or read <a href="../addons-guide.html">the guide</a>.</p>
+      </aside>
+      <h1 data-pipeup-id="title">Q3 launch plan</h1>
+      <h2 data-pipeup-id="summary-h">Summary</h2>
+      <p data-pipeup-id="p1">We will launch the new onboarding flow in July, targeting a 20% lift in week-one retention, and follow with pricing changes in August.</p>
+      <p data-pipeup-id="p2">The team stays at six people through the end of the quarter. Hiring a second designer moves to Q4.</p>
+      <h2 data-pipeup-id="risks-h">Risks</h2>
+      <p data-pipeup-id="p3">If onboarding slips past July, the pricing work slips with it.</p>
+    </main>
+    <script src="../pipeup.min.js"></script>
+    <script src="../addons/send-to-git.min.js"></script>
+  </body>
+</html>
