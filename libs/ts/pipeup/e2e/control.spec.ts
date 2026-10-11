@@ -256,10 +256,13 @@ test("an avatar in a panel row keeps its square", async ({ page }) => {
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   const av = panel(page).locator(".mi .av").first();
   await settled(av);
-  const a = (await av.boundingBox())!;
-  expect(Math.abs(a.width - a.height)).toBeLessThanOrEqual(1);
-  expect(a.width).toBeGreaterThanOrEqual(22);
-  expect(a.width).toBeLessThanOrEqual(24);
+  // Measured until it settles: under load the panel's own entry can still be easing when the first look is taken.
+  await expect
+    .poll(async () => {
+      const a = (await av.boundingBox())!;
+      return Math.abs(a.width - a.height) <= 1 && a.width >= 22 && a.width <= 24;
+    })
+    .toBe(true);
 });
 
 test("with reduced motion, opening and closing the panel only fades it", async ({ page }) => {
