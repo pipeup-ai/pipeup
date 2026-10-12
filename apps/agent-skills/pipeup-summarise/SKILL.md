@@ -5,7 +5,7 @@ description: Use when someone has Pipeup feedback on an HTML page — text a rev
 
 # Summarise Pipeup feedback
 
-This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.5.4. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 ## 1. Get the feedback as text
 
@@ -13,10 +13,6 @@ The input is the Markdown a reviewer copied with **Copy as Markdown** and pasted
 can run the page in a browser, `(await Pipeup.comments()).markdown` (add `{ all: true }` for resolved threads). It
 starts with `# Review comments:`. Use it directly. A thread marked "open, addressed" has an agent's note: report it as
 answered, still waiting for the author to close it. Summarising changes nothing, so don't reply in the page.
-
-- **Later:** feedback files (`*.pipeup.json`) read with `npx pipeup read page.html feedback/*.pipeup.json --as ai`
-  (add `--all` for resolved threads). The page has no controls for producing these yet, so don't
-  expect them.
 
 Each thread in that text says **where** it is (slide or section › element), the element's
 `data-pipeup-id`, the **quoted text** or **pin position**, who started it and when, and the

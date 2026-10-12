@@ -3,9 +3,9 @@ name: pipeup-apply
 description: Use when someone asks you to act on Pipeup feedback for an HTML page — read the comments, make the changes the author approves, then answer each thread and mark it addressed. Never resolves a thread; the author does.
 ---
 
-# Apply Pipeup feedback (`pipeup agent` and `pipeup reply` work today; `check`, `init` and `read` arrive later)
+# Apply Pipeup feedback
 
-This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 0.5.4. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 ## 1. Read the comments
 

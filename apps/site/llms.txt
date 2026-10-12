@@ -2,6 +2,10 @@
 
 > Pipeup lets people comment on any HTML file (documents, slide decks, whole sites) right on the page, with no accounts or servers. Comments are kept in each reviewer's browser and are copied as Markdown that says exactly where each comment is, ready to send to the author or paste into an AI agent. Reviewers can comment with a mouse, the keyboard or a screen reader.
 
+## Install these skills once (for agents and the people who use them)
+
+The skills in this guide can be installed instead of pasted. Claude Code: `/plugin install pipeup --marketplace pipeup-ai/pipeup` (or `/plugin marketplace add pipeup-ai/pipeup`, then `/plugin install pipeup@pipeup`). Claude Code and Codex: `npx pipeup skills install` says what it will write (`~/.claude/skills`, `~/.agents/skills`; `--project` for the current folder only), asks first, never replaces a skill the person changed, and `npx pipeup skills remove` takes them out again. After that "add comments to this page" is enough; the skills are the same text as below. Without an install, paste the prompt the author gives you or fetch the skills below.
+
 ## Where it installs and where feedback goes
 
 - Nothing to install: one script goes in the HTML file (loaded from a CDN, or a copy the user saves next to the page). An AI agent can add it with the steps below, by editing the HTML file only.
@@ -39,6 +43,7 @@ The site is https://pipeup-ai.github.io/pipeup/; the source is https://github.co
 - [Making your own add-on, as Markdown](https://pipeup-ai.github.io/pipeup/addons-guide.html.md): the guide, including inside a company and setting up Send to Git.
 - [Add-ons as Markdown](https://pipeup-ai.github.io/pipeup/addons.html.md): what each add-on sends, and how to add it.
 
+- [Add skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md): the short "add comments to this page": pinned script, document identity, no add-ons unless asked.
 - [Integration skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md): how to add Pipeup to a page, by page type, with every option.
 - [Summarise skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md): summarise feedback by theme, section and status.
 - [Apply skill](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md): read the comments (`await Pipeup.comments()`), act on approved feedback, answer each thread and mark it addressed. Never resolve a thread; the author does.

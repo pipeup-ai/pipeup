@@ -3,9 +3,9 @@ name: pipeup-integrate
 description: Use when creating or editing an HTML document, slide deck, report, prototype or web page that people will review or give feedback on, or when asked to "add comments", "make this reviewable" or "add Pipeup". Adds Pipeup so reviewers can comment in place without changing how the page looks or behaves.
 ---
 
-# Add Pipeup to a page (`pipeup init` and `check` arrive in 0.6)
+# Add Pipeup to a page: the full reference
 
-This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.5.4. For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place: select text, click any element (including
 buttons and charts) or drop a pin on a slide. Your job is to make the page *reviewable* while it
@@ -71,8 +71,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - *Deck* (slides): one slide visible at a time.
    - *Site / app* (landing page, prototype, dashboard): dense UI. Comments appear as bubbles.
 
-2. **Load Pipeup and give the document an identity, once.** Until the `pipeup init` command
-   ships (planned for 0.6), do it by hand:
+2. **Load Pipeup and give the document an identity, once.** Edit the HTML file:
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
@@ -89,8 +88,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Add `data-pipeup-doc="<key>"` to `<html>`, with a key made in a browser by
      `await Pipeup.newDocumentAttribute()` (the user's prompt may already include one).
 
-   Later, `npx pipeup init page.html` will do all of this. If the page already has
-   `data-pipeup-doc`, **leave it exactly as it is** — changing it orphans every comment people
+   If the page already has `data-pipeup-doc`, **leave it exactly as it is** — changing it orphans every comment people
    have made.
 
 3. **Mark stable blocks with `data-pipeup-id`.** Ids are what keep comments attached when the

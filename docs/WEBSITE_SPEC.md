@@ -285,3 +285,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-10 — Built: the Add-ons page shows Save to GitHub and Send to Git (each with a Copy prompt, a scene and a try page).
 - 2026-10-11 — Proposed (not built): the install commands (plugin and one-command installer) come first wherever the site offers the copy-and-paste prompt, which stays as the fallback; llms.txt and the Markdown copies lead with the install line too (FUNCTIONAL_SPEC 15a).
 - 2026-10-12 — Proposed (not built): llms.txt, llms-full.txt, the Markdown copies and the site prompts carry the same instructions for answering comments (FUNCTIONAL_SPEC 15b).
+- 2026-10-12 — Built: the install commands in the README, llms.txt and the Markdown copies lead with the prompt as the fallback; on the "create HTML" walkthrough the one-command install sits as a quiet line under the steps, below the Copy prompt step, so the page still fits one screen.

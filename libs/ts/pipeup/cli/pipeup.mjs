@@ -6,11 +6,17 @@ import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { computeOpId, parseDocumentAttribute, signOp } from "../dist/pipeup.core.js";
 import { comments, watch } from "./link.mjs";
+import * as skills from "./skills.mjs";
 
 const KEYFILE = process.env.PIPEUP_AGENT_FILE || join(homedir(), ".pipeup", "agent.json");
 const AI = "AI assistant";
 
-const USAGE = `pipeup agent [--name <name>]
+const USAGE = `pipeup skills install|remove|list [--project] [--agent claude|codex|all] [--yes] [--replace] [--dry-run]
+  Puts Pipeup's agent skills where Claude Code (.claude/skills) and Codex (.agents/skills) look: for you, in every
+  project, or with --project for this folder only. It says what it will write, asks first (--yes to go ahead without
+  asking), and never replaces a skill you changed unless you say --replace.
+
+pipeup agent [--name <name>]
   Makes this computer's agent key (once) and prints the public key to list on the page:
   <html data-pipeup-agents="<key>">
 
@@ -150,7 +156,24 @@ if (command === "agent") {
     `${name} (${KEYFILE})\n\nList this key on the page:\n  <html data-pipeup-agents="${identity.publicKey}">`,
   );
 } else if (command === "reply") await reply(args);
-else if (command === "comments") {
+else if (command === "skills") {
+  const sub = args._[0];
+  const opts = {
+    agent: typeof args.agent === "string" ? args.agent : "all",
+    project: args.project === true,
+    yes: args.yes === true,
+    replace: args.replace === true,
+    dryRun: args["dry-run"] === true,
+  };
+  try {
+    if (sub === "install" || sub === "update") await skills.install(opts);
+    else if (sub === "remove") await skills.remove(opts);
+    else if (sub === "list") await skills.list(opts);
+    else fail(`skills: say install, remove or list\n\n${USAGE}`);
+  } catch (e) {
+    fail(e.message);
+  }
+} else if (command === "comments") {
   const page = args._[0];
   if (!page) fail(`missing the page\n\n${USAGE}`);
   try {
