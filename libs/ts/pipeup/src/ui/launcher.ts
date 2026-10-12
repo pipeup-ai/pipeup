@@ -346,6 +346,10 @@ export function createLauncher(ctx: Ctx): View {
       el?.checkVisibility?.({ visibilityProperty: true }) === false
     )
       return null;
+    // A comment bubble on the page is where the thread is: the line goes to it, not to somewhere near it.
+    const bubble = ctx.layer
+      .querySelector<HTMLElement>(`.bub[data-thread="${t.id}"]`)
+      ?.getBoundingClientRect();
     const words = r.range ? quoteRects(r).at(-1) : undefined;
     // The line meets the marked row at the far right of its block, so it never crosses the text.
     const edge = el
@@ -353,11 +357,17 @@ export function createLauncher(ctx: Ctx): View {
       ?.getBoundingClientRect().right;
     const box = r.element?.getBoundingClientRect();
     const pin = popoverAnchor(t.anchor, r);
-    const p = words
-      ? { x: Math.max(words.right, edge ?? 0) + 4, y: (words.top + words.bottom) / 2, from: "right" as const }
-      : box
-        ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
-        : pin && { x: pin.x, y: pin.y, from: "right" as const };
+    const p = bubble?.width
+      ? { x: bubble.right + 2, y: bubble.top + bubble.height / 2, from: "right" as const }
+      : words
+        ? {
+            x: Math.max(words.right, edge ?? 0) + 4,
+            y: (words.top + words.bottom) / 2,
+            from: "right" as const,
+          }
+        : box
+          ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
+          : pin && { x: pin.x, y: pin.y, from: "right" as const };
     const inView = p && p.x >= 0 && p.x <= window.innerWidth - PANEL && p.y >= 0 && p.y <= window.innerHeight;
     return inView ? p : null;
   }
