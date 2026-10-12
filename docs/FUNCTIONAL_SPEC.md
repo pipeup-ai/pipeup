@@ -870,7 +870,7 @@ an agent on the same computer is a later step and is not part of this one.)
 - A page whose author has listed an agent says so in plain words in the comment control's menu, in one
   line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
   shows nothing, so nothing is added for readers who don't need it.
-- The menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, which copies a short
+- The menu's copy-for-AI row has a second choice, shown on every page whether or not an agent is listed, **Copy a prompt for my agent**, which copies a short
   instruction that tells an agent where this page's comments are, how to read them and how to answer,
   and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
 - All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
@@ -1101,3 +1101,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
 - 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
 - 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
+- 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
