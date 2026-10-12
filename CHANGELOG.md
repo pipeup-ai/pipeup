@@ -15,9 +15,11 @@ change the API and the stored comment format.
 - The comment control's menu has **Copy a prompt for my agent** on every page, and says "Claude can answer comments here" when an agent is listed. All comments says how many open comments the agent has answered, with **Check for replies**.
 - The apply, summarise and integrate skills, `llms.txt` and the site's Markdown copies tell agents the same thing: read with `Pipeup.comments()`, answer, mark addressed, never resolve.
 
+- **A live link to an agent on the same computer.** `npx pipeup watch report.html --agent Claude` shows the page from your computer (address works only there) and lists the agent for it while it runs; the page's menu gets **Share with my agent**, off on every load. Switched on, the page sends its comments to the link, and the agent reads them with `npx pipeup comments report.html` (no browser, `--all`, `--json`) and answers with `pipeup reply`, which reaches the open page within seconds. The link accepts only the page it serves, from the same computer, and keeps comments in `report.comments.json` next to the page.
+
 ### Changed
 - All comments: the line from an open comment now ends at the comment's bubble on the page when there is one (no dot), instead of at the middle of its block. When an agent's replies are for comments this page doesn't have, the panel says so.
-- Pipeup's size budget is 45 KB gzip (was 42 KB); this feature added 2.6 KB.
+- Pipeup's size budget is 46 KB gzip (was 42 KB); agents reading and answering added 2.6 KB and the live link 0.4 KB.
 
 ## [0.5.4] - 2026-10-10
 

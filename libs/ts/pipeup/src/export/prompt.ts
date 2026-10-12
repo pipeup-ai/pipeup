@@ -5,6 +5,8 @@ export interface PromptMeta {
   replies: string | null;
   /** The author has listed an agent for this page. */
   listed: boolean;
+  /** The page file on this computer when a live link is running, else "". */
+  file?: string;
 }
 
 /** The short instruction the menu copies for an agent: where the comments are, how to answer, what never to do. */
@@ -13,12 +15,14 @@ export function agentPrompt(m: PromptMeta): string {
   return [
     `Act on the review comments on this page, which uses Pipeup: ${one(m.title)} (${one(m.url)}).`,
     "",
-    "1. Read the comments. Open the page in a browser and run `await Pipeup.comments()`, then read `.markdown`. " +
-      "If you can't run the page, ask me to paste its Copy as Markdown.",
+    m.file
+      ? `1. Read the comments: \`npx pipeup comments ${m.file}\` (add --all for resolved ones). If it says nothing is shared, ask me to switch on Share with my agent.`
+      : "1. Read the comments. Open the page in a browser and run `await Pipeup.comments()`, then read `.markdown`. " +
+        "If you can't run the page, ask me to paste its Copy as Markdown.",
     "2. Work through the open threads in order. For each, make the change I approved, or say why you didn't. " +
       "Ask me before changing anything I haven't approved, and answer a question with an answer.",
     m.replies
-      ? `3. Answer in each thread: \`npx pipeup reply --page <the page's file> --thread <Thread id> "what you changed and where" --addressed "short note"\`. ` +
+      ? `3. Answer in each thread: \`npx pipeup reply --page ${m.file || "<the page's file>"} --thread <Thread id> "what you changed and where" --addressed "short note"\`. ` +
         `That writes ${one(m.replies)}.` +
         (m.listed
           ? ""

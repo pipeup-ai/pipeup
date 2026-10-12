@@ -463,6 +463,14 @@ export function createLauncher(ctx: Ctx): View {
     closeToControl();
     void ctx.menu.copyPrompt();
   });
+  /** Only on a page shown through a link on this computer: comments go to the agent while this is on. */
+  const linkRow = row(
+    icon("send"),
+    () => {
+      ctx.link.set(!ctx.link.on()).then(sync, (e: unknown) => ctx.report(e));
+    },
+    true,
+  );
   /** One quiet line when the author has listed an agent: it can answer here. */
   const agentRow = h("div", { class: "sec", role: "presentation" });
   const count = h("span", { class: "kc" });
@@ -521,10 +529,11 @@ export function createLauncher(ctx: Ctx): View {
   const rows = (): Node[] => [
     idRow,
     sepA,
-    ...(ctx.replies.enabled ? [agentRow] : []),
+    ...(ctx.replies.enabled || ctx.link.enabled ? [agentRow] : []),
     copyRow,
     textRow,
     promptRow,
+    ...(ctx.link.enabled ? [linkRow] : []),
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
     sepB,
@@ -563,7 +572,16 @@ export function createLauncher(ctx: Ctx): View {
       "Tells an AI agent where the comments are and how to answer them",
     );
     const who = ctx.replies.who();
-    agentRow.textContent = `${who || "An AI agent"} can answer comments here`;
+    const agentName = who || ctx.link.agent;
+    agentRow.textContent = ctx.link.on()
+      ? `Sharing comments with ${agentName || "your agent"}`
+      : `${agentName || "An AI agent"} can answer comments here`;
+    set(
+      linkRow,
+      "Share with my agent",
+      "Sends this page's comments to the program running on this computer, and nothing else",
+      ctx.link.on(),
+    );
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
     const status = ctx.addons.statusText();
@@ -746,12 +764,13 @@ export function createLauncher(ctx: Ctx): View {
       if (menuOpen) sync();
       if (ctx.replies.enabled) {
         const t = ctx.replies.tally(threads);
-        const who = ctx.replies.who() || "An agent";
+        const who = ctx.replies.who() || ctx.link.agent || "An agent";
         const said = t.answered
           ? `${who} has answered ${t.answered} of ${t.open} open comments${t.addressed ? `; ${t.addressed} ${t.addressed === 1 ? "is" : "are"} marked addressed` : ""}`
           : "No replies from an agent yet";
         const skipped = ctx.replies.ignored();
         const text =
+          (ctx.link.on() ? `Sharing with ${ctx.link.agent || "your agent"} · ` : "") +
           said +
           (skipped ? ` · ${skipped} from other writers ignored` : "") +
           (t.stray

@@ -3,6 +3,7 @@ import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
 import type { Anchor, Thread } from "../model/types";
 import type { Surface } from "./addons";
+import type { Link } from "./link";
 import type { Replies } from "./replies";
 import type { DraftBox } from "./draft-view";
 import type { Here } from "./here";
@@ -69,6 +70,8 @@ export interface Ctx {
   readonly menu: MenuActions;
   /** Agents the author listed, and what they have answered. */
   readonly replies: Replies;
+  /** The live link to an agent on this computer, when the page is shown through one. */
+  readonly link: Link;
   /** Where the reviewer is: the slide, or the page's own view. */
   readonly here: Here;
   /** What add-ons put on the page. */

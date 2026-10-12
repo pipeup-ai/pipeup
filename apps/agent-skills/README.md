@@ -59,6 +59,8 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `pipeup init <page.html>` | Adds `data-pipeup-doc` (once) and the pinned script tag; refuses to change an existing doc key |
 | `pipeup check <page.html>` | Layout, overlap, id and accessibility checks; `--json`; non-zero exit on fail |
 | `pipeup read <page.html> <feedback…> [--as ai\|text] [--all]` | Merges feedback files (opening sealed ones with the page's key) and prints Copy-for-AI output |
+| `pipeup watch <page.html> [--agent <name>]` | **Done.** Shows the page from this computer with a **Share with my agent** switch (off until switched on); lists the agent while it runs |
+| `pipeup comments <page.html> [--all] [--json]` | **Done.** Prints the comments the page has shared with the link, as Markdown or data |
 | `pipeup agent [--name <name>]` | **Done.** Makes the agent's key (once, kept in `~/.pipeup/agent.json`) and prints the public key to list as `data-pipeup-agents` |
 | `pipeup reply --page <file.html> --thread <id> "words" [--addressed "note"]` | **Done.** Writes a signed reply (and an addressed note) to `<file>.replies.js` next to the page; never resolves |
 
