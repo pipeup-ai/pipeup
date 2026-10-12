@@ -25,7 +25,7 @@ import { createHost } from "./host";
 import { startLink } from "./link";
 import { repliesUrl, startReplies } from "./replies";
 import { reveal } from "./notes";
-import { applyTheme, readTheme } from "./theme";
+import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
 import type { ThreadActions } from "./thread-view";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
@@ -68,7 +68,10 @@ const message = (e: unknown) =>
   e instanceof Error ? e.message.replace(/^pipeup: /, "") : "Something went wrong";
 
 export function startApp(o: AppOptions): App {
-  const theme = readTheme(o.root);
+  // One place decides light or dark: the author's data-pipeup-theme, else what the page shows behind Pipeup.
+  let dark = (authorLook(document) ?? (pageIsDark(document) ? "dark" : "light")) === "dark";
+  const lookNow = (): Look => authorLook(document) ?? (pageIsDark(document, dark) ? "dark" : "light");
+  const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme);
   const sheet = installPageSheet(document, theme.dark);
   sheet.fade(0);
@@ -773,8 +776,49 @@ export function startApp(o: AppOptions): App {
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
   // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
-  const themeObserver = new MutationObserver(() => applyTheme(host.layer, readTheme(o.root)));
-  for (const el of [document.documentElement, document.body]) themeObserver.observe(el, { attributes: true });
+  // Anywhere in the page may carry the switch (a class on a wrapper, say), so any attribute change is a reason to
+  // look again, at most once a moment, and again after a transition has settled.
+  let lookTimers: number[] = [];
+  let lookFade = 0;
+  const setLook = (look: Look) => {
+    const next = look === "dark";
+    if (next === dark) return;
+    dark = next;
+    window.clearTimeout(lookFade);
+    const apply = () => {
+      applyTheme(host.layer, readTheme(o.root, look));
+      sheet.dark(next);
+    };
+    // Every part switches together: the whole layer fades out, switches, and fades back in.
+    host.layer.style.transition = "opacity .16s cubic-bezier(.4,0,1,1)";
+    host.layer.style.opacity = "0";
+    lookFade = window.setTimeout(() => {
+      apply();
+      host.layer.style.transition = "opacity .24s cubic-bezier(.22,.61,.36,1)";
+      host.layer.style.opacity = "";
+      lookFade = window.setTimeout(() => host.layer.style.removeProperty("transition"), 260);
+    }, 170);
+  };
+  const lookAgain = () => setLook(lookNow());
+  let looksPending = 0;
+  const scheduleLook = () => {
+    if (looksPending) return;
+    looksPending = 2;
+    for (const ms of [120, 600])
+      lookTimers.push(
+        window.setTimeout(() => {
+          if (--looksPending === 0) lookTimers = [];
+          lookAgain();
+        }, ms),
+      );
+  };
+  const themeObserver = new MutationObserver((records) => {
+    if (records.every((r) => r.target === host.element)) return;
+    scheduleLook();
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, subtree: true });
+  const schemeQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+  schemeQuery?.addEventListener?.("change", scheduleLook);
   const sizeObserver = new ResizeObserver(scheduleReplace);
   sizeObserver.observe(o.root);
   const offChange = o.doc.onChange((_threads, added, source) => {
@@ -803,6 +847,9 @@ export function startApp(o: AppOptions): App {
       reveal.go = undefined;
       sizeObserver.disconnect();
       themeObserver.disconnect();
+      schemeQuery?.removeEventListener?.("change", scheduleLook);
+      for (const t of lookTimers) window.clearTimeout(t);
+      window.clearTimeout(lookFade);
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);

@@ -28,11 +28,82 @@ export function luminance(c: { r: number; g: number; b: number }): number {
 /** WCAG contrast between two luminances. */
 const contrast = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
-/** The page's font, accent colour and light/dark appearance, so Pipeup reads as part of the page. */
-export function readTheme(root: Element): Theme {
+export type Look = "light" | "dark";
+
+/** The look the author asked for with data-pipeup-theme="light|dark" on <html> or <body>, if any. */
+export function authorLook(doc: Document): Look | null {
+  const v =
+    doc.documentElement.getAttribute("data-pipeup-theme") ?? doc.body?.getAttribute("data-pipeup-theme");
+  return v === "light" || v === "dark" ? v : null;
+}
+
+/** Where the page's background is sampled: down the right (where the column and panel sit) and the middle. */
+const PROBES: [number, number][] = [
+  [0.92, 0.25],
+  [0.92, 0.6],
+  [0.5, 0.45],
+];
+/** Mean background luminance below this is a dark page, above LIGHT_ABOVE a light one; between, no change. */
+const DARK_BELOW = 0.18;
+const LIGHT_ABOVE = 0.32;
+/** The share of the window an area must fill to speak for the page. */
+const BIG = 0.25;
+
+/**
+ * Whether the page is dark behind Pipeup. It samples the background actually painted behind the column and
+ * panel (the first non-transparent one down the stack at a few points), not just <body>'s, so a page that dresses a
+ * wrapper (or switches theme with a class on one) is read correctly. With nothing painted it asks the page's
+ * `color-scheme`. A mean in the dead band keeps `was`, so a mid-grey page doesn't flip back and forth.
+ */
+export function pageIsDark(doc: Document, was = false): boolean {
+  const win = doc.defaultView;
+  if (!win) return false;
+  const html = doc.documentElement;
+  const scheme = win.getComputedStyle(html).colorScheme || "";
+  const canvasDark =
+    /dark/.test(scheme) &&
+    (!/light/.test(scheme) || win.matchMedia?.("(prefers-color-scheme: dark)").matches === true);
+  // The canvas takes <html>'s background, or else <body>'s (a body background spreads to the whole canvas); with
+  // neither, the colour scheme decides.
+  let paint = parseRgb(win.getComputedStyle(html).backgroundColor);
+  if (!paint || paint.a < 0.5)
+    paint = doc.body ? parseRgb(win.getComputedStyle(doc.body).backgroundColor) : null;
+  const canvas = paint && paint.a >= 0.5 ? luminance(paint) : canvasDark ? 0 : 1;
+  const stackAt = (x: number, y: number): Element[] => {
+    try {
+      if (doc.elementsFromPoint) return doc.elementsFromPoint(x, y);
+    } catch {
+      /* fall through to the body and root */
+    }
+    return doc.body ? [doc.body, html] : [html];
+  };
+  let total = 0;
+  for (const [fx, fy] of PROBES) {
+    let lum = canvas;
+    for (const el of stackAt(win.innerWidth * fx, win.innerHeight * fy)) {
+      if (el.closest("[data-pipeup-ignore]")) continue;
+      // A small coloured widget (a chart bar, a badge) says nothing about the page: only areas that fill a good part
+      // of the window count.
+      const box = el.getBoundingClientRect();
+      if (box.width * box.height < BIG * win.innerWidth * win.innerHeight) continue;
+      const c = parseRgb(win.getComputedStyle(el).backgroundColor);
+      if (c && c.a >= 0.5) {
+        lum = luminance(c);
+        break;
+      }
+    }
+    total += lum;
+  }
+  const mean = total / PROBES.length;
+  return mean < DARK_BELOW ? true : mean > LIGHT_ABOVE ? false : was;
+}
+
+/** The page's font and accent colour, for a given look, so Pipeup reads as part of the page. */
+export function readTheme(root: Element, look: Look): Theme {
   const doc = root.ownerDocument;
   const win = doc.defaultView;
-  if (!win) return { font: "system-ui, sans-serif", accent: FALLBACK_ACCENT, dark: false, on: "#fff" };
+  const dark = look === "dark";
+  if (!win) return { font: "system-ui, sans-serif", accent: FALLBACK_ACCENT, dark, on: "#fff" };
   const html = doc.documentElement;
   const font = win.getComputedStyle(root).fontFamily || "system-ui, sans-serif";
   const custom = (
@@ -41,14 +112,6 @@ export function readTheme(root: Element): Theme {
   ).trim();
   const link = root.querySelector("a[href]");
   const linkColor = link ? win.getComputedStyle(link).color : "";
-  let bg = parseRgb(win.getComputedStyle(doc.body).backgroundColor);
-  if (!bg || bg.a === 0) bg = parseRgb(win.getComputedStyle(html).backgroundColor);
-  const dark = Boolean(
-    bg && bg.a > 0
-      ? luminance(bg) < 0.2
-      : win.matchMedia?.("(prefers-color-scheme: dark)").matches === true &&
-          /dark/.test(win.getComputedStyle(html).colorScheme || ""),
-  );
   // A link colour that can't be seen on Pipeup's own surface (the pale links of a dark page, say) is not used.
   const fromLink = linkColor && linkColor !== DEFAULT_LINK ? parseRgb(linkColor) : null;
   const seen = fromLink && contrast(luminance(fromLink), dark ? 0.011 : 1) >= 3;

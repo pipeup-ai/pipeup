@@ -1,18 +1,18 @@
 /** Pipeup's stylesheet, scoped to its shadow root. Light by default; `.dark` follows a dark page. */
 export const STYLES = `
 /* Inherited page styles are reset on .layer below; custom properties pass through all:initial. */
-:host{all:initial}
+:host{all:initial;direction:ltr;unicode-bidi:normal}
 *{box-sizing:border-box}
 button{appearance:none;font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 svg{display:block}
-.layer{all:initial;display:block;position:fixed;inset:0;pointer-events:none;font:13px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--k);
---k:#2C2C2A;--mu:#5F5E5A;--fa:#888780;--ln:#E5E3DA;--ru:#ECEAE2;--so:#FAFAF7;--su:#FFFFFF;--ho:#F1EFE8;
+.layer{all:initial;direction:ltr;unicode-bidi:normal;display:block;position:fixed;inset:0;pointer-events:none;font:13px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--k);
+--k:#2C2C2A;--mu:#5F5E5A;--fa:#6B6A64;--ln:#E5E3DA;--ru:#ECEAE2;--so:#FAFAF7;--su:#FFFFFF;--ho:#F1EFE8;
 --as:color-mix(in srgb,var(--pu-accent,#534AB7) 12%,transparent);
 --sh:0 8px 28px rgba(44,44,42,.10);
 --in:.26s;--mv:.34s;--out:.2s;--pl:1.2s;
 --eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1);
 --pu-text:var(--k);--pu-muted:var(--mu);--pu-faint:var(--fa);--pu-line:var(--ln);--pu-surface:var(--su);--pu-soft:var(--so);--pu-hover:var(--ho);--pu-shadow:var(--sh);--pu-ease:var(--eo)}
-.layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#8D8B84;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
+.layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#9A9892;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
 
 .tx{font-size:14px;line-height:1.5;color:var(--k);white-space:pre-wrap;overflow-wrap:anywhere}
@@ -133,7 +133,7 @@ transition:opacity .3s var(--eo)}
 
 /* Document column. */
 .col{position:fixed;left:0;top:0;pointer-events:none;transition:opacity var(--in) var(--eo)}
-.th{position:absolute;left:0;right:0;top:0;padding:4px 4px 4px 12px;pointer-events:auto;cursor:pointer;box-shadow:inset 2px 0 0 transparent;
+.th{position:absolute;left:0;right:0;top:0;padding:4px 4px 4px 12px;background:var(--su);border-radius:8px;pointer-events:auto;cursor:pointer;box-shadow:inset 2px 0 0 transparent;
 transition:transform var(--mv) var(--eio),box-shadow var(--in) var(--eo),opacity var(--in) var(--eo)}
 .th.hot{box-shadow:inset 2px 0 0 var(--ln)}
 .th.on{box-shadow:inset 2px 0 0 var(--pu-accent);cursor:default}
