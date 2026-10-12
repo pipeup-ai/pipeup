@@ -353,6 +353,43 @@ any of them off.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
+## 7b. Reactions
+
+*Proposed, not built.*
+
+- A reviewer can **react to any comment or reply with a standard emoji**, the same ones as on a phone.
+  A reaction is a quick answer that needs no words ("seen", "agree", "thanks").
+- **A reviewer has at most one reaction of each emoji on a comment.** Choosing it again takes it back.
+  They can give several different emoji to the same comment.
+- **Choosing an emoji:** a short row of common reactions (👍 ❤️ 😂 🎉 😮 🙏) is always offered. A "more"
+  button opens the full standard set, in the groups phones use, with search, recently used and the
+  skin-tone variants; the tone a reviewer picks is remembered. Only emoji the device can draw are offered.
+- **What you see at rest.** Reactions are quiet, like the rest of a thread: a comment with reactions
+  shows each emoji with a small count beneath its words; a comment with none shows nothing. The
+  control to add one appears with the other details when the pointer is over the comment or focus is on
+  it, and beside the reply and resolve controls inside an open thread.
+- Your own reactions are marked. **Pointing at or focusing a reaction shows who gave it**, by name as
+  shown elsewhere, with "You" first.
+- Adding, changing and removing a reaction **ease**; counts roll, as other counts do. Reduced motion
+  turns them into soft fades.
+- **Everywhere comments show:** the column, bubbles, the open thread and All comments (as counts,
+  without the control). Copying for AI (§7a) and `Pipeup.comments()` (§15b) include reactions, as a
+  line such as "👍 2 (Sam, Red Fox)" under the comment.
+- **No forging.** A reaction comes from the reviewer who gave it and can't appear to come from
+  someone else or be removed by anyone else. A thread's reactions are kept when comments travel
+  through sharing, live review or an agent's replies file, and are checked as strictly as comments.
+- **Limits.** A single comment keeps to a small number of different emoji so it can't be flooded.
+- **Deleted and resolved.** Deleting a comment removes its reactions. A resolved thread still shows its
+  reactions; they can be added or taken back again after it is reopened.
+- **Agents** can react and are shown as AI assistants, as their replies are (§15b); they react to
+  acknowledge, never to resolve.
+- Older copies of Pipeup (and add-ons) that don't know reactions **ignore them and keep showing the
+  comments**; they never reject a comment because of one.
+- The **full emoji picker is an add-on** (`emoji`) so the core stays small; without it a page has the
+  quick row and still shows every reaction anyone gave. See §19.
+- Fully usable by keyboard and screen reader: each reaction is a button that says the emoji's name,
+  how many people gave it and whether you did ("Thumbs up, 3 people, including you").
+
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
@@ -408,6 +445,19 @@ any of them off.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
+- **Pipeup looks the same on every site.** Whatever the page's styles say (fonts, sizes, colours,
+  spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
+  page's own light/dark switch), every part of Pipeup keeps its own look: text is readable, nothing is
+  faded, stretched, flipped or restyled, and nothing is clipped by the page. This covers the column,
+  bubbles, threads, the panel, menus, the composer, highlights, pins, tooltips, toasts and add-ons'
+  own parts.
+- **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with
+  a fade. Pipeup follows the page's light or dark appearance only when the page makes it clear; when
+  it is not clear, Pipeup is light. If the page changes appearance later (a switch on the page),
+  Pipeup follows however the page makes the change, not only when it changes the page's top-level
+  elements.
+- Pipeup is checked against pages with deliberately hostile styles, and against real sites that have
+  shown a clash, before a release.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
   every thread, the menu and All comments can be reached and used without a pointer; focus is never
   lost after sending, cancelling or closing; and screen readers are told which block a comment is
@@ -440,6 +490,69 @@ any of them off.
   document. Nobody can appear in live presence as someone else.
 - When two people in a shared or live document use the same name, Pipeup shows a way to tell them
   apart.
+
+## 10a. Mentions and notifications
+
+*Proposed, not built.*
+
+Pipeup has no accounts and no server of its own, so a mention works in layers: it always works inside
+the page, and reaches people outside the page only in ways the reviewer or the author chooses.
+
+**Mentioning someone**
+
+- Typing `@` in a comment or reply offers **people to mention**, narrowing as the reviewer types, chosen
+  by keyboard or pointer:
+  - everyone who has commented or replied in this document;
+  - the agents the page lists (§15b);
+  - people the page's author supplies (below);
+  - people from an add-on's directory, when the page has one.
+- A mention **points at a person**, not only a name: it keeps working if they rename themselves, and two
+  people called Sam stay apart. It reads as the name, softly tinted, in the comment; copying keeps
+  `@Name`. An `@` that matches nobody stays plain words.
+- Comment words are still text only; a mention is never a link, markup or a way to run anything.
+
+**Being mentioned**
+
+- When someone opens a page where they are mentioned, Pipeup **says so once** ("Sam mentioned you in 2
+  comments") and All comments can show **only comments that mention me**. "Me" means this reviewer in
+  this browser, or the signed-in person the page's author supplies.
+- Mentioning an agent marks the comment as one that agent should answer first (§15b).
+
+**Reaching people outside the page**
+
+Pipeup itself sends nothing (§14). A mention can reach a person only through:
+
+1. **The reviewer, by hand.** After sending, Pipeup offers "Let Sam know", which opens the reviewer's own
+   mail or chat app with the words and a link to the comment filled in, when the reviewer knows how to
+   reach them. The reviewer sends it; Pipeup never sends for them. This works on any page.
+2. **An add-on**, chosen by the author and following §11a: for example a note in a GitHub issue or
+   pull request, a message to a chat channel through the author's own webhook, or email through the
+   author's own service. Each says in one sentence what it sends and to whom, and sends nothing before
+   the reviewer agrees.
+3. **The page's own system.** The author can give Pipeup the signed-in person and the people who can be
+   mentioned, and a place to hand mentions to (the page's own notifications). Pipeup then shows those
+   people as supplied by the page and sends nothing itself.
+
+**Who someone is**
+
+- By default a reviewer is still an animal in a colour with an optional name (§10): names are not
+  proof. A mention of "Sam" does not show that the person who replies as "Sam" is the same Sam.
+- A person can be **shown as verified** when the page's author supplies who they are (single sign-on
+  stays the page's business; Pipeup does not talk to sign-in providers), or an add-on proves a handle
+  (for example a GitHub name). Verified people are marked, and say who vouches.
+- A reviewer may **add an email or handle** to their profile so others can reach them. It stays in their
+  browser; it is shown to other people in the document only if the reviewer chooses, and it is never put
+  into a comment, a copy for AI or any service without their agreement.
+- A reviewer may **carry their identity to another browser** with a file or code they keep, so their
+  earlier comments and mentions still count as theirs. Open: see §19.
+- Pipeup never matches people across documents, and never builds a list of people beyond what one
+  document shows.
+
+**Everyone**
+
+- Fully usable by keyboard and screen reader: the list of people is announced as it narrows, and the
+  chosen person is read out.
+- The list and the mention eases in and out like everything else, in light appearance.
 
 ## 11. Saving and sharing feedback
 
@@ -1002,9 +1115,10 @@ and only after the person clicks.
 ## 17. Out of scope for now
 
 - Standalone images and PDFs as review targets.
-- Accounts, sign-in, email or push notifications, and @mentions.
+- Accounts, sign-in by Pipeup itself, and email or push notifications sent by Pipeup itself (mentions
+  and notifications through the page, the reviewer or an add-on are §10a).
 - A relay run by the Pipeup project, and hosts other than Cloudflare.
-- Rich text, attachments or reactions in comments.
+- Rich text or attachments in comments (reactions are §7b).
 - Drag-to-select an area as a comment target.
 - Replies to a reply (every reply answers the original comment).
 - Suggesting edits to the page text (tracked changes).
@@ -1038,6 +1152,13 @@ and only after the person clicks.
 - How long shared copies last on free services, which services Pipeup suggests, and how much traffic
   is fair to ask of volunteer-run services.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
+- Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
+  Pipeup if the size budget allows; whether agents' reactions should be shown at all.
+- Mentions: which add-on comes first (GitHub, email or a chat webhook); whether a reviewer's email may be
+  shown to others by default; how to carry an identity to another browser (a file, a code, a passkey);
+  whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
+  before the sign-in the page supplies.
+- Appearance: whether Pipeup should follow a dark page at all, or always be light (§9).
 
 ---
 
@@ -1184,3 +1305,4 @@ and only after the person clicks.
 - 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
+- 2026-10-12 — Proposed (not built): Pipeup looks the same on every site and is light or dark as a whole, following a page's own switch however the page makes it (section 9); reactions with standard emoji (section 7b); mentions, identity and notifications without accounts (section 10a); open questions added (section 19).
