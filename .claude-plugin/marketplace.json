@@ -1,0 +1,12 @@
+{
+  "name": "pipeup",
+  "owner": { "name": "Pipeup contributors" },
+  "metadata": { "description": "Skills that let AI agents add comments to HTML pages and answer them." },
+  "plugins": [
+    {
+      "name": "pipeup",
+      "source": "./plugins/pipeup",
+      "description": "Add Pipeup comments to an HTML page, read the comments, and answer them: add, integrate, apply, summarise, and set up saving reviews in Git."
+    }
+  ]
+}

@@ -66,16 +66,21 @@ or as one combined file such as `pipeup+share.min.js`:
 
 ### With an AI agent
 
-The website's **Copy prompt** buttons give a prompt to paste into Claude, Codex or another coding
-agent. To install the skill instead:
+Install the skills once and "add comments to this page" is enough; the agent then reads the comments and answers them too.
 
 ```sh
-# Claude Code
-mkdir -p ~/.claude/skills/pipeup-integrate && curl -fsSL https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md -o ~/.claude/skills/pipeup-integrate/SKILL.md
+# Claude Code: a plugin
+/plugin install pipeup --marketplace pipeup-ai/pipeup
+
+# Claude Code and Codex: one command (for you, or --project for this folder only)
+npx pipeup skills install
 ```
 
-Other agents can read [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt). The three skills
-(integrate, summarise, apply) are in [apps/agent-skills](apps/agent-skills/).
+`pipeup skills install` says what it will write (`~/.claude/skills`, `~/.agents/skills`), asks first, and never
+replaces a skill you changed; `pipeup skills remove` takes them out. Without an install, the website's **Copy prompt**
+buttons give a prompt to paste into Claude, Codex or another coding agent, and other agents can read
+[llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt). The five skills (add, integrate, summarise, apply, and
+setting up saving reviews in Git) are in [apps/agent-skills](apps/agent-skills/).
 
 ## Repository layout
 

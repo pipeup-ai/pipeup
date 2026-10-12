@@ -44,6 +44,7 @@
     "dist/*.js",
     "dist/types",
     "cli",
+    "skills",
     "README.md",
     "LICENSE"
   ],
@@ -51,7 +52,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/build.mjs && tsc -p tsconfig.build.json",
+    "build": "node scripts/build.mjs && node scripts/skills.mjs && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "lint": "eslint src test e2e && prettier --check src test e2e",
     "format": "prettier --write src test e2e",
