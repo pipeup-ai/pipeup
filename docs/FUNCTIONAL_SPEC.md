@@ -408,9 +408,10 @@ any of them off.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
-- **Pipeup looks the same on every site.** Whatever the page's styles say (fonts, sizes, colours,
+- **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
-  page's own light/dark switch), every part of Pipeup keeps its own look: text is readable, nothing is
+  page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
+  are the page's font family and accent colour, as above; nothing else of the page's styling reaches it: text is readable, nothing is
   faded, stretched, flipped or restyled, and nothing is clipped by the page. This covers the column,
   bubbles, threads, the panel, menus, the composer, highlights, pins, tooltips, toasts and add-ons'
   own parts.
@@ -419,8 +420,8 @@ any of them off.
 - **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with a
   fade.
 - **Which look.** Pipeup follows the page's light or dark appearance when the page makes it clear, and is
-  light when it doesn't. The reviewer can choose Automatic, Light or Dark in the menu; the choice is
-  remembered in their browser and beats everything else. The author can set a look for the page, which
+  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Look row in the menu; the choice is
+  remembered in their browser and beats everything else. The author can set a look for the page (`data-pipeup-theme="light"` or `"dark"` on `<html>`), which
   beats detection. If the page changes appearance later (a switch on the page), Pipeup follows however
   the page makes the change, not only when it changes the page's top-level elements.
 - **Pipeup's own surfaces never depend on the page's colours.** Every card, thread, panel, menu, composer,
@@ -1212,3 +1213,4 @@ and only after the person clicks.
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): Pipeup looks the same on every site; it has a light look and a dark look that both work, never mixed; the reviewer can choose Automatic, Light or Dark; its own surfaces never depend on the page's colours; and it falls back to its safe look if it can't read itself (section 9).
 - 2026-10-12 — Approved: threads at rest in the column always sit on their own soft backing (section 9).
+- 2026-10-12 — Clarified: Pipeup takes the page's font family and accent colour and nothing else of its styling; the reviewer's choice is the Look row in the menu; the author's setting is `data-pipeup-theme` on `<html>` (section 9).
