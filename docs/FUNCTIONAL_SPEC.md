@@ -427,7 +427,7 @@ any of them off.
   tooltip, toast and add-on part is drawn with its own solid background, text, border and shadow, chosen
   together so text is always readable (at least 4.5 to 1, and 3 to 1 for icons and outlines) in both looks.
   Words that sit directly on the page (a thread at rest in the column) keep their soft, boxless look but
-  get their own soft backing wherever the page behind them can't be relied on to stay readable. The only
+  always sit on their own soft backing, so they stay readable whatever the page behind them is. The only
   parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
   readable under them in both looks.
 - **If Pipeup finds it can't read its own text**, because of a wrong guess about the page or an odd page,
@@ -1211,3 +1211,4 @@ and only after the person clicks.
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): Pipeup looks the same on every site; it has a light look and a dark look that both work, never mixed; the reviewer can choose Automatic, Light or Dark; its own surfaces never depend on the page's colours; and it falls back to its safe look if it can't read itself (section 9).
+- 2026-10-12 — Approved: threads at rest in the column always sit on their own soft backing (section 9).

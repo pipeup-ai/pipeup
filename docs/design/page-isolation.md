@@ -1,6 +1,6 @@
 # Looking the same on every site
 
-Status: **draft, for review**. Functional requirements: [FUNCTIONAL_SPEC §9](../FUNCTIONAL_SPEC.md)
+Status: **draft, for review** (column backing decided: always). Functional requirements: [FUNCTIONAL_SPEC §9](../FUNCTIONAL_SPEC.md)
 ("Pipeup looks the same on every site", "light or dark as a whole"). Bug fix: targets `main`.
 
 Code paths are relative to `libs/ts/pipeup/`.
@@ -73,11 +73,9 @@ Order of precedence: reviewer's choice (Automatic / Light / Dark in the menu, ke
   page except the accent, which is checked against the surface and replaced if it fails (already partly done in
   `readTheme`).
 - **The column at rest is the exposed case.** Words sit straight on the page (§7 "words lead"), so a wrong guess
-  puts light words on a light page, as in the first screenshot. Fix: a **soft backing** behind the column's
-  threads in Pipeup's own surface colour, eased in, nearly invisible on a matching page and decisive on a
-  mismatched one; drop to boxless words only when the sampled page background clearly agrees with the active look.
-  Decision for the maintainer: always back it (simplest, slightly more visible), or only when the sampled
-  background disagrees (more code).
+  puts light words on a light page, as in the first screenshot. Fix, **decided: always**: a soft backing behind the
+  column's threads in Pipeup's own surface colour, eased in, nearly invisible on a matching page and decisive on a
+  mismatched one. No sampling is needed to decide whether to show it.
 - Highlights and pins are the only parts over page content: both looks get a colour set tuned against the page
   text colour sampled under them (the existing `highlights.ts` dark/light tables extended to follow the sampled
   text colour, not just the flag).
@@ -106,10 +104,11 @@ where it is safe. Document what can't be fixed from inside.
 
 ## Decisions for the maintainer
 
-- Column backing: always, or only when the sampled page disagrees? Recommendation: always (simple, robust).
+- ~~Column backing~~ decided 2026-10-12: always.
 - Does the menu choice (Automatic / Light / Dark) sit with the name setting?
 
 ## Change log
 
 - 2026-10-12 — First draft.
 - 2026-10-12 — Both looks must work: one appearance source with a menu choice, sampled detection, Pipeup's own opaque surfaces, a self-check that falls back to the safe look.
+- 2026-10-12 — Decided: the column backing is always on.
