@@ -148,3 +148,15 @@ test("a reply written while the page is open appears by itself", async ({ page }
   await expect(page.locator(".pop .rps .it .tx")).toHaveText("Done, no refresh needed.", { timeout: 12000 });
   await expect(page.locator(".pop .rps .it .who")).toContainText("Claude · ");
 });
+
+test("a reply for a comment this page doesn't have is reported, not silent", async ({ page }) => {
+  const { file, pipeup, key } = await setup();
+  await writeFile(file, html(key));
+  await page.goto(`file://${file}`);
+  await comment(page);
+  await pipeup("reply", "--page", file, "--thread", "x".repeat(43), "For another browser's comment.");
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await page.getByRole("button", { name: "Check for replies" }).click();
+  await expect(page.locator(".ag")).toContainText("replies for 1 comment this page doesn't have");
+});

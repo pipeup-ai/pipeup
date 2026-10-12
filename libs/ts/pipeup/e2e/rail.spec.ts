@@ -62,6 +62,8 @@ test("the line from an open row ends at the comment's bubble when the page shows
   await openAll(page);
   await row(page, /Is 20% realistic/).click();
   await expect(page.locator(".cx.show")).toHaveCount(1);
+  // The line meets the bubble itself: no dot.
+  await expect(page.locator(".cx circle")).toHaveAttribute("r", "0");
   const bubble = (await page.locator(".bub").first().boundingBox())!;
   await expect
     .poll(async () => {

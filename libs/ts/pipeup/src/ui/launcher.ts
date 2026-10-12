@@ -335,7 +335,7 @@ export function createLauncher(ctx: Ctx): View {
    * Where on the page the open thread's place is, if it can be pointed at, and which way the line arrives: at the
    * far right of the marked words' row (from the panel, on the right), or at the top middle of a block or picture.
    */
-  function target(t: Thread): { x: number; y: number; from: "right" | "top" } | null {
+  function target(t: Thread): { x: number; y: number; from: "right" | "top"; bubble?: true } | null {
     const r = ctx.resolved.get(t.id);
     const el = r?.element ?? r?.range?.startContainer.parentElement;
     if (
@@ -358,7 +358,12 @@ export function createLauncher(ctx: Ctx): View {
     const box = r.element?.getBoundingClientRect();
     const pin = popoverAnchor(t.anchor, r);
     const p = bubble?.width
-      ? { x: bubble.right + 2, y: bubble.top + bubble.height / 2, from: "right" as const }
+      ? {
+          x: bubble.right + 1,
+          y: bubble.top + bubble.height / 2,
+          from: "right" as const,
+          bubble: true as const,
+        }
       : words
         ? {
             x: Math.max(words.right, edge ?? 0) + 4,
@@ -401,6 +406,8 @@ export function createLauncher(ctx: Ctx): View {
       d = `M${x} ${y}C${x - 20} ${y} ${gx} ${y} ${gx} ${y + dir * r}L${gx} ${lane - dir * r}C${gx} ${lane} ${gx} ${lane} ${gx - r} ${lane}L${to.x + 8} ${lane}C${to.x} ${lane} ${to.x} ${lane} ${to.x} ${to.y}`;
     }
     wirePath.setAttribute("d", d);
+    // The line meets a bubble itself; the dot is only for a place that has no bubble to point at.
+    wireDot.setAttribute("r", to.bubble ? "0" : "4");
     wireDot.setAttribute("cx", String(to.x));
     wireDot.setAttribute("cy", String(to.y));
     wire.classList.add("show");
@@ -744,7 +751,12 @@ export function createLauncher(ctx: Ctx): View {
           ? `${who} has answered ${t.answered} of ${t.open} open comments${t.addressed ? `; ${t.addressed} ${t.addressed === 1 ? "is" : "are"} marked addressed` : ""}`
           : "No replies from an agent yet";
         const skipped = ctx.replies.ignored();
-        const text = said + (skipped ? ` · ${skipped} from other writers ignored` : "");
+        const text =
+          said +
+          (skipped ? ` · ${skipped} from other writers ignored` : "") +
+          (t.stray
+            ? ` · replies for ${t.stray} comment${t.stray === 1 ? "" : "s"} this page doesn't have`
+            : "");
         if (agentWords.textContent !== text) agentWords.textContent = text;
       }
       const listing = ctx.state.listing;

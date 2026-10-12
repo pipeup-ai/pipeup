@@ -45,8 +45,8 @@ export interface Replies {
   who(): string;
   /** Looks for replies now. Resolves to how many new ones came in; rejects in words if the file can't be read. */
   check(): Promise<number>;
-  /** The threads an agent has answered, and the ones it marked addressed. */
-  tally(threads: readonly Thread[]): { open: number; answered: number; addressed: number };
+  /** The threads an agent has answered, and the ones it marked addressed; and replies for threads this page doesn't have. */
+  tally(threads: readonly Thread[]): { open: number; answered: number; addressed: number; stray: number };
   destroy(): void;
 }
 
@@ -136,7 +136,15 @@ export function startReplies(o: {
     tally: (threads) => {
       const open = threads.filter((t) => !t.resolved);
       const said = (t: Thread) => t.root.replies.some((r) => agents.includes(r.author));
+      const here = new Set(threads.map((t) => t.id));
+      const stray = new Set(
+        o.doc
+          .ops()
+          .filter((x) => agents.includes(x.body.author) && !here.has(x.body.thread))
+          .map((x) => x.body.thread),
+      ).size;
       return {
+        stray,
         open: open.length,
         answered: open.filter(said).length,
         addressed: open.filter((t) => t.addressed).length,

@@ -16,7 +16,7 @@ change the API and the stored comment format.
 - The apply, summarise and integrate skills, `llms.txt` and the site's Markdown copies tell agents the same thing: read with `Pipeup.comments()`, answer, mark addressed, never resolve.
 
 ### Changed
-- All comments: the line from an open comment now ends at the comment's bubble on the page when there is one, instead of at the middle of its block.
+- All comments: the line from an open comment now ends at the comment's bubble on the page when there is one (no dot), instead of at the middle of its block. When an agent's replies are for comments this page doesn't have, the panel says so.
 - Pipeup's size budget is 45 KB gzip (was 42 KB); this feature added 2.6 KB.
 
 ## [0.5.4] - 2026-10-10
