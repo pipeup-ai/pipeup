@@ -401,7 +401,7 @@ describe("an AI's replies", () => {
     view.update(t);
     const ghost = view.element.querySelector(".ghost")!;
     expect(ghost.textContent).toContain("Writing so far");
-    expect(ghost.querySelector(".av.ai.busy")).not.toBeNull();
+    expect(ghost.querySelector(".av.ai")).not.toBeNull();
     expect(ghost.textContent).toContain("AI assistant · writing now");
     threadNotes.delete("t1");
     view.update(t);
