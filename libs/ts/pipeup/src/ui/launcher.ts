@@ -62,10 +62,30 @@ export function createLauncher(ctx: Ctx): View {
     e.stopPropagation();
     ctx.menu.toggleResolved();
   });
+  // When the author has listed an agent: how it has answered, and a way to look for newer replies.
+  const agentWords = h("span", {});
+  const checkBtn = h("button", { type: "button" }, "Check for replies");
+  const agentLine = h("div", { class: "ag" }, agentWords, checkBtn);
+  agentLine.hidden = !ctx.replies.enabled;
+  checkBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    checkBtn.disabled = true;
+    ctx.replies
+      .check()
+      .then(
+        (n) => ctx.toast(n ? `${n} new ${n === 1 ? "reply" : "replies"}` : "No new replies"),
+        (err: unknown) => ctx.report(err),
+      )
+      .finally(() => {
+        checkBtn.disabled = false;
+        ctx.render();
+      });
+  });
   const all = h(
     "div",
     { class: "all", role: "dialog", "aria-label": "All comments" },
     h("div", { class: "hd" }, h("span", {}, "All comments"), total, showResolved, close),
+    agentLine,
     list,
   );
   // The line from an open thread in the panel to its place on the page.
@@ -315,7 +335,7 @@ export function createLauncher(ctx: Ctx): View {
    * Where on the page the open thread's place is, if it can be pointed at, and which way the line arrives: at the
    * far right of the marked words' row (from the panel, on the right), or at the top middle of a block or picture.
    */
-  function target(t: Thread): { x: number; y: number; from: "right" | "top" } | null {
+  function target(t: Thread): { x: number; y: number; from: "right" | "top"; bubble?: true } | null {
     const r = ctx.resolved.get(t.id);
     const el = r?.element ?? r?.range?.startContainer.parentElement;
     if (
@@ -326,6 +346,10 @@ export function createLauncher(ctx: Ctx): View {
       el?.checkVisibility?.({ visibilityProperty: true }) === false
     )
       return null;
+    // A comment bubble on the page is where the thread is: the line goes to it, not to somewhere near it.
+    const bubble = ctx.layer
+      .querySelector<HTMLElement>(`.bub[data-thread="${t.id}"]`)
+      ?.getBoundingClientRect();
     const words = r.range ? quoteRects(r).at(-1) : undefined;
     // The line meets the marked row at the far right of its block, so it never crosses the text.
     const edge = el
@@ -333,11 +357,22 @@ export function createLauncher(ctx: Ctx): View {
       ?.getBoundingClientRect().right;
     const box = r.element?.getBoundingClientRect();
     const pin = popoverAnchor(t.anchor, r);
-    const p = words
-      ? { x: Math.max(words.right, edge ?? 0) + 4, y: (words.top + words.bottom) / 2, from: "right" as const }
-      : box
-        ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
-        : pin && { x: pin.x, y: pin.y, from: "right" as const };
+    const p = bubble?.width
+      ? {
+          x: bubble.right + 1,
+          y: bubble.top + bubble.height / 2,
+          from: "right" as const,
+          bubble: true as const,
+        }
+      : words
+        ? {
+            x: Math.max(words.right, edge ?? 0) + 4,
+            y: (words.top + words.bottom) / 2,
+            from: "right" as const,
+          }
+        : box
+          ? { x: box.left + box.width / 2, y: box.top, from: "top" as const }
+          : pin && { x: pin.x, y: pin.y, from: "right" as const };
     const inView = p && p.x >= 0 && p.x <= window.innerWidth - PANEL && p.y >= 0 && p.y <= window.innerHeight;
     return inView ? p : null;
   }
@@ -371,6 +406,8 @@ export function createLauncher(ctx: Ctx): View {
       d = `M${x} ${y}C${x - 20} ${y} ${gx} ${y} ${gx} ${y + dir * r}L${gx} ${lane - dir * r}C${gx} ${lane} ${gx} ${lane} ${gx - r} ${lane}L${to.x + 8} ${lane}C${to.x} ${lane} ${to.x} ${lane} ${to.x} ${to.y}`;
     }
     wirePath.setAttribute("d", d);
+    // The line meets a bubble itself; the dot is only for a place that has no bubble to point at.
+    wireDot.setAttribute("r", to.bubble ? "0" : "4");
     wireDot.setAttribute("cx", String(to.x));
     wireDot.setAttribute("cy", String(to.y));
     wire.classList.add("show");
@@ -422,6 +459,12 @@ export function createLauncher(ctx: Ctx): View {
     closeToControl();
     void ctx.menu.copyAll("text");
   });
+  const promptRow = row(icon("copy"), () => {
+    closeToControl();
+    void ctx.menu.copyPrompt();
+  });
+  /** One quiet line when the author has listed an agent: it can answer here. */
+  const agentRow = h("div", { class: "sec", role: "presentation" });
   const count = h("span", { class: "kc" });
   const allRow = row(
     icon("list"),
@@ -478,8 +521,10 @@ export function createLauncher(ctx: Ctx): View {
   const rows = (): Node[] => [
     idRow,
     sepA,
+    ...(ctx.replies.enabled ? [agentRow] : []),
     copyRow,
     textRow,
+    promptRow,
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
     sepB,
@@ -512,6 +557,13 @@ export function createLauncher(ctx: Ctx): View {
     }
     set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
     set(textRow, "Copy as Text", "Just the words");
+    set(
+      promptRow,
+      "Copy a prompt for my agent",
+      "Tells an AI agent where the comments are and how to answer them",
+    );
+    const who = ctx.replies.who();
+    agentRow.textContent = `${who || "An AI agent"} can answer comments here`;
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
     const status = ctx.addons.statusText();
@@ -692,6 +744,21 @@ export function createLauncher(ctx: Ctx): View {
       // Closed from elsewhere (Tab in comment mode moves to the page's blocks).
       if (menuOpen && !ctx.state.menu) setMenu(false);
       if (menuOpen) sync();
+      if (ctx.replies.enabled) {
+        const t = ctx.replies.tally(threads);
+        const who = ctx.replies.who() || "An agent";
+        const said = t.answered
+          ? `${who} has answered ${t.answered} of ${t.open} open comments${t.addressed ? `; ${t.addressed} ${t.addressed === 1 ? "is" : "are"} marked addressed` : ""}`
+          : "No replies from an agent yet";
+        const skipped = ctx.replies.ignored();
+        const text =
+          said +
+          (skipped ? ` · ${skipped} from other writers ignored` : "") +
+          (t.stray
+            ? ` · replies for ${t.stray} comment${t.stray === 1 ? "" : "s"} this page doesn't have`
+            : "");
+        if (agentWords.textContent !== text) agentWords.textContent = text;
+      }
       const listing = ctx.state.listing;
       // On a narrow screen the panel is the whole width, so a chosen thread needs it out of the way.
       all.classList.toggle("full", narrow());

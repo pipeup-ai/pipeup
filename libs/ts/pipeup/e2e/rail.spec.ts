@@ -55,3 +55,26 @@ test("a thread can be replied to and resolved in the panel, and it stays until i
   await expect(panel(page).locator(".xr")).toHaveCount(0);
   await expect(panel(page).getByRole("menuitem")).toHaveCount(0);
 });
+
+test("the line from an open row ends at the comment's bubble when the page shows one", async ({ page }) => {
+  await open(page, "doc.html");
+  await seedElement(page, "#p1", "Is 20% realistic?");
+  await openAll(page);
+  await row(page, /Is 20% realistic/).click();
+  await expect(page.locator(".cx.show")).toHaveCount(1);
+  // The line meets the bubble itself: no dot.
+  await expect(page.locator(".cx circle")).toHaveAttribute("r", "0");
+  const bubble = (await page.locator(".bub").first().boundingBox())!;
+  await expect
+    .poll(async () => {
+      const dot = await page.locator(".cx circle").evaluate((c) => ({
+        x: Number(c.getAttribute("cx")),
+        y: Number(c.getAttribute("cy")),
+      }));
+      return (
+        Math.abs(dot.x - (bubble.x + bubble.width)) < 8 &&
+        Math.abs(dot.y - (bubble.y + bubble.height / 2)) < 8
+      );
+    })
+    .toBe(true);
+});

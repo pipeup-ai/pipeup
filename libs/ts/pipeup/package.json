@@ -43,6 +43,7 @@
   "files": [
     "dist/*.js",
     "dist/types",
+    "cli",
     "README.md",
     "LICENSE"
   ],
@@ -73,5 +74,8 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "bin": {
+    "pipeup": "./cli/pipeup.mjs"
   }
 }

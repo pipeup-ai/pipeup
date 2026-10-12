@@ -104,7 +104,14 @@ describe("linkify", () => {
       anchor: { path: "", fingerprint: "00000000", snapshot: "" },
       root: { ...c("t", "Spec: https://x.test/spec"), replies: [c("r", "Also https://x.test/more")] },
     };
-    const actions = { reply: vi.fn(), resolve: vi.fn(), reopen: vi.fn(), copy: vi.fn(), close: vi.fn() };
+    const actions = {
+      reply: vi.fn(),
+      resolve: vi.fn(),
+      reopen: vi.fn(),
+      notRight: vi.fn(),
+      copy: vi.fn(),
+      close: vi.fn(),
+    };
     const el = threadView(t, actions, { variant: "popover", now: () => 0 }).element;
     expect([...el.querySelectorAll(".tx a")].map((a) => a.getAttribute("href"))).toEqual([
       "https://x.test/spec",

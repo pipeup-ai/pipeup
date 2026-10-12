@@ -2,6 +2,7 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
+import { agentPrompt } from "../export/prompt";
 import type { Thread } from "../model/types";
 import type { Ctx, Draft, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
@@ -20,6 +21,7 @@ import { createHere } from "./here";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
+import { repliesUrl, startReplies } from "./replies";
 import { reveal } from "./notes";
 import { applyTheme, readTheme } from "./theme";
 import type { ThreadActions } from "./thread-view";
@@ -192,6 +194,14 @@ export function startApp(o: AppOptions): App {
         toast(e instanceof UnsavedChangeError ? `Reopened · ${UNSAVED_NOTE}` : message(e));
       }
     },
+    notRight: async (id) => {
+      try {
+        await o.doc.reopen(id);
+      } catch (e) {
+        toast(e instanceof UnsavedChangeError ? `Reopened · ${UNSAVED_NOTE}` : message(e));
+      }
+      focusReply(id);
+    },
     close: () => {
       open(null);
       const opener = back && host.layer.querySelector<HTMLElement>(back);
@@ -214,6 +224,8 @@ export function startApp(o: AppOptions): App {
     },
   };
 
+  const replies = startReplies({ doc: o.doc, layer: host.layer });
+
   const menu: MenuActions = {
     copyAll: async (as) => {
       const items = menu.all();
@@ -226,6 +238,22 @@ export function startApp(o: AppOptions): App {
         await copyText(text, host.layer);
         const n = items.filter((i) => !i.thread.resolved).length;
         toast(`Copied ${n} thread${n === 1 ? "" : "s"}${as === "ai" ? " as Markdown for AI" : ""}`);
+      } catch (e) {
+        toast(message(e));
+      }
+    },
+    copyPrompt: async () => {
+      try {
+        await copyText(
+          agentPrompt({
+            title: document.title,
+            url: location.href,
+            replies: repliesUrl(),
+            listed: replies.enabled,
+          }),
+          host.layer,
+        );
+        toast("Copied a prompt for your agent");
       } catch (e) {
         toast(message(e));
       }
@@ -264,6 +292,7 @@ export function startApp(o: AppOptions): App {
     pending: pendingFuzzy,
     actions,
     menu,
+    replies,
     here,
     elsewhere: (t) => elsewhere.has(t.id),
     recheck: () => {
@@ -762,6 +791,7 @@ export function startApp(o: AppOptions): App {
       modeView?.destroy();
       for (const v of views) v.destroy();
       addons.destroy();
+      replies.destroy();
       sheet.remove();
       host.destroy();
     },

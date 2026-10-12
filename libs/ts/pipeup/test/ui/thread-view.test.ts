@@ -45,6 +45,7 @@ const actions = (): ThreadActions & { calls: string[] } => {
     reply: vi.fn(async (p: string, t: string) => void calls.push(`reply ${p} ${t}`)),
     resolve: vi.fn(async (id: string) => void calls.push(`resolve ${id}`)),
     reopen: vi.fn(async (id: string) => void calls.push(`reopen ${id}`)),
+    notRight: vi.fn(async (id: string) => void calls.push(`notRight ${id}`)),
     copy: vi.fn((id: string) => void calls.push(`copy ${id}`)),
     close: vi.fn(),
   };
