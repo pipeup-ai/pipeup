@@ -855,7 +855,7 @@ an agent on the same computer is a later step and is not part of this one.)
   followed by another.
 - A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
   and the page says in words how many it ignored.
-- Reading the replies file is part of Pipeup itself, with no add-on to add. The page reads the file when it opens and again when the person asks it to check for replies. It
+- Reading the replies file is part of Pipeup itself, with no add-on to add. The page reads the file when it opens, then again every few seconds while the page is showing and when it comes back into view, so an agent's answer appears in the thread by itself; the person can also ask it to check at once. It
   makes no network request to do so when opened from a file on the person's computer, and when served
   from a website it reads only a file on that same site.
 
@@ -1103,3 +1103,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
 - 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
 - 2026-10-12 — Built: reading with `Pipeup.comments()`, the replies file and the agents the page lists, addressed notes with Resolve and Still not right, the prompt on every page, and `pipeup agent` / `pipeup reply` for agents; the size budget is 45 KB gzip (section 15b).
+- 2026-10-12 — Replies appear by themselves: a page with a listed agent looks for new replies every few seconds while it is showing (and when it comes back into view), as well as on Check for replies (section 15b).

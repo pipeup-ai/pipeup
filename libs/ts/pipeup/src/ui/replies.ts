@@ -6,6 +6,8 @@ const KEY = /^[A-Za-z0-9_-]{43}$/;
 /** Where a page-loaded replies file leaves what it carries until Pipeup takes it. */
 const QUEUE = "pipeupReplies";
 const WAIT_MS = 4000;
+/** How often a visible page looks for new replies. */
+const EVERY_MS = 4000;
 
 /** The agents the author lists: `<html data-pipeup-agents="<key> <key>">`, public keys only. */
 export function listedAgents(): string[] {
@@ -110,8 +112,21 @@ export function startReplies(o: {
   }
 
   // Replies the page itself loaded (a script tag), then the file next to it, quietly.
-  if (agents.length) void check().catch(() => {});
-  else void take();
+  let looking = false;
+  const look = () => {
+    if (looking || document.hidden) return;
+    looking = true;
+    void check()
+      .catch(() => {})
+      .finally(() => (looking = false));
+  };
+  let timer = 0;
+  if (agents.length) {
+    look();
+    // New replies appear by themselves while the page is showing, and at once when it comes back into view.
+    timer = window.setInterval(look, EVERY_MS);
+    document.addEventListener("visibilitychange", look);
+  } else void take();
 
   return {
     enabled: agents.length > 0,
@@ -127,6 +142,10 @@ export function startReplies(o: {
         addressed: open.filter((t) => t.addressed).length,
       };
     },
-    destroy: () => live?.remove(),
+    destroy: () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", look);
+      live?.remove();
+    },
   };
 }

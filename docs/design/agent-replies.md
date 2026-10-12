@@ -12,7 +12,7 @@ element, quote, comments with `by` and `agent`). It reads only what the page alr
 
 An answer is two kinds of signed op in the ordinary model, from the agent's own Ed25519 key:
 
-- `reply` (the thread is the target), shown like any reply; the agent's name is `AI assistant · <name>`, so the existing
+- `reply` (the thread is the target), shown like any reply; the stored name is `AI assistant · <name>` (shown as just `<name>`), so the existing
   AI marking applies (`isAiName`).
 - `addressed` (new kind): words are required. Folding sets `thread.addressed`; `reopen` clears it; `resolve` leaves the
   thread resolved. Nothing in the model lets an addressed op resolve a thread.

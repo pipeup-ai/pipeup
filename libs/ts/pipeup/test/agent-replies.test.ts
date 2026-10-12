@@ -65,7 +65,7 @@ describe("copy for AI with addressed threads", () => {
   it("says a thread is addressed, with the note, and tells the agent never to resolve", () => {
     const md = copyAll([item()], "ai", meta);
     expect(md).toContain("· open, addressed");
-    expect(md).toContain("- **Addressed:** addressed in r2 (AI assistant · Claude");
+    expect(md).toContain("- **Addressed:** addressed in r2 (Claude");
     expect(md).toContain("never resolve it");
   });
 

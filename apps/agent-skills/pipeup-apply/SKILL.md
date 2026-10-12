@@ -53,7 +53,7 @@ npx pipeup reply --page report.html --thread <Thread id> "Changed the 20% to 15 
 
 - The words say plainly what changed and where. If you did not make the change, say why, and leave out `--addressed`.
 - `--addressed` marks the thread addressed: the author sees your note and chooses **Resolve** or **Still not right**.
-- Your replies show under the name "AI assistant · Claude". The page ignores replies from a key it doesn't list,
+- Your replies show under your own name (for example "Claude" or "Codex") with the AI marking. The page ignores replies from a key it doesn't list,
   and says how many it ignored.
 - If the author says **Still not right** (the thread reopens with new words), treat the new words as the request and
   reply again in the same thread.

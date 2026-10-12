@@ -110,3 +110,13 @@ const PINNED: Record<string, string> = {
   L: "Red Fox",
   N: "Pink Owl",
 };
+
+describe("an agent's name", () => {
+  it("shows as the agent's own name, but is still drawn as an AI's", async () => {
+    const { nameOf, isAiName } = await import("../src/model/animals");
+    const c = { author: "A".repeat(43), name: "AI assistant · Codex" };
+    expect(nameOf(c)).toBe("Codex");
+    expect(isAiName(c.name)).toBe(true);
+    expect(nameOf({ ...c, name: "AI assistant" })).not.toBe("");
+  });
+});
