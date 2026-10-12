@@ -903,6 +903,51 @@ an agent on the same computer is a later step and is not part of this one.)
 - Check reports a replies file that can't be read, and replies for threads that no longer exist.
 - Comments written before this change, and pages with no replies file, behave exactly as they do now.
 
+### 15c. A live link to an agent on this computer
+
+Comments live in the reviewer's own browser, so an agent can only see them if the person pastes them or the agent
+drives that browser. The live link lets an agent on the same computer read comments and answer them without either,
+and only after the person clicks.
+
+**Starting it**
+- The author starts a link for a page file with one command on their own computer. The link shows the page from their
+  computer, at an address that works only on that computer, and says in words where it is and how to stop it.
+- Starting the link for a named agent (for example Claude or Codex) lists that agent for this page for as long as
+  the link runs, so the author doesn't also have to edit the page. When the link stops, the page is as it was.
+
+**Sharing is a click**
+- On a page shown through a link, the comment control's menu has a switch, **Share with my agent**. It is off, on
+  every load, until the person turns it on. Nothing is sent before then.
+- Its hint says in plain words what it sends and where: this page's comments, to the program running on this computer,
+  and nothing else. A page not shown through a link has no such switch.
+- Switched on, the comments already on the page and every new comment, edit, resolve and reopen go to the link, and the
+  menu and All comments say the page is sharing with the agent by name. Switching it off stops sending at once.
+
+**What the agent can do**
+- Read the page's comments at any time with one command, as Markdown or as data, open threads or all, each with its
+  id and where it is. It needs no browser, and works while the page is closed (the comments are as the page last
+  shared them).
+- Answer a thread with one command; the reply, signed by the agent's own key, and any addressed note reach the open
+  page within seconds, in the thread, as in section 15b. The same rules hold: an agent only replies and marks a thread
+  addressed, never resolves, reopens, edits or deletes.
+- Read the person's resolves and reopens, so it knows when "Still not right" has reopened a thread.
+
+**Keeping it private and safe**
+- Everything stays on the computer: the link talks only to the page it shows and to programs on the same computer, and
+  nothing is sent to any server.
+- Another web page or program can't read or write through the link: it accepts only the page it serves, and only after
+  the person has turned sharing on.
+- The link keeps the shared comments and replies in files next to the page, named plainly, so the person can see,
+  keep or delete them. Stopping the link leaves them.
+- If the link stops while the page is open, the page says so in words; the comments are safe in the browser and sharing
+  can be turned on again.
+
+**Skills and prompts**
+- When a link is running, the prompt Copy a prompt for my agent tells the agent to read and answer with the link's
+  commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
+- The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
+  when the author is on their own computer.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -1104,3 +1149,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
 - 2026-10-12 — Built: reading with `Pipeup.comments()`, the replies file and the agents the page lists, addressed notes with Resolve and Still not right, the prompt on every page, and `pipeup agent` / `pipeup reply` for agents; the size budget is 45 KB gzip (section 15b).
 - 2026-10-12 — Replies appear by themselves: a page with a listed agent looks for new replies every few seconds while it is showing (and when it comes back into view), as well as on Check for replies (section 15b).
+- 2026-10-12 — Proposed (not built): a live link between a page shown from the author's computer and an agent on it, started by one command and switched on by a click (Share with my agent), so the agent reads and answers comments without a browser or pasting (section 15c).
