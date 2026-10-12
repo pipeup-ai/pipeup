@@ -102,6 +102,16 @@ where it is safe. Document what can't be fixed from inside.
 
 `pipeup check` says which of A–E it found and which appearance it chose and why.
 
+## Built so far
+
+Slice 1 (#43): detection by sampled background, one look for the layer and the highlights with a fade, `data-pipeup-theme`,
+column backing, `direction`, token contrast test, and the first hostile-page tests. Slice 2: the Look row in the menu
+(Automatic, Light, Dark, kept in the browser) and hostile pages for `*` rules, colliding variables, body effects, a
+mismatched `color-scheme`, right-to-left, resets and forced colours (`e2e/appearance.spec.ts`,
+`e2e/fixtures/hostile.html`). Not yet: the self-check that falls back to the safe look (computed styles can't see an
+ancestor's opacity or filter, so it needs a pixel or ancestor check), the `pipeup check` report, and top-layer
+`<dialog>` pages. The size budget rose to 46.5 KB for this.
+
 ## Decisions for the maintainer
 
 - ~~Column backing~~ decided 2026-10-12: always.
@@ -112,3 +122,4 @@ where it is safe. Document what can't be fixed from inside.
 - 2026-10-12 — First draft.
 - 2026-10-12 — Both looks must work: one appearance source with a menu choice, sampled detection, Pipeup's own opaque surfaces, a self-check that falls back to the safe look.
 - 2026-10-12 — Decided: the column backing is always on.
+- 2026-10-12 — Built slices 1 and 2; font family is taken from the page by design, so the hostile tests leave it out.
