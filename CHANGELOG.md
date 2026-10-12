@@ -11,7 +11,7 @@ change the API and the stored comment format.
 - **Pipeup follows the page's light or dark look wherever the page makes the change**, not only on `<html>` and `<body>`: it reads the background actually painted behind its column and panel, and the page highlights now switch together with the rest of Pipeup (they used to keep the look they started with). An author can set the look with `data-pipeup-theme="light|dark"` on `<html>`.
 - Threads in the column always sit on their own soft backing, so their words stay readable on any page.
 - A right-to-left page no longer flips Pipeup's layout.
-- **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 to 46.5 KB gzip for it and for the more careful reading of the page.
+- **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 to 50 KB gzip, for this and for the reactions and mentions to come.
 - Faint grey text is darker (light look) and lighter (dark look) so every text colour reaches 4.5 to 1 on its surface.
 
 ## [0.6.0] - 2026-10-12

@@ -74,6 +74,36 @@ test("threads at rest in the column sit on their own opaque backing", async ({ p
   expect(alpha).toBe(1);
 });
 
+/**
+ * Runs in the page: the contrast of an element's words against the first opaque background behind them inside
+ * Pipeup (0 when none of Pipeup's own is there, since then it would depend on the page). Colours go through a canvas
+ * so any format the browser serialises (rgb, color(), oklab…) reads the same.
+ */
+const readingOf = (el: Element) => {
+  const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+  const rgba = (css: string): number[] => {
+    ctx.clearRect(0, 0, 1, 1);
+    ctx.fillStyle = "#000";
+    ctx.fillStyle = css;
+    ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return [d[0]!, d[1]!, d[2]!, d[3]! / 255];
+  };
+  const lum = ([r, g, b]: number[]) => {
+    const f = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
+  };
+  let bg: number[] | null = null;
+  for (let e: Element | null = el; e && !bg; e = e.parentElement) {
+    const c = rgba(getComputedStyle(e).backgroundColor);
+    if (c[3]! >= 0.99) bg = c;
+  }
+  const a = lum(rgba(getComputedStyle(el).color));
+  if (!bg) return 0;
+  const b = lum(bg);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+};
+
 test("on a dark page, words in the column read against their own backing, not the page", async ({ page }) => {
   await open(page, "hostile.html");
   await night(page, true);
@@ -81,26 +111,7 @@ test("on a dark page, words in the column read against their own backing, not th
   await seedText(page, "#p2", "managers", "Who owns this?");
   const tx = page.locator(".th .tx");
   await expect(tx).toContainText("Who owns this?");
-  const ratio = await tx.evaluate((el) => {
-    const rgb = (s: string) =>
-      /rgba?\(([^)]*)\)/
-        .exec(s)![1]!
-        .split(",")
-        .map((x) => parseFloat(x));
-    const lum = ([r, g, b]: number[]) => {
-      const f = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-      return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
-    };
-    let bg: number[] | null = null;
-    for (let e: Element | null = el; e && !bg; e = e.parentElement) {
-      const c = rgb(getComputedStyle(e).backgroundColor);
-      if ((c[3] ?? 1) >= 0.99) bg = c;
-    }
-    const a = lum(rgb(getComputedStyle(el).color));
-    if (!bg) return 0; // nothing of Pipeup's own behind the words: it would depend on the page
-    const b = lum(bg);
-    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-  });
+  const ratio = await tx.evaluate(readingOf);
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
 
@@ -124,23 +135,7 @@ const seen = (page: Page, selector = ".menu .mi .lb") =>
     .locator(selector)
     .first()
     .evaluate((el) => {
-      const rgb = (s: string) =>
-        /rgba?\(([^)]*)\)/
-          .exec(s)![1]!
-          .split(",")
-          .map((x) => parseFloat(x));
-      const lum = ([r, g, b]: number[]) => {
-        const f = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
-        return 0.2126 * f(r!) + 0.7152 * f(g!) + 0.0722 * f(b!);
-      };
-      let bg: number[] | null = null;
-      for (let e: Element | null = el; e && !bg; e = e.parentElement) {
-        const c = rgb(getComputedStyle(e).backgroundColor);
-        if ((c[3] ?? 1) >= 0.99) bg = c;
-      }
       const cs = getComputedStyle(el);
-      const a = lum(rgb(cs.color));
-      const b = lum(bg ?? [0, 0, 0]);
       return {
         fontSize: cs.fontSize,
         lineHeight: cs.lineHeight,
@@ -148,9 +143,10 @@ const seen = (page: Page, selector = ".menu .mi .lb") =>
         textTransform: cs.textTransform,
         direction: cs.direction,
         color: cs.color,
-        ratio: bg ? (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) : 0,
       };
     });
+const ratioOf = (page: Page, selector = ".menu .mi .lb") =>
+  page.locator(selector).first().evaluate(readingOf);
 
 const HOSTILE = ["star", "vars", "body", "scheme", "rtl", "resets", "star,vars,body,scheme,rtl,resets"];
 // The column only appears where the page leaves room for it, so these compare the menu, which is always there.
@@ -168,7 +164,7 @@ for (const rules of HOSTILE) {
     await openMenu(other);
     const hostile = await seen(other);
     expect(hostile).toEqual(plain);
-    expect(hostile.ratio).toBeGreaterThanOrEqual(4.5);
+    expect(await ratioOf(other)).toBeGreaterThanOrEqual(4.5);
     await expect(layer(other)).not.toHaveClass(/dark/);
     await other.context().close();
   });
@@ -188,7 +184,7 @@ for (const rules of ["star", "vars", "body", "scheme"]) {
     await expect(other.locator(".th .tx")).toContainText("Who owns this?");
     const hostile = await seen(other, ".th .tx");
     expect(hostile).toEqual(plain);
-    expect(hostile.ratio).toBeGreaterThanOrEqual(4.5);
+    expect(await ratioOf(other, ".th .tx")).toBeGreaterThanOrEqual(4.5);
     await other.context().close();
   });
 }
@@ -197,7 +193,7 @@ test("with forced colours on, Pipeup's words still read against their backing", 
   await page.emulateMedia({ forcedColors: "active" });
   await pageWith(page);
   await openMenu(page);
-  expect((await seen(page)).ratio).toBeGreaterThanOrEqual(4.5);
+  expect(await ratioOf(page)).toBeGreaterThanOrEqual(4.5);
 });
 
 test("the Look row in the menu overrides the page, and the choice is kept", async ({ page }) => {
@@ -212,7 +208,7 @@ test("the Look row in the menu overrides the page, and the choice is kept", asyn
   await expect(row).toContainText("Dark");
   await expect(layer(page)).toHaveClass(/dark/);
   // The page's own look is still light; Pipeup's words still read on their own backing.
-  expect((await seen(page)).ratio).toBeGreaterThanOrEqual(4.5);
+  expect(await ratioOf(page)).toBeGreaterThanOrEqual(4.5);
   await page.reload();
   await page.evaluate(async () => {
     const w = window as any;
