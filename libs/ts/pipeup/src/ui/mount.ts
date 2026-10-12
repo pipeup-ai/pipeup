@@ -8,6 +8,7 @@ import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
+import type { Appearance } from "./legible";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -24,6 +25,8 @@ export interface PipeupInstance {
   readonly document: PipeupDocument;
   /** The page's comments, for an agent: open threads, or every thread with `all`. */
   comments(options?: { all?: boolean }): AgentComments;
+  /** How Pipeup looks and why (for `pipeup check` and agents): its look, who chose it, and what the page's styles do to it. */
+  appearance(): Appearance;
   flush(): Promise<void>;
   unmount(): void;
 }
@@ -137,6 +140,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
         exportedAt: new Date(),
         all,
       }),
+    appearance: () => ({ ...app.appearance() }),
     flush: () => doc.flush(),
     unmount: () => {
       if (unmounted) return;

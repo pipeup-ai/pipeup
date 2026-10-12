@@ -25,6 +25,7 @@ import { createHost } from "./host";
 import { startLink } from "./link";
 import { repliesUrl, startReplies } from "./replies";
 import { reveal } from "./notes";
+import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
 import type { ThreadActions } from "./thread-view";
 
@@ -45,6 +46,8 @@ export interface AppOptions {
 
 export interface App {
   readonly ctx: Ctx;
+  /** How Pipeup looks and why: its look, who chose it, and what the page's styles do to it. */
+  appearance(): Appearance;
   destroy(): void;
 }
 
@@ -79,8 +82,17 @@ export function startApp(o: AppOptions): App {
     /* no storage: Automatic */
   }
   let dark = false;
-  const lookNow = (): Look =>
-    choice !== "auto" ? choice : (authorLook(document) ?? (pageIsDark(document, dark) ? "dark" : "light"));
+  let appearance: Appearance;
+  let warned = "";
+  /** The look to show; what the page's own styles do to it is noted, once, in the console. */
+  const lookNow = (): Look => {
+    const chosen = choice !== "auto" ? choice : authorLook(document);
+    const look = chosen ?? (pageIsDark(document, dark) ? "dark" : "light");
+    appearance = inspect(document, look, choice !== "auto" ? "reviewer" : chosen ? "author" : "page");
+    const line = warning(appearance);
+    if (line && line !== warned) console.warn((warned = line));
+    return look;
+  };
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme);
@@ -847,6 +859,7 @@ export function startApp(o: AppOptions): App {
 
   return {
     ctx,
+    appearance: () => appearance,
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);

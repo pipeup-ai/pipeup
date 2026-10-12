@@ -17,6 +17,31 @@ export function parseRgb(value: string): { r: number; g: number; b: number; a: n
   return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: alpha };
 }
 
+let pixel: CanvasRenderingContext2D | null | undefined;
+/**
+ * Any CSS colour as red, green, blue and alpha. Computed colours come back as written: rgb(), but also oklch(),
+ * color(srgb …) and color-mix() results on modern pages, which a one-pixel canvas reads for us.
+ */
+export function parseColour(
+  value: string,
+  doc: Document,
+): { r: number; g: number; b: number; a: number } | null {
+  const c = parseRgb(value);
+  if (c || !value || value === "transparent") return c;
+  try {
+    pixel ??= doc.createElement("canvas").getContext("2d", { willReadFrequently: true }) ?? null;
+    if (!pixel) return null;
+    pixel.clearRect(0, 0, 1, 1);
+    pixel.fillStyle = "#000";
+    pixel.fillStyle = value;
+    pixel.fillRect(0, 0, 1, 1);
+    const [r, g, b, a] = pixel.getImageData(0, 0, 1, 1).data;
+    return { r: r!, g: g!, b: b!, a: a! / 255 };
+  } catch {
+    return null;
+  }
+}
+
 export function luminance(c: { r: number; g: number; b: number }): number {
   const f = (v: number) => {
     const s = v / 255;
@@ -50,6 +75,23 @@ const LIGHT_ABOVE = 0.32;
 const BIG = 0.25;
 
 /**
+ * The colour the page's canvas is painted: <html>'s background, or else <body>'s (a body background spreads to the
+ * whole canvas); with neither, the colour scheme decides (white, or black for a dark scheme).
+ */
+export function canvasPaint(doc: Document): { r: number; g: number; b: number } {
+  const win = doc.defaultView;
+  const html = doc.documentElement;
+  const scheme = win?.getComputedStyle(html).colorScheme || "";
+  const dark =
+    /dark/.test(scheme) &&
+    (!/light/.test(scheme) || win?.matchMedia?.("(prefers-color-scheme: dark)").matches === true);
+  let paint = win ? parseColour(win.getComputedStyle(html).backgroundColor, doc) : null;
+  if (win && doc.body && (!paint || paint.a < 0.5))
+    paint = parseColour(win.getComputedStyle(doc.body).backgroundColor, doc);
+  return paint && paint.a >= 0.5 ? paint : dark ? { r: 0, g: 0, b: 0 } : { r: 255, g: 255, b: 255 };
+}
+
+/**
  * Whether the page is dark behind Pipeup. It samples the background actually painted behind the column and
  * panel (the first non-transparent one down the stack at a few points), not just <body>'s, so a page that dresses a
  * wrapper (or switches theme with a class on one) is read correctly. With nothing painted it asks the page's
@@ -59,16 +101,7 @@ export function pageIsDark(doc: Document, was = false): boolean {
   const win = doc.defaultView;
   if (!win) return false;
   const html = doc.documentElement;
-  const scheme = win.getComputedStyle(html).colorScheme || "";
-  const canvasDark =
-    /dark/.test(scheme) &&
-    (!/light/.test(scheme) || win.matchMedia?.("(prefers-color-scheme: dark)").matches === true);
-  // The canvas takes <html>'s background, or else <body>'s (a body background spreads to the whole canvas); with
-  // neither, the colour scheme decides.
-  let paint = parseRgb(win.getComputedStyle(html).backgroundColor);
-  if (!paint || paint.a < 0.5)
-    paint = doc.body ? parseRgb(win.getComputedStyle(doc.body).backgroundColor) : null;
-  const canvas = paint && paint.a >= 0.5 ? luminance(paint) : canvasDark ? 0 : 1;
+  const canvas = luminance(canvasPaint(doc));
   const stackAt = (x: number, y: number): Element[] => {
     try {
       if (doc.elementsFromPoint) return doc.elementsFromPoint(x, y);
@@ -86,7 +119,7 @@ export function pageIsDark(doc: Document, was = false): boolean {
       // of the window count.
       const box = el.getBoundingClientRect();
       if (box.width * box.height < BIG * win.innerWidth * win.innerHeight) continue;
-      const c = parseRgb(win.getComputedStyle(el).backgroundColor);
+      const c = parseColour(win.getComputedStyle(el).backgroundColor, doc);
       if (c && c.a >= 0.5) {
         lum = luminance(c);
         break;
@@ -113,10 +146,10 @@ export function readTheme(root: Element, look: Look): Theme {
   const link = root.querySelector("a[href]");
   const linkColor = link ? win.getComputedStyle(link).color : "";
   // A link colour that can't be seen on Pipeup's own surface (the pale links of a dark page, say) is not used.
-  const fromLink = linkColor && linkColor !== DEFAULT_LINK ? parseRgb(linkColor) : null;
+  const fromLink = linkColor && linkColor !== DEFAULT_LINK ? parseColour(linkColor, doc) : null;
   const seen = fromLink && contrast(luminance(fromLink), dark ? 0.011 : 1) >= 3;
   const accent = custom || (seen ? linkColor : dark ? FALLBACK_ACCENT_DARK : FALLBACK_ACCENT);
-  const rgb = parseRgb(accent);
+  const rgb = parseColour(accent, doc);
   const on = rgb && contrast(luminance(rgb), 1) < 3 ? "#111" : "#fff";
   return { font, accent, dark, on };
 }

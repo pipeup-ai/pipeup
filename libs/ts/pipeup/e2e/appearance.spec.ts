@@ -233,3 +233,66 @@ test("a reviewer's choice beats the author's setting", async ({ page }) => {
   await page.locator(".mi", { hasText: "Look" }).click(); // Light
   await expect(layer(page)).not.toHaveClass(/dark/);
 });
+
+const appearance = (page: Page) => page.evaluate(() => (window as any).pu.appearance());
+
+test("a page that dresses its wrapper in oklch() is read as dark", async ({ page }) => {
+  await page.goto(fixture("hostile.html?rules=oklch"));
+  await page.evaluate(async () => {
+    const w = window as any;
+    w.pu = await w.Pipeup.mount({});
+  });
+  await expect(layer(page)).toHaveClass(/dark/);
+  expect(await appearance(page)).toMatchObject({
+    look: "dark",
+    source: "page",
+    effects: [],
+  });
+});
+
+test("styles on <html> that Pipeup can't undo are listed, and said once in the console", async ({ page }) => {
+  const said: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && said.push(m.text()));
+  await page.goto(fixture("hostile.html?rules=filter"));
+  await page.evaluate(async () => {
+    const w = window as any;
+    w.pu = await w.Pipeup.mount({});
+  });
+  expect(await appearance(page)).toMatchObject({
+    look: "light",
+    effects: ["filter: grayscale(1)"],
+  });
+  // A change elsewhere makes Pipeup look again; it doesn't repeat itself.
+  await night(page, true);
+  await night(page, false);
+  await page.waitForTimeout(900);
+  expect(said.filter((t) => t.includes("styles on <html>"))).toHaveLength(1);
+  expect(said[0]).toContain("filter: grayscale(1)");
+});
+
+test("a page that fades <html> is said to make Pipeup hard to read, and Pipeup keeps the look it chose", async ({
+  page,
+}) => {
+  const said: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && said.push(m.text()));
+  await page.goto(fixture("hostile.html?rules=fade"));
+  await page.evaluate(async () => {
+    const w = window as any;
+    document.documentElement.setAttribute("data-pipeup-theme", "light");
+    w.pu = await w.Pipeup.mount({});
+  });
+  const a = await appearance(page);
+  expect(a).toMatchObject({ look: "light", source: "author" });
+  expect(a.effects).toEqual(["opacity: 0.35"]);
+  expect(a.ratio).toBeLessThan(3);
+  await expect(layer(page)).not.toHaveClass(/dark/);
+  expect(said.join("\n")).toContain("may be hard to read");
+});
+
+test("a page with no styles on <html> has nothing to report", async ({ page }) => {
+  const said: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && said.push(m.text()));
+  await open(page, "hostile.html");
+  expect(await appearance(page)).toMatchObject({ look: "light", effects: [] });
+  expect(said).toEqual([]);
+});

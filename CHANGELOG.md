@@ -9,6 +9,8 @@ change the API and the stored comment format.
 
 ### Fixed
 - **Pipeup follows the page's light or dark look wherever the page makes the change**, not only on `<html>` and `<body>`: it reads the background actually painted behind its column and panel, and the page highlights now switch together with the rest of Pipeup (they used to keep the look they started with). An author can set the look with `data-pipeup-theme="light|dark"` on `<html>`.
+- **Pipeup reads modern colours** (`oklch()`, `color()`, `color-mix()`) when it works out whether the page is light or dark, so pages written with them are no longer misread.
+- **It tells you what the page does to it.** Styles on `<html>` that fade, filter, blend, transform or zoom everything under it can't be undone from inside Pipeup, so Pipeup says so once in the browser console, and says when its words may be hard to read. `pu.appearance()` returns the same facts (its look, who chose it, the contrast, the effects) for `pipeup check` and agents.
 - Threads in the column always sit on their own soft backing, so their words stay readable on any page.
 - A right-to-left page no longer flips Pipeup's layout.
 - **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 to 50 KB gzip, for this and for the reactions and mentions to come.

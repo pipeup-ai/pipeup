@@ -1,5 +1,6 @@
 export * from "./core";
 export { comments, mount, type MountOptions, type PipeupInstance } from "./ui/mount";
+export type { Appearance } from "./ui/legible";
 export {
   ADDON_API,
   addons,
