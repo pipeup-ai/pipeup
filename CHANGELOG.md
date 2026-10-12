@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-12
+
+This release is about agents: they can read a page's comments, answer them, and be installed in one step.
+
 ### Added
 - **Install the skills once.** A Claude Code plugin (`/plugin install pipeup --marketplace pipeup-ai/pipeup`) and `npx pipeup skills install` for Claude Code and Codex (`~/.claude/skills`, `~/.agents/skills`, or `--project`). It says what it will write, asks first, never replaces a skill you changed (unless `--replace`), and `skills remove` takes them out. The skills ship inside the `pipeup` package and make no network request.
 - A new skill, **pipeup-add** ("add comments to this page"): the short, ordered steps (pinned script with its integrity hash, document identity, no add-ons unless asked, the allow-list). The integrate skill is now the full reference. Every skill says which Pipeup version it was written for.
@@ -263,7 +267,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/pipeup-ai/pipeup/compare/v0.5.1...v0.5.2
