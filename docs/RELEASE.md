@@ -26,8 +26,9 @@ format may still change; the README says the project is in alpha until 1.0.
 | **0.3.0** | **First public release**: comment mode, pins, one-button control, All comments, animal identities |
 | **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
 | **0.5** | **Add-ons**: add-on support, `share` (comments shared through an encrypted service), `voice` (dictating comments) and `live` (live review and presence, peer to peer), and the mailbox server |
-| 0.6 | Touch and the narrow-page drawer |
-| 0.7 | The `pipeup` command line (`init`, `check`, `read`, `reply`) |
+| **0.6** | **Agents**: read a page's comments (`Pipeup.comments()`), answer them in a replies file and mark them addressed, a live link to an agent on the same computer, and the skills installed as a Claude Code plugin or with `pipeup skills install`; the `pipeup` command line begins (`agent`, `reply`, `watch`, `comments`, `skills`) |
+| 0.7 | Touch and the narrow-page drawer |
+| 0.8 | The rest of the command line (`init`, `check`, `read`) |
 | 1.0 | Stable API and stored format |
 
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.
@@ -150,3 +151,4 @@ tests and docs are fictional; there are no personal names or addresses.
 - 2026-10-07 — Roadmap renumbered: 0.4 shipped slides, views and keyboard; touch and drawer move to 0.5, the CLI to 0.6, add-ons to 0.7.
 - 2026-10-07 — Website-only updates: the sync script's `--site` mode commits to `main` without a tag; the Pages workflow is run by hand.
 - 2026-10-07 — GitHub is the project's only home: development, pull requests and releases happen here; the private repository and its sync script are retired. Stable work and website changes go into `main`, milestone work and pre-releases into `next`; releases are tagged on the merged commit.
+- 2026-10-12 — Roadmap renumbered: 0.6 shipped agents (reading and answering comments, the live link, the skills installer) and the first commands of the command line; touch and the drawer move to 0.7, `init`, `check` and `read` to 0.8.

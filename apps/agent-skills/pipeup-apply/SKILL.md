@@ -5,7 +5,7 @@ description: Use when someone asks you to act on Pipeup feedback for an HTML pag
 
 # Apply Pipeup feedback
 
-Written for Pipeup 0.5.4. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 0.6.0. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 ## 1. Read the comments
 

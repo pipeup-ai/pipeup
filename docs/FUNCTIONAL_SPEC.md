@@ -1023,9 +1023,10 @@ and only after the person clicks.
    - shared comments through a free service the author picks;
    - dictation;
    - live review and presence.
-4. **Touch and narrow pages** (0.6).
-5. **The command-line tool** (0.7).
-6. **The author's relay** (later):
+4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
+5. **Touch and narrow pages** (0.7).
+6. **The rest of the command-line tool** (0.8): `init`, `check`, `read`.
+7. **The author's relay** (later):
    - rooms on a relay the author owns;
    - invites shared separately;
    - closing rooms;
@@ -1182,3 +1183,4 @@ and only after the person clicks.
 - 2026-10-12 — Built: the live link (`pipeup watch`, `pipeup comments`, the Share with my agent switch, replies reaching the open page), with the size budget at 46 KB gzip (section 15c).
 - 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
+- 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
