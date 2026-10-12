@@ -70,6 +70,9 @@ Principles:
    lists what is unresolved.
 10. *Apply the feedback.* The agent edits the page for the comments the author approves, then
     replies to and resolves those threads.
+11. *The agent answers my comment.* I open the page my author sent after acting on my feedback and
+    find the agent's reply inside my own comment thread, saying plainly what changed. I decide whether
+    it is resolved.
 
 ## 3. What can be reviewed
 
@@ -831,6 +834,50 @@ permission, a registration, or a place in its npm scope.
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
 
+## 15a. Agent replies that travel with the page
+
+When an agent acts on a reviewer's comment, the reviewer should find its answer **inside that comment's
+thread**, in the page they already have, without a server and without an account. The author publishes
+a new version of the page; the replies travel with it.
+
+- **Answering a thread.** An agent can reply to a thread, naming it by the thread identifier that
+  Copy as Markdown gives for every thread. A reply is plain text. It can also say that the thread has been
+  **addressed**, with a short label for where (for example "Revision 41").
+- **Replies live with the page's source.** The author, or an agent for them, keeps the replies alongside the
+  page's source and publishes them with each new version. Nothing is sent anywhere, and replies work from a
+  file opened from disk.
+- **Appearing in the thread.** When a reviewer opens a page that carries replies, each reply appears in the
+  matching thread **in that reviewer's own browser**, after their comment, like any other reply. A reply
+  whose thread this browser does not have is not shown there: reviewers only see answers to their own
+  comments.
+- **Clearly an agent.** An agent's reply shows the agent's own name and is marked as an agent in words, not
+  colour alone, so it can never be mistaken for a reviewer or for the person the agent works for.
+- **Only agents the page names.** A page shows replies only from the agents it names. Replies from anyone
+  else that are found in the page are ignored, and nobody can make a reply appear to come from a reviewer.
+- **Addressed, not closed.** "Addressed" appears on the thread as **Addressed by (agent) in (label)**. The
+  thread stays open until the reviewer resolves it, and the reviewer can resolve, reopen or ignore it as
+  usual. An agent never resolves a thread for a reviewer.
+- **New replies are noticed.** A thread with a reply the reviewer has not seen is marked as having a new
+  reply, and so is the comment control's count, until they open it. Opening the thread counts as seen.
+- **Replies stay.** An agent's reply is never edited or removed once published. A later page adds more
+  replies. Once a reply has appeared in a reviewer's thread it stays there, even if a later page no longer
+  carries it.
+- **Rebuilt pages.** Replies keep their thread when the author rebuilds or regenerates the page, as long as
+  the page's document identity is unchanged. If the commented content can no longer be found, the thread
+  and its replies still show, flagged as in section 8.
+- **Copying keeps the conversation.** Copy as Markdown and Copy as text include agent replies in their
+  thread, labelled as the agent, so a later reader or agent sees the whole exchange.
+- **Never breaks the page.** A reply that cannot be read, or whose thread is unknown, is skipped. It never
+  stops the page, the reviewer's comments, or the other replies from working. The check (section 15)
+  reports it in words.
+- **Same rules as everything else.** Reply text is shown as text, never as HTML. The control's look follows
+  the rest of Pipeup: light mode, every change eased, readable with keyboard and screen reader like other replies.
+
+Out of scope here: replies that reach reviewers without a new page (live sync through an add-on), an agent
+reading a reviewer's comments directly from their browser, and more than one agent answering the same page.
+The `pipeup reply` command of the command line (section 15, release table) writes these replies; its
+behaviour is defined here.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -892,6 +939,7 @@ permission, a registration, or a place in its npm scope.
 - How long shared copies last on free services, which services Pipeup suggests, and how much traffic
   is fair to ask of volunteer-run services.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
+- Agent replies in the page (section 15a): the default name an agent appears under; whether an agent may mark a thread addressed without the author's approval; whether the reviewer can hide agent replies.
 
 ---
 
@@ -1026,3 +1074,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
+- 2026-10-11 — Agent replies that travel with the page (section 15a, scenario 11): requirements from using Pipeup as the comment layer of a design-review page. An agent answers a thread by its identifier; replies are published with the page, appear in the reviewer's own thread marked as an agent, can mark a thread addressed but never resolve it, and never leave the machine. Draft for the maintainer's review; open questions added.
