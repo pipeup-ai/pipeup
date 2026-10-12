@@ -880,6 +880,23 @@ an agent on the same computer is a later step and is not part of this one.)
   the person's words.
 - Nothing here appears, moves or disappears abruptly; a new reply eases into the thread.
 
+**What agents are told**
+- Every agent-facing surface says the same things about comments, in the same words: the skills (apply,
+  summarise, integrate and the install skill of §15a), `llms.txt` and `llms-full.txt`, the Markdown copy
+  of each page, the prompts the site offers, and the prompt the menu copies.
+- An agent that is given a page's comments: reads every open thread in order; for each one makes the
+  change the author approved, or says why it did not; replies in the thread with what changed and where;
+  marks it addressed; and leaves closing to the author. It asks the author before changing anything
+  the author hasn't approved, and answers a question with an answer, not a change.
+- An agent writes its replies in the replies file under its own named identity, and never puts its key
+  in the page or the folder, never answers as a person, and never resolves, reopens, edits or deletes.
+- When a thread is reopened with "Still not right", the agent treats the person's new words as the
+  request, and replies again in the same thread.
+- An agent that can't write the replies file (for example a chat with no files) says what it would have
+  replied, in a form the author can paste, and does not pretend the page was updated.
+- An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
+  and says in words what that lets it do.
+
 **Skills and checking**
 - The apply skill tells the agent to read the comments, make each change the author approved, reply with
   what changed, mark it addressed, and leave closing to the author.
@@ -1083,3 +1100,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
 - 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
 - 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
+- 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
