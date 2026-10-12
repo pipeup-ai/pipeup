@@ -7,6 +7,7 @@ import { attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { VERSION } from "../core";
+import { agentComments, type AgentComments } from "../export/agent";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -21,6 +22,8 @@ export interface MountOptions {
 
 export interface PipeupInstance {
   readonly document: PipeupDocument;
+  /** The page's comments, for an agent: open threads, or every thread with `all`. */
+  comments(options?: { all?: boolean }): AgentComments;
   flush(): Promise<void>;
   unmount(): void;
 }
@@ -127,6 +130,13 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   window.addEventListener("pagehide", onHide);
   return {
     document: doc,
+    comments: ({ all = false } = {}) =>
+      agentComments(app.ctx.menu.all(), {
+        title: document.title,
+        url: location.href,
+        exportedAt: new Date(),
+        all,
+      }),
     flush: () => doc.flush(),
     unmount: () => {
       if (unmounted) return;
@@ -138,6 +148,12 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       if (current === self()) current = null;
     },
   };
+}
+
+/** The page's comments for an agent that is looking at the page: waits for Pipeup to start, then reads them. */
+export async function comments(options?: { all?: boolean }): Promise<AgentComments> {
+  if (!current) throw new Error("pipeup: Pipeup hasn't started on this page");
+  return (await current).comments(options);
 }
 
 /** Pages that carry data-pipeup-doc mount themselves, unless data-pipeup-auto="off". */

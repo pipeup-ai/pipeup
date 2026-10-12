@@ -24,7 +24,7 @@ export const LIMITS = {
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
-const KINDS = new Set<unknown>(["create", "reply", "edit", "delete", "resolve", "reopen"]);
+const KINDS = new Set<unknown>(["create", "reply", "edit", "delete", "resolve", "reopen", "addressed"]);
 
 export async function signOp(body: OpBody, identity: Identity): Promise<SignedOp> {
   if (body.author !== identity.publicKey) throw new Error("pipeup: an op must be signed by its author");
@@ -77,7 +77,7 @@ export function isWellFormed(op: unknown): op is SignedOp {
   if (typeof b.at !== "number" || !Number.isSafeInteger(b.at) || b.at < 0 || b.at > MAX_AT) return false;
   if (b.text !== undefined && (!isStr(b.text, MAX_TEXT) || b.text !== b.text.trim())) return false;
   if (b.target !== undefined && (typeof b.target !== "string" || !ID.test(b.target))) return false;
-  const needsText = b.kind === "create" || b.kind === "reply" || b.kind === "edit";
+  const needsText = b.kind === "create" || b.kind === "reply" || b.kind === "edit" || b.kind === "addressed";
   if (needsText && !b.text) return false;
   if ((b.kind === "reply" || b.kind === "edit" || b.kind === "delete") && !b.target) return false;
   if (b.kind === "create") {

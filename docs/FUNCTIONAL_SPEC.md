@@ -806,7 +806,7 @@ permission, a registration, or a place in its npm scope.
     mode, decks with marked slides — and when to use each of Pipeup's options;
   - run the **check** and fix what it reports;
   - **summarise** feedback by theme, section and status;
-  - **reply to and resolve** threads, and **apply** approved changes to the page.
+  - **reply to** threads and mark them addressed (never resolve them), and **apply** approved changes to the page.
 - **Check** loads a page with and without Pipeup and reports pass, warn or fail for:
   - any layout change caused by Pipeup;
   - closed Pipeup UI overlapping page content, at phone, tablet and desktop widths;
@@ -859,6 +859,122 @@ installs once, after which the agent uses them on its own whenever the task call
   later" when a step works today by copy and paste.
 - The installer and the plugin hold no runtime code for a page: they carry text and nothing that runs
   on a reviewer's page. Neither sends anything about the person anywhere.
+### 15b. Agents reading and answering comments
+
+Today a person has to copy the comments and paste them to the agent, and an agent's answer can't come
+back into the page. This section closes both gaps without a server. (A live link between the page and
+an agent on the same computer is a later step and is not part of this one.)
+
+**Reading**
+- A page can give its comments to the agent looking at it, with no copy and paste: the same Markdown
+  Copy all gives (every thread with its id, where it is on the page, and its words), and the open
+  threads as plain data. Either can be asked for open threads only, or all of them.
+- It carries nothing a person can't already see in the page, and it works for any agent that can run
+  the page in a browser.
+
+**Answering**
+- An agent answers a thread by writing a reply into a **replies file** kept next to the page, named by
+  the page. A reply names the thread it answers, carries the agent's words, and may say the thread is
+  **addressed**, with a short note of what was done and where (for example "addressed in revision 41").
+- A reply is signed by the agent's own identity, made once and kept on the agent's computer, never in the
+  page or its folder. The identity has a name that shows it is an agent (§10, §15).
+- The page shows the replies it finds in the file, inside the thread, under the agent's name and with
+  the same marking as other AI replies. A reply can't be edited or removed by a later one, only
+  followed by another.
+- A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
+  and the page says in words how many it ignored.
+- Reading the replies file is part of Pipeup itself, with no add-on to add. The page reads the file when it opens, then again every few seconds while the page is showing and when it comes back into view, so an agent's answer appears in the thread by itself; the person can also ask it to check at once. It
+  makes no network request to do so when opened from a file on the person's computer, and when served
+  from a website it reads only a file on that same site.
+
+**Addressed, and who closes**
+- **Addressed** is not resolved. A thread an agent says is addressed shows that plainly, with the note,
+  and stays open until a person resolves it. A person can reopen it, and say what is still wrong.
+- Agents never resolve, reopen, edit or delete a thread. (This replaces the earlier wording that let an
+  agent resolve threads; §15 and the skills are updated to match.)
+- A reply file can't make a person's comment change in any way.
+
+**Showing that a page is ready for an agent**
+- A page whose author has listed an agent says so in plain words in the comment control's menu, in one
+  line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
+  shows nothing, so nothing is added for readers who don't need it.
+- The menu's copy-for-AI row has a second choice, shown on every page whether or not an agent is listed, **Copy a prompt for my agent**, which copies a short
+  instruction that tells an agent where this page's comments are, how to read them and how to answer,
+  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
+- All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
+  comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
+- In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
+  two plain choices, **Resolve** and **Still not right**, the second of which reopens it with a place for
+  the person's words.
+- Nothing here appears, moves or disappears abruptly; a new reply eases into the thread.
+
+**What agents are told**
+- Every agent-facing surface says the same things about comments, in the same words: the skills (apply,
+  summarise, integrate and the install skill of §15a), `llms.txt` and `llms-full.txt`, the Markdown copy
+  of each page, the prompts the site offers, and the prompt the menu copies.
+- An agent that is given a page's comments: reads every open thread in order; for each one makes the
+  change the author approved, or says why it did not; replies in the thread with what changed and where;
+  marks it addressed; and leaves closing to the author. It asks the author before changing anything
+  the author hasn't approved, and answers a question with an answer, not a change.
+- An agent writes its replies in the replies file under its own named identity, and never puts its key
+  in the page or the folder, never answers as a person, and never resolves, reopens, edits or deletes.
+- When a thread is reopened with "Still not right", the agent treats the person's new words as the
+  request, and replies again in the same thread.
+- An agent that can't write the replies file (for example a chat with no files) says what it would have
+  replied, in a form the author can paste, and does not pretend the page was updated.
+- An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
+  and says in words what that lets it do.
+
+**Skills and checking**
+- The apply skill tells the agent to read the comments, make each change the author approved, reply with
+  what changed, mark it addressed, and leave closing to the author.
+- Check reports a replies file that can't be read, and replies for threads that no longer exist.
+- Comments written before this change, and pages with no replies file, behave exactly as they do now.
+
+### 15c. A live link to an agent on this computer
+
+Comments live in the reviewer's own browser, so an agent can only see them if the person pastes them or the agent
+drives that browser. The live link lets an agent on the same computer read comments and answer them without either,
+and only after the person clicks.
+
+**Starting it**
+- The author starts a link for a page file with one command on their own computer. The link shows the page from their
+  computer, at an address that works only on that computer, and says in words where it is and how to stop it.
+- Starting the link for a named agent (for example Claude or Codex) lists that agent for this page for as long as
+  the link runs, so the author doesn't also have to edit the page. When the link stops, the page is as it was.
+
+**Sharing is a click**
+- On a page shown through a link, the comment control's menu has a switch, **Share with my agent**. It is off, on
+  every load, until the person turns it on. Nothing is sent before then.
+- Its hint says in plain words what it sends and where: this page's comments, to the program running on this computer,
+  and nothing else. A page not shown through a link has no such switch.
+- Switched on, the comments already on the page and every new comment, edit, resolve and reopen go to the link, and the
+  menu and All comments say the page is sharing with the agent by name. Switching it off stops sending at once.
+
+**What the agent can do**
+- Read the page's comments at any time with one command, as Markdown or as data, open threads or all, each with its
+  id and where it is. It needs no browser, and works while the page is closed (the comments are as the page last
+  shared them).
+- Answer a thread with one command; the reply, signed by the agent's own key, and any addressed note reach the open
+  page within seconds, in the thread, as in section 15b. The same rules hold: an agent only replies and marks a thread
+  addressed, never resolves, reopens, edits or deletes.
+- Read the person's resolves and reopens, so it knows when "Still not right" has reopened a thread.
+
+**Keeping it private and safe**
+- Everything stays on the computer: the link talks only to the page it shows and to programs on the same computer, and
+  nothing is sent to any server.
+- Another web page or program can't read or write through the link: it accepts only the page it serves, and only after
+  the person has turned sharing on.
+- The link keeps the shared comments and replies in files next to the page, named plainly, so the person can see,
+  keep or delete them. Stopping the link leaves them.
+- If the link stops while the page is open, the page says so in words; the comments are safe in the browser and sharing
+  can be turned on again.
+
+**Skills and prompts**
+- When a link is running, the prompt Copy a prompt for my agent tells the agent to read and answer with the link's
+  commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
+- The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
+  when the author is on their own computer.
 
 ## 16. Distribution
 
@@ -1056,3 +1172,12 @@ installs once, after which the agent uses them on its own whenever the task call
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
 - 2026-10-11 — Proposed (not built): the skills are installed once as a Claude Code plugin or with one command for Claude Code and Codex, plus a skill for adding Pipeup that the prompts and other skills point to (section 15a).
+- 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
+- 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
+- 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
+- 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
+- 2026-10-12 — Built: reading with `Pipeup.comments()`, the replies file and the agents the page lists, addressed notes with Resolve and Still not right, the prompt on every page, and `pipeup agent` / `pipeup reply` for agents; the size budget is 45 KB gzip (section 15b).
+- 2026-10-12 — Replies appear by themselves: a page with a listed agent looks for new replies every few seconds while it is showing (and when it comes back into view), as well as on Check for replies (section 15b).
+- 2026-10-12 — Proposed (not built): a live link between a page shown from the author's computer and an agent on it, started by one command and switched on by a click (Share with my agent), so the agent reads and answers comments without a browser or pasting (section 15c).
+- 2026-10-12 — Built: the live link (`pipeup watch`, `pipeup comments`, the Share with my agent switch, replies reaching the open page), with the size budget at 46 KB gzip (section 15c).
+- 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).

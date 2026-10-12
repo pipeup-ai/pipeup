@@ -40,8 +40,9 @@ export const colourOf = (author: string): number => Math.floor(mix(author) / ANI
 export const animalName = (author: string): string =>
   `${COLOURS[colourOf(author)]} ${ANIMALS[animalOf(author)]}`;
 
-/** What to call a comment's writer: their name, or their animal until they add one. */
-export const nameOf = (c: { author: string; name: string }): string => c.name || animalName(c.author);
+/** What to call a comment's writer: their name, or their animal until they add one. An agent shows as "Claude", not "AI assistant · Claude". */
+export const nameOf = (c: { author: string; name: string }): string =>
+  c.name.replace(/^AI assistant · /, "") || animalName(c.author);
 
 /** The name an assistant's replies carry: a person can't choose it, and a reply under it is drawn as an AI's. */
 export const AI_NAME = "AI assistant";

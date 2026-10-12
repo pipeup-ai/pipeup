@@ -3,14 +3,16 @@ name: pipeup-summarise
 description: Use when someone has Pipeup feedback on an HTML page — text a reviewer copied with "Copy as Markdown" and pasted into the conversation — and wants it understood, summarised, grouped or prioritised. Read-only: produces a summary, changes nothing.
 ---
 
-# Summarise Pipeup feedback (the `pipeup` command line steps arrive in 0.6)
+# Summarise Pipeup feedback
 
 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 ## 1. Get the feedback as text
 
-The input is the Markdown a reviewer copied with **Copy as Markdown** and pasted into the conversation. It
-starts with `# Review comments:`. Use it directly.
+The input is the Markdown a reviewer copied with **Copy as Markdown** and pasted into the conversation, or, if you
+can run the page in a browser, `(await Pipeup.comments()).markdown` (add `{ all: true }` for resolved threads). It
+starts with `# Review comments:`. Use it directly. A thread marked "open, addressed" has an agent's note: report it as
+answered, still waiting for the author to close it. Summarising changes nothing, so don't reply in the page.
 
 - **Later:** feedback files (`*.pipeup.json`) read with `npx pipeup read page.html feedback/*.pipeup.json --as ai`
   (add `--all` for resolved threads). The page has no controls for producing these yet, so don't

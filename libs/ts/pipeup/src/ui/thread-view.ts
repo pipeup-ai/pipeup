@@ -11,6 +11,8 @@ export interface ThreadActions {
   reply(parentId: string, text: string): Promise<void>;
   resolve(threadId: string): Promise<void>;
   reopen(threadId: string): Promise<void>;
+  /** "Still not right" on an addressed thread: reopens it and puts the cursor in its reply line. */
+  notRight(threadId: string): Promise<void>;
   copy(threadId: string): void;
   /** Esc in the reply line: closes the thread. */
   close(): void;
@@ -68,6 +70,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   let root: HTMLElement = h("div", {});
   let list: HTMLElement | null = null;
   let seen: HTMLElement | null = null;
+  let addressed: HTMLElement | null = null;
+  let addressedKey = "";
   const element = h("div", {}, root, h("div", { class: "more" }, inner));
   /**
    * Avatars by comment, with the face they show. Updates rebuild the comment's box, so the same avatar is
@@ -121,7 +125,13 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           ? ["Deleted"]
           : [...(isAiName(c.name) ? referenced(c.text) : linkify(c.text)), c.edited ? " (edited)" : ""]),
       );
-    const restText = t.resolved ? "Resolved" + (n ? ` · ${plural(n)}` : "") : n ? plural(n) : "";
+    const restText = t.resolved
+      ? "Resolved" + (n ? ` · ${plural(n)}` : "")
+      : t.addressed
+        ? "Addressed" + (n ? ` · ${plural(n)}` : "")
+        : n
+          ? plural(n)
+          : "";
     const footer = h(
       "div",
       { class: o.variant === "column" ? (restText ? "ft has-rest" : "ft") : "ft open" },
@@ -181,6 +191,37 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           )
         : null;
     if (list) inner.prepend(list);
+    // An agent says it dealt with this thread: its note, and two plain choices. A person still closes it.
+    const open = t.addressed && !t.resolved ? t.addressed : null;
+    const key = open ? `${open.text}|${open.author}|${open.at}` : "";
+    if (key !== addressedKey) {
+      addressed?.remove();
+      addressed = null;
+      addressedKey = key;
+      if (open) {
+        const choose = (label: string, run: () => void) => {
+          const b = h("button", { type: "button" }, label);
+          b.addEventListener("click", (e) => {
+            e.stopPropagation();
+            run();
+          });
+          return b;
+        };
+        addressed = h(
+          "div",
+          { class: "adr" },
+          h("small", {}, `Addressed · ${nameOf(open)} · ${formatAgo(open.at, now)}`),
+          open.text,
+          h(
+            "div",
+            { class: "go" },
+            choose("Resolve", () => void actions.resolve(t.id)),
+            choose("Still not right", () => void actions.notRight(t.id)),
+          ),
+        );
+      }
+    }
+    if (addressed) inner.insertBefore(addressed, seen ?? (line.parentNode === inner ? line : null));
     // A quiet line from an add-on: it has looked at this thread (and had nothing to add, or is reading it now).
     seen?.remove();
     const mark = threadMarks.get(t.id);
