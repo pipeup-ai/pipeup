@@ -556,10 +556,33 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - A reviewer may **add an email or handle** to their profile so others can reach them. It stays in their
   browser; it is shown to other people in the document only if the reviewer chooses, and it is never put
   into a comment, a copy for AI or any service without their agreement.
-- A reviewer may **carry their identity to another browser** with a file or code they keep, so their
-  earlier comments and mentions still count as theirs. Open: see §19.
+- **Everyone who comments is known by the name they gave**, and each person has a **durable ID** behind it
+  that stays the same across their comments in a document and across documents. A short form of the ID
+  (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
+  their names match.
+- **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. The menu has **Back up my
+  identity**, which gives a recovery code or file the person keeps themselves, and **Use my identity**, which
+  restores it in another browser or device so earlier comments and mentions still count as theirs. Pipeup
+  never keeps the recovery code anywhere else and never sends it.
+- **Without a backup,** a cleared browser starts a new person. Comments made earlier stay under the old
+  ID, mentions of it reach no one, and others see the old name marked "(earlier)". Pipeup says this
+  plainly before the person can lose it, and never merges by name to hide it.
+- **Two devices are two people until linked** with the recovery code.
 - Pipeup never matches people across documents, and never builds a list of people beyond what one
   document shows.
+
+**Picking up what was left behind**
+
+- A comment, reply, reaction or mention is saved wherever the page's comments are saved, so **any copy of
+  the page** (another browser, another device, an agent) that can open the comments **sees what was left**
+  and marks it seen. When a person reads a mention on one device, it shows as read on their others.
+- *Proposed, later:* a person has an **inbox**, so a mention in a document they haven't opened still reaches
+  them. The person who mentions leaves a small note for them ("Sam mentioned you", with a link), sealed so
+  only they can read it. They collect their notes from any browser or device that holds their identity.
+  The service keeping the notes sees only that something arrived, its size and its timing, and never
+  who sent it, who it is for, or what it says. It is a choice the author makes (a page says whose inbox
+  service it uses), and a reviewer agrees before anything is left. It is limited so it can't be used to
+  flood someone.
 
 **Everyone**
 
@@ -1168,7 +1191,8 @@ and only after the person clicks.
 - Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
   Pipeup if the size budget allows; whether agents' reactions should be shown at all.
 - Mentions: which add-on comes first (GitHub, email or a chat webhook); whether a reviewer's email may be
-  shown to others by default; how to carry an identity to another browser (a file, a code, a passkey);
+  shown to others by default; whether a recovery code or a file comes first for restoring an identity
+  (passkeys later); how an inbox is kept from being flooded;
   whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
   before the sign-in the page supplies.
 
@@ -1319,3 +1343,4 @@ and only after the person clicks.
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): Pipeup looks the same on every site and is light or dark as a whole, following a page's own switch however the page makes it (section 9); reactions with standard emoji (section 7b); mentions, identity and notifications without accounts (section 10a); open questions added (section 19).
 - 2026-10-12 — Light and dark both work: each is a full design, the reviewer can choose Automatic, Light or Dark, Pipeup's own surfaces never depend on the page's colours, and it falls back to its safe look if it can't read itself (section 9).
+- 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).

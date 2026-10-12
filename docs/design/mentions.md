@@ -49,10 +49,9 @@ this needs the maintainer's decision before 1.0).
 **Contact details.** Email/handle in the profile are stored locally; shared to the document only on an explicit
 choice, as a signed `profile` op (not part of any comment); never in copies or services without agreement.
 
-**Portable identity** (*research*): (a) export the key to a file / short code the person keeps (simple, offline,
-works with no third party); (b) a **passkey** (WebAuthn) wrapping the key so the browser's own sync carries it; (c) a
-DID or open-network handle (Bluesky/AT, Nostr) that signs a statement binding the handle to the key. (a) is the
-recommendation; (b) once browser support for `largeBlob`/PRF is dependable; (c) only on demand.
+**Portable identity:** see *Durable identity without a provider* below for the chosen design (a recovery code or file).
+Later and only on demand: a **passkey** wrapping the key (WebAuthn `largeBlob`/PRF), and a DID or open-network
+handle (Bluesky/AT, Nostr) that signs a statement binding the handle to the key.
 
 ## 3. How they hear
 
@@ -73,6 +72,86 @@ after the author has configured it **and the reviewer agrees** to its one-senten
      reviewer agrees first).
    - email through the author's own service (the mailbox server from 0.5 is a candidate base) *research*.
 4. **Host:** `Pipeup.onMention(fn)`, so a company app routes it into its own notifications.
+
+## Durable identity without a provider
+
+**The ID is the identity key.** The Ed25519 key that signs every op (`OpBody.author`) is the person. The display
+name is the latest name on their ops (`names` in `src/model/fold.ts`). The **short ID** shown beside a name is the
+first 4 characters of a base32 hash of the public key (`Sam · 4F2A`), computed for display and shown only when two
+authors in the document share a name, which is the disambiguation §10 already requires. Never merge by name: a
+name is a claim, and merging would let anyone type "Sam" and receive Sam's mentions.
+
+**Keeping the key.** Today it lives in IndexedDB (`src/storage`), the same place as comments, and can be evicted
+or cleared.
+
+- On first use call `navigator.storage.persist()` (best effort; Safari and private windows may refuse) and record
+  the answer, so the menu can warn when the key isn't protected.
+- **Back up my identity** (menu): exports the key as a recovery code (a base32 string with a checksum, grouped
+  for dictation) and as a `.pipeup-id` file containing the same string. Never uploaded, never stored by Pipeup
+  or an add-on (§14: secrets come from what the person keeps). The prompt says so, and says what restoring does.
+- **Use my identity** (menu): paste the code or choose the file; validate the checksum; derive the public key;
+  replace this browser's key after a clear confirmation if one with comments already exists (the old key's
+  comments stay under the old ID and show "(earlier)").
+- A passkey-wrapped key (WebAuthn PRF/largeBlob) is a later convenience, not a replacement: it needs
+  dependable browser support.
+
+**Lost key.** Old ops still verify under the old public key. Nothing is rewritten. The UI shows an author whose
+key has no recent activity and who now has a successor only if the person linked them; otherwise the old name is
+marked "(earlier)" (only when the same name has appeared under a newer key; this is a display hint, not a merge).
+Mentions of the old key are shown as "Sam (earlier)" and don't notify anyone.
+
+**Two devices.** Each device has its own key until linked. Linking is restoring the same code on the second
+device; the two then act as one key. Pipeup never guesses links.
+
+**Signed `seen` op.** A new kind `seen` with `target` = a comment or mention, from the person's key; folded as
+"read by (author, at)". It is what makes a mention read on all their devices, and it travels exactly like any op.
+
+## Picking up what was left behind
+
+All content is signed ops with content-derived ids, folded idempotently (`src/model/fold.ts`). So a "pickup" is: pull
+every op since a cursor from any store, drop what is already known, verify the rest, fold. This is what the share
+add-on's mailbox does today (§7.7, contract `pm1`: `GET <mailbox>/ops?since=<cursor>`, at-least-once, order doesn't
+matter). Reactions, mentions, `seen` and profile ops need no new store: they are ops in the same stream. Agents
+read the same data through `Pipeup.comments()`, `pipeup comments` and the replies file. What this does not cover:
+finding mentions in a document the person hasn't got the address of.
+
+## Inbox (phase 2: a new mailbox contract, `pm2`)
+
+**Goal.** A person collects notes about mentions from any client holding their identity, without knowing which
+documents mention them.
+
+- **Address.** `inbox = base32(SHA-256("pipeup-inbox/1" ‖ publicKey))[:26]`, so the sender can compute it from the
+  mentioned key, and the service sees only an opaque id. A mention reference already carries the key.
+- **Sealing.** The note is encrypted to the recipient's public key (an ephemeral X25519 key against the recipient's
+  X25519 key derived from the Ed25519 identity, with an AEAD such as the platform's AES-GCM; no third-party
+  code), so only the holder of the identity can read it. The note is `{ doc link, comment id, words (≤ 280
+  chars), at }`. The sender's identity is inside the sealed note and signed with the sender's key; the service
+  never learns it.
+- **Contract.** Additive to `pm1`'s shape, but with different trust, so it is `pm2`: `POST <base>/i/<inbox>`
+  (append a sealed note), `GET <base>/i/<inbox>?since=<cursor>` (same cursor rules as ops), `DELETE
+  <base>/i/<inbox>/<note>` (needs a proof of ownership: a signature by the inbox's key over the note id). Servers
+  may serve `pm1` and `pm2`.
+- **Spam control** (*open*). Options, in order of preference: (1) a **write token** the author's page carries,
+  so only people holding a page can leave notes; (2) a small **proof of work** per note; (3) a per-inbox
+  rate limit. The service can't tell senders apart, so it can't block by identity. Recipients also drop notes
+  whose signed sender isn't someone they've seen in a document, once they have a document in common (best
+  effort filter).
+- **Where the base comes from.** The page's author (the same way they choose a mailbox: `data-pipeup-inbox`, or
+  the Share add-on's service). Without one, no inbox is used and mentions only work in the page and by hand.
+- **Consent.** The first time a reviewer sends a mention through an inbox, Pipeup says in one sentence what it
+  sends and to whom, per §11a.
+- **Reading.** The client polls its own inbox while Pipeup is on a page (an add-on), merges what it finds into
+  the "mentions of me" list, and offers to open the linked document. Notes are deleted by the recipient once seen.
+- **Privacy.** The service sees: the inbox id, the size and the time of each note, the network address of
+  the sender and the reader. Anyone who knows a person's public key can compute their inbox address and learn
+  whether it has notes waiting (size/timing), which is an accepted leak; the note is sealed.
+
+## Phases
+
+1. **Per document (with mentions):** the `@` list, mention references, "mentions of me", in-page notice, `seen`,
+   durable ID display, backup/restore, "Let Sam know".
+2. **Inbox:** `pm2` in `@pipeup/mailbox`, the reading add-on, the sending path in the share/mentions add-on.
+3. **Notifiers:** GitHub, then webhook, then email (can reuse the inbox as the source).
 
 ## Common identity providers (research summary)
 
@@ -108,8 +187,9 @@ know" builds the right message, host-supplied identity round trip, add-on notifi
 ## Open
 
 Format change vs `v:2`; first add-on (GitHub recommended); whether emails are ever shown by default (recommend no);
-portable identity method (recommend file/code first).
+restore by code or file first (recommend both, from the same string); the inbox's spam control; whether the inbox sits in `@pipeup/mailbox` or in its own service.
 
 ## Change log
 
 - 2026-10-12 — First draft.
+- 2026-10-12 — Durable identity (ID is the key, short ID for same names, persistence, backup and restore, lost keys, two devices, the `seen` op), picking up what was left behind, and the inbox as mailbox contract `pm2` with its sealing, spam options and phases.
