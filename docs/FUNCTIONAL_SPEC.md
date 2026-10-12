@@ -831,6 +831,34 @@ permission, a registration, or a place in its npm scope.
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
 
+### 15a. Installing the skills
+
+Today an agent has to be pasted a prompt and fetch each skill. The skills become something a person
+installs once, after which the agent uses them on its own whenever the task calls for it.
+
+- **A Claude Code plugin.** One plugin holds every Pipeup skill. A person adds the project as a plugin
+  source and installs the plugin with two commands, then asks for what they want ("add comments to this
+  page") without pasting anything. Updates arrive the way any plugin's do.
+- **One command for any agent.** A small installer, run with one command, puts the same skills where
+  Claude Code and Codex look for them: for the person (every project) or for the current project only,
+  the person's choice. It says in plain words what it will write and where, asks before replacing a
+  skill the person has changed, and can update and remove what it installed. It never changes anything
+  else on the computer, and it runs with no account and no network call beyond fetching itself.
+- **Codex** reads the same skills through the installer. Anything more specific to Codex is added only
+  after checking what Codex supports at the time.
+- **Same skills everywhere.** The plugin, the installer, the website's copies and the copy-and-paste
+  prompts all carry the same text, so they cannot disagree. Each says which Pipeup version it was
+  written for.
+- **A skill for adding Pipeup.** A new skill, "add Pipeup to this page", does what the prompts do
+  today in one place: it adds Pipeup pinned to an exact version with its integrity hash, asks which
+  add-ons the page wants (none by default), sets the allow-list for them and tells the author about a
+  content security policy. The other skills point to it rather than repeating it.
+- **The prompt stays** as the fallback for an agent with nothing installed, and for a chat that can't
+  install anything. Each page that offers it shows the install commands first.
+- **Out of date wording is removed.** The skills no longer say the command-line steps are "arriving
+  later" when a step works today by copy and paste.
+- The installer and the plugin hold no runtime code for a page: they carry text and nothing that runs
+  on a reviewer's page. Neither sends anything about the person anywhere.
 ### 15b. Agents reading and answering comments
 
 Today a person has to copy the comments and paste them to the agent, and an agent's answer can't come
@@ -1143,6 +1171,7 @@ and only after the person clicks.
 - 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
+- 2026-10-11 — Proposed (not built): the skills are installed once as a Claude Code plugin or with one command for Claude Code and Codex, plus a skill for adding Pipeup that the prompts and other skills point to (section 15a).
 - 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
 - 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
 - 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
@@ -1151,3 +1180,4 @@ and only after the person clicks.
 - 2026-10-12 — Replies appear by themselves: a page with a listed agent looks for new replies every few seconds while it is showing (and when it comes back into view), as well as on Check for replies (section 15b).
 - 2026-10-12 — Proposed (not built): a live link between a page shown from the author's computer and an agent on it, started by one command and switched on by a click (Share with my agent), so the agent reads and answers comments without a browser or pasting (section 15c).
 - 2026-10-12 — Built: the live link (`pipeup watch`, `pipeup comments`, the Share with my agent switch, replies reaching the open page), with the size budget at 46 KB gzip (section 15c).
+- 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).
