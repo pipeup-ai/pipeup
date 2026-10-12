@@ -78,6 +78,8 @@ test("an agent reads the comments, answers in the replies file, and the person c
   expect(await readFile(file.replace(/html$/, "replies.js"), "utf8")).toContain("pipeup-replies");
 
   await page.reload();
+  // Pipeup has started once its control is there: the shortcut is only heard after that.
+  await expect(page.locator(".launch .mode")).toBeVisible();
   await showComments(page);
   await expect
     .poll(async () => (await page.evaluate(() => (window as any).Pipeup.comments())).threads[0].state)
