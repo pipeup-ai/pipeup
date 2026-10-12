@@ -40,11 +40,30 @@ query each time.
 signs with the clock set to seconds since 1970 (later than any counter a browser has kept, and below the clock cap), and
 rewrites the replies file with the old ops and the new ones.
 
+## The live link
+
+`cli/link.mjs`. `pipeup watch page.html --agent Claude` runs a small server on `127.0.0.1` (random port). It serves the page's
+folder read-only (no path outside it) and changes only the page's own `<html>` tag on the way out: it adds the agent's
+public key to `data-pipeup-agents`, and `data-pipeup-link` (`/__pipeup/<secret>`, a fresh random secret each run),
+`data-pipeup-link-agent` and `data-pipeup-link-file`. The file on disk is never touched.
+
+The one API route is `POST /__pipeup/<secret>/comments`. It refuses a `Host` that isn't the server's own (so a name
+pointing here from another site can't use it), an `Origin` that isn't the server's own, and a wrong secret. A page from
+another site can't read the secret either (a cross-origin page can't read the response). The body is the page's snapshot:
+`{ v: 1, at, title, open: AgentComments, all: AgentComments }`, written to `<page>.comments.json` (atomic rename).
+`pipeup comments` only reads that file, so it works with the server stopped.
+
+The page side (`ui/link.ts`) does nothing unless the attribute is there. Its menu switch is off on every load; switched on it
+sends a snapshot at once, then after each change (300 ms quiet). A failed send switches it off and says so. Replies need no
+new route: `pipeup reply` writes `<page>.replies.js` into the served folder, and the page's every-4-seconds check (15b) reads
+it from the same origin.
+
 ## Size
 
 Core grows by 2.6 KB gzip, mostly the prompt text, the loader and the thread/menu UI; the budget is raised from 42 to
-45 KB and the release notes say so.
+46 KB and the release notes say so (the link added 0.4 KB).
 
 ## Change log
 
 - 2026-10-12 — First version, with the build.
+- 2026-10-12 — The live link.

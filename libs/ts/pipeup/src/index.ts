@@ -1,12 +1,5 @@
 export * from "./core";
-export {
-  comments,
-  mount,
-  type AgentComments,
-  type AgentThread,
-  type MountOptions,
-  type PipeupInstance,
-} from "./ui/mount";
+export { comments, mount, type MountOptions, type PipeupInstance } from "./ui/mount";
 export {
   ADDON_API,
   addons,
@@ -29,4 +22,5 @@ export {
   type Teardown,
   type UiSnapshot,
 } from "./ui/addons";
+export { type AgentComments, type AgentThread } from "./export/agent";
 export { onReveal, setViewState, type SlideHook, type ViewState } from "./ui/here";

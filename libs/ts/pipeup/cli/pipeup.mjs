@@ -5,6 +5,7 @@ import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { computeOpId, parseDocumentAttribute, signOp } from "../dist/pipeup.core.js";
+import { comments, watch } from "./link.mjs";
 
 const KEYFILE = process.env.PIPEUP_AGENT_FILE || join(homedir(), ".pipeup", "agent.json");
 const AI = "AI assistant";
@@ -12,6 +13,13 @@ const AI = "AI assistant";
 const USAGE = `pipeup agent [--name <name>]
   Makes this computer's agent key (once) and prints the public key to list on the page:
   <html data-pipeup-agents="<key>">
+
+pipeup watch <page.html> [--agent <name>] [--port <number>]
+  Shows the page from this computer, with a live link to the agent: the page offers "Share with my agent"
+  (off until the person switches it on), and the agent is listed for this page while the link runs.
+
+pipeup comments <page.html> [--all] [--json]
+  Prints the comments the page has shared (open threads, or all with --all), as Markdown or, with --json, as data.
 
 pipeup reply --page <file.html> --thread <id> "<words>" [--addressed "<short note>"]
   Writes a signed reply (and, with --addressed, an addressed note) to <file>.replies.js next to the page.
@@ -100,7 +108,11 @@ async function reply(args) {
   const note = typeof args.addressed === "string" ? args.addressed.trim() : "";
   const { id: doc, listed } = await pageDoc(page);
   const { identity, name } = await loadAgent();
-  if (!listed.includes(identity.publicKey))
+  const linked = await readFile(page.replace(/\.[^./\\]*$/, "") + ".comments.json", "utf8").then(
+    () => true,
+    () => false,
+  );
+  if (!listed.includes(identity.publicKey) && !linked)
     console.warn(
       `pipeup: this page doesn't list your key yet, so it will ignore these replies.\n  Add: <html data-pipeup-agents="${identity.publicKey}">`,
     );
@@ -138,7 +150,36 @@ if (command === "agent") {
     `${name} (${KEYFILE})\n\nList this key on the page:\n  <html data-pipeup-agents="${identity.publicKey}">`,
   );
 } else if (command === "reply") await reply(args);
-else {
+else if (command === "comments") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  try {
+    console.log(await comments({ page, all: args.all === true, json: args.json === true }));
+  } catch (e) {
+    fail(e.message);
+  }
+} else if (command === "watch") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  await pageDoc(page);
+  const { identity, name } = await loadAgent(typeof args.agent === "string" ? args.agent : undefined);
+  const link = await watch({
+    page,
+    agent: name,
+    key: identity.publicKey,
+    port: typeof args.port === "string" ? Number(args.port) : 0,
+  });
+  console.log(`Open this page: ${link.url}\n`);
+  console.log(
+    `While this runs, ${name} is listed for the page and the page offers "Share with my agent" (off until you switch it on).`,
+  );
+  console.log(
+    `Read:  npx pipeup comments ${page}\nReply: npx pipeup reply --page ${page} --thread <id> "words" --addressed "note"\nStop:  Ctrl-C (comments stay in ${basename(link.sidecar)})`,
+  );
+  const stop = () => link.close().then(() => process.exit(0));
+  process.on("SIGINT", stop);
+  process.on("SIGTERM", stop);
+} else {
   console.log(USAGE);
   process.exit(command ? 1 : 0);
 }

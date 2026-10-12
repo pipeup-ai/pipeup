@@ -11,6 +11,10 @@ This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-appl
 
 Use the first of these that works:
 
+0. **A live link** (the author runs `npx pipeup watch report.html --agent Claude` on this computer, opens the page it
+   prints, and switches on **Share with my agent**): run `npx pipeup comments report.html` (add `--all` for resolved
+   threads, `--json` for data). No browser needed. If it says nothing is shared, ask the author to switch the switch on.
+   Your replies below reach the open page within seconds. The link lists your key for the page while it runs.
 1. **Run the page** in a browser (you can drive one, or the author has it open) and evaluate
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
@@ -38,7 +42,8 @@ Answer a question with an answer, not a change.
 You answer in the page's **replies file**, next to the page (`report.html` → `report.replies.js`), signed with your
 own key. The key stays on this computer in `~/.pipeup/agent.json`; never put it in the page or its folder.
 
-First time only — make your key, then ask the author to list it on the page:
+First time only — make your key, then ask the author to list it on the page (not needed under a live link, which
+lists it for you):
 
 ```bash
 npx pipeup agent --name Claude
