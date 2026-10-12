@@ -1,7 +1,7 @@
 # The agents add-on
 
 Status: **draft, for review**. Functional requirements: [FUNCTIONAL_SPEC §15d](../FUNCTIONAL_SPEC.md) (with §15b and §15c,
-which say what a person sees and what an agent may do, unchanged). Targets 0.7.
+which say what a person sees and what an agent may do, unchanged). Targets 0.7 (decided 2026-10-12).
 
 Code paths are relative to `libs/ts/pipeup/`. Today's design: [agent-replies.md](agent-replies.md).
 
@@ -65,6 +65,21 @@ It also adds one `<script src="<link base>/agents.js">`, served by the command i
 installed package. Nothing is read from a CDN, and the page's file on disk is untouched, as now. The script is added
 **after** Pipeup's own, as an add-on registers through the queue in any order (§4).
 
+**Refusing old pages.** `watch` reads the page's file before it starts and works out which Pipeup it uses, in this order:
+the version in a script address (`pipeup@X.Y.Z` on jsDelivr or unpkg, or a path with `pipeup-X.Y.Z`); else the
+`VERSION` in a script file the page loads from disk (the bundle carries `pipeup … X.Y.Z` in its banner, which
+`scripts/build.mjs` already writes); else the version string inside an inlined bundle. Then:
+
+| Page's Pipeup | `watch` does |
+|---|---|
+| before 0.6 | refuses: exits with "this page uses Pipeup X.Y.Z, which can't take an agent; use 0.6 or later (pinned address: …)" |
+| 0.6.x | starts; adds the link attributes and the listed agent as today, **not** the add-on (the built-in support serves it) |
+| 0.7 or later | starts; adds the attributes and the add-on's script |
+| can't tell | starts as for 0.7 or later; the add-on's own check (`needs: listnote`) stays off with its reason on a page that can't take it, and the page says so in words |
+
+A floating address (`pipeup@latest`, `pipeup@0`) can't be resolved offline, so it counts as "can't tell". The command
+never changes the page's file in any case.
+
 The add-on's link client is the same code as today's `ui/link.ts`, driven by the same attributes
 (`data-pipeup-link`, `-agent`, `-file`). The snapshot it sends is `Pipeup.comments({ all: true })`'s data plus the
 page's ops; it needs no private core API.
@@ -97,16 +112,17 @@ page's ops; it needs no private core API.
 
 The existing agent suites pass unchanged except that they load the add-on; plus: a page on a 0.7 core with an agent
 listed and no add-on warns once and loses nothing else; the add-on on a core without `listnote` stays off with a reason;
-`pipeup watch` serves the add-on and the page's file is byte-identical; reduced motion still holds for the line and the
+`pipeup watch` serves the add-on and the page's file is byte-identical; `watch` refuses a page on 0.5, starts on 0.6.x without the add-on, adds it on 0.7, and reads the version from each place above; reduced motion still holds for the line and the
 sentence; the added bytes of core's check stay under 150.
 
 ## Decided / open
 
 - Decided (2026-10-12, maintainer): move agent support out of core into an add-on; the AI pulse and the writing dots
-  already live in the assist add-on.
-- Open: ship this in 0.7 with touch and narrow pages, or on its own as 0.6.1-style change (recommend 0.7: it changes
-  what authors must add); whether `pipeup watch` should refuse a page whose Pipeup is too old for the add-on.
+  already live in the assist add-on; ship in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6.
+- Open: whether the console warning for a listed agent without the add-on should also appear in the menu in the author's
+  own browser.
 
 ## Change log
 
 - 2026-10-12 — First draft.
+- 2026-10-12 — Decided: ships in 0.7; `watch` refuses a page before 0.6, skips the add-on on 0.6.x, adds it on 0.7 and later.

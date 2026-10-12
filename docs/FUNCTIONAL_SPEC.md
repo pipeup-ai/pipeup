@@ -1008,6 +1008,11 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
   Pipeup do both only when the author asks for replies, and say in words what that lets the agent do (§15).
 - **`pipeup watch` adds it for the page it shows**, from the copy that came with the command, so the live link needs no
   edit to the page. Nothing is changed in the page's file.
+- **`pipeup watch` refuses a page whose Pipeup is too old.** Before it starts, it looks at which Pipeup the page uses.
+  A page on a version before 0.6 can't take an agent at all, so the command doesn't start; it says in words which
+  version the page uses and what to change. A page on 0.6.x already has agent support built in, so the command starts
+  and doesn't add the add-on. A page it can't read a version from starts, and the page says in words if agents aren't
+  available.
 - It can be included on its own, or in a combined file with Pipeup, like any add-on (§4).
 
 **Pages that already use agents (0.6)**
@@ -1087,7 +1092,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
   is fair to ask of volunteer-run services.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
 - Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
-  the author's own browser; whether `pipeup watch` should refuse to start for a page whose Pipeup is too old to take it.
+  the author's own browser.
 
 ---
 
@@ -1235,3 +1240,4 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): agent support moves out of Pipeup itself into an `agents` add-on (reading replies, the live link, the prompt and the menu and All comments lines); comments for an agent, the addressed note and the AI marking stay; `pipeup watch` adds the add-on itself; pages on 0.6 are unchanged (section 15d, in 0.7).
+- 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
