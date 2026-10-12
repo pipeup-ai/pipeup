@@ -7,6 +7,8 @@ import { attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { VERSION } from "../core";
+import { copyAll } from "../export/format";
+import { isAiName, nameOf } from "../model/animals";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -19,8 +21,30 @@ export interface MountOptions {
   slides?: SlideHook;
 }
 
+/** One thread as an agent reads it. */
+export interface AgentThread {
+  /** The id to answer a thread by. */
+  id: string;
+  state: "open" | "addressed" | "resolved";
+  where: string;
+  /** The page's `data-pipeup-id` for the block, when it has one. */
+  element?: string;
+  quote?: string;
+  pin?: string;
+  addressed?: { note: string; by: string };
+  comments: { id: string; by: string; agent: boolean; at: string; text: string }[];
+}
+
+export interface AgentComments {
+  /** The same Markdown as Copy as Markdown. */
+  markdown: string;
+  threads: AgentThread[];
+}
+
 export interface PipeupInstance {
   readonly document: PipeupDocument;
+  /** The page's comments, for an agent: open threads, or every thread with `all`. */
+  comments(options?: { all?: boolean }): AgentComments;
   flush(): Promise<void>;
   unmount(): void;
 }
@@ -127,6 +151,37 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   window.addEventListener("pagehide", onHide);
   return {
     document: doc,
+    comments: ({ all = false } = {}) => {
+      const items = app.ctx.menu.all();
+      const markdown = copyAll(items, "ai", {
+        title: document.title,
+        url: location.href,
+        exportedAt: new Date(),
+        all,
+      });
+      const threads = items
+        .filter((i) => all || !i.thread.resolved)
+        .map(({ thread: t, location: l }): AgentThread => {
+          const out: AgentThread = {
+            id: t.id,
+            state: t.resolved ? "resolved" : t.addressed ? "addressed" : "open",
+            where: l.where,
+            comments: [t.root, ...t.root.replies].map((c) => ({
+              id: c.id,
+              by: nameOf(c),
+              agent: isAiName(c.name),
+              at: new Date(c.at).toISOString(),
+              text: c.deleted ? "" : c.text,
+            })),
+          };
+          if (l.id) out.element = l.id;
+          if (l.quote) out.quote = l.quote;
+          if (l.pin) out.pin = l.pin;
+          if (t.addressed && !t.resolved) out.addressed = { note: t.addressed.text, by: nameOf(t.addressed) };
+          return out;
+        });
+      return { markdown, threads };
+    },
     flush: () => doc.flush(),
     unmount: () => {
       if (unmounted) return;
@@ -138,6 +193,12 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       if (current === self()) current = null;
     },
   };
+}
+
+/** The page's comments for an agent that is looking at the page: waits for Pipeup to start, then reads them. */
+export async function comments(options?: { all?: boolean }): Promise<AgentComments> {
+  if (!current) throw new Error("pipeup: Pipeup hasn't started on this page");
+  return (await current).comments(options);
 }
 
 /** Pages that carry data-pipeup-doc mount themselves, unless data-pipeup-auto="off". */

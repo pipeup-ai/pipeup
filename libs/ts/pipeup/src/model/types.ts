@@ -22,7 +22,7 @@ export interface Anchor {
   snapshot: string;
 }
 
-export type OpKind = "create" | "reply" | "edit" | "delete" | "resolve" | "reopen";
+export type OpKind = "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed";
 
 export interface OpBody {
   v: 1;
@@ -70,4 +70,6 @@ export interface Thread {
   anchor: Anchor;
   root: Comment;
   resolved: boolean;
+  /** An agent has said it dealt with this thread. Not resolved: a person closes it, and reopening clears it. */
+  addressed?: { text: string; author: string; name: string; at: number };
 }

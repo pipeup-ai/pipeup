@@ -7,6 +7,16 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+- **Agents can read and answer comments.** `await Pipeup.comments()` gives an agent that can run the page the same Markdown as Copy as Markdown, plus the threads as data (`{ all: true }` for resolved ones). An agent answers in a replies file next to the page (`report.html` → `report.replies.js`), signed with its own key; the author lists the agent with `<html data-pipeup-agents="<key>">`, and the page ignores replies from any other key (and says how many).
+- **`npx pipeup agent` and `npx pipeup reply`**: the command line for an agent. `agent` makes its key (kept in `~/.pipeup/agent.json`, never in the page) and prints the public key to list; `reply --page report.html --thread <id> "words" --addressed "note"` writes the signed reply.
+- **Addressed**: an agent can mark a thread addressed, with a note. The thread stays open, shows the note, and offers **Resolve** or **Still not right** (which reopens it); agents can never resolve, reopen, edit or delete.
+- The comment control's menu has **Copy a prompt for my agent** on every page, and says "Claude can answer comments here" when an agent is listed. All comments says how many open comments the agent has answered, with **Check for replies**.
+- The apply, summarise and integrate skills, `llms.txt` and the site's Markdown copies tell agents the same thing: read with `Pipeup.comments()`, answer, mark addressed, never resolve.
+
+### Changed
+- Pipeup's size budget is 45 KB gzip (was 42 KB); this feature added 2.6 KB.
+
 ## [0.5.4] - 2026-10-10
 
 ### Added

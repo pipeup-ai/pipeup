@@ -30,6 +30,11 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     if (!thread) continue;
     if (o.kind === "resolve" || o.kind === "reopen") {
       thread.resolved = o.kind === "resolve";
+      if (o.kind === "reopen") delete thread.addressed;
+      continue;
+    }
+    if (o.kind === "addressed") {
+      if (o.text !== undefined) thread.addressed = { text: o.text, author: o.author, name: o.name, at: o.at };
       continue;
     }
 

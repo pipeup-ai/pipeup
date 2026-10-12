@@ -3,6 +3,7 @@ import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
 import type { Anchor, Thread } from "../model/types";
 import type { Surface } from "./addons";
+import type { Replies } from "./replies";
 import type { DraftBox } from "./draft-view";
 import type { Here } from "./here";
 import type { ThreadActions } from "./thread-view";
@@ -50,6 +51,8 @@ export interface MenuActions {
   name(): string;
   /** Every thread in page order, with where each one is. */
   all(): ExportItem[];
+  /** Copies the short instruction an agent needs to read and answer this page's comments. */
+  copyPrompt(): Promise<void>;
 }
 
 /** What every view shares: the document, state, and the few things views can ask the app to do. */
@@ -64,6 +67,8 @@ export interface Ctx {
   readonly pending: ReadonlySet<string>;
   readonly actions: ThreadActions;
   readonly menu: MenuActions;
+  /** Agents the author listed, and what they have answered. */
+  readonly replies: Replies;
   /** Where the reviewer is: the slide, or the page's own view. */
   readonly here: Here;
   /** What add-ons put on the page. */

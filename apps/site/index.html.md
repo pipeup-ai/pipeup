@@ -27,7 +27,7 @@ You want feedback on it.
 1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
 2. Share the file: email, chat, a drive or a website. It works straight from the file.
 3. People comment on the page.
-4. Paste their comments (Copy as Markdown) into your AI: each one says where it is, so your AI applies it without guessing.
+4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
 
 You decide how comments travel. By default they stay in each reviewer's browser until they send them.
 

@@ -1102,3 +1102,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
 - 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
 - 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
+- 2026-10-12 — Built: reading with `Pipeup.comments()`, the replies file and the agents the page lists, addressed notes with Resolve and Still not right, the prompt on every page, and `pipeup agent` / `pipeup reply` for agents; the size budget is 45 KB gzip (section 15b).

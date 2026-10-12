@@ -1,5 +1,12 @@
 export * from "./core";
-export { mount, type MountOptions, type PipeupInstance } from "./ui/mount";
+export {
+  comments,
+  mount,
+  type AgentComments,
+  type AgentThread,
+  type MountOptions,
+  type PipeupInstance,
+} from "./ui/mount";
 export {
   ADDON_API,
   addons,

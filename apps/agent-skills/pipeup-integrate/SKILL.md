@@ -194,6 +194,12 @@ page opened from disk and in any script order, and they are released with Pipeup
   when the author names it and says where it is hosted; pin it and list it the same way. To help a company make one, see
   the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git (Save to GitHub, or Send to Git through a company service), use the skill
   pipeup-send-to-git-setup.
+- **Letting an agent answer comments.** Only when the author asks. Agents read a page's comments with
+  `await Pipeup.comments()` and answer in a replies file next to the page (`pipeup-apply` is the skill for that).
+  Setting it up: the agent runs `npx pipeup agent --name Claude`, which prints its public key; add that key to `<html>` as
+  `data-pipeup-agents="<key>"` (append to an existing list, keep every entry). Say in plain words what that lets it
+  do: reply in threads and mark them addressed, never resolve or change anyone's comment. The page ignores replies from
+  keys it doesn't list. Never write a key you weren't given, and never put an agent's private key in the page.
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
   about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
 

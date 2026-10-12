@@ -92,7 +92,13 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   const b = (await control(page).boundingBox())!;
   expect(m.y + m.height).toBeLessThanOrEqual(b.y);
   const names = await menu.locator(".mi .lb").allTextContents();
-  expect(names.slice(1)).toEqual(["Copy as Markdown", "Copy as Text", "All comments", "Start commenting"]);
+  expect(names.slice(1)).toEqual([
+    "Copy as Markdown",
+    "Copy as Text",
+    "Copy a prompt for my agent",
+    "All comments",
+    "Start commenting",
+  ]);
   await expect(menu.locator("[role=separator]")).toHaveCount(2);
   const last = menu.locator(".mi").last();
   await expect(last).toContainText(/⇧⌥C|Shift\+Alt\+C/);

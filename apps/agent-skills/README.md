@@ -34,6 +34,8 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |
 | `data-pipeup-label="Q4 revenue bar"` | Human name for things without text (charts, images, canvases) | Used by core `labelOf` |
 | `data-pipeup-slide="3"` | Marks a slide; 1-based | **Done in 0.4** — followed by itself (the marked slide showing, or reveal.js); only its comments show; navigation through `onReveal` or `mount({ slides })` |
+| `data-pipeup-agents="<key> <key>"` | Public keys of the agents whose replies the page shows; the page then reads `<page>.replies.js` (or `data-pipeup-replies`) next to it | **Done** (0.6) |
+| `Pipeup.comments({ all? })` | The page's comments for an agent: `{ markdown, threads }` | **Done** (0.6) |
 | `data-pipeup-ignore` | Chrome that is never a comment target and keeps working in comment mode | **Done** — never a comment target; keeps working in comment mode (0.3.0) |
 | `<html data-pipeup-layout="column\|bubbles">` | Authors set it to force the column or bubbles; Pipeup reads it and never sets it | **Done in 0.3.0** |
 | `Pipeup.onReveal(view => …)` / `Pipeup.setViewState({...})` | Reopen tabs/routes and go to slides; record the page's view (string values; `label` is the readable name and is never compared) | **Done in 0.4** — `onReveal` returns a function that removes the handler |
@@ -57,13 +59,14 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `pipeup init <page.html>` | Adds `data-pipeup-doc` (once) and the pinned script tag; refuses to change an existing doc key |
 | `pipeup check <page.html>` | Layout, overlap, id and accessibility checks; `--json`; non-zero exit on fail |
 | `pipeup read <page.html> <feedback…> [--as ai\|text] [--all]` | Merges feedback files (opening sealed ones with the page's key) and prints Copy-for-AI output |
-| `pipeup reply <page.html> <feedback-out> --thread <id> [--to <comment-id>] "text" [--resolve]` | Writes a signed reply / resolve as the agent's own identity into a feedback file to send back |
+| `pipeup agent [--name <name>]` | **Done.** Makes the agent's key (once, kept in `~/.pipeup/agent.json`) and prints the public key to list as `data-pipeup-agents` |
+| `pipeup reply --page <file.html> --thread <id> "words" [--addressed "note"]` | **Done.** Writes a signed reply (and an addressed note) to `<file>.replies.js` next to the page; never resolves |
 
 ### Gaps found while drafting (to fix by 0.6)
 
 1. **Thread ids are missing from Copy-for-AI output.** *(Closed in 0.3.0: thread and comment ids are in the output.)* `pipeup-apply` must reply to a specific
    thread, so each `## Thread N` block needs `- **Thread:** <id>` (and comment ids for replies).
-2. **Agents need their own identity.** `pipeup reply` signs as an "Agent" profile kept by the command line,
+2. **Agents need their own identity.** *(Closed: `pipeup agent` and `pipeup reply`; the page lists the keys it trusts.)* `pipeup reply` signs as an "Agent" profile kept by the command line,
    named after the tool (for example "Claude"), so people can see which comments an agent wrote.
 3. **Ids must survive edits.** The apply skill tells agents never to rename or remove a
    `data-pipeup-id`; `pipeup check` should warn when an id that has comments disappears.

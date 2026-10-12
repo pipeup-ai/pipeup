@@ -256,6 +256,14 @@ transition:background-color .2s var(--eo)}
 .cx circle{fill:var(--pu-accent)}
 .layer.listing .col{opacity:0;transition:opacity var(--out) var(--ei)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
+.ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
+.ag[hidden]{display:none}
+.ag button{margin-left:auto;flex:none;padding:0 6px;border-radius:6px;color:var(--fa);transition:color .2s var(--eo),background-color .2s var(--eo)}.ag button:hover:not(:disabled),.ag button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}.ag button:disabled{opacity:.5;cursor:default}
+.adr{margin:8px 0 0 14px;padding:8px 10px;border-radius:8px;background:var(--so);font-size:13px;color:var(--k);animation:pu-in var(--mv) var(--eo) both}
+.adr small{display:block;font-size:12px;color:var(--fa)}
+.adr .go{display:flex;gap:6px;margin-top:6px}
+.adr .go button{padding:2px 8px;border-radius:6px;font-size:12px;color:var(--mu);transition:color .2s var(--eo),background-color .2s var(--eo)}.adr .go button:hover,.adr .go button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
+@keyframes pu-in{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}
 .toast{position:fixed;left:50%;bottom:28px;border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translate(-50%,6px);
 transition:opacity .3s var(--eo),transform .36s var(--eo)}
@@ -267,6 +275,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 }
 
 @media (prefers-reduced-motion: reduce){
+@keyframes pu-in{0%{opacity:0}100%{opacity:1}}
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
