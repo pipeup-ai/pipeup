@@ -512,8 +512,8 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 1. **The reviewer, by hand.** After sending, Pipeup offers "Let Sam know", which opens the reviewer's own
    mail or chat app with the words and a link to the comment filled in, when the reviewer knows how to
    reach them. The reviewer sends it; Pipeup never sends for them. This works on any page.
-2. **An add-on**, chosen by the author and following §11a: for example a note in a GitHub issue or
-   pull request, a message to a chat channel through the author's own webhook, or email through the
+2. **An add-on**, chosen by the author and following §11a: first, a note in a GitHub issue or
+   pull request; later, for example a message to a chat channel through the author's own webhook, or email through the
    author's own service. Each says in one sentence what it sends and to whom, and sends nothing before
    the reviewer agrees.
 3. **The page's own system.** The author can give Pipeup the signed-in person and the people who can be
@@ -535,8 +535,9 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
   (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
   their names match.
 - **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. The menu has **Back up my
-  identity**, which gives a recovery code or file the person keeps themselves, and **Use my identity**, which
-  restores it in another browser or device so earlier comments and mentions still count as theirs. Pipeup
+  identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
+  themselves, and **Use my identity**, which
+  restores it from either in another browser or device so earlier comments and mentions still count as theirs. Pipeup
   never keeps the recovery code anywhere else and never sends it.
 - **Without a backup,** a cleared browser starts a new person. Comments made earlier stay under the old
   ID, mentions of it reach no one, and others see the old name marked "(earlier)". Pipeup says this
@@ -1164,9 +1165,8 @@ and only after the person clicks.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
 - Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
   Pipeup if the size budget allows; whether agents' reactions should be shown at all.
-- Mentions: which add-on comes first (GitHub, email or a chat webhook); whether a reviewer's email may be
-  shown to others by default; whether a recovery code or a file comes first for restoring an identity
-  (passkeys later); how an inbox is kept from being flooded;
+- Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
+  flooded;
   whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
   before the sign-in the page supplies.
 
@@ -1316,3 +1316,4 @@ and only after the person clicks.
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).
+- 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).

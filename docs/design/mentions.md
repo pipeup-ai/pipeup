@@ -184,12 +184,18 @@ Unit: ref validation, fold of mentions, "mentions of me" for key and host id, op
 Browser: combobox keyboard and screen reader, narrowing, async provider cancel, unmatched `@` stays text, "Let Sam
 know" builds the right message, host-supplied identity round trip, add-on notifier opt-in prompt.
 
+## Decided (2026-10-12)
+
+- GitHub is the first notifier add-on; webhook and email follow.
+- An identity is backed up and restored with either a recovery code or a file, the same secret in both forms.
+
 ## Open
 
-Format change vs `v:2`; first add-on (GitHub recommended); whether emails are ever shown by default (recommend no);
-restore by code or file first (recommend both, from the same string); the inbox's spam control; whether the inbox sits in `@pipeup/mailbox` or in its own service.
+Format change vs `v:2`; whether emails are ever shown by default (recommend no); the inbox's spam control; whether
+the inbox sits in `@pipeup/mailbox` or in its own service.
 
 ## Change log
 
 - 2026-10-12 — First draft.
 - 2026-10-12 — Durable identity (ID is the key, short ID for same names, persistence, backup and restore, lost keys, two devices, the `seen` op), picking up what was left behind, and the inbox as mailbox contract `pm2` with its sealing, spam options and phases.
+- 2026-10-12 — Decided: GitHub first; recovery code and file both.
