@@ -80,12 +80,17 @@ Order of precedence: reviewer's choice (Automatic / Light / Dark in the menu, ke
   text colour sampled under them (the existing `highlights.ts` dark/light tables extended to follow the sampled
   text colour, not just the flag).
 
-### 5. Safety net
+### 5. Self-check (built; no fall-back look)
 
-A cheap self-check after paint (and after every appearance change): for a few of our own text nodes, compute
-contrast between their colour and the sampled pixels/ancestors behind them; below 3:1, switch to the safe look
-(light, with backing) and say so once in the console and in `pipeup check`. This is what makes success certain
-even for pages we haven't seen.
+`src/ui/legible.ts`: after each look decision Pipeup reads what the page's styles on `<html>` do to everything under
+it (`opacity`, `filter`, `backdrop-filter`, `mix-blend-mode`, `transform`, `clip-path`, `mask-image`, `zoom`),
+computes how well its own words still read when `<html>` is faded over the page's canvas (its text and surface blended
+toward the canvas), and warns once in the console. `pu.appearance()` returns `{ look, source, ratio, effects }` for
+`pipeup check` and agents.
+
+The planned fall-back to the other look was dropped. Fading costs both looks about the same (checked by a test), and
+the other effects aren't cured by a different palette, so switching would add code and surprise people for nothing.
+Body-level effects never reach Pipeup, which lives under `<html>`.
 
 ### 6. Close what `all` leaves open
 
@@ -108,9 +113,8 @@ Slice 1 (#43): detection by sampled background, one look for the layer and the h
 column backing, `direction`, token contrast test, and the first hostile-page tests. Slice 2: the Look row in the menu
 (Automatic, Light, Dark, kept in the browser) and hostile pages for `*` rules, colliding variables, body effects, a
 mismatched `color-scheme`, right-to-left, resets and forced colours (`e2e/appearance.spec.ts`,
-`e2e/fixtures/hostile.html`). Not yet: the self-check that falls back to the safe look (computed styles can't see an
-ancestor's opacity or filter, so it needs a pixel or ancestor check), the `pipeup check` report, and top-layer
-`<dialog>` pages. The size budget rose to 46.5 KB for this.
+`e2e/fixtures/hostile.html`). The self-check and `pu.appearance()` are built (§5). Not yet: the `pipeup check` command itself (it does not exist yet; the spec puts it
+in 0.8), and top-layer `<dialog>` pages. The size budget rose to 46.5 KB for this.
 
 ## Decisions for the maintainer
 
@@ -123,3 +127,4 @@ ancestor's opacity or filter, so it needs a pixel or ancestor check), the `pipeu
 - 2026-10-12 — Both looks must work: one appearance source with a menu choice, sampled detection, Pipeup's own opaque surfaces, a self-check that falls back to the safe look.
 - 2026-10-12 — Decided: the column backing is always on.
 - 2026-10-12 — Built slices 1 and 2; font family is taken from the page by design, so the hostile tests leave it out.
+- 2026-10-12 — Built the self-check and `pu.appearance()`; dropped the fall-back look, because fading costs both looks about the same.

@@ -431,8 +431,11 @@ any of them off.
   always sit on their own soft backing, so they stay readable whatever the page behind them is. The only
   parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
   readable under them in both looks.
-- **If Pipeup finds it can't read its own text**, because of a wrong guess about the page or an odd page,
-  it switches to its safe look rather than leaving words unreadable.
+- **Pipeup says what the page does to it.** Styles on the page's top-level element that fade, filter, blend,
+  transform or zoom everything under it reach Pipeup too, and can't be undone from inside it. Pipeup
+  notes them once in the browser console, says when its words may be hard to read under them, and reports the same
+  in the check (§15). It reads colours written in any modern format (`oklch()`, `color-mix()` and so on) when it
+  works out the page's look.
 - Pipeup is checked against pages with deliberately hostile styles, and against real sites that have
   shown a clash, before a release.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
@@ -1214,3 +1217,4 @@ and only after the person clicks.
 - 2026-10-12 — Proposed (not built): Pipeup looks the same on every site; it has a light look and a dark look that both work, never mixed; the reviewer can choose Automatic, Light or Dark; its own surfaces never depend on the page's colours; and it falls back to its safe look if it can't read itself (section 9).
 - 2026-10-12 — Approved: threads at rest in the column always sit on their own soft backing (section 9).
 - 2026-10-12 — Clarified: Pipeup takes the page's font family and accent colour and nothing else of its styling; the reviewer's choice is the Look row in the menu; the author's setting is `data-pipeup-theme` on `<html>` (section 9).
+- 2026-10-12 — Changed: no fall-back look. Under a faded page both looks lose about the same contrast, so switching can't help; Pipeup reports what the page does to it instead, in the console and in the check (section 9).
