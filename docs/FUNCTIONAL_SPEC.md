@@ -806,7 +806,7 @@ permission, a registration, or a place in its npm scope.
     mode, decks with marked slides — and when to use each of Pipeup's options;
   - run the **check** and fix what it reports;
   - **summarise** feedback by theme, section and status;
-  - **reply to and resolve** threads, and **apply** approved changes to the page.
+  - **reply to** threads and mark them addressed (never resolve them), and **apply** approved changes to the page.
 - **Check** loads a page with and without Pipeup and reports pass, warn or fail for:
   - any layout change caused by Pipeup;
   - closed Pipeup UI overlapping page content, at phone, tablet and desktop widths;
@@ -830,6 +830,47 @@ permission, a registration, or a place in its npm scope.
 - When an agent rewrites or regenerates a page, it keeps the page's document identity and sharing line
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
+
+### 15b. Agents reading and answering comments
+
+Today a person has to copy the comments and paste them to the agent, and an agent's answer can't come
+back into the page. This section closes both gaps without a server. (A live link between the page and
+an agent on the same computer is a later step and is not part of this one.)
+
+**Reading**
+- A page can give its comments to the agent looking at it, with no copy and paste: the same Markdown
+  Copy all gives (every thread with its id, where it is on the page, and its words), and the open
+  threads as plain data. Either can be asked for open threads only, or all of them.
+- It carries nothing a person can't already see in the page, and it works for any agent that can run
+  the page in a browser.
+
+**Answering**
+- An agent answers a thread by writing a reply into a **replies file** kept next to the page, named by
+  the page. A reply names the thread it answers, carries the agent's words, and may say the thread is
+  **addressed**, with a short note of what was done and where (for example "addressed in revision 41").
+- A reply is signed by the agent's own identity, made once and kept on the agent's computer, never in the
+  page or its folder. The identity has a name that shows it is an agent (§10, §15).
+- The page shows the replies it finds in the file, inside the thread, under the agent's name and with
+  the same marking as other AI replies. A reply can't be edited or removed by a later one, only
+  followed by another.
+- A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
+  and the page says in words how many it ignored.
+- The page reads the file when it opens and again when the person asks it to check for replies. It
+  makes no network request to do so when opened from a file on the person's computer, and when served
+  from a website it reads only a file on that same site.
+
+**Addressed, and who closes**
+- **Addressed** is not resolved. A thread an agent says is addressed shows that plainly, with the note,
+  and stays open until a person resolves it. A person can reopen it, and say what is still wrong.
+- Agents never resolve, reopen, edit or delete a thread. (This replaces the earlier wording that let an
+  agent resolve threads; §15 and the skills are updated to match.)
+- A reply file can't make a person's comment change in any way.
+
+**Skills and checking**
+- The apply skill tells the agent to read the comments, make each change the author approved, reply with
+  what changed, mark it addressed, and leave closing to the author.
+- Check reports a replies file that can't be read, and replies for threads that no longer exist.
+- Comments written before this change, and pages with no replies file, behave exactly as they do now.
 
 ## 16. Distribution
 
@@ -1026,3 +1067,4 @@ permission, a registration, or a place in its npm scope.
 - 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
+- 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
