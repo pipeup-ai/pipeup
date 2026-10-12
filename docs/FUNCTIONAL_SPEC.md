@@ -951,7 +951,8 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
   (localhost), or where the author has asked for it. **A reviewer's browser never makes the request** unless the
   author chooses to allow that, and says so (`data-pipeup-updates="everyone"`). The add-on says in one sentence
   what it contacts and what that service can see (§11a).
-- The file can't be forged: Pipeup checks it was published by the Pipeup project before showing anything from it.
+- The file can't be forged or replayed: Pipeup checks it was published by the Pipeup project, and has not expired,
+  before showing anything from it.
   What it shows is plain words, and links go only to the project's own addresses.
 - **What the author sees**:
 
@@ -1212,7 +1213,7 @@ and only after the person clicks.
 - Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
   Pipeup if the size budget allows; whether agents' reactions should be shown at all.
 - Update notices: whether the age line in the console is worth its bytes; what counts as the author's own
-  context besides a file, localhost or the attribute; who signs the published file and how (§14a).
+  context besides a file, localhost or the attribute (§14a).
 - Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
   flooded;
   whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
@@ -1366,3 +1367,4 @@ and only after the person clicks.
 - 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).
 - 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).
 - 2026-10-12 — Proposed (not built): how an author learns of newer versions without Pipeup making any request of its own: an age line in the console, `pipeup check` and release notices, and an opt-in `updates` add-on that runs only in the author's context and shows console lines and, for major releases and security issues, a context-menu notice (section 14a).
+- 2026-10-12 — The update list is signed by the maintainer from their own computer, and goes out of date after a set time, so a forged or old copy is ignored (section 14a).
