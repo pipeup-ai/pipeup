@@ -432,6 +432,18 @@ public set on `.layer`, aliases of the internal ones:
 They follow dark mode. Add-on elements carry `data-addon="<id>"` and class names prefixed with the
 id; core class names are private. Reduced motion follows `src/ui/styles.ts:221-233`.
 
+**Hooks for styling core's own parts.** Core class names stay private, so an add-on that needs to style
+something of core's uses these attributes (and nothing else):
+
+| Hook | On |
+|---|---|
+| `[data-pipeup-ai]` | the AI avatar (a reply written by an AI) |
+| `[data-pipeup-writing=row]` | a reply being written by an add-on (`host.setThreadNote`), as it shows in its thread |
+| `[data-pipeup-writing=words]` | the words of that reply so far |
+
+The assist add-on uses them for the pulsing ring on the avatar and the "writing" dots (core draws neither;
+the add-on brings its own, with reduced motion turning them still).
+
 ### 3.5 Status, overlay, here and avatar (stage 3)
 
 ```ts
@@ -1757,3 +1769,4 @@ gets into the core").
   and colour (the avatar is drawn from the name they gave, not from their display name, so unnamed people show their
   animal instead of a letter). `AddonDocument` gains a read-only `name`. The live budget is 11 KB (was 10.5 KB).
 - 2026-10-09: `host.setThreadNote(thread, text | null)` shows an add-on's reply as it is being written at the end of a thread (not a comment until the add-on merges the signed op). The name "AI assistant" (and "AI assistant …") is kept for AI replies: a person can't choose it, and a reply under it is drawn with a gently glowing AI ring. `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported so an add-on can author replies under its own key. Cost: +0.4 KB gzip. For the Assist add-on ([assist.md](assist.md)).
+- 2026-10-12: styling hooks `data-pipeup-ai` and `data-pipeup-writing` (row, words); the AI avatar's pulse and the writing dots moved from core to the assist add-on's own styles.

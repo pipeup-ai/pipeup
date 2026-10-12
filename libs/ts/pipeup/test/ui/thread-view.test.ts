@@ -402,6 +402,10 @@ describe("an AI's replies", () => {
     const ghost = view.element.querySelector(".ghost")!;
     expect(ghost.textContent).toContain("Writing so far");
     expect(ghost.querySelector(".av.ai")).not.toBeNull();
+    // The hooks an add-on styles it by, so it never needs core's class names.
+    expect(ghost.getAttribute("data-pipeup-writing")).toBe("row");
+    expect(ghost.querySelector("[data-pipeup-writing=words]")?.textContent).toContain("Writing so far");
+    expect(ghost.querySelector("[data-pipeup-ai]")).not.toBeNull();
     expect(ghost.textContent).toContain("AI assistant · writing now");
     threadNotes.delete("t1");
     view.update(t);

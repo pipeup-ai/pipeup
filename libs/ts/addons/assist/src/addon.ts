@@ -32,7 +32,7 @@ const SEEN = "Reviewed by AI · nothing to add";
 const BLOCKS = "p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd";
 /** A ring and a dot: the mark of an AI reply, small. */
 const ICON = ["M12 7a5 5 0 1 0 0 10a5 5 0 1 0 0-10z", "M12 2.5a9.5 9.5 0 1 0 0 19a9.5 9.5 0 1 0 0-19z"];
-const CSS = `.assist-p{margin:0 0 10px}.assist-note{color:var(--pu-faint)}
+export const CSS = `.assist-p{margin:0 0 10px}.assist-note{color:var(--pu-faint)}
 .assist-facts{margin:0 0 12px;padding:0;list-style:none;font-size:12.5px}
 .assist-facts li{display:grid;grid-template-columns:76px 1fr;gap:8px;padding:5px 0;border-top:1px solid var(--pu-line)}
 .assist-facts li span:first-child{color:var(--pu-faint)}
@@ -41,7 +41,12 @@ const CSS = `.assist-p{margin:0 0 10px}.assist-note{color:var(--pu-faint)}
 .assist-btns{display:flex;gap:8px;flex-wrap:wrap}
 .assist-btns button{font:inherit;color:inherit;background:none;cursor:pointer;padding:6px 12px;border:1px solid var(--pu-line);border-radius:8px;transition:background-color .2s var(--pu-ease),opacity .2s var(--pu-ease)}
 .assist-btns button:hover,.assist-btns button:focus-visible{background:var(--pu-hover);outline:none}
-.assist-btns button:disabled{opacity:.5;cursor:default}.assist-btns .assist-go{color:var(--pu-accent)}`;
+.assist-btns button:disabled{opacity:.5;cursor:default}.assist-btns .assist-go{color:var(--pu-accent)}
+[data-pipeup-writing=row] [data-pipeup-ai]::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid var(--pu-accent);pointer-events:none;animation:assist-ring 1.6s var(--pu-ease) infinite}
+[data-pipeup-writing=words]::after{content:"";display:inline-block;width:4px;height:4px;margin-left:8px;border-radius:50%;vertical-align:middle;background:var(--pu-faint);box-shadow:7px 0 var(--pu-faint),14px 0 var(--pu-faint);animation:assist-dots 1.6s ease-in-out infinite}
+@keyframes assist-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}
+@keyframes assist-dots{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){[data-pipeup-writing=row] [data-pipeup-ai]::after{animation:none;opacity:0}[data-pipeup-writing=words]::after{animation:none;opacity:.6}}`;
 
 /** Where a reference pill goes: the notes' heading, the slide, or the passage on this page. */
 const pointer = (p: Passage): string =>

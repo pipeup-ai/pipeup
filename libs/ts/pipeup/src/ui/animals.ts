@@ -39,7 +39,7 @@ export const faceOf = (author: string, name: string): string => initial(name) ||
  */
 export function avatar(author: string, name: string): HTMLElement {
   // An AI's replies: a plain disc with a violet ring, so it is plain at a glance that a model wrote them.
-  if (isAiName(name)) return h("span", { class: "av ai", "aria-hidden": "true" }, "AI");
+  if (isAiName(name)) return h("span", { class: "av ai", "data-pipeup-ai": "", "aria-hidden": "true" }, "AI");
   return h(
     "span",
     { class: `av c${colourOf(author)}`, "aria-hidden": "true", "data-animal": animalName(author) },

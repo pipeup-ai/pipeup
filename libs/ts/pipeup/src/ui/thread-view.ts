@@ -183,9 +183,9 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
               ? null
               : h(
                   "div",
-                  { class: "it ghost" },
+                  { class: "it ghost", "data-pipeup-writing": "row" },
                   avatar("", AI_NAME),
-                  h("div", { class: "tx" }, writing),
+                  h("div", { class: "tx", "data-pipeup-writing": "words" }, writing),
                   h("div", { class: "rft open" }, h("span", { class: "who" }, `${AI_NAME} · writing now`)),
                 ),
           )
