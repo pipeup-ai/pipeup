@@ -4,9 +4,11 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
-import { computeOpId, parseDocumentAttribute, signOp } from "../dist/pipeup.core.js";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
+
+// The page library, loaded only by the commands that sign or read a page: `skills` and `comments` need nothing built.
+const core = () => import("../dist/pipeup.core.js");
 
 const KEYFILE = process.env.PIPEUP_AGENT_FILE || join(homedir(), ".pipeup", "agent.json");
 const AI = "AI assistant";
@@ -86,7 +88,7 @@ async function pageDoc(file) {
   const html = await readFile(file, "utf8");
   const m = /<html\b[^>]*\sdata-pipeup-doc\s*=\s*["']([^"']+)["']/i.exec(html);
   if (!m) fail(`${file} has no data-pipeup-doc attribute; add Pipeup to the page first`);
-  const { id } = await parseDocumentAttribute(m[1]);
+  const { id } = await (await core()).parseDocumentAttribute(m[1]);
   const listed = /<html\b[^>]*\sdata-pipeup-agents\s*=\s*["']([^"']*)["']/i.exec(html)?.[1] ?? "";
   return { id, listed: listed.split(/[\s,]+/).filter(Boolean) };
 }
@@ -138,6 +140,7 @@ async function reply(args) {
       clock: clock++,
       at: at++,
     };
+    const { computeOpId, signOp } = await core();
     body.id = await computeOpId(body);
     return signOp(body, identity);
   };
