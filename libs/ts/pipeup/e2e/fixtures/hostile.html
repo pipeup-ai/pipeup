@@ -43,6 +43,32 @@
         <p id="p2">Two teams are still incomplete and managers must work with their champions.</p>
       </article>
     </div>
+    <script>
+      // ?rules=a,b applies the named nasty page styles, so each test names the ones it wants.
+      const RULES = {
+        // Page rules that reach every element, including Pipeup's own host element.
+        star: '* { font-family: "Comic Sans MS", cursive !important; font-size: 31px !important; line-height: 3 !important; color: #f0f !important; letter-spacing: 5px !important; text-transform: uppercase !important; transition: none !important; }',
+        // A page that happens to use Pipeup's own variable names.
+        vars: "html { --k: #fff; --mu: #fff; --fa: #fff; --su: #000; --so: #000; --ho: #000; --ln: #f00; --pu-text: #fff; --pu-surface: #000; --pu-font: serif; --pu-accent: #f00; }",
+        // Effects on the body: Pipeup lives under html, so none of them reaches it.
+        body: "body { filter: grayscale(1) contrast(2); opacity: 0.6; zoom: 1.4; transform: rotate(0.5deg); mix-blend-mode: multiply; }",
+        // The page's own scheme says dark while what it paints is light.
+        scheme: "html { color-scheme: dark; }",
+        rtl: "html { direction: rtl; } body { text-align: right; }",
+        resets:
+          "html, body, div, p, h1, article { all: revert !important; } * { box-sizing: content-box !important; }",
+        pointer: "* { pointer-events: none !important; user-select: none !important; }",
+      };
+      const wanted = new URLSearchParams(location.search).get("rules");
+      if (wanted) {
+        const css = wanted
+          .split(",")
+          .map((n) => RULES[n] ?? "")
+          .join("\n");
+        document.head.append(Object.assign(document.createElement("style"), { textContent: css }));
+        if (wanted.split(",").includes("rtl")) document.documentElement.dir = "rtl";
+      }
+    </script>
     <script src="../../dist/pipeup.min.js"></script>
   </body>
 </html>

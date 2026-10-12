@@ -25,6 +25,7 @@ const PATHS = {
   close: ["M6 6l12 12M18 6L6 18"],
   // A pencil: edit your name.
   edit: ["M4 20h4L19 9l-4-4L4 16z"],
+  look: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M12 3v18"],
 } as const;
 
 export type IconName = keyof typeof PATHS;

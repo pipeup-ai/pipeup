@@ -5,7 +5,7 @@ import { copyAll, copyThread, type ExportItem } from "../export/format";
 import { agentComments } from "../export/agent";
 import { agentPrompt } from "../export/prompt";
 import type { Thread } from "../model/types";
-import type { Ctx, Draft, MenuActions, UiState, View } from "./context";
+import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
 import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
@@ -69,8 +69,19 @@ const message = (e: unknown) =>
 
 export function startApp(o: AppOptions): App {
   // One place decides light or dark: the author's data-pipeup-theme, else what the page shows behind Pipeup.
-  let dark = (authorLook(document) ?? (pageIsDark(document) ? "dark" : "light")) === "dark";
-  const lookNow = (): Look => authorLook(document) ?? (pageIsDark(document, dark) ? "dark" : "light");
+  // The reviewer's own choice beats the author's, which beats what the page shows.
+  const LOOK_KEY = "pipeup:look";
+  let choice: LookChoice = "auto";
+  try {
+    const kept = localStorage.getItem(LOOK_KEY);
+    if (kept === "light" || kept === "dark") choice = kept;
+  } catch {
+    /* no storage: Automatic */
+  }
+  let dark = false;
+  const lookNow = (): Look =>
+    choice !== "auto" ? choice : (authorLook(document) ?? (pageIsDark(document, dark) ? "dark" : "light"));
+  dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme);
   const sheet = installPageSheet(document, theme.dark);
@@ -247,6 +258,17 @@ export function startApp(o: AppOptions): App {
   });
 
   const menu: MenuActions = {
+    look: () => choice,
+    setLook(next) {
+      choice = next;
+      try {
+        if (next === "auto") localStorage.removeItem(LOOK_KEY);
+        else localStorage.setItem(LOOK_KEY, next);
+      } catch {
+        /* kept for this page only */
+      }
+      setLook(lookNow());
+    },
     copyAll: async (as) => {
       const items = menu.all();
       const text = copyAll(items, as, {
@@ -778,39 +800,31 @@ export function startApp(o: AppOptions): App {
   // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
   // Anywhere in the page may carry the switch (a class on a wrapper, say), so any attribute change is a reason to
   // look again, at most once a moment, and again after a transition has settled.
-  let lookTimers: number[] = [];
   let lookFade = 0;
   const setLook = (look: Look) => {
     const next = look === "dark";
     if (next === dark) return;
     dark = next;
     window.clearTimeout(lookFade);
-    const apply = () => {
+    // Every part switches together: the whole layer fades out, switches, and fades back in.
+    host.layer.classList.add("sw");
+    lookFade = window.setTimeout(() => {
       applyTheme(host.layer, readTheme(o.root, look));
       sheet.dark(next);
-    };
-    // Every part switches together: the whole layer fades out, switches, and fades back in.
-    host.layer.style.transition = "opacity .16s cubic-bezier(.4,0,1,1)";
-    host.layer.style.opacity = "0";
-    lookFade = window.setTimeout(() => {
-      apply();
-      host.layer.style.transition = "opacity .24s cubic-bezier(.22,.61,.36,1)";
-      host.layer.style.opacity = "";
-      lookFade = window.setTimeout(() => host.layer.style.removeProperty("transition"), 260);
+      host.layer.classList.remove("sw");
     }, 170);
   };
   const lookAgain = () => setLook(lookNow());
-  let looksPending = 0;
+  let lookTimer = 0;
   const scheduleLook = () => {
-    if (looksPending) return;
-    looksPending = 2;
-    for (const ms of [120, 600])
-      lookTimers.push(
-        window.setTimeout(() => {
-          if (--looksPending === 0) lookTimers = [];
-          lookAgain();
-        }, ms),
-      );
+    if (lookTimer) return;
+    lookTimer = window.setTimeout(() => {
+      lookAgain();
+      lookTimer = window.setTimeout(() => {
+        lookTimer = 0;
+        lookAgain();
+      }, 450);
+    }, 150);
   };
   const themeObserver = new MutationObserver((records) => {
     if (records.every((r) => r.target === host.element)) return;
@@ -848,7 +862,7 @@ export function startApp(o: AppOptions): App {
       sizeObserver.disconnect();
       themeObserver.disconnect();
       schemeQuery?.removeEventListener?.("change", scheduleLook);
-      for (const t of lookTimers) window.clearTimeout(t);
+      window.clearTimeout(lookTimer);
       window.clearTimeout(lookFade);
       offChange();
       window.removeEventListener("keydown", onKey);

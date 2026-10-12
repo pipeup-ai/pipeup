@@ -54,7 +54,12 @@ export interface MenuActions {
   all(): ExportItem[];
   /** Copies the short instruction an agent needs to read and answer this page's comments. */
   copyPrompt(): Promise<void>;
+  /** The reviewer's choice of look, kept in their browser: Automatic follows the author, then the page. */
+  look(): LookChoice;
+  setLook(choice: LookChoice): void;
 }
+
+export type LookChoice = "auto" | "light" | "dark";
 
 /** What every view shares: the document, state, and the few things views can ask the app to do. */
 export interface Ctx {

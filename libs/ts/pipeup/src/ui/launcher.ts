@@ -23,6 +23,8 @@ const HIDDEN = "Hidden on the page";
  * bubble) that opens a menu, Comment nearest it. All comments is a panel on the right that stays open while
  * choosing threads reveals them, so every counted thread can be reached.
  */
+const LOOKS = ["auto", "light", "dark"] as const;
+
 export function createLauncher(ctx: Ctx): View {
   // Two numbers in one place: a change cross-fades from one to the other.
   const nums = [h("span", { class: "n" }), h("span", { class: "n" })] as const;
@@ -463,6 +465,17 @@ export function createLauncher(ctx: Ctx): View {
     closeToControl();
     void ctx.menu.copyPrompt();
   });
+  /** Automatic, Light or Dark: each press moves on to the next, and the menu stays open so the page is seen to change. */
+  const lookEnd = h("span", { class: "kc" });
+  const lookRow = row(
+    icon("look"),
+    () => {
+      ctx.menu.setLook(LOOKS[(LOOKS.indexOf(ctx.menu.look()) + 1) % 3]!);
+      sync();
+    },
+    false,
+    lookEnd,
+  );
   /** Only on a page shown through a link on this computer: comments go to the agent while this is on. */
   const linkRow = row(
     icon("send"),
@@ -533,6 +546,7 @@ export function createLauncher(ctx: Ctx): View {
     copyRow,
     textRow,
     promptRow,
+    lookRow,
     ...(ctx.link.enabled ? [linkRow] : []),
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
@@ -571,6 +585,9 @@ export function createLauncher(ctx: Ctx): View {
       "Copy a prompt for my agent",
       "Tells an AI agent where the comments are and how to answer them",
     );
+    const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;
+    set(lookRow, "Look", `${lookWord}. Automatic follows the page; press to change`);
+    lookEnd.textContent = lookWord;
     const who = ctx.replies.who();
     const agentName = who || ctx.link.agent;
     agentRow.textContent = ctx.link.on()
