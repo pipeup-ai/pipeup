@@ -855,7 +855,7 @@ an agent on the same computer is a later step and is not part of this one.)
   followed by another.
 - A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
   and the page says in words how many it ignored.
-- The page reads the file when it opens and again when the person asks it to check for replies. It
+- Reading the replies file is part of Pipeup itself, with no add-on to add. The page reads the file when it opens and again when the person asks it to check for replies. It
   makes no network request to do so when opened from a file on the person's computer, and when served
   from a website it reads only a file on that same site.
 
@@ -865,6 +865,20 @@ an agent on the same computer is a later step and is not part of this one.)
 - Agents never resolve, reopen, edit or delete a thread. (This replaces the earlier wording that let an
   agent resolve threads; §15 and the skills are updated to match.)
 - A reply file can't make a person's comment change in any way.
+
+**Showing that a page is ready for an agent**
+- A page whose author has listed an agent says so in plain words in the comment control's menu, in one
+  line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
+  shows nothing, so nothing is added for readers who don't need it.
+- The menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, which copies a short
+  instruction that tells an agent where this page's comments are, how to read them and how to answer,
+  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
+- All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
+  comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
+- In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
+  two plain choices, **Resolve** and **Still not right**, the second of which reopens it with a place for
+  the person's words.
+- Nothing here appears, moves or disappears abruptly; a new reply eases into the thread.
 
 **Skills and checking**
 - The apply skill tells the agent to read the comments, make each change the author approved, reply with
@@ -1068,3 +1082,4 @@ an agent on the same computer is a later step and is not part of this one.)
 - 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
 - 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
 - 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
+- 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
