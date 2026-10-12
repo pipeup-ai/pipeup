@@ -921,6 +921,52 @@ permission, a registration, or a place in its npm scope.
   closing a relay room. Anyone who already had access can still read what they saw before, and Pipeup
   says so plainly.
 
+## 14a. Knowing about newer versions
+
+*Proposed, not built.*
+
+Pipeup itself makes no network requests (§14), so it can't look for updates. The person who needs to know is
+the **author** who put Pipeup on the page, not the reviewers. Authors learn about newer versions in three ways.
+
+**Pipeup itself, with no network**
+
+- Pipeup knows when it was built. When that is **more than a year ago** it writes one line to the browser
+  console, once per page load, saying so and where the changelog is. Reviewers see nothing. An author can switch
+  it off (`data-pipeup-updates="off"`).
+- It says nothing about security, because it can't know.
+
+**The author's tools, with no visitors involved**
+
+- `pipeup check` says whether the version a page uses is the latest, lists published security advisories that
+  affect it, and says exactly what to change, including the new integrity hash when the page pins the script.
+- Every release has notes, and a version with a security problem is marked in the release notes, in the package
+  registry's own deprecation notice and in a published security advisory, so tools that watch dependencies
+  (and people who watch the repository) hear about it.
+
+**An add-on that checks for the author** (`updates`, off unless the author adds it)
+
+- It fetches one small published file listing the latest version, the oldest supported version and security
+  advisories, and compares it with the version on the page.
+- **It runs only when the author is the one looking**: on a page opened from disk, on the author's own computer
+  (localhost), or where the author has asked for it. **A reviewer's browser never makes the request** unless the
+  author chooses to allow that, and says so (`data-pipeup-updates="everyone"`). The add-on says in one sentence
+  what it contacts and what that service can see (§11a).
+- The file can't be forged: Pipeup checks it was published by the Pipeup project before showing anything from it.
+  What it shows is plain words, and links go only to the project's own addresses.
+- **What the author sees**:
+
+  | What is found | Where |
+  |---|---|
+  | A patch or minor release | A line in the console |
+  | A major release, or a recommended update | A line in the console and a small marker in the context menu |
+  | A security issue, or a version no longer supported | A notice in the context menu that names the issue, the fixed version, where to read more and how to update |
+
+- A notice can be dismissed for that version or advisory, and the choice is remembered in that browser.
+- **It never changes the page, never installs or updates anything, and never gets in the way of writing a
+  comment.** A notice raised while comments are closed waits and is shown once when Pipeup is next opened (§11a).
+  If the file can't be reached it says nothing.
+- A page that pins an exact version stays on it until the author changes it; no notice ever changes that.
+
 ## 15. Agent support
 
 - **Agent skills** ship with Pipeup and teach agents to:
@@ -1165,6 +1211,8 @@ and only after the person clicks.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
 - Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
   Pipeup if the size budget allows; whether agents' reactions should be shown at all.
+- Update notices: whether the age line in the console is worth its bytes; what counts as the author's own
+  context besides a file, localhost or the attribute; who signs the published file and how (§14a).
 - Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
   flooded;
   whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
@@ -1317,3 +1365,4 @@ and only after the person clicks.
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).
 - 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).
+- 2026-10-12 — Proposed (not built): how an author learns of newer versions without Pipeup making any request of its own: an age line in the console, `pipeup check` and release notices, and an opt-in `updates` add-on that runs only in the author's context and shows console lines and, for major releases and security issues, a context-menu notice (section 14a).
