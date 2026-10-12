@@ -408,6 +408,32 @@ any of them off.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
+- **Pipeup looks the same on every site.** Whatever the page's styles say (fonts, sizes, colours,
+  spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
+  page's own light/dark switch), every part of Pipeup keeps its own look: text is readable, nothing is
+  faded, stretched, flipped or restyled, and nothing is clipped by the page. This covers the column,
+  bubbles, threads, the panel, menus, the composer, highlights, pins, tooltips, toasts and add-ons'
+  own parts.
+- **Pipeup has a light look and a dark look, and both work.** Each is designed and tested in full, on any
+  page. They are not a filter over each other.
+- **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with a
+  fade.
+- **Which look.** Pipeup follows the page's light or dark appearance when the page makes it clear, and is
+  light when it doesn't. The reviewer can choose Automatic, Light or Dark in the menu; the choice is
+  remembered in their browser and beats everything else. The author can set a look for the page, which
+  beats detection. If the page changes appearance later (a switch on the page), Pipeup follows however
+  the page makes the change, not only when it changes the page's top-level elements.
+- **Pipeup's own surfaces never depend on the page's colours.** Every card, thread, panel, menu, composer,
+  tooltip, toast and add-on part is drawn with its own solid background, text, border and shadow, chosen
+  together so text is always readable (at least 4.5 to 1, and 3 to 1 for icons and outlines) in both looks.
+  Words that sit directly on the page (a thread at rest in the column) keep their soft, boxless look but
+  get their own soft backing wherever the page behind them can't be relied on to stay readable. The only
+  parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
+  readable under them in both looks.
+- **If Pipeup finds it can't read its own text**, because of a wrong guess about the page or an odd page,
+  it switches to its safe look rather than leaving words unreadable.
+- Pipeup is checked against pages with deliberately hostile styles, and against real sites that have
+  shown a clash, before a release.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
   every thread, the menu and All comments can be reached and used without a pointer; focus is never
   lost after sending, cancelling or closing; and screen readers are told which block a comment is
@@ -1184,3 +1210,4 @@ and only after the person clicks.
 - 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).
 - 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
+- 2026-10-12 — Proposed (not built): Pipeup looks the same on every site; it has a light look and a dark look that both work, never mixed; the reviewer can choose Automatic, Light or Dark; its own surfaces never depend on the page's colours; and it falls back to its safe look if it can't read itself (section 9).
