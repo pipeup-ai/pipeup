@@ -184,7 +184,7 @@ border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) va
 markers that hold focus are invisible. */
 .pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}
 .km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sr,.mn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
 white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}

@@ -125,6 +125,7 @@ describe("the writing line's @ list", () => {
     c.input.setSelectionRange(text.length, text.length);
     c.input.dispatchEvent(new Event("input", { bubbles: true }));
   };
+  const list = (c: ReturnType<typeof composer>) => c.element.querySelector(".mnl")!;
   const key_ = (c: ReturnType<typeof composer>, k: string) =>
     c.input.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
 
@@ -133,7 +134,7 @@ describe("the writing line's @ list", () => {
     type(c, "hi @s");
     const options = () => [...c.element.querySelectorAll("[role=option]")].map((o) => o.textContent);
     expect(options()).toEqual(["Sam"]);
-    expect(c.input.getAttribute("aria-expanded")).toBe("true");
+    expect(list(c).classList.contains("show")).toBe(true);
     key_(c, "Enter");
     expect(c.input.value).toBe("hi @Sam ");
     expect(onSend).not.toHaveBeenCalled();
@@ -150,7 +151,7 @@ describe("the writing line's @ list", () => {
     key_(c, "ArrowDown");
     expect(c.element.querySelector("[aria-selected=true]")!.textContent).toBe("Lee");
     key_(c, "Escape");
-    expect(c.input.getAttribute("aria-expanded")).toBe("false");
+    expect(list(c).classList.contains("show")).toBe(false);
     expect(c.input.value).toBe("@");
   });
 

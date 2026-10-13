@@ -47,7 +47,7 @@ test("typing @ in a reply offers the people in the document, and the choice is a
   await page.keyboard.type("Thanks @sa");
   const option = page.getByRole("option", { name: "Sam" });
   await expect(option).toBeVisible();
-  await expect(line).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".mnl.show")).toHaveCount(1);
   await page.keyboard.press("Enter");
   await expect(line).toHaveValue("Thanks @Sam ");
   await page.keyboard.press("Enter");

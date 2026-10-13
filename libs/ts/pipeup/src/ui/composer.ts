@@ -171,23 +171,21 @@ export function composer(o: ComposerOptions): Composer {
   // Typing `@` offers the people who can be mentioned; the choice is remembered, and found again in the final words.
   const chosen: { label: string; ref: string }[] = [];
   const list = h("ul", { class: "mnl", role: "listbox", "aria-label": "People" });
-  const live = h("span", { class: "sr", "aria-live": "polite" });
+  const live = h("span", { class: "mn-sr", "aria-live": "polite" });
   const listId = `mn-${Math.random().toString(36).slice(2, 8)}`;
   list.id = listId;
   let options: Person[] = [];
   let active = 0;
   let token: { start: number; query: string } | null = null;
   if (o.people) {
-    input.setAttribute("role", "combobox");
     input.setAttribute("aria-autocomplete", "list");
-    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-haspopup", "listbox");
     input.setAttribute("aria-controls", listId);
     element.append(list, live);
   }
   const closeList = () => {
     options = [];
     list.classList.remove("show");
-    input.setAttribute("aria-expanded", "false");
     input.removeAttribute("aria-activedescendant");
     window.setTimeout(() => !options.length && list.replaceChildren(), 220);
   };
@@ -224,7 +222,6 @@ export function composer(o: ComposerOptions): Composer {
       }),
     );
     list.classList.add("show");
-    input.setAttribute("aria-expanded", "true");
     live.textContent = `${options.length} ${options.length === 1 ? "person" : "people"}`;
     paintList();
   };
