@@ -4,6 +4,7 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
+import { check, table } from "./check.mjs";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
 
@@ -17,6 +18,10 @@ const USAGE = `pipeup skills install|remove|list [--project] [--agent claude|cod
   Puts Pipeup's agent skills where Claude Code (.claude/skills) and Codex (.agents/skills) look: for you, in every
   project, or with --project for this folder only. It says what it will write, asks first (--yes to go ahead without
   asking), and never replaces a skill you changed unless you say --replace.
+
+pipeup check <page.html> [--json]
+  Loads the page with and without Pipeup at 375, 768 and 1440 px (with Playwright, which you install) and says what
+  Pipeup changes or covers, and what the page could do better: pass, WARN or FAIL for each. Exits 1 on any FAIL.
 
 pipeup agent [--name <name>]
   Makes this computer's agent key (once) and prints the public key to list on the page:
@@ -175,6 +180,16 @@ else if (command === "skills") {
     else if (sub === "remove") await skills.remove(opts);
     else if (sub === "list") await skills.list(opts);
     else fail(`skills: say install, remove or list\n\n${USAGE}`);
+  } catch (e) {
+    fail(e.message);
+  }
+} else if (command === "check") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  try {
+    const { results, ok } = await check({ page });
+    console.log(args.json === true ? JSON.stringify({ ok, results }, null, 2) : table(results));
+    process.exit(ok ? 0 : 1);
   } catch (e) {
     fail(e.message);
   }
