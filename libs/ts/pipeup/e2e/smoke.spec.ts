@@ -9,7 +9,9 @@ test("the classic script defines the Pipeup global without errors", async ({ pag
   expect(errors).toEqual([]);
 });
 
-test("the global has the module's exports, read only, on an object a page can still add to", async ({ page }) => {
+test("the global has the module's exports, read only, on an object a page can still add to", async ({
+  page,
+}) => {
   await page.goto(fixture("doc.html"));
   const shape = await page.evaluate(async () => {
     const g = (window as any).Pipeup;

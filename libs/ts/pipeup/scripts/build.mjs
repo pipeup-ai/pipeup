@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { build, transform } from "esbuild";
 import { minify } from "terser";
 import { MANGLED } from "./mangle.mjs";
@@ -39,6 +39,8 @@ const common = {
 // wrapped by hand, rather than as esbuild's IIFE, which carries CommonJS interop the page never uses (about 0.5 KB
 // gzip). The global keeps its shape: the same names, enumerable, read-only and non-configurable, on an extensible
 // object with the hidden `__esModule` marker; auto-mount still runs before the global is assigned.
+// Written by hand below, so dist/ must exist first (esbuild makes it only when it writes).
+await mkdir("dist", { recursive: true });
 const classic = await build({
   ...common,
   entryPoints: ["src/auto.ts"],
