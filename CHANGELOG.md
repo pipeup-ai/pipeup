@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
+
 ## [0.8.0-beta.1] - 2026-10-13
 
 This pre-release is about a smaller Pipeup and the rest of the command line: Pipeup alone is 48.8 KB gzip (52.3 KB in 0.7.0), portable identities are an add-on, and `pipeup init` and `pipeup read` join `check`. It is a beta: try it from the `next` channel and tell us what breaks.
