@@ -4,7 +4,7 @@ import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
 import type { Identity } from "../crypto/identity";
 import { identityFromCode, makePortable } from "../crypto/portable";
-import { nameOf } from "../model/animals";
+import { animalName, nameOf } from "../model/animals";
 import type { Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
@@ -147,10 +147,26 @@ export function startApp(o: AppOptions): App {
   let sayRaf = 0;
 
   /** `isHint`: comment mode's hint, which goes early; `quiet`: screen readers hear it some other way. */
-  function toast(text: string, ms = TOAST_MS, isHint = false, quiet = false): void {
+  function toast(
+    text: string,
+    ms = TOAST_MS,
+    isHint = false,
+    quiet = false,
+    action?: { label: string; href: string },
+  ): void {
     if (destroyed) return;
     hint = isHint;
     toastEl.textContent = text;
+    toastEl.classList.toggle("act", Boolean(action));
+    if (action)
+      toastEl.append(
+        " ",
+        h(
+          "a",
+          { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
+          action.label,
+        ),
+      );
     if (quiet) toastEl.setAttribute("aria-hidden", "true");
     else toastEl.removeAttribute("aria-hidden");
     toastEl.classList.add("show");
@@ -215,6 +231,7 @@ export function startApp(o: AppOptions): App {
     reply: async (parentId, text, mentions) => {
       try {
         await o.doc.reply(parentId, text, mentions);
+        tell(mentions, text);
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
         else fail(e);
@@ -315,6 +332,15 @@ export function startApp(o: AppOptions): App {
         },
         copy: (text) => copyText(text, host.layer),
         reload: () => location.reload(),
+        contact: {
+          value: o.doc.contacts().get(o.doc.me) ?? "",
+          share: (value) =>
+            o.doc.contact(value).then(
+              () => true,
+              () => false,
+            ),
+          stop: () => o.doc.uncontact(),
+        },
         hasComments: o.doc
           .threads()
           .some((t) => [t.root, ...t.root.replies].some((c) => c.author === o.doc.me)),
@@ -583,6 +609,25 @@ export function startApp(o: AppOptions): App {
   }
 
   /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
+  /** After words that name people who chose to be reached by email, offers to open the reviewer's own mail to tell them. */
+  function tell(mentions: Mention[] | undefined, text: string): void {
+    const reach = o.doc.contacts();
+    const people = new Map<string, string>();
+    for (const m of mentions ?? []) {
+      const mail = reach.get(m.ref);
+      if (mail?.includes("@")) people.set(mail, text.slice(m.start + 1, m.end));
+    }
+    if (!people.size) return;
+    const who = o.doc.name || animalName(o.doc.me);
+    const subject = `${who} mentioned you on ${document.title}`;
+    const body = `${who} mentioned you in a comment on "${document.title}":\n\n${text}\n\n${location.href}`;
+    const names = [...people.values()];
+    toast(`Let ${names.length === 1 ? names[0] : `${names.length} people`} know?`, 9000, false, false, {
+      label: "Open my email",
+      href: `mailto:${[...people.keys()].join(",")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    });
+  }
+
   /** The comments in `t` that name this reviewer are read: mark them seen (once each). */
   function seen(t: Thread): void {
     const ids = [t.root, ...t.root.replies]
@@ -726,6 +771,7 @@ export function startApp(o: AppOptions): App {
     if (!d) return;
     try {
       const id = await o.doc.comment(d.anchor, text, mentions);
+      tell(mentions, text);
       state.draft = null;
       resolveAll(new Set([id]));
       open(id, true);

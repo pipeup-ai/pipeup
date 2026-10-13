@@ -23,7 +23,18 @@ export interface Anchor {
 }
 
 export type OpKind =
-  "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed" | "react" | "unreact" | "seen";
+  | "create"
+  | "reply"
+  | "edit"
+  | "delete"
+  | "resolve"
+  | "reopen"
+  | "addressed"
+  | "react"
+  | "unreact"
+  | "seen"
+  | "contact"
+  | "uncontact";
 
 /** A person named in a comment's words: `text.slice(start, end)` is the "@Name"; `ref` says who (a key, or a supplied person). */
 export interface Mention {

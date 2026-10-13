@@ -6,7 +6,7 @@ import { fingerprint } from "../util/encoding";
 import { addons, attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
-import { VERSION } from "../core";
+import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
 import type { Appearance } from "./legible";
 
@@ -92,6 +92,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     profile = { ...profile, name: given };
     await kept.saveProfile(profile);
   }
+  // Ask the browser not to clear what Pipeup keeps (best effort): a cleared browser would start the reviewer over.
+  void navigator.storage?.persist?.().catch(() => {});
   const doc = await PipeupDocument.open({
     doc: id,
     key,
@@ -142,6 +144,14 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
           );
       }, 1000)
     : 0;
+  // A Pipeup over a year old says so once, in the console (nothing is sent anywhere to find out); the author can silence it.
+  if (
+    document.documentElement.getAttribute("data-pipeup-updates") !== "off" &&
+    Date.now() - Date.parse(BUILT) > 365 * 864e5
+  )
+    console.info(
+      `pipeup: this is Pipeup ${VERSION}, from ${BUILT}; newer versions exist. See https://github.com/pipeup-ai/pipeup/blob/main/CHANGELOG.md`,
+    );
   let unmounted = false;
   window.addEventListener("pagehide", onHide);
   return {

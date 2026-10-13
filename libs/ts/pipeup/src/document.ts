@@ -2,7 +2,7 @@ import { sign as signBytes, type Identity } from "./crypto/identity";
 import { codeOf } from "./crypto/portable";
 import { OpLog, type NewOp } from "./model/log";
 import { isAiName } from "./model/animals";
-import { isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
+import { compareOps, CONTACT, isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
 import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
@@ -142,6 +142,29 @@ export class PipeupDocument {
       const { thread } = this.mine(commentId);
       await this.write({ kind: "delete", thread, target: commentId });
     });
+  }
+
+  /** Shares a way to reach this reviewer (an email address, or `gh:<GitHub name>`) with everyone who has the comments. */
+  contact(value: string): Promise<void> {
+    const text = value.trim();
+    if (!CONTACT.test(text))
+      return Promise.reject(new Error("pipeup: that isn't an email address or a GitHub name"));
+    return this.enqueue(async () => void (await this.write({ kind: "contact", thread: this.me, text })));
+  }
+
+  /** Stops sharing it: people who learn of this later won't see it. */
+  uncontact(): Promise<void> {
+    return this.enqueue(async () => void (await this.write({ kind: "uncontact", thread: this.me })));
+  }
+
+  /** The ways people have chosen to be reached, by writer: the latest each shared, unless they stopped sharing. */
+  contacts(): Map<string, string> {
+    const out = new Map<string, string>();
+    for (const { body } of [...this.log.all()].sort(compareOps)) {
+      if (body.kind === "contact" && body.text) out.set(body.author, body.text);
+      else if (body.kind === "uncontact") out.delete(body.author);
+    }
+    return out;
   }
 
   /** This reviewer's identity was made portable, so it has a recovery code (an ordinary one can't leave the browser). */

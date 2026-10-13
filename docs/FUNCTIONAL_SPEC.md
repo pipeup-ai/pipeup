@@ -355,7 +355,7 @@ any of them off.
 
 ## 7b. Reactions
 
-*Proposed, not built.*
+*Built (0.7).* The quick row opens inline under the comment, and the full picker is the `emoji` add-on.
 
 - A reviewer can **react to any comment or reply with a standard emoji**, the same ones as on a phone.
   A reaction is a quick answer that needs no words ("seen", "agree", "thanks").
@@ -510,7 +510,7 @@ any of them off.
 
 ## 10a. Mentions and notifications
 
-*Proposed, not built.*
+*Built (0.7), except the inbox (see below).* Names, mentions, the `@` list, *Mentions of me*, the seen marks, short tags for the same name, the recovery code and file, and contacts with the by-hand email offer are built; the GitHub add-on is `github`.
 
 Pipeup has no accounts and no server of its own, so a mention works in layers: it always works inside
 the page, and reaches people outside the page only in ways the reviewer or the author chooses.
@@ -564,8 +564,9 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
   that stays the same across their comments in a document and across documents. A short form of the ID
   (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
   their names match.
-- **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. The menu has **Back up my
-  identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
+- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
+- **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. For a portable identity, **My identity**
+  has **Back up my identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
   themselves, and **Use my identity**, which
   restores it from either in another browser or device so earlier comments and mentions still count as theirs. Pipeup
   never keeps the recovery code anywhere else and never sends it.
@@ -953,7 +954,7 @@ permission, a registration, or a place in its npm scope.
 
 ## 14a. Knowing about newer versions
 
-*Proposed, not built.*
+*Built (0.7), except that the check does not exist yet (§15).* The console line, the signing tools and the `updates` add-on are built.
 
 Pipeup itself makes no network requests (§14), so it can't look for updates. The person who needs to know is
 the **author** who put Pipeup on the page, not the reviewers. Authors learn about newer versions in three ways.
@@ -1460,3 +1461,4 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Proposed (not built): agent support moves out of Pipeup itself into an `agents` add-on (reading replies, the live link, the prompt and the menu and All comments lines); comments for an agent, the addressed note and the AI marking stay; `pipeup watch` adds the add-on itself; pages on 0.6 are unchanged (section 15d, in 0.7).
 - 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
 - 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
+- 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.

@@ -89,6 +89,8 @@ export interface AddonDocument {
   readonly name: string;
   threads(): readonly Thread[];
   ops(): readonly SignedOp[];
+  /** The ways people chose to be reached (an email address, or `gh:<name>`), by writer's key. */
+  contacts(): ReadonlyMap<string, string>;
   onChange(fn: Listener): Off;
 }
 
@@ -692,6 +694,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     },
     threads: () => doc.threads(),
     ops: () => doc.ops(),
+    contacts: () => doc.contacts(),
     onChange: (fn) => {
       const off = doc.onChange(fn);
       offs.add(off);

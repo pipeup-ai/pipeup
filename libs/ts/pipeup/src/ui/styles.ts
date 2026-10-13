@@ -96,6 +96,9 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .dlg-btn{padding:6px 12px;border:1px solid var(--ln);border-radius:8px;font-size:13px;color:var(--k);transition:background-color .2s var(--eo)}
 .dlg-btn:hover,.dlg-btn:focus-visible{background:var(--ho);outline:none}
 .dlg-btn.primary{border-color:var(--pu-accent);color:var(--pu-accent)}
+.toast.act{pointer-events:auto}
+.ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
+.dlg-h{margin:12px 0 4px;font-size:13px;font-weight:600}
 .rx .n{font-size:11px}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
 .rx:disabled{cursor:default;opacity:.7}

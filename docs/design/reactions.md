@@ -1,6 +1,6 @@
 # Reactions
 
-Status: **draft, for review**. Functional requirements: [FUNCTIONAL_SPEC §7b](../FUNCTIONAL_SPEC.md).
+Status: **built**. The quick row opens inline under the comment (not as a popover), and the full picker is `@pipeup/emoji` through the `reactions` slot (`host.setReactionPicker`).
 Targets the next milestone.
 
 Code paths are relative to `libs/ts/pipeup/`.
@@ -78,3 +78,4 @@ round trip, an older build ignores the ops (use the previous release's bundle).
 ## Change log
 
 - 2026-10-12 — First draft.
+- 2026-10-13 — Built as above.

@@ -58,6 +58,21 @@ The full set of emoji for reactions: search, the groups phones use, recently use
 - **Asks first**: nothing to ask; it only adds a More button to the reaction row.
 - **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/emoji@0.6.0/dist/emoji.min.js" integrity="{{SRI:emoji}}" crossorigin="anonymous"></script>`.
 
+## GitHub
+
+Offers to tell people on GitHub when a comment mentions them: a menu row opens a new issue on your repository with their @name and the words filled in.
+
+- **Sends**: nothing by itself. Pressing the row opens github.com with the issue filled in; you submit it there.
+- **Needs**: `data-pipeup-github-repo="owner/repo"` on the page, and optionally `data-pipeup-github-people="octocat hubot"`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/github@0.6.0/dist/github.min.js" integrity="{{SRI:github}}" crossorigin="anonymous"></script>`.
+
+## Updates
+
+Tells you, on your own computer, when a newer Pipeup or a security fix is out.
+
+- **Sends**: one request a day for the project's signed update list, only on your own computer (a file, localhost, or where you ask). GitHub Pages sees your network address; reviewers' browsers never ask.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/updates@0.6.0/dist/updates.min.js" integrity="{{SRI:updates}}" crossorigin="anonymous"></script>`.
+
 ## Your own mailbox
 
 A small server the author runs for Share, so even sealed comments stay inside their organisation. It is not a page script: nothing is added to the HTML for it, and the author gives you its address for `data-pipeup-share`.

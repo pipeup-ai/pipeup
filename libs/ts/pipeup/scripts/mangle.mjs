@@ -37,6 +37,7 @@ export const PUBLIC_NAMES = [
   "setListNote",
   "setReactionPicker",
   "fill",
+  "contacts",
   "action",
   "run",
   "overlay",

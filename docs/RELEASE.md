@@ -69,6 +69,12 @@ format may still change; the README says the project is in alpha until 1.0.
    provenance), and creates the GitHub Release with the CHANGELOG notes, install lines and SRI hash. If
    the check fails, nothing is published. When it succeeds, the Pages workflow deploys the site, so the
    site never points at a version npm doesn't have yet.
+   - **Publish the update list** (the `updates` add-on and `pipeup check` read it): keep `docs/advisories.json` current
+     (a `security` advisory names the affected versions and the fix), then `node tools/make-updates.mjs`,
+     `node tools/sign-updates.mjs sign` (your Keychain asks for your password or Touch ID) and
+     `node tools/sign-updates.mjs verify`, and commit `apps/site/updates.json` in the release pull request. The list
+     expires after 90 days, so re-sign it before then even without a release. The key is made once with
+     `node tools/sign-updates.mjs init`; its public half goes in `tools/updates-keys.json` (with an offline standby).
 4. **Check it landed:** `tools/smoke-release.sh X.Y.Z` (see *After a release*).
 5. **After a promotion**, point npm's `next` tag at the stable version so it doesn't linger on the beta:
    `npm dist-tag add pipeup@X.Y.Z next` (a maintainer, with 2FA). Pages redirects `/next/` to the stable

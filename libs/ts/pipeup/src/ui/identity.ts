@@ -15,6 +15,8 @@ export interface IdentityDeps {
   reload(): void;
   /** Whether the comments on this page were written by the current identity (so a change is felt). */
   hasComments: boolean;
+  /** The way to reach this reviewer they have shared ("" when none), and how to share or stop sharing one. */
+  contact: { value: string; share(value: string): Promise<boolean>; stop(): Promise<void> };
 }
 
 const PROBLEMS: Record<CodeProblem, string> = {
@@ -172,6 +174,41 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
         ? "Your identity is portable: you have a recovery code for it."
         : "Your identity stays in this browser, so a cleared browser, or another computer, starts you over as someone new.",
     ),
+  );
+  // A way to reach them, shared on purpose.
+  const reach = h("input", {
+    class: "dlg-f",
+    type: "text",
+    maxlength: "120",
+    "aria-label": "Email or GitHub name",
+    spellcheck: "false",
+    placeholder: "you@example.org or gh:yourname",
+  });
+  reach.value = deps.contact.value;
+  const share = button("Share", async () => {
+    const ok = await deps.contact.share(reach.value);
+    stop.hidden = !ok && !deps.contact.value;
+    if (ok) stop.hidden = false;
+    say(
+      ok
+        ? "Shared with everyone who has this page's comments."
+        : "That isn't an email address or a GitHub name (gh:yourname).",
+    );
+  });
+  const stop = button("Stop sharing", async () => {
+    await deps.contact.stop();
+    reach.value = "";
+    stop.hidden = true;
+    say("Stopped. People who see this page's comments from now on won't see it.");
+  });
+  stop.hidden = !deps.contact.value;
+  body.append(
+    h("h3", { class: "dlg-h" }, "Let people reach you"),
+    ...para(
+      "If you share an email address or a GitHub name, people who mention you can offer to let you know. Everyone who has this page's comments can see it.",
+    ),
+    reach,
+    h("div", { class: "dlg-a" }, stop, share),
   );
   buttons.replaceChildren(
     button("Close", () => close()),

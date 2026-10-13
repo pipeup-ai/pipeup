@@ -368,6 +368,32 @@
         </div>
       </section>
 
+      <section class="addon plain" id="github-addon" data-pipeup-id="github-addon">
+        <div class="text">
+          <h2>GitHub</h2>
+          <p class="one">Offers to tell people on GitHub when a comment mentions them: a menu row opens a new issue on your repository with their @name filled in.</p>
+          <p class="fact"><b>Sends</b> Nothing by itself. Pressing the row opens github.com with the issue filled in, and you submit it there.</p>
+          <p class="fact"><b>Needs</b> <code>data-pipeup-github-repo="owner/repo"</code> on the page, and optionally <code>data-pipeup-github-people="octocat hubot"</code>.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="github-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="github-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="addon plain" id="updates-addon" data-pipeup-id="updates-addon">
+        <div class="text">
+          <h2>Updates</h2>
+          <p class="one">Tells you, on your own computer, when a newer Pipeup or a security fix is out.</p>
+          <p class="fact"><b>Sends</b> One request a day for the project's signed update list, only on your own computer (a file, localhost, or where you ask). GitHub Pages sees your network address; reviewers' browsers never ask.</p>
+          <p class="fact"><b>Asks first</b> Nothing to ask: it only says things in your console and menu.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="updates-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="updates-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+      </section>
+
       <section class="addon plain" id="mailbox" data-pipeup-id="mailbox">
         <div class="text">
           <h2>Your own mailbox</h2>
@@ -460,7 +486,7 @@
       const CDN = "https://cdn.jsdelivr.net/npm/";
       const ADDONS_VERSION = "0.6.0"; // tools/set-version.sh keeps this in step with the release
       // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
-      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}" };
+      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}" };
       const tag = (pkg, file) => {
         const sri = SRI[pkg.split("/")[1]];
         return `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"${sri.startsWith("sha384-") ? ` integrity="${sri}" crossorigin="anonymous"` : ""}><\/script>`;
@@ -550,6 +576,30 @@
           ...SAFE("emoji", "to nowhere new (the emoji are part of the script)"),
           "",
           "Nothing is sent anywhere. Leave everything else on the page as it is.",
+        ].join("\n"),
+        github: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup GitHub add-on, so that when a comment mentions someone on GitHub, I can open a new issue with their @name filled in.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/github", "github.min.js")}`,
+          "",
+          "Ask me for the repository (owner/repo) and put it on the <html> element as data-pipeup-github-repo=\"owner/repo\". If I list GitHub names for the @ list, put them in data-pipeup-github-people=\"name name\". Do not guess either.",
+          "",
+          ...SAFE("github", "to nowhere new (it only opens github.com in a new tab when I press the menu row)"),
+          "",
+          "Nothing is sent by the page itself. Leave everything else on the page as it is.",
+        ].join("\n"),
+        updates: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Updates add-on, so I am told in my own browser when a newer Pipeup or a security fix is out.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/updates", "updates.min.js")}`,
+          "",
+          ...SAFE("updates", "only to https://pipeup-ai.github.io (the project's update list, once a day, and only on my own computer)"),
+          "",
+          "It runs only where I am looking (a file, localhost, or data-pipeup-updates=\"on\"). Leave everything else on the page as it is.",
         ].join("\n"),
         live: () => [
           "My HTML page already uses Pipeup for comments. Please add the Pipeup Live add-on, so reviewers can see who else is on the page.",

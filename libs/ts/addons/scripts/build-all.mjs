@@ -10,6 +10,8 @@ const BUDGETS = {
   assist: 10 * 1024,
   agents: 5 * 1024,
   emoji: 32 * 1024,
+  github: 3 * 1024,
+  updates: 4 * 1024,
 };
 const CORE = 56 * 1024;
 let over = false;

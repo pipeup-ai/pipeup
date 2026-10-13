@@ -25,6 +25,8 @@ export const LIMITS = {
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
 /** Who a mention names: a writer's key, or a person the page or an add-on supplied (`host:<id>`, `gh:<name>`). */
+/** A way to reach someone that they chose to share: an email address, or a GitHub name (`gh:octocat`). */
+export const CONTACT = /^(?:[^\s@<>"]{1,64}@[^\s@<>"]{1,190}\.[^\s@<>"]{2,24}|gh:[A-Za-z0-9-]{1,39})$/;
 const PERSON = /^(?:[A-Za-z0-9_-]{43}|(?:host|gh):[A-Za-z0-9._@-]{1,64})$/;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
 const KINDS = new Set<unknown>([
@@ -38,6 +40,8 @@ const KINDS = new Set<unknown>([
   "react",
   "unreact",
   "seen",
+  "contact",
+  "uncontact",
 ]);
 /** One emoji: a flag, a keycap, or a pictograph with its modifiers, optionally joined with others (a family, a person with a job). */
 const EMOJI =
@@ -113,6 +117,8 @@ export function isWellFormed(op: unknown): op is SignedOp {
         return false;
     }
   }
+  // A contact is the writer's own, shared on purpose: it names no comment.
+  if (b.kind === "contact" && (typeof b.text !== "string" || !CONTACT.test(b.text))) return false;
   // Seen names the comment that was read.
   if (b.kind === "seen" && !b.target) return false;
   // A reaction names the comment and carries exactly one emoji.

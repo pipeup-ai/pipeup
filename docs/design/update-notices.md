@@ -1,6 +1,6 @@
 # Update notices
 
-Status: **draft, for review**. Functional requirements: [FUNCTIONAL_SPEC §14a](../FUNCTIONAL_SPEC.md).
+Status: **built** except `pipeup check` (the command does not exist yet): the age line, `tools/make-updates.mjs` and `tools/sign-updates.mjs`, and the `@pipeup/updates` add-on.
 
 Code paths are relative to `libs/ts/pipeup/`.
 
@@ -142,3 +142,4 @@ signature, advisory match, new tag printed.
 
 - 2026-10-12 — First draft.
 - 2026-10-12 — Decided: sign locally with the key in the macOS Keychain (`tools/sign-updates.mjs`: init, sign, verify, export), with a standby key, a 90-day expiry and no secret in Actions.
+- 2026-10-13 — Built as above.

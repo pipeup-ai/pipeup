@@ -12,6 +12,8 @@
     "assist",
     "agents",
     "emoji",
+    "github",
+    "updates",
     "test"
   ],
   "engines": {

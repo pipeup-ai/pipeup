@@ -120,3 +120,69 @@ test("someone mentioning you is said once, filters All comments, and opening the
   await page.evaluate(() => (window as any).pu.document.resolve((window as any).pu.document.threads()[0].id));
   await expect(page.locator(".toast.show")).toHaveCount(0);
 });
+
+test("a person who shared an email can be told: the offer opens the reviewer's own mail, with the words and the page", async ({
+  page,
+}) => {
+  await start(page);
+  await page.evaluate(async () => {
+    const w = window as any;
+    const pu = w.pu;
+    const thread = pu.document.threads()[0];
+    const who = await w.Pipeup.createIdentity();
+    const mk = async (kind: string, extra: any) => {
+      const body = {
+        v: 1,
+        kind,
+        doc: pu.document.id,
+        thread: thread.id,
+        author: who.publicKey,
+        name: "Sam",
+        clock: 1000,
+        at: Date.now(),
+        ...extra,
+      };
+      body.id = await w.Pipeup.computeOpId(body);
+      return w.Pipeup.signOp(body, who);
+    };
+    await pu.document.merge(
+      [
+        await mk("reply", { target: thread.root.id, text: "Looks right to me" }),
+        await mk("contact", { thread: who.publicKey, text: "sam@example.test", clock: 1001 }),
+      ],
+      "test",
+    );
+  });
+  await showComments(page);
+  await page.locator(".th .tx").first().click();
+  const line = page.locator(".th .rbox textarea").first();
+  await line.focus();
+  await page.keyboard.type("Thanks @sa");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  const offer = page.locator(".toast.show a.ta");
+  await expect(page.locator(".toast.show")).toContainText("Let Sam know?");
+  const href = (await offer.getAttribute("href"))!;
+  expect(href).toMatch(/^mailto:sam@example\.test\?subject=/);
+  const body = decodeURIComponent(href.split("&body=")[1]!);
+  expect(body).toContain("Thanks @Sam");
+  expect(body).toContain("Q3 plan");
+});
+
+test("sharing your own email is a choice in My identity, and can be taken back", async ({ page }) => {
+  await open(page, "doc.html");
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: /My identity/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Your identity" });
+  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("not an address");
+  await dialog.getByRole("button", { name: "Share", exact: true }).click();
+  await expect(dialog).toContainText("isn't an email address or a GitHub name");
+  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("ada@example.test");
+  await dialog.getByRole("button", { name: "Share", exact: true }).click();
+  await expect(dialog).toContainText("Shared with everyone");
+  expect(await page.evaluate(() => [...(window as any).pu.document.contacts().values()])).toEqual([
+    "ada@example.test",
+  ]);
+  await dialog.getByRole("button", { name: "Stop sharing" }).click();
+  expect(await page.evaluate(() => (window as any).pu.document.contacts().size)).toBe(0);
+});
