@@ -7,9 +7,18 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.7.0-beta.2] - 2026-10-13
+
+A small beta on top of beta.1: touch screens, a page check, and signed update notices.
+
+### Added
+
+- `pipeup check <page>` says what Pipeup changes or covers on a page, at three widths, and warns when the page has no viewport setting.
+- The update list is signed, with the first signing key published in `tools/updates-keys.json`; the `updates` add-on in this release carries that key and can verify the list.
+
 ### Changed
 
-- The update list is now signed, with the first signing key published in `tools/updates-keys.json`; Pipeup add-ons built from here on can verify it.
+- On touch screens the menu's rows are at least 44 px tall and buttons at least 36 px, so they are easy to hit with a finger.
 
 ## [0.7.0-beta.1] - 2026-10-13
 
@@ -298,7 +307,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.2...HEAD
+[0.7.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.1...v0.7.0-beta.2
 [0.7.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0-beta.1
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4
