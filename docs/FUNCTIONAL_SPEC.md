@@ -1084,8 +1084,10 @@ an agent on the same computer is a later step and is not part of this one.)
   followed by another.
 - A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
   and the page says in words how many it ignored.
-- Reading the replies file is part of Pipeup itself, with no add-on to add. The page reads the file when it opens, then again every few seconds while the page is showing and when it comes back into view, so an agent's answer appears in the thread by itself; the person can also ask it to check at once. It
-  makes no network request to do so when opened from a file on the person's computer, and when served
+- Reading the replies file is done by the **agents add-on** (§15d), which the author adds (or which `pipeup watch` adds
+  for them). With it, the page reads the file when it opens, then again every few seconds while the page is showing
+  and when it comes back into view, so an agent's answer appears in the thread by itself; the person can also ask it to
+  check at once. It makes no network request to do so when opened from a file on the person's computer, and when served
   from a website it reads only a file on that same site.
 
 **Addressed, and who closes**
@@ -1096,13 +1098,13 @@ an agent on the same computer is a later step and is not part of this one.)
 - A reply file can't make a person's comment change in any way.
 
 **Showing that a page is ready for an agent**
-- A page whose author has listed an agent says so in plain words in the comment control's menu, in one
+- With the agents add-on, a page whose author has listed an agent says so in plain words in the comment control's menu, in one
   line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
   shows nothing, so nothing is added for readers who don't need it.
-- The menu's copy-for-AI row has a second choice, shown on every page whether or not an agent is listed, **Copy a prompt for my agent**, which copies a short
+- With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
   instruction that tells an agent where this page's comments are, how to read them and how to answer,
   and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
-- All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
+- With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
   two plain choices, **Resolve** and **Still not right**, the second of which reopens it with a place for
@@ -1137,6 +1139,7 @@ an agent on the same computer is a later step and is not part of this one.)
 Comments live in the reviewer's own browser, so an agent can only see them if the person pastes them or the agent
 drives that browser. The live link lets an agent on the same computer read comments and answer them without either,
 and only after the person clicks.
+The page's side of the link is part of the agents add-on (§15d); `pipeup watch` adds it to the page it shows.
 
 **Starting it**
 - The author starts a link for a page file with one command on their own computer. The link shows the page from their
@@ -1176,6 +1179,56 @@ and only after the person clicks.
   commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
 - The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
   when the author is on their own computer.
+
+### 15d. The agents add-on
+
+*Built (0.7).* Reading an agent's replies, the live link and the prompt for an agent are needed only by pages
+that have an agent, so they move out of Pipeup itself into an add-on, `agents`, and every page without an agent no
+longer downloads them. Everything §15b and §15c say about what a person sees and what an agent may do stays as it is.
+
+**What stays in Pipeup itself**
+- The page's comments for an agent that is looking at it (§15b, Reading): as Markdown, and as data, open threads or all.
+- Copy as Markdown and Copy as Text (§7a); the Markdown still ends with the one-line instruction to work through the
+  threads and say what changed.
+- A thread an agent has marked **addressed** shows its note with **Resolve** and **Still not right** (§15b), and an AI
+  reply keeps the AI marking (§10), whichever add-on or file the reply came from.
+
+**What the add-on does**
+- Reads the replies file (§15b), keeps only replies from the agents the author listed, and says how many it ignored.
+- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy a
+  prompt for my agent** to the menu (§15b).
+- Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c).
+- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page. When the page is shown
+  through `pipeup watch`, and only after you switch it on, it sends this page's comments to the program running on
+  this computer. Nothing leaves this computer."
+- Follows the rules for every add-on (§11a): nothing is added to the page while comments are closed except words in the
+  control's label and tooltip, it looks like Pipeup, and it never posts, edits or resolves for anyone.
+
+**Adding it**
+- An author who wants replies from an agent adds the add-on and lists the agent (`data-pipeup-agents`); agents adding
+  Pipeup do both only when the author asks for replies, and say in words what that lets the agent do (§15).
+- **`pipeup watch` adds it for the page it shows**, from the copy that came with the command, so the live link needs no
+  edit to the page. Nothing is changed in the page's file.
+- **`pipeup watch` refuses a page whose Pipeup is too old.** Before it starts, it looks at which Pipeup the page uses.
+  A page on a version before 0.6 can't take an agent at all, so the command doesn't start; it says in words which
+  version the page uses and what to change. A page on 0.6.x already has agent support built in, so the command starts
+  and doesn't add the add-on. A page it can't read a version from starts, and the page says in words if agents aren't
+  available.
+- It can be included on its own, or in a combined file with Pipeup, like any add-on (§4).
+
+**Pages that already use agents (0.6)**
+- A page that uses Pipeup 0.6 or earlier keeps its agent support exactly as it is; nothing in a published version changes.
+- On a version that no longer has it built in, a page that lists an agent but has no agents add-on says so in
+  plain words in the browser console and in the check, and does nothing else; its comments are unaffected.
+- Replies files, signed replies and the command line (`pipeup agent`, `reply`, `comments`, `watch`) are unchanged, and
+  the add-on reads the same files.
+- If the add-on is put on a page whose Pipeup already has agent support, the add-on stays off and says why (§11a).
+
+**Skills and checking**
+- The integrate and add skills, `llms.txt` and the site's Markdown copies say that listing an agent also means adding
+  the agents add-on, with its address and integrity hash like any add-on, and that `pipeup watch` does it itself.
+- Check reports a page that lists an agent without the add-on, a replies file that can't be read, and replies for
+  threads that no longer exist, and lists the add-on among the page's add-ons (§15).
 
 ## 16. Distribution
 
@@ -1226,7 +1279,7 @@ and only after the person clicks.
    - dictation;
    - live review and presence.
 4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
-5. **Touch and narrow pages** (0.7).
+5. **Touch and narrow pages, and agents as an add-on** (0.7): §15d.
 6. **The rest of the command-line tool** (0.8): `init`, `check`, `read`.
 7. **The author's relay** (later):
    - rooms on a relay the author owns;
@@ -1248,6 +1301,8 @@ and only after the person clicks.
   flooded;
   whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
   before the sign-in the page supplies.
+- Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
+  the author's own browser.
 
 ---
 
@@ -1402,3 +1457,6 @@ and only after the person clicks.
 - 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).
 - 2026-10-12 — Proposed (not built): how an author learns of newer versions without Pipeup making any request of its own: an age line in the console, `pipeup check` and release notices, and an opt-in `updates` add-on that runs only in the author's context and shows console lines and, for major releases and security issues, a context-menu notice (section 14a).
 - 2026-10-12 — The update list is signed by the maintainer from their own computer, and goes out of date after a set time, so a forged or old copy is ignored (section 14a).
+- 2026-10-12 — Proposed (not built): agent support moves out of Pipeup itself into an `agents` add-on (reading replies, the live link, the prompt and the menu and All comments lines); comments for an agent, the addressed note and the AI marking stay; `pipeup watch` adds the add-on itself; pages on 0.6 are unchanged (section 15d, in 0.7).
+- 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
+- 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
