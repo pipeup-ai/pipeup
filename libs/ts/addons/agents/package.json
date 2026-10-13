@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/agents",
-  "version": "0.6.0",
+  "version": "0.7.0-beta.1",
   "description": "Lets an AI agent read and answer a page's comments: its replies file, the live link on this computer and the prompt for an agent.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.6.0"
+    "pipeup": "0.7.0-beta.1"
   },
   "pipeup": {
     "network": {

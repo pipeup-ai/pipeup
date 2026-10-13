@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.7.0-beta.1] - 2026-10-13
+
+This pre-release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Fixed
 - **Pipeup follows the page's light or dark look wherever the page makes the change**, not only on `<html>` and `<body>`: it reads the background actually painted behind its column and panel, and the page highlights now switch together with the rest of Pipeup (they used to keep the look they started with). An author can set the look with `data-pipeup-theme="light|dark"` on `<html>`.
 - **Pipeup reads modern colours** (`oklch()`, `color()`, `color-mix()`) when it works out whether the page is light or dark, so pages written with them are no longer misread.
@@ -289,7 +293,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.1...HEAD
+[0.7.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0-beta.1
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...v0.5.3
