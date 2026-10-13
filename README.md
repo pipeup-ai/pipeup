@@ -87,7 +87,7 @@ setting up saving reviews in Git) are in [apps/agent-skills](apps/agent-skills/)
 | Path | What |
 |---|---|
 | `libs/ts/pipeup` | The library: npm package `pipeup` and the CDN build `dist/pipeup.min.js` |
-| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
+| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`, `agents`, `emoji`, `github`, `updates`, `inbox`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
 | `services/mailbox` | `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract, and its checker |
 | `apps/site` | The website, its Try pages, `llms.txt` and the build script (`apps/site/build.sh`) |
 | `apps/agent-skills` | Agent skills: integrate, summarise and apply |
