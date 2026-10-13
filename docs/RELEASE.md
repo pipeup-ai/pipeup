@@ -75,6 +75,11 @@ format may still change; the README says the project is in alpha until 1.0.
      `node tools/sign-updates.mjs verify`, and commit `apps/site/updates.json` in the release pull request. The list
      expires after 90 days, so re-sign it before then even without a release. The key is made once with
      `node tools/sign-updates.mjs init`; its public half goes in `tools/updates-keys.json` (with an offline standby).
+     Both private keys are backed up in the maintainer's password manager; `k2` is the standby and is not in the
+     Keychain. **If `k1` is lost or leaked:** put `k2` in the Keychain with
+     `security add-generic-password -s pipeup-updates-signing -a k2 -T "" -w` (it asks for the key, so it stays out of
+     your shell history), sign with `node tools/sign-updates.mjs sign --id k2`, and in the next release remove `k1`
+     from `tools/updates-keys.json` and add a new standby.
 4. **Check it landed:** `tools/smoke-release.sh X.Y.Z` (see *After a release*).
 5. **After a promotion**, point npm's `next` tag at the stable version so it doesn't linger on the beta:
    `npm dist-tag add pipeup@X.Y.Z next` (a maintainer, with 2FA). Pages redirects `/next/` to the stable
