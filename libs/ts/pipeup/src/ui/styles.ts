@@ -76,6 +76,15 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
 .refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
 .ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rx .n{font-size:11px}
+.rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
+.rx:disabled{cursor:default;opacity:.7}
+.rx.new,.rxq.new{animation:pu-in var(--mv) var(--eo) both}
+.rxs{align-items:center}
+.rxq{display:inline-flex;gap:2px}
+.rxo{padding:2px 5px;border-radius:8px;font-size:16px;line-height:1.3;transition:background-color .2s var(--eo)}
+.rxo:hover,.rxo:focus-visible,.rxo[aria-pressed=true]{background:var(--as);outline:none}
+.rrow{min-width:0;flex:1;display:flex;align-items:center}
 .refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 .ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
@@ -251,6 +260,10 @@ transition:background-color .2s var(--eo)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
 .ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
 .ag[hidden]{display:none}
+.lns{display:flex;flex-direction:column}
+.ln{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--in) var(--eo),opacity var(--in) var(--eo)}
+.ln.show{grid-template-rows:1fr;opacity:1}
+.ln>.lw{overflow:hidden;min-height:0}
 .ag button{margin-left:auto;flex:none;padding:0 6px;border-radius:6px;color:var(--fa);transition:color .2s var(--eo),background-color .2s var(--eo)}.ag button:hover:not(:disabled),.ag button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}.ag button:disabled{opacity:.5;cursor:default}
 .adr{margin:8px 0 0 14px;padding:8px 10px;border-radius:8px;background:var(--so);font-size:13px;color:var(--k);animation:pu-in var(--mv) var(--eo) both}
 .adr small{display:block;font-size:12px;color:var(--fa)}
@@ -268,6 +281,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 }
 
 @media (prefers-reduced-motion: reduce){
+.ln{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}

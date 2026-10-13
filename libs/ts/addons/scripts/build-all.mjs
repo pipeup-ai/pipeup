@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 // Gzip budgets (add-ons design §15); a combined file is checked against core + add-on.
-const BUDGETS = { share: 8.5 * 1024, voice: 4 * 1024, live: 11 * 1024, assist: 10 * 1024 };
+const BUDGETS = { share: 8.5 * 1024, voice: 4 * 1024, live: 11 * 1024, assist: 10 * 1024, agents: 5 * 1024 };
 const CORE = 46 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
@@ -31,6 +31,9 @@ for (const id of Object.keys(BUDGETS)) {
     }
   }
 }
+// `pipeup watch` serves the agents add-on from the pipeup package, so the package carries a copy of it.
+if (existsSync(`${here}../agents/dist/agents.min.js`))
+  copyFileSync(`${here}../agents/dist/agents.min.js`, `${here}../../pipeup/dist/pipeup.agents.js`);
 // The example a company would write for itself (Send to Git): built with the others so its tests and the site can use it.
 execFileSync("node", [`${here}../examples/send-to-git/build.mjs`], {
   cwd: `${here}../examples/send-to-git`,

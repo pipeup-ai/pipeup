@@ -27,6 +27,19 @@ describe("OpLog", () => {
     expect(log.threads()[0]?.root.replies[0]?.text).toBe("again");
   });
 
+  it("keeps the comments, and drops only the op, when one is of a kind this version doesn't know", async () => {
+    const me = await createIdentity();
+    const log = new OpLog("doc");
+    const create = await log.append(me, "Sam", { kind: "create", text: "hi", anchor: ANCHOR });
+    // What an older copy sees of a newer kind (a reaction, to a version before reactions): signed and well made, but unknown.
+    const body = { ...create.body, kind: "future-kind", id: "", clock: 5 } as unknown as OpBody;
+    body.id = await computeOpId(body);
+    const unknown = await signOp(body, me);
+    const other = new OpLog("doc");
+    expect(await other.add([unknown, create])).toEqual([create]);
+    expect(other.threads()).toHaveLength(1);
+  });
+
   it("merges another log, skipping duplicates, other documents and forgeries", async () => {
     const amy = await createIdentity();
     const ben = await createIdentity();

@@ -13,6 +13,7 @@ export {
   type ComposerTool,
   type Dictation,
   type ItemHandle,
+  type ListNote,
   type MenuItem,
   type NetworkUse,
   type Off,

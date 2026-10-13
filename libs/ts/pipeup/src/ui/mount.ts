@@ -3,7 +3,7 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { attachAddons, drainQueue, firstCore } from "./addons";
+import { addons, attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { VERSION } from "../core";
@@ -129,6 +129,15 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     ephemeral,
     version: VERSION,
   });
+  // Agent support is an add-on: a page that lists an agent without it is told once, in the console, and loses nothing else.
+  const agentsWarning = /\S/.test(document.documentElement.getAttribute("data-pipeup-agents") ?? "")
+    ? window.setTimeout(() => {
+        if (!addons().some((a) => a.id === "agents"))
+          console.warn(
+            "pipeup: this page lists an agent (data-pipeup-agents), but the agents add-on isn't on the page, so replies won't show. Add @pipeup/agents (see the Add-ons page).",
+          );
+      }, 1000)
+    : 0;
   let unmounted = false;
   window.addEventListener("pagehide", onHide);
   return {
@@ -146,6 +155,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       if (unmounted) return;
       unmounted = true;
       window.removeEventListener("pagehide", onHide);
+      window.clearTimeout(agentsWarning);
       detach();
       app.destroy();
       setSlideHook(null);

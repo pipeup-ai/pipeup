@@ -19,7 +19,7 @@ Use the first of these that works:
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
    comment with `by`, `agent` and `text`). Pass `{ all: true }` to include resolved threads.
-2. **The pasted Markdown**: the author clicks **Copy as Markdown** (or **Copy a prompt for my agent**) and pastes it.
+2. **The pasted Markdown**: the author clicks **Copy as Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
 
 Each thread has a `- **Thread:** <id>` line: you need it to answer the thread.
 
@@ -42,8 +42,9 @@ Answer a question with an answer, not a change.
 You answer in the page's **replies file**, next to the page (`report.html` → `report.replies.js`), signed with your
 own key. The key stays on this computer in `~/.pipeup/agent.json`; never put it in the page or its folder.
 
-First time only — make your key, then ask the author to list it on the page (not needed under a live link, which
-lists it for you):
+First time only — make your key, then ask the author to list it on the page and to add the **agents add-on**
+(`@pipeup/agents`), which is what shows your replies in the page (neither is needed under a live link, which lists your
+key and adds the add-on for you):
 
 ```bash
 npx pipeup agent --name Claude
@@ -59,7 +60,8 @@ npx pipeup reply --page report.html --thread <Thread id> "Changed the 20% to 15 
 - The words say plainly what changed and where. If you did not make the change, say why, and leave out `--addressed`.
 - `--addressed` marks the thread addressed: the author sees your note and chooses **Resolve** or **Still not right**.
 - Your replies show under your own name (for example "Claude" or "Codex") with the AI marking. The page ignores replies from a key it doesn't list,
-  and says how many it ignored.
+  and says how many it ignored. A page that lists you but has no agents add-on says so once in the browser console and shows no replies:
+  tell the author to add it.
 - If the author says **Still not right** (the thread reopens with new words), treat the new words as the request and
   reply again in the same thread.
 

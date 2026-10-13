@@ -17,6 +17,13 @@ change the API and the stored comment format.
 - **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 to 50 KB gzip, for this and for the reactions and mentions to come.
 - Faint grey text is darker (light look) and lighter (dark look) so every text colour reaches 4.5 to 1 on its surface.
 
+### Changed
+- **Agent support is now an add-on, `@pipeup/agents`.** Reading an agent's replies file, the live link started by `pipeup watch`, and **Copy a prompt for my agent** moved out of Pipeup into it, so pages without an agent no longer download them. What stays in Pipeup: `Pipeup.comments()`, Copy as Markdown, the addressed note with Resolve and Still not right, and the AI marking. A page that lists an agent (`data-pipeup-agents`) without the add-on says so once in the browser console. Replies files, signed replies and the command line are unchanged. Pages pinned to 0.6.x keep their built-in support. **`pipeup watch` adds the add-on itself** to the page it shows (from the copy that ships in the `pipeup` package; the page's file is not changed), refuses a page whose Pipeup is before 0.6 with a message saying what to change, and adds nothing to a 0.6.x page, whose Pipeup already has agent support.
+
+### Added
+- **Reactions on comments.** A **React** button in a comment's details opens a quick row of six emoji (👍 ❤️ 😂 🎉 😮 🙏); each emoji shows under the words with how many gave it, yours marked, and pointing at one says who. Choosing one again takes it back. Resolved threads show their reactions but don't change them. A person has at most one of each emoji on a comment, and a comment holds at most 12 different ones. Reactions travel with the comments (two new signed op kinds, `react` and `unreact`, that older copies of Pipeup ignore), appear in Copy as Markdown and Text, in `Pipeup.comments()` and in All comments, and a listed agent may react. The full emoji picker will be an add-on.
+- **Add-ons can add a line under the All comments header**, with one optional text button (`host.setListNote`, capability `listnote`). It eases in and out and goes with the add-on. An add-on that needs it stays off, with its reason, on a Pipeup that doesn't have it.
+
 ## [0.6.0] - 2026-10-12
 
 This release is about agents: they can read a page's comments, answer them, and be installed in one step.

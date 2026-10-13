@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { copyAll, type ExportItem } from "../src/export/format";
-import { agentPrompt } from "../src/export/prompt";
 import { foldThreads } from "../src/model/fold";
 import { isWellFormed } from "../src/model/ops";
 import type { OpBody, SignedOp } from "../src/model/types";
-import { listedAgents, repliesUrl } from "../src/ui/replies";
 
 const A = "A".repeat(43);
 const B = "B".repeat(43);
@@ -76,47 +74,68 @@ describe("copy for AI with addressed threads", () => {
   });
 });
 
-describe("the prompt for an agent", () => {
-  const meta = {
-    title: "Brief",
-    url: "file:///a/brief.html",
-    replies: "file:///a/brief.replies.js",
-    listed: true,
-  };
+describe("reactions", () => {
+  const C = "C".repeat(43);
+  const react = (kind: "react" | "unreact", author: string, text = "👍", name = "") =>
+    op(kind, { author, name, text, target: id("t1") });
 
-  it("says where to read, where to answer and what never to do", () => {
-    const p = agentPrompt(meta);
-    expect(p).toContain("Pipeup.comments()");
-    expect(p).toContain("brief.replies.js");
-    expect(p).toContain("Never resolve, reopen, edit or delete");
+  it("are counted once per person and emoji, in the order they first appeared", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", A, "👍", "Amy"),
+      react("react", B, "❤️"),
+      react("react", B, "👍"),
+      react("react", B, "👍"),
+    ]);
+    expect(t!.root.reactions).toEqual([
+      {
+        emoji: "👍",
+        by: [
+          { author: A, name: "Amy" },
+          { author: B, name: "" },
+        ],
+      },
+      { emoji: "❤️", by: [{ author: B, name: "" }] },
+    ]);
   });
 
-  it("tells an agent whose key isn't listed how to get it listed, and carries no key", () => {
-    const p = agentPrompt({ ...meta, listed: false });
-    expect(p).toContain("pipeup agent");
-    expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
-  });
-});
-
-describe("a page's list of agents and its replies file", () => {
-  afterEach(() => {
-    document.documentElement.removeAttribute("data-pipeup-agents");
-    document.documentElement.removeAttribute("data-pipeup-replies");
-  });
-
-  it("lists public keys only, once each", () => {
-    document.documentElement.setAttribute("data-pipeup-agents", `${A}, nonsense ${A} ${B}`);
-    expect(listedAgents()).toEqual([A, B]);
+  it("can be taken back, by their own giver only, and the emoji goes when nobody has it", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", A),
+      react("react", B),
+      react("unreact", C),
+      react("unreact", A),
+    ]);
+    expect(t!.root.reactions).toEqual([{ emoji: "👍", by: [{ author: B, name: "" }] }]);
+    expect(foldThreads([create(), react("react", A), react("unreact", A)])[0]!.root.reactions).toEqual([]);
   });
 
-  it("finds no agents when the attribute is absent", () => {
-    expect(listedAgents()).toEqual([]);
+  it("fill in a name the person gave later, like comments do", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", B),
+      op("reply", { author: B, name: "Bo", text: "hi" }),
+    ]);
+    expect(t!.root.reactions[0]!.by[0]!.name).toBe("Bo");
   });
 
-  it("reads only a file on this site", () => {
-    document.documentElement.setAttribute("data-pipeup-replies", "https://elsewhere.test/r.js");
-    expect(repliesUrl()).toBeNull();
-    document.documentElement.setAttribute("data-pipeup-replies", "notes.replies.js");
-    expect(repliesUrl()).toMatch(/notes\.replies\.js$/);
+  it("stop at 12 different emoji on one comment", () => {
+    const many = ["😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘"];
+    const [t] = foldThreads([create(), ...many.map((e) => react("react", A, e))]);
+    expect(t!.root.reactions.map((r) => r.emoji)).toEqual(many.slice(0, 12));
+  });
+
+  it("go when the comment is deleted, and are ignored on a comment that isn't there", () => {
+    const [t] = foldThreads([create(), react("react", B), op("delete", { author: A, target: id("t1") })]);
+    expect(t!.root.reactions).toEqual([]);
+    expect(
+      foldThreads([create(), op("react", { author: B, text: "👍", target: id("nope") })])[0]!.root.reactions,
+    ).toEqual([]);
+  });
+
+  it("are the same whatever order the ops arrive in", () => {
+    const ops = [create(), react("react", A), react("react", B), react("unreact", A), react("react", A)];
+    expect(foldThreads([...ops].reverse())).toEqual(foldThreads(ops));
   });
 });

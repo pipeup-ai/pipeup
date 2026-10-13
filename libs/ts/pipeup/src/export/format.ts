@@ -58,6 +58,13 @@ export function copyAll(items: ExportItem[], as: CopyAs, meta: ExportMeta): stri
   return head + open.map((it, i) => threadMarkdown(it, `## Thread ${i + 1}`, now)).join("\n");
 }
 
+/** A comment's reactions as one line: "👍 2 (Sam, Red Fox) · ❤️ 1 (Lee)"; empty when nobody reacted. */
+export function reactionsLine(c: Comment): string {
+  return c.reactions
+    .map((r) => `${r.emoji} ${r.by.length} (${r.by.map((b) => one(nameOf(b))).join(", ")})`)
+    .join(" · ");
+}
+
 /** Text from other people or the page, on one line: newlines would break the metadata structure. */
 function one(s: string): string {
   return s.replace(/\s+/g, " ").trim();
@@ -85,10 +92,13 @@ function threadMarkdown(item: ExportItem, heading: string, now: number, page?: s
     "",
     `**${one(nameOf(t.root))}** (${formatAgo(t.root.at, now)}): ${words(t.root, "  ")}`,
   );
-  for (const r of t.root.replies)
+  if (t.root.reactions.length) lines.push(`Reactions: ${reactionsLine(t.root)}`);
+  for (const r of t.root.replies) {
     lines.push(
       `- **${one(nameOf(r))}** (${formatAgo(r.at, now)}): ${words(r, "  ")} <!-- comment:${r.id} -->`,
     );
+    if (r.reactions.length) lines.push(`  - Reactions: ${reactionsLine(r)}`);
+  }
   return lines.join("\n") + "\n";
 }
 
@@ -98,7 +108,11 @@ function threadText(item: ExportItem): string {
     one(l.where) + (l.quote ? `, on the text "${one(l.quote)}"` : ""),
     `${one(nameOf(t.root))}: ${words(t.root, "  ")}`,
   ];
-  for (const r of t.root.replies) lines.push(`  ${one(nameOf(r))}: ${words(r, "    ")}`);
+  if (t.root.reactions.length) lines.push(`  Reactions: ${reactionsLine(t.root)}`);
+  for (const r of t.root.replies) {
+    lines.push(`  ${one(nameOf(r))}: ${words(r, "    ")}`);
+    if (r.reactions.length) lines.push(`    Reactions: ${reactionsLine(r)}`);
+  }
   return lines.join("\n") + "\n";
 }
 

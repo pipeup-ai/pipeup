@@ -1,7 +1,7 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
 import { OpLog, type NewOp } from "./model/log";
 import { isAiName } from "./model/animals";
-import { LIMITS, MAX_TEXT } from "./model/ops";
+import { isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
 import type { Anchor, Comment, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
@@ -126,6 +126,30 @@ export class PipeupDocument {
     return this.enqueue(async () => {
       const { thread } = this.mine(commentId);
       await this.write({ kind: "delete", thread, target: commentId });
+    });
+  }
+
+  /** Reacts to a comment with one emoji; reacting twice with the same emoji changes nothing. */
+  react(commentId: string, emoji: string): Promise<void> {
+    return this.enqueue(async () => {
+      await this.write({
+        kind: "react",
+        thread: this.find(commentId).thread,
+        target: commentId,
+        text: checkEmoji(emoji),
+      });
+    });
+  }
+
+  /** Takes back this reviewer's own reaction. */
+  unreact(commentId: string, emoji: string): Promise<void> {
+    return this.enqueue(async () => {
+      await this.write({
+        kind: "unreact",
+        thread: this.find(commentId).thread,
+        target: commentId,
+        text: checkEmoji(emoji),
+      });
     });
   }
 
@@ -263,6 +287,11 @@ function checkText(text: string): string {
   if (!t) throw new Error("pipeup: a comment needs some words");
   if (t.length > MAX_TEXT) throw new Error(`pipeup: comments are limited to ${MAX_TEXT} characters`);
   return t;
+}
+
+function checkEmoji(emoji: string): string {
+  if (!isEmoji(emoji)) throw new Error("pipeup: a reaction is one emoji");
+  return emoji;
 }
 
 function checkName(name: string): string {

@@ -8,7 +8,7 @@ import type { Ctx, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
-import type { MenuItem } from "./addons";
+import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
 import { narrow, PANEL } from "./layout";
 import { threadView, type ThreadView } from "./thread-view";
@@ -64,30 +64,67 @@ export function createLauncher(ctx: Ctx): View {
     e.stopPropagation();
     ctx.menu.toggleResolved();
   });
-  // When the author has listed an agent: how it has answered, and a way to look for newer replies.
-  const agentWords = h("span", {});
-  const checkBtn = h("button", { type: "button" }, "Check for replies");
-  const agentLine = h("div", { class: "ag" }, agentWords, checkBtn);
-  agentLine.hidden = !ctx.replies.enabled;
-  checkBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    checkBtn.disabled = true;
-    ctx.replies
-      .check()
-      .then(
-        (n) => ctx.toast(n ? `${n} new ${n === 1 ? "reply" : "replies"}` : "No new replies"),
-        (err: unknown) => ctx.report(err),
-      )
-      .finally(() => {
-        checkBtn.disabled = false;
-        ctx.render();
-      });
-  });
+  // What add-ons say under the header ("Claude has answered 3 of 5"), each with an optional button. A line eases in
+  // when an add-on sets it and out when it takes it away, and stays put while its words change.
+  const notesBox = h("div", { class: "lns" });
+  const noted = new Map<
+    string,
+    { row: HTMLElement; words: HTMLElement; btn: HTMLButtonElement | null; note: ListNote }
+  >();
+  const paintNotes = () => {
+    for (const [id, line] of noted)
+      if (!ctx.addons.listNotes.has(id)) {
+        noted.delete(id);
+        line.row.classList.remove("show");
+        setTimeout(() => line.row.remove(), 320);
+      }
+    for (const [id, note] of ctx.addons.listNotes) {
+      let line = noted.get(id);
+      if (!line) {
+        const words = h("span", {});
+        const row = h("div", { class: "ln" }, h("div", { class: "lw" }, h("div", { class: "ag" }, words)));
+        row.dataset.addon = id;
+        line = { row, words, btn: null, note };
+        noted.set(id, line);
+        notesBox.append(row);
+        requestAnimationFrame(() => {
+          void row.offsetWidth;
+          row.classList.add("show");
+        });
+      }
+      line.note = note;
+      if (line.words.textContent !== note.text) line.words.textContent = note.text;
+      if (note.action && !line.btn) {
+        const btn = h("button", { type: "button" });
+        const mine = line;
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const act = mine.note.action;
+          if (!act) return;
+          btn.disabled = true;
+          act
+            .run()
+            .catch((err: unknown) => ctx.report(err))
+            .finally(() => {
+              btn.disabled = false;
+              ctx.render();
+            });
+        });
+        line.btn = btn;
+        line.words.after(btn);
+      } else if (!note.action && line.btn) {
+        line.btn.remove();
+        line.btn = null;
+      }
+      if (line.btn && note.action && line.btn.textContent !== note.action.label)
+        line.btn.textContent = note.action.label;
+    }
+  };
   const all = h(
     "div",
     { class: "all", role: "dialog", "aria-label": "All comments" },
     h("div", { class: "hd" }, h("span", {}, "All comments"), total, showResolved, close),
-    agentLine,
+    notesBox,
     list,
   );
   // The line from an open thread in the panel to its place on the page.
@@ -248,7 +285,14 @@ export function createLauncher(ctx: Ctx): View {
           "span",
           {},
           h("span", { class: "clamp" }, t.root.deleted ? "Deleted" : t.root.text),
-          h("small", {}, lost(t) ? `“${clip(t.anchor.snapshot, 80)}”` : i.location.where),
+          h(
+            "small",
+            {},
+            (lost(t) ? `“${clip(t.anchor.snapshot, 80)}”` : i.location.where) +
+              (t.root.reactions.length
+                ? ` · ${t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`).join(" ")}`
+                : ""),
+          ),
         ),
       );
       b.addEventListener("click", (e) => {
@@ -461,10 +505,6 @@ export function createLauncher(ctx: Ctx): View {
     closeToControl();
     void ctx.menu.copyAll("text");
   });
-  const promptRow = row(icon("copy"), () => {
-    closeToControl();
-    void ctx.menu.copyPrompt();
-  });
   /** Automatic, Light or Dark: each press moves on to the next, and the menu stays open so the page is seen to change. */
   const lookEnd = h("span", { class: "kc" });
   const lookRow = row(
@@ -476,16 +516,6 @@ export function createLauncher(ctx: Ctx): View {
     false,
     lookEnd,
   );
-  /** Only on a page shown through a link on this computer: comments go to the agent while this is on. */
-  const linkRow = row(
-    icon("send"),
-    () => {
-      ctx.link.set(!ctx.link.on()).then(sync, (e: unknown) => ctx.report(e));
-    },
-    true,
-  );
-  /** One quiet line when the author has listed an agent: it can answer here. */
-  const agentRow = h("div", { class: "sec", role: "presentation" });
   const count = h("span", { class: "kc" });
   const allRow = row(
     icon("list"),
@@ -542,12 +572,9 @@ export function createLauncher(ctx: Ctx): View {
   const rows = (): Node[] => [
     idRow,
     sepA,
-    ...(ctx.replies.enabled || ctx.link.enabled ? [agentRow] : []),
     copyRow,
     textRow,
-    promptRow,
     lookRow,
-    ...(ctx.link.enabled ? [linkRow] : []),
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
     sepB,
@@ -580,25 +607,9 @@ export function createLauncher(ctx: Ctx): View {
     }
     set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
     set(textRow, "Copy as Text", "Just the words");
-    set(
-      promptRow,
-      "Copy a prompt for my agent",
-      "Tells an AI agent where the comments are and how to answer them",
-    );
     const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;
     set(lookRow, "Look", `${lookWord}. Automatic follows the page; press to change`);
     lookEnd.textContent = lookWord;
-    const who = ctx.replies.who();
-    const agentName = who || ctx.link.agent;
-    agentRow.textContent = ctx.link.on()
-      ? `Sharing comments with ${agentName || "your agent"}`
-      : `${agentName || "An AI agent"} can answer comments here`;
-    set(
-      linkRow,
-      "Share with my agent",
-      "Sends this page's comments to the program running on this computer, and nothing else",
-      ctx.link.on(),
-    );
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
     const status = ctx.addons.statusText();
@@ -729,6 +740,7 @@ export function createLauncher(ctx: Ctx): View {
   // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
   const offAddons = ctx.addons.subscribe((structure) => {
     paintLabel();
+    paintNotes();
     if (!menuOpen || endEdit) return;
     if (structure) build();
     else sync();
@@ -779,22 +791,6 @@ export function createLauncher(ctx: Ctx): View {
       // Closed from elsewhere (Tab in comment mode moves to the page's blocks).
       if (menuOpen && !ctx.state.menu) setMenu(false);
       if (menuOpen) sync();
-      if (ctx.replies.enabled) {
-        const t = ctx.replies.tally(threads);
-        const who = ctx.replies.who() || ctx.link.agent || "An agent";
-        const said = t.answered
-          ? `${who} has answered ${t.answered} of ${t.open} open comments${t.addressed ? `; ${t.addressed} ${t.addressed === 1 ? "is" : "are"} marked addressed` : ""}`
-          : "No replies from an agent yet";
-        const skipped = ctx.replies.ignored();
-        const text =
-          (ctx.link.on() ? `Sharing with ${ctx.link.agent || "your agent"} · ` : "") +
-          said +
-          (skipped ? ` · ${skipped} from other writers ignored` : "") +
-          (t.stray
-            ? ` · replies for ${t.stray} comment${t.stray === 1 ? "" : "s"} this page doesn't have`
-            : "");
-        if (agentWords.textContent !== text) agentWords.textContent = text;
-      }
       const listing = ctx.state.listing;
       // On a narrow screen the panel is the whole width, so a chosen thread needs it out of the way.
       all.classList.toggle("full", narrow());

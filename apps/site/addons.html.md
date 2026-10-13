@@ -42,6 +42,14 @@ A small AI model on the reviewer's device reads the whole page and points to rel
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/assist.html, or on slides: https://pipeup-ai.github.io/pipeup/try/assist-deck.html
 - **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/assist@0.6.0/dist/assist.min.js" integrity="{{SRI:assist}}" crossorigin="anonymous"></script>`.
 
+## Agents
+
+Lets an AI agent answer comments: it shows the replies the agent wrote into a replies file next to the page, and is the page's side of the live link that `npx pipeup watch` starts. Add it when you list an agent with `data-pipeup-agents`.
+
+- **Sends**: nothing, until you switch **Share with my agent** on (only on a page shown with `pipeup watch`); then this page's comments go to the program on your own computer. Nothing leaves the computer.
+- **Asks first**: you, with a switch that is off every time the page loads.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.6.0/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
+
 ## Your own mailbox
 
 A small server the author runs for Share, so even sealed comments stay inside their organisation. It is not a page script: nothing is added to the HTML for it, and the author gives you its address for `data-pipeup-share`.

@@ -19,7 +19,7 @@ export interface Link {
 /** Shares the page's comments with the program running on this computer, only while the person has it switched on. */
 export function startLink(o: {
   /** What to send: the comments as they are now. */
-  snapshot(): unknown;
+  snapshot(): Promise<unknown>;
   /** Hears every change to the comments; returns a function that stops listening. */
   changes(fn: () => void): () => void;
   /** Sharing stopped by itself (the link went away), or was switched on or off: redraw. */
@@ -38,7 +38,7 @@ export function startLink(o: {
       const r = await fetch(`${base}/comments`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(o.snapshot()),
+        body: JSON.stringify(await o.snapshot()),
       });
       ok = r.ok;
     } catch {

@@ -25,6 +25,7 @@ const c = (
   edited: false,
   deleted: false,
   replies,
+  reactions: [],
   ...extra,
 });
 const thread = (over: Partial<Thread> = {}): Thread => ({
@@ -42,6 +43,10 @@ const actions = (): ThreadActions & { calls: string[] } => {
   const calls: string[] = [];
   return {
     calls,
+    me: "me",
+    react: vi.fn(
+      async (id: string, e: string, on: boolean) => void calls.push(`${on ? "react" : "unreact"} ${id} ${e}`),
+    ),
     reply: vi.fn(async (p: string, t: string) => void calls.push(`reply ${p} ${t}`)),
     resolve: vi.fn(async (id: string) => void calls.push(`resolve ${id}`)),
     reopen: vi.fn(async (id: string) => void calls.push(`reopen ${id}`)),
@@ -110,7 +115,7 @@ describe("threadView", () => {
     expect(el.querySelectorAll(".rbox.always")).toHaveLength(1);
     expect(el.querySelector('.ib[aria-label="Reply"]')).toBeNull();
     const labels = [...el.querySelectorAll(".root .acts .ib")].map((b) => b.getAttribute("aria-label"));
-    expect(labels).toEqual(["Copy thread", "Resolve"]);
+    expect(labels).toEqual(["React", "Copy thread", "Resolve"]);
   });
 
   it("renders text as text, never HTML", () => {
@@ -425,5 +430,65 @@ describe("a mark from an add-on", () => {
     threadMarks.delete("t1");
     view.update(t);
     expect(view.element.querySelector(".seen")).toBeNull();
+  });
+});
+
+describe("reactions in a thread", () => {
+  const withReactions = (resolved = false) =>
+    thread({
+      resolved,
+      root: c("t1", "Ada", "Is it ready?", [], {
+        reactions: [
+          {
+            emoji: "👍",
+            by: [
+              { author: "me", name: "" },
+              { author: "sam", name: "Sam" },
+            ],
+          },
+          { emoji: "🎉", by: [{ author: "lee", name: "Lee" }] },
+        ],
+      }),
+    });
+
+  it("shows each emoji with its count, marks yours, says who on hover, and nothing when nobody reacted", () => {
+    const quiet = threadView(thread(), actions(), { variant: "popover", now: () => NOW }).element;
+    expect(quiet.querySelector(".rxs")).toBeNull();
+    const el = threadView(withReactions(), actions(), { variant: "popover", now: () => NOW }).element;
+    const chips = [...el.querySelectorAll<HTMLButtonElement>(".rx")];
+    expect(chips.map((b) => b.textContent)).toEqual([
+      "👍2Sam, You".replace("Sam, You", "You, Sam"),
+      "🎉1Lee",
+    ]);
+    expect(chips[0]!.getAttribute("aria-pressed")).toBe("true");
+    expect(chips[0]!.getAttribute("aria-label")).toBe("Thumbs up, 2 people, including you");
+    expect(chips[1]!.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("takes your reaction back, or gives one, with a click", async () => {
+    const a = actions();
+    const el = threadView(withReactions(), a, { variant: "popover", now: () => NOW }).element;
+    el.querySelectorAll<HTMLButtonElement>(".rx")[0]!.click();
+    el.querySelectorAll<HTMLButtonElement>(".rx")[1]!.click();
+    expect(a.calls).toEqual(["unreact t1 👍", "react t1 🎉"]);
+  });
+
+  it("opens a quick row from React, and a choice gives the reaction and closes it", () => {
+    const a = actions();
+    const el = threadView(thread(), a, { variant: "popover", now: () => NOW }).element;
+    expect(el.querySelector(".rxq")).toBeNull();
+    el.querySelector<HTMLButtonElement>("button[aria-label=React]")!.click();
+    const quick = [...el.querySelectorAll<HTMLButtonElement>(".rxo")];
+    expect(quick.map((b) => b.textContent)).toEqual(["👍", "❤️", "😂", "🎉", "😮", "🙏"]);
+    quick[3]!.click();
+    expect(a.calls).toEqual(["react t1 🎉"]);
+    expect(el.querySelector(".rxq")).toBeNull();
+  });
+
+  it("still shows reactions on a resolved thread, but can't change them", () => {
+    const el = threadView(withReactions(true), actions(), { variant: "popover", now: () => NOW }).element;
+    expect(el.querySelectorAll(".rx")).toHaveLength(2);
+    expect([...el.querySelectorAll<HTMLButtonElement>(".rx")].every((b) => b.disabled)).toBe(true);
+    expect(el.querySelector("button[aria-label=React]")).toBeNull();
   });
 });

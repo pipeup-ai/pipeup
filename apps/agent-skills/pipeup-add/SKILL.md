@@ -33,7 +33,10 @@ Pipeup lets people comment on an HTML page in place. **When the page already exi
    tell the author about a Content-Security-Policy that allows scripts only from the page and the CDN. Don't apply the
    policy yourself: a strict one can break a page.
 5. **Offer an agent a place to answer.** Only if the author wants you (or another agent) to reply to comments: see
-   `pipeup-apply`. Don't list an agent's key you weren't given.
+   `pipeup-apply`. Listing an agent (`data-pipeup-agents`) also means adding the agents add-on (`@pipeup/agents`), pinned
+   with its integrity hash, because it is what shows the agent's replies in the page; say in plain words what it does
+   (see `pipeup-integrate`). Don't list an agent's key you weren't given. On the author's own computer `pipeup watch`
+   adds the add-on for the page it shows.
 
 ## Keep
 
@@ -44,5 +47,5 @@ When you rewrite or regenerate a page, keep `data-pipeup-doc`, `data-pipeup-shar
 ## Tell the author
 
 What you added (one script, a few attributes), how to comment (**⇧⌥C** on a Mac, **Shift+Alt+C** elsewhere, or the round
-button), how comments come back (**Copy as Markdown**, or **Copy a prompt for my agent**), and that nothing leaves their
+button), how comments come back (**Copy as Markdown**, or, with the agents add-on, **Copy a prompt for my agent**), and that nothing leaves their
 browser unless they choose it.

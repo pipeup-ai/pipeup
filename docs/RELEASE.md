@@ -27,10 +27,13 @@ format may still change; the README says the project is in alpha until 1.0.
 | **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
 | **0.5** | **Add-ons**: add-on support, `share` (comments shared through an encrypted service), `voice` (dictating comments) and `live` (live review and presence, peer to peer), and the mailbox server |
 | **0.6** | **Agents**: read a page's comments (`Pipeup.comments()`), answer them in a replies file and mark them addressed, a live link to an agent on the same computer, and the skills installed as a Claude Code plugin or with `pipeup skills install`; the `pipeup` command line begins (`agent`, `reply`, `watch`, `comments`, `skills`) |
-| 0.7 | Touch and the narrow-page drawer |
+| 0.7 | Touch and the narrow-page drawer; agent support becomes an add-on, `@pipeup/agents` (reading replies, the live link and the prompt move out of core; `pipeup watch` adds it to the page it shows) |
 | 0.8 | The rest of the command line (`init`, `check`, `read`) |
 | 1.0 | Stable API and stored format |
 
+- **The agents add-on ships inside the `pipeup` package too.** `pipeup watch` serves it from `dist/pipeup.agents.js`, a copy
+  that the add-ons build (`libs/ts/addons/scripts/build-all.mjs`) puts there. The release builds and checks the add-ons
+  before it publishes the core, so the published package carries the copy; if it is ever missing, `watch` says so in words.
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.
 - Pre-releases (`0.5.0-beta.1`, `-beta.2`, …) let a milestone be tried for real before it reaches
   everyone. They go to the npm `next` tag and never move `latest`. See

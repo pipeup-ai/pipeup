@@ -95,7 +95,6 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   expect(names.slice(1)).toEqual([
     "Copy as Markdown",
     "Copy as Text",
-    "Copy a prompt for my agent",
     "Look",
     "All comments",
     "Start commenting",
