@@ -8,7 +8,7 @@ Optional features for Pipeup, each one more script. The design is [docs/design/a
 | `voice/`  | `@pipeup/voice`  | Dictating comments with the browser's own speech engine                                                                               |
 | `live/`   | `@pipeup/live`   | Live comments and presence between people on the page, peer to peer                                                                   |
 | `assist/` | `@pipeup/assist` | Short replies to comments from a small AI model on the reviewer's own device                                                          |
-| `agents/` | `@pipeup/agents` | Shows an AI agent's replies, is the page's side of the live link from `pipeup watch`, and offers the prompt for an agent               |
+| `agents/` | `@pipeup/agents` | Shows an AI agent's replies, is the page's side of the live link from `pipeup watch`, and offers the prompt for an agent              |
 | `kit/`    | private          | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
 | `test/`   | private          | A fixture add-on that uses every slot, for the browser tests                                                                          |
 
