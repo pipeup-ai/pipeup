@@ -1,4 +1,4 @@
-export const VERSION = "0.7.0-beta.2";
+export const VERSION = "0.7.0";
 /** The day this version was made (set with the version): Pipeup says so, once, in the console when it is over a year old. */
 export const BUILT = "2026-10-13";
 

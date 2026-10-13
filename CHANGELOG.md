@@ -7,22 +7,9 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
-## [0.7.0-beta.2] - 2026-10-13
+## [0.7.0] - 2026-10-13
 
-A small beta on top of beta.1: touch screens, a page check, and signed update notices.
-
-### Added
-
-- `pipeup check <page>` says what Pipeup changes or covers on a page, at three widths, and warns when the page has no viewport setting.
-- The update list is signed, with the first signing key published in `tools/updates-keys.json`; the `updates` add-on in this release carries that key and can verify the list.
-
-### Changed
-
-- On touch screens the menu's rows are at least 44 px tall and buttons at least 36 px, so they are easy to hit with a finger.
-
-## [0.7.0-beta.1] - 2026-10-13
-
-This pre-release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site. It is a beta: try it from the `next` channel and tell us what breaks.
+This release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site, works with a finger, and a check for pages. It folds the two betas, 0.7.0-beta.1 and 0.7.0-beta.2.
 
 ### Fixed
 - **Pipeup follows the page's light or dark look wherever the page makes the change**, not only on `<html>` and `<body>`: it reads the background actually painted behind its column and panel, and the page highlights now switch together with the rest of Pipeup (they used to keep the look they started with). An author can set the look with `data-pipeup-theme="light|dark"` on `<html>`.
@@ -31,13 +18,16 @@ This pre-release is about talking to each other: reactions, mentions, identities
 - The AI avatar's ring no longer pulses and the "writing" dots are gone; an agent's reply still shows as it is written, with "AI assistant · writing now" under it. Add-ons that want their own flourishes can add them with `host.addStyles`.
 - Threads in the column always sit on their own soft backing, so their words stay readable on any page.
 - A right-to-left page no longer flips Pipeup's layout.
-- **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 to 50 KB gzip, for this and for the reactions and mentions to come.
+- **A Look choice in the menu** (Automatic, Light or Dark), kept in the browser, beats the author's setting and the page. The size budget rises from 46 KB to 56 KB gzip, for this and for the reactions, mentions and touch work.
 - Faint grey text is darker (light look) and lighter (dark look) so every text colour reaches 4.5 to 1 on its surface.
 
 ### Changed
+- **On touch screens the menu's rows are at least 44 px tall and buttons at least 36 px**, so they are easy to hit with a finger.
 - **Agent support is now an add-on, `@pipeup/agents`.** Reading an agent's replies file, the live link started by `pipeup watch`, and **Copy a prompt for my agent** moved out of Pipeup into it, so pages without an agent no longer download them. What stays in Pipeup: `Pipeup.comments()`, Copy as Markdown, the addressed note with Resolve and Still not right, and the AI marking. A page that lists an agent (`data-pipeup-agents`) without the add-on says so once in the browser console. Replies files, signed replies and the command line are unchanged. Pages pinned to 0.6.x keep their built-in support. **`pipeup watch` adds the add-on itself** to the page it shows (from the copy that ships in the `pipeup` package; the page's file is not changed), refuses a page whose Pipeup is before 0.6 with a message saying what to change, and adds nothing to a 0.6.x page, whose Pipeup already has agent support.
 
 ### Added
+- **`pipeup check <page>`** says what Pipeup changes or covers on a page, at three widths, and warns when the page has no viewport setting (phones would show it zoomed out).
+- **The update list is signed**, and the first signing key is published in `tools/updates-keys.json`, so the `updates` add-on can verify it.
 - **Mentions.** Typing `@` in a comment or reply lists the people in the document (everyone who has commented or reacted), the agents the page lists, and people a page or add-on supplies (`Pipeup.setPeople`); the choice is stored with the comment, signed with it, and shown as a tinted name. When a comment names you, Pipeup says so once ("Sam mentioned you in 1 comment"), All comments gets a **Mentions of me** switch, and opening the thread marks it **seen** (a signed `seen` op, so your other devices know). Two people with one name show with a short tag (`Sam · 4F2A`) so they can be told apart, in comments, reactions and exports.
 - **Portable identities.** **My identity** in the menu: an ordinary identity can't leave the browser, so *Make it portable* makes a new one from a 32-byte seed you keep as a recovery code (`PU1-…`, with a checksum) or a `.pipeup-id` file; *Use a recovery code* brings that identity to another browser or computer. Comments written before stay under the old identity. Ordinary identities are unchanged and still can't be exported.
 - **Let people reach you.** In **My identity** you can share an email address or a GitHub name (`gh:name`) with everyone who has the comments (two new signed op kinds, `contact` and `uncontact`; you can stop sharing). After a comment that mentions someone who shared an email, Pipeup offers to open your own mail with the words and the page filled in; it sends nothing itself.
@@ -307,9 +297,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.2...HEAD
-[0.7.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0-beta.1...v0.7.0-beta.2
-[0.7.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0-beta.1
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4
 [0.5.3]: https://github.com/pipeup-ai/pipeup/compare/v0.5.2...v0.5.3
