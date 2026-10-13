@@ -355,6 +355,19 @@
         </div>
       </section>
 
+      <section class="addon plain" id="emoji-addon" data-pipeup-id="emoji-addon">
+        <div class="text">
+          <h2>Emoji</h2>
+          <p class="one">The full set of emoji for reactions: search, the groups phones use, recently used and a skin tone.</p>
+          <p class="fact"><b>Sends</b> Nothing. The emoji are part of the script.</p>
+          <p class="fact"><b>Asks first</b> Nothing to ask: it only adds a More button to the row of reactions Pipeup already offers.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="emoji-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="emoji-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+      </section>
+
       <section class="addon plain" id="mailbox" data-pipeup-id="mailbox">
         <div class="text">
           <h2>Your own mailbox</h2>
@@ -447,7 +460,7 @@
       const CDN = "https://cdn.jsdelivr.net/npm/";
       const ADDONS_VERSION = "0.6.0"; // tools/set-version.sh keeps this in step with the release
       // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
-      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}" };
+      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}" };
       const tag = (pkg, file) => {
         const sri = SRI[pkg.split("/")[1]];
         return `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"${sri.startsWith("sha384-") ? ` integrity="${sri}" crossorigin="anonymous"` : ""}><\/script>`;
@@ -526,6 +539,17 @@
           ...SAFE("agents", "to nowhere new (the page reads a file next to it, and sends comments only to the program on my own computer when I switch sharing on)"),
           "",
           "Nothing is sent before I switch Share with my agent on. Leave everything else on the page as it is.",
+        ].join("\n"),
+        emoji: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Emoji add-on, so reviewers can react to comments with any emoji, not just the quick row.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/emoji", "emoji.min.js")}`,
+          "",
+          ...SAFE("emoji", "to nowhere new (the emoji are part of the script)"),
+          "",
+          "Nothing is sent anywhere. Leave everything else on the page as it is.",
         ].join("\n"),
         live: () => [
           "My HTML page already uses Pipeup for comments. Please add the Pipeup Live add-on, so reviewers can see who else is on the page.",

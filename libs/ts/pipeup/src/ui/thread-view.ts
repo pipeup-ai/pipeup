@@ -6,7 +6,7 @@ import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
 import { markAgain, threadMarks, threadNotes } from "./notes";
-import { reactionRow } from "./reactions";
+import { reactionRow, type ReactionPicker } from "./reactions";
 
 export interface ThreadActions {
   /** This reviewer's key, to mark their own reactions. */
@@ -14,6 +14,8 @@ export interface ThreadActions {
   reply(parentId: string, text: string): Promise<void>;
   /** Gives (`on`) or takes back this reviewer's reaction to a comment. */
   react(commentId: string, emoji: string, on: boolean): Promise<void>;
+  /** The full emoji picker, when an add-on provides one. */
+  picker(): ReactionPicker | null;
   resolve(threadId: string): Promise<void>;
   reopen(threadId: string): Promise<void>;
   /** "Still not right" on an addressed thread: reopens it and puts the cursor in its reply line. */
@@ -138,6 +140,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     const reactions = (c: Comment) =>
       reactionRow(c, {
         me: actions.me,
+        picker: actions.picker(),
         resolved: t.resolved,
         quick: quickOpen.has(c.id),
         seen: reactionsSeen,

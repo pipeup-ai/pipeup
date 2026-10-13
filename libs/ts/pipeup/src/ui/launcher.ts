@@ -754,6 +754,8 @@ export function createLauncher(ctx: Ctx): View {
   // one at a time, and never also an open thread on the page. A reply line outside the panel keeps its own Escape.
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== "Escape" || endEdit) return;
+    // The emoji picker takes its own Escape.
+    if (e.composedPath().some((n) => n instanceof Element && n.classList.contains("rxp"))) return;
     const at = e.composedPath()[0];
     if (menuOpen) closeToControl();
     else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at))) {

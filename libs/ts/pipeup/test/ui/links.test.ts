@@ -107,6 +107,7 @@ describe("linkify", () => {
     };
     const actions = {
       me: "me",
+      picker: () => null,
       react: vi.fn(),
       reply: vi.fn(),
       resolve: vi.fn(),

@@ -50,6 +50,14 @@ Lets an AI agent answer comments: it shows the replies the agent wrote into a re
 - **Asks first**: you, with a switch that is off every time the page loads.
 - **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.6.0/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
 
+## Emoji
+
+The full set of emoji for reactions: search, the groups phones use, recently used and a skin tone. Pipeup alone offers a quick row of six.
+
+- **Sends**: nothing. The emoji are part of the script.
+- **Asks first**: nothing to ask; it only adds a More button to the reaction row.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/emoji@0.6.0/dist/emoji.min.js" integrity="{{SRI:emoji}}" crossorigin="anonymous"></script>`.
+
 ## Your own mailbox
 
 A small server the author runs for Share, so even sealed comments stay inside their organisation. It is not a page script: nothing is added to the HTML for it, and the author gives you its address for `data-pipeup-share`.

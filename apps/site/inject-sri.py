@@ -16,7 +16,7 @@ def sri(data: bytes) -> str:
     return "sha384-" + base64.b64encode(hashlib.sha384(data).digest()).decode()
 
 values = {}
-for id_ in ("share", "voice", "live", "assist", "agents"):
+for id_ in ("share", "voice", "live", "assist", "agents", "emoji"):
     value = ""
     try:
         with urllib.request.urlopen(f"https://cdn.jsdelivr.net/npm/@pipeup/{id_}@{version}/dist/{id_}.min.js", timeout=10) as r:

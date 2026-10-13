@@ -44,6 +44,7 @@ const actions = (): ThreadActions & { calls: string[] } => {
   return {
     calls,
     me: "me",
+    picker: () => null,
     react: vi.fn(
       async (id: string, e: string, on: boolean) => void calls.push(`${on ? "react" : "unreact"} ${id} ${e}`),
     ),

@@ -194,6 +194,7 @@ export function startApp(o: AppOptions): App {
 
   const actions: ThreadActions = {
     me: o.doc.me,
+    picker: () => addons.picker,
     react: async (commentId, emoji, on) => {
       try {
         await (on ? o.doc.react(commentId, emoji) : o.doc.unreact(commentId, emoji));

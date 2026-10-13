@@ -76,6 +76,8 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
 .refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
 .ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rxp{position:fixed;width:320px;height:340px;border-radius:12px;overflow:hidden;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
+.rxp.show{opacity:1;transform:none;pointer-events:auto}
 .rx .n{font-size:11px}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
 .rx:disabled{cursor:default;opacity:.7}
@@ -118,7 +120,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .bub.in:hover,.bub.on{transform:scale(1.18)}
 .bub.done{background:var(--fa)}
 .bub.ghost{pointer-events:none}
-.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
+.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode,.rxp{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
 .tip{position:fixed;max-width:260px;border-radius:10px;padding:7px 10px;opacity:0;transform:translateY(3px);
 transition:opacity .22s var(--eo),transform .26s var(--eo)}
 .tip.show{opacity:1;transform:none;pointer-events:auto;cursor:pointer;
@@ -283,7 +285,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 @media (prefers-reduced-motion: reduce){
 .ln{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc,.rxp{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}

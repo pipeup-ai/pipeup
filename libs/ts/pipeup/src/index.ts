@@ -14,6 +14,7 @@ export {
   type Dictation,
   type ItemHandle,
   type ListNote,
+  type ReactionPicker,
   type MenuItem,
   type NetworkUse,
   type Off,

@@ -27,7 +27,8 @@ export type Capability =
   | "overlay"
   | "here"
   | "sign"
-  | "listnote";
+  | "listnote"
+  | "reactions";
 
 const CAPABILITIES: readonly Capability[] = [
   "sync",
@@ -42,6 +43,7 @@ const CAPABILITIES: readonly Capability[] = [
   "here",
   "sign",
   "listnote",
+  "reactions",
 ];
 
 export interface NetworkUse {
@@ -141,6 +143,8 @@ export interface UiSnapshot {
   writing: string | null;
 }
 
+import type { ReactionPicker } from "./reactions";
+export type { ReactionPicker } from "./reactions";
 export type { ComposerHandle, ComposerTool, Dictation } from "./composer";
 
 export interface AddonHost {
@@ -176,6 +180,8 @@ export interface AddonHost {
   setStatus(status: Status | null): void;
   /** Shows (or, with null, removes) this add-on's line under the All comments header. */
   setListNote(note: ListNote | null): void;
+  /** Offers the full set of emoji for reactions: the quick row then ends with a button that opens it. */
+  setReactionPicker(picker: ReactionPicker | null): void;
   overlay(): HTMLElement;
   onFrame(fn: () => void): Off;
   /** What a comment on `at` would save. */
@@ -209,6 +215,9 @@ export class Surface {
   private paint = 0;
   readonly statuses = new Map<string, Status>();
   readonly listNotes = new Map<string, ListNote>();
+  /** The emoji picker an add-on brought, if any (the latest to set one). */
+  picker: ReactionPicker | null = null;
+  private pickerOwner = "";
   private readonly toolList: ComposerTool[] = [];
   private readonly frames = new Set<() => void>();
   private readonly uis = new Set<(ui: UiSnapshot) => void>();
@@ -312,6 +321,17 @@ export class Surface {
   setIn<T>(map: Map<string, T>, id: string, value: T | null): void {
     if (value) map.set(id, value);
     else map.delete(id);
+    this.changed(false);
+  }
+
+  setPicker(id: string, picker: ReactionPicker | null): void {
+    if (picker) {
+      this.picker = picker;
+      this.pickerOwner = id;
+    } else if (this.pickerOwner === id) {
+      this.picker = null;
+      this.pickerOwner = "";
+    }
     this.changed(false);
   }
 
@@ -518,6 +538,7 @@ export class Surface {
     this.overlays.get(id)?.remove();
     this.overlays.delete(id);
     for (const m of [this.notes, this.statuses, this.listNotes, this.pending]) m.delete(id);
+    this.setPicker(id, null);
     for (const thread of this.writing.get(id) ?? []) threadNotes.delete(thread);
     this.writing.delete(id);
     for (const thread of this.marked.get(id) ?? []) {
@@ -704,6 +725,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     addStyles: live((css) => surface.addSheet(id, css)),
     setStatus: live((status) => surface.setIn(surface.statuses, id, status)),
     setListNote: live((note) => surface.setIn(surface.listNotes, id, note)),
+    setReactionPicker: live((picker) => surface.setPicker(id, picker)),
     overlay: () => surface.ovFor(id),
     onFrame: live((fn) => surface.onTick(id, fn)),
     where: (at) => surface.ctx.here.view(at),
