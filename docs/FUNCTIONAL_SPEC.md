@@ -1254,6 +1254,28 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
   A pre-release never changes what a plain install gets, the stable website or the stable CDN
   address.
 
+## 16a. Keeping Pipeup small
+
+Pipeup's size is part of what it promises (§16). It grew from 36.8 KB (gzip) in 0.4.1 to 52.3 KB in 0.7.0, because reactions, mentions,
+portable identities and the one-look-everywhere work all landed in it, and the budget rose to 56 KB to make room. 0.8 starts with a size pass.
+
+- **Nothing a person relies on changes.** Every comment saved by any released version stays readable and verifiable; every
+  control, shortcut, export and add-on slot works as before; the page and its authors see no difference except a smaller
+  download. A size pass that changes behaviour is a different change and is specified on its own.
+- **A lower budget.** The size of Pipeup alone (and of the file that includes it) comes down to **at most 50 KB (gzip)**, and
+  the budget is lowered to match, so a later release can't quietly grow back. The add-ons' budgets stay as they are, except
+  where a feature moves into one (below).
+- **Features that few pages or people use may move into an add-on**, as agent support did in 0.7, but only with the maintainer's
+  agreement and only if the move is invisible to anyone who doesn't use the feature:
+  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on (approved)
+    that the author includes when they want it. Without it the menu has no such row, the ordinary identity works exactly as today,
+    and comments written under a portable identity are still shown and verified by Pipeup itself.
+  - Reactions, mentions and the appearance work stay in Pipeup: most reviewers use them, and they shape what every page looks like.
+- **Growth has to be paid for.** A change that adds more than 1 KB (gzip) to Pipeup says in its pull request what it removes or
+  why it can't live in an add-on, and a budget increase is stated in the release notes (§16).
+- **The size is reported in words.** Each release says the size of Pipeup, of each add-on, and of each combined file, and what the
+  change was since the last release.
+
 ## 17. Out of scope for now
 
 - Standalone images and PDFs as review targets.
@@ -1281,7 +1303,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
    - live review and presence.
 4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
 5. **Touch and narrow pages, and agents as an add-on** (0.7): §15d.
-6. **The rest of the command-line tool** (0.8): `init`, `check`, `read`.
+6. **The rest of the command-line tool** (0.8): `init`, `read` (`check` shipped in 0.7). **A size pass** (§16a).
 7. **The author's relay** (later):
    - rooms on a relay the author owns;
    - invites shared separately;
@@ -1463,3 +1485,5 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
 - 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.
 - 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.
+- 2026-10-13 — Draft for review: a size pass for 0.8 (section 16a): Pipeup alone down to 50 KB gzip, behaviour unchanged, portable identities possibly moving to an add-on. 0.8 also lists `check` as shipped in 0.7.
+- 2026-10-13 — Approved: the 0.8 size pass (section 16a), with portable identities moving to an add-on.
