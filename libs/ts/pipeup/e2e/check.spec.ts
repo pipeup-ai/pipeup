@@ -66,3 +66,13 @@ test("a page that doesn't exist is said so in words", async () => {
   );
   expect(bad.length).toBeGreaterThan(0);
 });
+
+test("a page with no viewport setting is told phones will show it zoomed out", async () => {
+  test.setTimeout(90_000);
+  const bare = await check("doc.html");
+  const w = bare.results.find((x) => x.what === "The page suits phones")!;
+  expect(w.status).toBe("warn");
+  expect(w.detail).toContain("viewport");
+  const fine = await check("check-phone.html");
+  expect(fine.results.find((x) => x.what === "The page suits phones")?.status).toBe("pass");
+});
