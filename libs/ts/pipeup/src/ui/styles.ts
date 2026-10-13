@@ -298,6 +298,17 @@ transition:background-color .2s var(--eo)}
 transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* Touch: fingers need bigger targets than pointers (44 px for the menu's rows, 36 and more for buttons). */
+@media (pointer:coarse){
+.mi{min-height:44px}
+.ib{min-width:36px;min-height:36px}
+.rxo{min-width:40px;min-height:40px}
+.refs .ref{min-height:34px}
+.mnl li{min-height:40px}
+.dlg-btn,.hs{min-height:40px}
+.send{min-width:36px;min-height:36px}
+}
+
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}
 .layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button,.xb button):focus-visible{outline:2px solid Highlight}
