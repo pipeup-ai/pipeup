@@ -5,6 +5,7 @@ import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { check, table } from "./check.mjs";
+import { init, InitError } from "./init.mjs";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
 
@@ -14,7 +15,16 @@ const core = () => import("../dist/pipeup.core.js");
 const KEYFILE = process.env.PIPEUP_AGENT_FILE || join(homedir(), ".pipeup", "agent.json");
 const AI = "AI assistant";
 
-const USAGE = `pipeup skills install|remove|list [--project] [--agent claude|codex|all] [--yes] [--replace] [--dry-run]
+const USAGE = `pipeup init <page.html> [--yes] [--dry-run] [--update] [--offline] [--addon <id>]… [--agent] [--marks]
+  Adds Pipeup to the page: the script pinned to this version and its integrity hash, and a document identity if the
+  page has none (never a new one for a page that has one). It says what it will change and asks first; every other
+  byte stays as it was. --update moves a page to this version, --offline puts Pipeup inside the page, --addon adds an
+  add-on (saying what it sends; one that needs something asks, or takes it as --inbox <url> or --github-repo owner/repo),
+  --agent lists this computer's agent and adds the agents add-on. Then it offers stable names for the page's blocks,
+  charts and slides, one at a time (--marks goes straight there; --yes skips it). Exit codes: 0 done, 1 a file
+  failed, 2 the command needs something first.
+
+pipeup skills install|remove|list [--project] [--agent claude|codex|all] [--yes] [--replace] [--dry-run]
   Puts Pipeup's agent skills where Claude Code (.claude/skills) and Codex (.agents/skills) look: for you, in every
   project, or with --project for this folder only. It says what it will write, asks first (--yes to go ahead without
   asking), and never replaces a skill you changed unless you say --replace.
@@ -182,6 +192,34 @@ else if (command === "skills") {
     else fail(`skills: say install, remove or list\n\n${USAGE}`);
   } catch (e) {
     fail(e.message);
+  }
+} else if (command === "init") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  // --addon may be given more than once: read every one from the raw arguments.
+  const addons = [];
+  for (let i = 0; i < rest.length; i++)
+    if (rest[i] === "--addon" && rest[i + 1] && !rest[i + 1].startsWith("--")) addons.push(rest[++i]);
+  const values = {};
+  for (const flag of ["inbox", "github-repo"]) if (typeof args[flag] === "string") values[flag] = args[flag];
+  const yes = args.yes === true;
+  const marks = args.marks === true;
+  try {
+    await init({
+      page,
+      yes,
+      dryRun: args["dry-run"] === true,
+      update: args.update === true,
+      offline: args.offline === true,
+      marks,
+      agent: args.agent === true,
+      addons,
+      values,
+      input: !yes || marks ? process.stdin : undefined,
+    });
+  } catch (e) {
+    console.error(`pipeup: ${e.message}`);
+    process.exit(e instanceof InitError ? e.code : 1);
   }
 } else if (command === "check") {
   const page = args._[0];

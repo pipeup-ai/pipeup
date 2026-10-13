@@ -1233,7 +1233,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 ### 15e. Setting a page up: `pipeup init`
 
-*Approved (0.8).* One command does what the `pipeup-add` skill asks an agent to do by hand, so an author (or an agent)
+*Built (0.8).* One command does what the `pipeup-add` skill asks an agent to do by hand, so an author (or an agent)
 can add Pipeup to a page without looking anything up.
 
 - **`pipeup init <page.html>`** adds Pipeup to the page: the script for the version the command comes with, pinned to
@@ -1547,3 +1547,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Built (0.8): portable identities moved into the identity add-on (sections 10a and 16a); Pipeup alone is 49.9 KB gzip and its budget is 50 KB. The My identity row now sits with the add-ons' rows in the menu.
 - 2026-10-13 — Draft for review: `pipeup init` (section 15e) and `pipeup read` (section 15f), the rest of the command line for 0.8.
 - 2026-10-13 — Approved: `pipeup init` offers to mark blocks, charts and slides, the author accepting, renaming or skipping each (section 15e); `pipeup read` reads a folder of feedback files (section 15f).
+- 2026-10-13 — Built (0.8): `pipeup init` (section 15e). Add-ons can't yet go inside the page with `--offline`; the command says so.
