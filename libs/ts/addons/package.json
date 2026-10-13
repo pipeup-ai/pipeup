@@ -10,6 +10,7 @@
     "voice",
     "live",
     "assist",
+    "agents",
     "test"
   ],
   "engines": {
