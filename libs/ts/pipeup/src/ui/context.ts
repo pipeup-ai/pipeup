@@ -49,8 +49,6 @@ export interface MenuActions {
   copyAll(as: CopyAs): Promise<void>;
   toggleResolved(): void;
   toggleMine(): void;
-  /** Opens the dialog for making the identity portable, backing it up, or using one that was backed up. */
-  identity(): void;
   rename(name: string): Promise<void>;
   /** The reviewer's name; "" until they add one. */
   name(): string;

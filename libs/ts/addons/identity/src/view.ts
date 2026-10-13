@@ -1,49 +1,39 @@
-import type { CodeProblem } from "../crypto/portable";
-import { h } from "./dom";
-
-export interface IdentityDeps {
-  /** This identity was made portable: it has a recovery code. */
-  portable: boolean;
-  /** The recovery code of a portable identity. */
-  code(): Promise<string | null>;
-  /** Makes a new portable identity, keeps it, and returns its recovery code. */
-  make(): Promise<string>;
-  /** Keeps the identity a code stands for, or says what is wrong with the code. */
-  use(code: string): Promise<CodeProblem | null>;
-  copy(text: string): Promise<void>;
-  /** Starts over with the identity now kept (the page reloads). */
-  reload(): void;
-  /** Whether the comments on this page were written by the current identity (so a change is felt). */
-  hasComments: boolean;
-  /** The way to reach this reviewer they have shared ("" when none), and how to share or stop sharing one. */
-  contact: { value: string; share(value: string): Promise<boolean>; stop(): Promise<void> };
-}
+import type { AddonHost } from "pipeup";
+import { codeOf, keyFromCode, makePortable, type CodeProblem } from "./code";
 
 const PROBLEMS: Record<CodeProblem, string> = {
   shape: "That doesn't look like a recovery code. It starts with PU1 and is about 60 characters long.",
   mistake: "The code has a mistake in it. Check it against where you kept it, character by character.",
 };
 
+function h<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string> = {},
+  ...kids: (Node | string)[]
+): HTMLElementTagNameMap[K] {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  el.append(...kids);
+  return el;
+}
+
 /**
- * A small dialog over the page for what a reviewer can do with their identity: make it portable or back it up (see the
- * code, copy it, save it as a file), or use one they backed up. Plain words say what each does.
+ * The dialog for what a reviewer can do with their identity: make it portable or back it up (see the code, copy it,
+ * save it as a file), use one they backed up, and share a way to be reached. Plain words say what each does.
  */
-export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
-  layer.querySelector(".dlg")?.remove();
-  const box = h("div", { class: "dlg", role: "dialog", "aria-label": "Your identity" });
+export function openIdentity(host: AddonHost): void {
+  const me = host.identity;
+  const doc = host.document;
+  const portable = me.portable;
+  const hasComments = doc.threads().some((t) => [t.root, ...t.root.replies].some((c) => c.author === doc.me));
   const title = h("h2", { class: "dlg-t" });
   const body = h("div", { class: "dlg-b" });
   const message = h("p", { class: "dlg-m", role: "status" });
   const buttons = h("div", { class: "dlg-a" });
-  box.append(title, body, message, buttons);
-  let closed = false;
+  let dialog = { close() {} };
   const close = (reload = false) => {
-    if (closed) return;
-    closed = true;
-    box.classList.remove("show");
-    box.inert = true;
-    window.setTimeout(() => box.remove(), 260);
-    if (reload) deps.reload();
+    dialog.close();
+    if (reload) location.reload();
   };
   const button = (label: string, run: () => unknown, primary = false) => {
     const b = h("button", { class: primary ? "dlg-btn primary" : "dlg-btn", type: "button" }, label);
@@ -67,7 +57,7 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
     const save = () => {
       const url = URL.createObjectURL(new Blob([`${code}\n`], { type: "text/plain" }));
       const a = h("a", { href: url, download: "pipeup-identity.pipeup-id" });
-      layer.append(a);
+      body.append(a);
       a.click();
       a.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -75,7 +65,7 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
     };
     buttons.replaceChildren(
       button("Copy code", () =>
-        deps.copy(code).then(
+        navigator.clipboard.writeText(code).then(
           () => say("Copied."),
           () => say("Your browser blocked copying; select the code and copy it by hand."),
         ),
@@ -89,18 +79,18 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
 
   const backupView = () => {
     say("");
-    if (deps.portable) {
+    if (portable) {
       title.textContent = "Back up my identity";
       body.replaceChildren(...para("One moment…"));
-      void deps
-        .code()
-        .then((code) => (code ? showCode(code, false) : say("This identity can't be backed up.")));
+      void me
+        .seed()
+        .then((seed) => (seed ? showCode(codeOf(seed), false) : say("This identity can't be backed up.")));
     } else {
       title.textContent = "Make my identity portable";
       body.replaceChildren(
         ...para(
           "Your identity stays in this browser, and can't be taken out of it. To use it on another browser or computer, Pipeup makes you a new one that you can back up with a recovery code.",
-          deps.hasComments
+          hasComments
             ? "Comments you wrote before stay as they are, and show as written by an earlier you."
             : "You haven't written comments here yet, so nothing is left behind.",
         ),
@@ -111,7 +101,9 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
           "Make it portable",
           async () => {
             try {
-              showCode(await deps.make(), true);
+              const made = await makePortable();
+              await me.use(made.key);
+              showCode(made.code, true);
             } catch {
               say("Something went wrong. Nothing was changed.");
             }
@@ -151,8 +143,9 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
       button(
         "Use this identity",
         async () => {
-          const problem = await deps.use(field.value);
-          if (problem) return say(PROBLEMS[problem]);
+          const found = await keyFromCode(field.value);
+          if ("problem" in found) return say(PROBLEMS[found.problem]);
+          await me.use(found.key);
           say("");
           title.textContent = "Done";
           body.replaceChildren(
@@ -165,17 +158,19 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
         true,
       ),
     );
+    field.focus({ preventScroll: true });
   };
   // First, what to do.
   title.textContent = "My identity";
   body.replaceChildren(
     ...para(
-      deps.portable
+      portable
         ? "Your identity is portable: you have a recovery code for it."
         : "Your identity stays in this browser, so a cleared browser, or another computer, starts you over as someone new.",
     ),
   );
   // A way to reach them, shared on purpose.
+  const shared = doc.contacts().get(doc.me) ?? "";
   const reach = h("input", {
     class: "dlg-f",
     type: "text",
@@ -184,10 +179,9 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
     spellcheck: "false",
     placeholder: "you@example.org or gh:yourname",
   });
-  reach.value = deps.contact.value;
+  reach.value = shared;
   const share = button("Share", async () => {
-    const ok = await deps.contact.share(reach.value);
-    stop.hidden = !ok && !deps.contact.value;
+    const ok = await me.share(reach.value);
     if (ok) stop.hidden = false;
     say(
       ok
@@ -196,12 +190,12 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
     );
   });
   const stop = button("Stop sharing", async () => {
-    await deps.contact.stop();
+    await me.unshare();
     reach.value = "";
     stop.hidden = true;
     say("Stopped. People who see this page's comments from now on won't see it.");
   });
-  stop.hidden = !deps.contact.value;
+  stop.hidden = !shared;
   body.append(
     h("h3", { class: "dlg-h" }, "Let people reach you"),
     ...para(
@@ -213,19 +207,8 @@ export function openIdentity(layer: HTMLElement, deps: IdentityDeps): void {
   buttons.replaceChildren(
     button("Close", () => close()),
     button("Use a recovery code", restoreView),
-    button(deps.portable ? "Back up my identity" : "Make it portable", backupView, true),
+    button(portable ? "Back up my identity" : "Make it portable", backupView, true),
   );
-  box.addEventListener("keydown", (e) => {
-    e.stopPropagation();
-    if (e.key === "Escape") {
-      e.preventDefault();
-      close();
-    }
-  });
-  layer.append(box);
-  void box.offsetWidth;
-  box.classList.add("show");
-  (box.querySelector("textarea, button.primary, button") as HTMLElement | null)?.focus({
-    preventScroll: true,
-  });
+  const content = h("div", {}, title, body, message, buttons);
+  dialog = host.openDialog(content, "Your identity");
 }

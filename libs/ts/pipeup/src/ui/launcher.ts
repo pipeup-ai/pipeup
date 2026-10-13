@@ -515,10 +515,6 @@ export function createLauncher(ctx: Ctx): View {
   let faceKey = "";
   const idRow = row(face, editName, false, nameEnd);
   idRow.dataset.item = "name";
-  const identityRow = row(icon("edit"), () => {
-    closeToControl();
-    ctx.menu.identity();
-  });
   const copyRow = row(icon("copy"), () => {
     closeToControl();
     void ctx.menu.copyAll("ai");
@@ -593,7 +589,6 @@ export function createLauncher(ctx: Ctx): View {
   /** The menu rises above the button, so it is built top down: who you are first, Start commenting last. */
   const rows = (): Node[] => [
     idRow,
-    identityRow,
     sepA,
     copyRow,
     textRow,
@@ -628,7 +623,6 @@ export function createLauncher(ctx: Ctx): View {
       av.classList.add("in");
       face.replaceChildren(av);
     }
-    set(identityRow, "My identity", "Back it up, or use one you backed up");
     set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
     set(textRow, "Copy as Text", "Just the words");
     const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;

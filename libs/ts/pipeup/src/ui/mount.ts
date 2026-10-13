@@ -113,10 +113,6 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
         profile = { ...profile, name };
         await kept.saveProfile(profile);
       },
-      onIdentity: async (identity) => {
-        profile = { ...profile, identity };
-        await kept.saveProfile(profile);
-      },
     });
   } catch (e) {
     setSlideHook(null);
@@ -134,6 +130,10 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     root: o.root ?? document.body,
     ephemeral,
     version: VERSION,
+    onIdentity: async (identity) => {
+      profile = { ...profile, identity };
+      await kept.saveProfile(profile);
+    },
   });
   // Agent support is an add-on: a page that lists an agent without it is told once, in the console, and loses nothing else.
   const agentsWarning = /\S/.test(document.documentElement.getAttribute("data-pipeup-agents") ?? "")
