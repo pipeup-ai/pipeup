@@ -33,6 +33,12 @@
         "the inbox service the page names (data-pipeup-inbox)"
       ],
       "says": "Only after you switch on Mentions by inbox: when you mention someone, a short note (who, your words, the page's address) is left for them at the page's inbox service, sealed so only they can read it; and your own inbox is checked there. The service sees that a note arrived, its size and when, and your network address, never who it is from or what it says."
+    },
+    "asks": {
+      "attr": "data-pipeup-inbox",
+      "flag": "inbox",
+      "what": "the address of your inbox service (https://…)",
+      "pattern": "^https://\\S+$"
     }
   },
   "publishConfig": {
