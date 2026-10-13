@@ -6,6 +6,7 @@ import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { check, table } from "./check.mjs";
 import { init, InitError } from "./init.mjs";
+import { read, ReadError } from "./read.mjs";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
 
@@ -23,6 +24,13 @@ const USAGE = `pipeup init <page.html> [--yes] [--dry-run] [--update] [--offline
   --agent lists this computer's agent and adds the agents add-on. Then it offers stable names for the page's blocks,
   charts and slides, one at a time (--marks goes straight there; --yes skips it). Exit codes: 0 done, 1 a file
   failed, 2 the command needs something first.
+
+pipeup read <page.html> [--from <file or folder>]… [--deep] [--all] [--json] [--no-share] [--out <file>]
+  Prints the page's comments without opening it, as Markdown (like Copy as Markdown) or, with --json, as data: from
+  feedback files and folders of them (--deep looks in folders inside), the page's shared copy (with @pipeup/share
+  installed; --no-share reads nothing from the network) and its replies file. Every comment is checked as the page
+  checks it; what was read, skipped or left out is said on standard error. --out writes one merged feedback file.
+  Exit codes: 0 done, 1 a source couldn't be read, 2 the command needs something first.
 
 pipeup skills install|remove|list [--project] [--agent claude|codex|all] [--yes] [--replace] [--dry-run]
   Puts Pipeup's agent skills where Claude Code (.claude/skills) and Codex (.agents/skills) look: for you, in every
@@ -220,6 +228,29 @@ else if (command === "skills") {
   } catch (e) {
     console.error(`pipeup: ${e.message}`);
     process.exit(e instanceof InitError ? e.code : 1);
+  }
+} else if (command === "read") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  const from = [];
+  for (let i = 0; i < rest.length; i++)
+    if (rest[i] === "--from" && rest[i + 1] && !rest[i + 1].startsWith("--")) from.push(rest[++i]);
+  try {
+    const { text, failed } = await read({
+      page,
+      from,
+      deep: args.deep === true,
+      all: args.all === true,
+      json: args.json === true,
+      share: args["no-share"] !== true,
+      out: typeof args.out === "string" ? args.out : undefined,
+      local: process.env.PIPEUP_SHARE_LOCAL === "1",
+    });
+    console.log(text);
+    process.exit(failed ? 1 : 0);
+  } catch (e) {
+    console.error(`pipeup: ${e.message}`);
+    process.exit(e instanceof ReadError ? e.code : 1);
   }
 } else if (command === "check") {
   const page = args._[0];

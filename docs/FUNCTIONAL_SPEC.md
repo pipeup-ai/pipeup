@@ -1263,7 +1263,7 @@ can add Pipeup to a page without looking anything up.
 
 ### 15f. Reading a page's comments without a browser: `pipeup read`
 
-*Approved (0.8).* `pipeup comments` (§15c) reads what an open page shares over the live link. `pipeup read` reads
+*Built (0.8).* `pipeup comments` (§15c) reads what an open page shares over the live link. `pipeup read` reads
 the comments an author can reach **without opening the page**: what reviewers sent back, the page's shared copy, and an
 agent's replies.
 
@@ -1548,3 +1548,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Draft for review: `pipeup init` (section 15e) and `pipeup read` (section 15f), the rest of the command line for 0.8.
 - 2026-10-13 — Approved: `pipeup init` offers to mark blocks, charts and slides, the author accepting, renaming or skipping each (section 15e); `pipeup read` reads a folder of feedback files (section 15f).
 - 2026-10-13 — Built (0.8): `pipeup init` (section 15e). Add-ons can't yet go inside the page with `--offline`; the command says so.
+- 2026-10-13 — Built (0.8): `pipeup read` (section 15f). Without the page open, a thread's place comes from what the comment saved (slide, block name, quote), not from the page's layout.

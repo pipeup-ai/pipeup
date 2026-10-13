@@ -13,6 +13,7 @@ change the API and the stored comment format.
 
 ### Added
 
+- **`pipeup read <page.html>`** prints a page's comments without opening it, as Markdown (like Copy as Markdown) or `--json`: from feedback files and folders of them (`--from`, `--deep`), the page's shared copy (with `@pipeup/share` installed; it sends nothing) and its replies file (only from agents the page lists). Every comment meets the page's checks; what was read, skipped or left out is said on standard error. `--out` writes one merged feedback file.
 - **`pipeup init <page.html>`** adds Pipeup to a page in one step: the script pinned to this version and its integrity hash, and a document identity if the page has none (it never changes one). It says what it will change and asks first, and leaves every other byte as it was. `--update` moves a page to this version, `--offline` puts Pipeup inside the page, `--addon <id>` adds an add-on (saying what it sends, and asking for what it needs), and `--agent` lists this computer's agent. It then offers stable names for the page's headings, figures, tables, images and slides, one at a time, for you to accept, rename or skip (`--marks` goes straight there). Nothing is fetched.
 - Two add-on slots: `host.openDialog(content, label)` (capability `dialog`) and `host.identity` (capability `identity`).
 
