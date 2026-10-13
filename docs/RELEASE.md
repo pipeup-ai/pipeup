@@ -28,7 +28,7 @@ format may still change; the README says the project is in alpha until 1.0.
 | **0.5** | **Add-ons**: add-on support, `share` (comments shared through an encrypted service), `voice` (dictating comments) and `live` (live review and presence, peer to peer), and the mailbox server |
 | **0.6** | **Agents**: read a page's comments (`Pipeup.comments()`), answer them in a replies file and mark them addressed, a live link to an agent on the same computer, and the skills installed as a Claude Code plugin or with `pipeup skills install`; the `pipeup` command line begins (`agent`, `reply`, `watch`, `comments`, `skills`) |
 | **0.7** | **Talking to each other**: reactions (`@pipeup/emoji`), mentions, portable identities and the mentions inbox (`@pipeup/inbox`, `@pipeup/github`), signed update notices (`@pipeup/updates`), one look on every site, touch sizes and `pipeup check`; agent support becomes an add-on, `@pipeup/agents` (shipped) |
-| 0.8 | The rest of the command line (`init`, `check`, `read`) |
+| 0.8 | **A smaller Pipeup and the rest of the command line**: the size pass (48.8 KB gzip, budget 50 KB), portable identities as `@pipeup/identity`, `pipeup init` and `pipeup read` (`check` shipped in 0.7) |
 | 1.0 | Stable API and stored format |
 
 - **The agents add-on ships inside the `pipeup` package too.** `pipeup watch` serves it from `dist/pipeup.agents.js`, a copy

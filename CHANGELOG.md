@@ -7,14 +7,18 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.0-beta.1] - 2026-10-13
+
+This pre-release is about a smaller Pipeup and the rest of the command line: Pipeup alone is 48.8 KB gzip (52.3 KB in 0.7.0), portable identities are an add-on, and `pipeup init` and `pipeup read` join `check`. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Changed
 
 - **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less: Pipeup is 49.9 KB gzip (52.3 KB in 0.7.0) and its budget drops from 56 to 50 KB. A leaner build (the classic script without CommonJS interop, the stylesheet after the code, ASCII-only output) brings it to 48.8 KB, with no change in behaviour. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
 
 ### Added
 
-- **`pipeup read <page.html>`** prints a page's comments without opening it, as Markdown (like Copy as Markdown) or `--json`: from feedback files and folders of them (`--from`, `--deep`), the page's shared copy (with `@pipeup/share` installed; it sends nothing) and its replies file (only from agents the page lists). Every comment meets the page's checks; what was read, skipped or left out is said on standard error. `--out` writes one merged feedback file.
 - **`pipeup init <page.html>`** adds Pipeup to a page in one step: the script pinned to this version and its integrity hash, and a document identity if the page has none (it never changes one). It says what it will change and asks first, and leaves every other byte as it was. `--update` moves a page to this version, `--offline` puts Pipeup inside the page, `--addon <id>` adds an add-on (saying what it sends, and asking for what it needs), and `--agent` lists this computer's agent. It then offers stable names for the page's headings, figures, tables, images and slides, one at a time, for you to accept, rename or skip (`--marks` goes straight there). Nothing is fetched.
+- **`pipeup read <page.html>`** prints a page's comments without opening it, as Markdown (like Copy as Markdown) or `--json`: from feedback files and folders of them (`--from`, `--deep`), the page's shared copy (with `@pipeup/share` installed; it sends nothing) and its replies file (only from agents the page lists). Every comment meets the page's checks; what was read, skipped or left out is said on standard error. `--out` writes one merged feedback file.
 - Two add-on slots: `host.openDialog(content, label)` (capability `dialog`) and `host.identity` (capability `identity`).
 
 ## [0.7.0] - 2026-10-13
@@ -307,7 +311,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...HEAD
+[0.8.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0-beta.1
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4

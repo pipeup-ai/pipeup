@@ -6,7 +6,7 @@ accounts and no servers: comments stay in each reviewer's browser, and **Copy as
 Markdown that says exactly where each comment is, ready to send to the author or paste into an AI
 agent.
 
-> **Status: alpha (0.7.0).** The API and the stored comment format may change before 1.0. Pin an
+> **Status: alpha (0.8.0-beta.1).** The API and the stored comment format may change before 1.0. Pin an
 > exact version.
 
 - Website: https://pipeup-ai.github.io/pipeup/
@@ -25,7 +25,7 @@ Give the page a document key once, then load the pinned script just before `</bo
 <html data-pipeup-doc="<key>">
   ...
   <script
-    src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"
+    src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0-beta.1/dist/pipeup.min.js"
     integrity="sha384-…"
     crossorigin="anonymous"
   ></script>
@@ -82,12 +82,22 @@ buttons give a prompt to paste into Claude, Codex or another coding agent, and o
 [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt). The five skills (add, integrate, summarise, apply, and
 setting up saving reviews in Git) are in [apps/agent-skills](apps/agent-skills/).
 
+### From the command line
+
+```sh
+npx pipeup init page.html    # adds Pipeup, pinned, with a document identity; then offers stable names for its parts
+npx pipeup check page.html   # what Pipeup changes or covers on the page, at three widths
+npx pipeup read page.html --from feedback/   # the comments, from feedback files, the shared copy and agents' replies
+```
+
+Each says what it will do; `init` asks before it changes the file and leaves every other byte as it was.
+
 ## Repository layout
 
 | Path | What |
 |---|---|
 | `libs/ts/pipeup` | The library: npm package `pipeup` and the CDN build `dist/pipeup.min.js` |
-| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`, `agents`, `emoji`, `github`, `updates`, `inbox`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
+| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`, `agents`, `emoji`, `github`, `updates`, `inbox`, `identity`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
 | `services/mailbox` | `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract, and its checker |
 | `apps/site` | The website, its Try pages, `llms.txt` and the build script (`apps/site/build.sh`) |
 | `apps/agent-skills` | Agent skills: integrate, summarise and apply |

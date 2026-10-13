@@ -394,6 +394,19 @@
         </div>
       </section>
 
+      <section class="addon plain" id="identity-addon" data-pipeup-id="identity-addon">
+        <div class="text">
+          <h2>Identity</h2>
+          <p class="one">Lets reviewers keep who they are across browsers and computers: <b>My identity</b> in the menu makes a recovery code or file, uses one on another computer, and shares a way to be reached.</p>
+          <p class="fact"><b>Sends</b> Nothing. The recovery code stays on the reviewer's device unless they copy it or save it as a file themselves.</p>
+          <p class="fact"><b>Needs</b> Nothing on the page. Without it, Pipeup works as before, and a reviewer who already has a portable identity keeps writing as it.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="identity-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="identity-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+      </section>
+
       <section class="addon plain" id="updates-addon" data-pipeup-id="updates-addon">
         <div class="text">
           <h2>Updates</h2>
@@ -497,9 +510,9 @@
 
     <script>
       const CDN = "https://cdn.jsdelivr.net/npm/";
-      const ADDONS_VERSION = "0.7.0"; // tools/set-version.sh keeps this in step with the release
+      const ADDONS_VERSION = "0.8.0-beta.1"; // tools/set-version.sh keeps this in step with the release
       // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
-      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}" };
+      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}", identity: "{{SRI:identity}}" };
       const tag = (pkg, file) => {
         const sri = SRI[pkg.split("/")[1]];
         return `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"${sri.startsWith("sha384-") ? ` integrity="${sri}" crossorigin="anonymous"` : ""}><\/script>`;
@@ -602,6 +615,17 @@
           ...SAFE("inbox", "only to the inbox service address I gave you"),
           "",
           "Nothing is sent until each reviewer switches Mentions by inbox on. Leave everything else on the page as it is.",
+        ].join("\n"),
+        identity: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Identity add-on, so reviewers can back up who they are with a recovery code and use it on another computer.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/identity", "identity.min.js")}`,
+          "",
+          ...SAFE("identity", "to nowhere new (it sends nothing)"),
+          "",
+          "Nothing is sent anywhere. Leave everything else on the page as it is.",
         ].join("\n"),
         github: () => [
           "My HTML page already uses Pipeup for comments. Please add the Pipeup GitHub add-on, so that when a comment mentions someone on GitHub, I can open a new issue with their @name filled in.",
