@@ -9,6 +9,8 @@ import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
 import type { Appearance } from "./legible";
+// Last, so the bundles carry the stylesheet after the code: it compresses better there.
+import { STYLES } from "./styles";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -107,6 +109,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   try {
     app = startApp({
       doc,
+      styles: STYLES,
       root: o.root ?? document.body,
       onName: async (name) => {
         doc.name = name;

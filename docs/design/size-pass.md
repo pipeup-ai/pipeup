@@ -1,6 +1,6 @@
 # Design: the 0.8 size pass
 
-Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: step 1 built (portable identities are `@pipeup/identity`); steps 2 to 4 below.
+Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: built. Step 1 moved portable identities to `@pipeup/identity`; step 2 changed the build. The remaining hand edits (below) were measured and left.
 
 ## Where the bytes are (0.7.0, `origin/next`)
 
@@ -51,3 +51,10 @@ pass this cycle can't be a polish: reaching 50 KB from 52.3 KB means removing ab
 - 2026-10-13 — First draft, from measurements of 0.7.0.
 - 2026-10-13 — Approved by the maintainer, including the identity add-on.
 - 2026-10-13 — Built step 1: `@pipeup/identity` (3.39 KB gzip, budget 4 KB) with two new slots, `dialog` and `identity`; the dialog's inner styles moved with it. Core 52.3 → 49.9 KB gzip (`min`), 51.5 → 49.2 KB (`esm`); budget lowered to 50 KB. The _My identity_ row moved from under the name to the add-ons' place in the menu. The website's Add-ons section waits for the release, so its script tag points at a published version.
+- 2026-10-13 — Built step 2, all in the build, with no change in behaviour: the classic script is built from the module
+  and wrapped by hand instead of as esbuild's IIFE (no CommonJS interop; the global keeps its names, read only and
+  non-configurable, on an extensible object with the hidden `__esModule` marker, now pinned by a test), the stylesheet
+  is carried after the code (it compresses better there), and terser writes ASCII only. `pipeup.min.js` 49.9 → 48.8 KB
+  gzip, `pipeup.esm.js` 49.2 → 48.6 KB. Not done, by choice: the old patch's hand edits (CSS rule merging about 0.2 KB,
+  shared UI helpers about 0.3 KB, more mangled names about 0.03 KB) touch many files for little, and the budget is met.
+  Measured and rejected: terser `passes: 3` (larger here).
