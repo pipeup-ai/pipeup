@@ -7,15 +7,16 @@ import { expect, test, type Page } from "@playwright/test";
 import { openMenu, showComments, stubClipboard } from "./helpers";
 
 const run = promisify(execFile);
-const dist = new URL("../dist/pipeup.min.js", import.meta.url).href;
-const cli = new URL("../cli/pipeup.mjs", import.meta.url).pathname;
+const dist = new URL("../../pipeup/dist/pipeup.min.js", import.meta.url).href;
+const agentsJs = new URL("../agents/dist/agents.min.js", import.meta.url).href;
+const cli = new URL("../../pipeup/cli/pipeup.mjs", import.meta.url).pathname;
 const DOC = 'data-pipeup-doc="aGeNtFiXtUrE0001:DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"';
 
 const html = (agents = "") => `<!doctype html>
 <html lang="en" ${DOC}${agents ? ` data-pipeup-agents="${agents}"` : ""}>
 <head><meta charset="utf-8"><title>Brief</title></head>
 <body><main><p id="p1">The plan promises a 20% lift in the first quarter.</p></main>
-<script src="${dist}"></script></body></html>`;
+<script src="${dist}"></script><script src="${agentsJs}"></script></body></html>`;
 
 async function setup() {
   const dir = await mkdtemp(join(tmpdir(), "pipeup-agent-"));
@@ -59,7 +60,7 @@ test("an agent reads the comments, answers in the replies file, and the person c
 
   // Not listed yet: nothing says an agent can answer, but the prompt is offered on every page.
   await openMenu(page);
-  await expect(page.getByText("can answer comments here")).toHaveCount(0);
+  await expect(page.locator(".menu .sec")).toHaveCount(0);
   await expect(page.getByRole("menuitem", { name: "Copy a prompt for my agent" })).toBeVisible();
   await page.keyboard.press("Escape");
 
@@ -92,7 +93,7 @@ test("an agent reads the comments, answers in the replies file, and the person c
   expect(state.threads[0].state).toBe("addressed");
 
   await openMenu(page);
-  await expect(page.getByText("Claude can answer comments here")).toBeVisible();
+  await expect(page.locator(".menu .sec").getByText("Claude can answer comments here")).toBeVisible();
   await page.keyboard.press("Escape");
 
   // Addressed still means open: the person resolves it, nobody else.
@@ -161,4 +162,21 @@ test("a reply for a comment this page doesn't have is reported, not silent", asy
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await page.getByRole("button", { name: "Check for replies" }).click();
   await expect(page.locator(".ag")).toContainText("replies for 1 comment this page doesn't have");
+});
+
+test("a page that lists an agent but has no agents add-on says so once in the console, and loses nothing else", async ({
+  page,
+}) => {
+  const { file, key } = await setup();
+  await writeFile(file, html(key).replace(/<script src="[^"]*agents\.min\.js"><\/script>/, ""));
+  const said: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && said.push(m.text()));
+  await page.goto(`file://${file}`);
+  await comment(page);
+  await expect.poll(() => said.filter((t) => t.includes("agents add-on")).length).toBe(1);
+  await openMenu(page);
+  await expect(page.getByRole("menuitem", { name: "Copy a prompt for my agent" })).toHaveCount(0);
+  // The comments are untouched, and an agent can still read them.
+  const read = await page.evaluate(() => (window as any).Pipeup.comments());
+  expect(read.threads).toHaveLength(1);
 });

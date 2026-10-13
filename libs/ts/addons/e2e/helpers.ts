@@ -1,4 +1,4 @@
-import { type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export const fixture = (name: string): string => new URL(`fixtures/${name}`, import.meta.url).href;
 const dist = (rel: string): string => new URL(rel, import.meta.url).pathname;
@@ -27,4 +27,21 @@ export async function mount(page: Page, options: Record<string, unknown> = {}): 
 export async function openMenu(page: Page): Promise<void> {
   await page.locator(".launch .mode").click();
   await page.locator(".menu.show").waitFor();
+}
+
+/** Pretends the clipboard works and keeps what was copied in `window.__copied`. */
+export async function stubClipboard(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    (window as any).__copied = [];
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async (t: string) => void (window as any).__copied.push(t) },
+    });
+  });
+}
+
+/** Turns comment mode on with its shortcut, once Pipeup has started, so the comments show. */
+export async function showComments(page: Page): Promise<void> {
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await expect(page.locator(".launch .mode")).toHaveClass(/\bon\b/);
 }

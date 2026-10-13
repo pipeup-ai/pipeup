@@ -191,7 +191,7 @@ test("hostile page styles can't break or hide Pipeup's own UI", async ({ page })
   expect(look.size).toBe("14px");
   // The page's text moved (its own styles), so the thread follows it; the launcher stays put and works.
   await openMenu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(6);
+  await expect(page.locator(".menu.show .mi")).toHaveCount(5);
   expect(
     await page
       .locator(".menu .mi")

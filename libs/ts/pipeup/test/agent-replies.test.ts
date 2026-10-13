@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { copyAll, type ExportItem } from "../src/export/format";
-import { agentPrompt } from "../src/export/prompt";
 import { foldThreads } from "../src/model/fold";
 import { isWellFormed } from "../src/model/ops";
 import type { OpBody, SignedOp } from "../src/model/types";
-import { listedAgents, repliesUrl } from "../src/ui/replies";
 
 const A = "A".repeat(43);
 const B = "B".repeat(43);
@@ -73,50 +71,5 @@ describe("copy for AI with addressed threads", () => {
     const done = item({ resolved: true });
     expect(copyAll([done], "ai", meta)).toContain("**Open threads:** 0");
     expect(copyAll([done], "ai", { ...meta, all: true })).toContain("· resolved");
-  });
-});
-
-describe("the prompt for an agent", () => {
-  const meta = {
-    title: "Brief",
-    url: "file:///a/brief.html",
-    replies: "file:///a/brief.replies.js",
-    listed: true,
-  };
-
-  it("says where to read, where to answer and what never to do", () => {
-    const p = agentPrompt(meta);
-    expect(p).toContain("Pipeup.comments()");
-    expect(p).toContain("brief.replies.js");
-    expect(p).toContain("Never resolve, reopen, edit or delete");
-  });
-
-  it("tells an agent whose key isn't listed how to get it listed, and carries no key", () => {
-    const p = agentPrompt({ ...meta, listed: false });
-    expect(p).toContain("pipeup agent");
-    expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
-  });
-});
-
-describe("a page's list of agents and its replies file", () => {
-  afterEach(() => {
-    document.documentElement.removeAttribute("data-pipeup-agents");
-    document.documentElement.removeAttribute("data-pipeup-replies");
-  });
-
-  it("lists public keys only, once each", () => {
-    document.documentElement.setAttribute("data-pipeup-agents", `${A}, nonsense ${A} ${B}`);
-    expect(listedAgents()).toEqual([A, B]);
-  });
-
-  it("finds no agents when the attribute is absent", () => {
-    expect(listedAgents()).toEqual([]);
-  });
-
-  it("reads only a file on this site", () => {
-    document.documentElement.setAttribute("data-pipeup-replies", "https://elsewhere.test/r.js");
-    expect(repliesUrl()).toBeNull();
-    document.documentElement.setAttribute("data-pipeup-replies", "notes.replies.js");
-    expect(repliesUrl()).toMatch(/notes\.replies\.js$/);
   });
 });

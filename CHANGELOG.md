@@ -7,6 +7,9 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+- **Agent support is now an add-on, `@pipeup/agents`.** Reading an agent's replies file, the live link started by `pipeup watch`, and **Copy a prompt for my agent** moved out of Pipeup into it, so pages without an agent no longer download them. What stays in Pipeup: `Pipeup.comments()`, Copy as Markdown, the addressed note with Resolve and Still not right, and the AI marking. A page that lists an agent (`data-pipeup-agents`) without the add-on says so once in the browser console. Replies files, signed replies and the command line are unchanged. Pages pinned to 0.6.x keep their built-in support.
+
 ### Added
 - **Add-ons can add a line under the All comments header**, with one optional text button (`host.setListNote`, capability `listnote`). It eases in and out and goes with the add-on. An add-on that needs it stays off, with its reason, on a Pipeup that doesn't have it.
 

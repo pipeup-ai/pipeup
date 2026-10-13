@@ -14,7 +14,7 @@ test("the control shows the open count and a menu", async ({ page }) => {
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await expect(page.locator(".launch .mode .n.on")).toHaveText("2");
   await menu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(6);
+  await expect(page.locator(".menu.show .mi")).toHaveCount(5);
 });
 
 test("Copy as Markdown copies Markdown with locations; Copy as Text copies the words", async ({ page }) => {

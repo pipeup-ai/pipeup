@@ -9,15 +9,16 @@ import { expect, test, type Page } from "@playwright/test";
 import { openMenu, stubClipboard } from "./helpers";
 
 const run = promisify(execFile);
-const cli = new URL("../cli/pipeup.mjs", import.meta.url).pathname;
-const dist = new URL("../dist/pipeup.min.js", import.meta.url).pathname;
+const cli = new URL("../../pipeup/cli/pipeup.mjs", import.meta.url).pathname;
+const dist = new URL("../../pipeup/dist/pipeup.min.js", import.meta.url).pathname;
+const agents = new URL("../agents/dist/agents.min.js", import.meta.url).pathname;
 const DOC = 'data-pipeup-doc="aLiNkFiXtUrE0001:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"';
 
 const html = `<!doctype html>
 <html lang="en" ${DOC}>
 <head><meta charset="utf-8"><title>Brief</title></head>
 <body><main><p id="p1">The plan promises a 20% lift in the first quarter.</p></main>
-<script src="pipeup.min.js"></script></body></html>`;
+<script src="pipeup.min.js"></script><script src="agents.min.js"></script></body></html>`;
 
 const children: ChildProcess[] = [];
 test.afterEach(() => {
@@ -30,6 +31,7 @@ async function start() {
   const file = join(dir, "brief.html");
   await writeFile(file, html);
   await copyFile(dist, join(dir, "pipeup.min.js"));
+  await copyFile(agents, join(dir, "agents.min.js"));
   const pipeup = (...args: string[]) => run("node", [cli, ...args], { env });
   const child = spawn("node", [cli, "watch", file, "--agent", "Claude"], { env });
   children.push(child);
@@ -70,14 +72,14 @@ test("sharing is off until the person switches it on; then the agent reads and a
   // Off on load: nothing has been shared, and the menu says what the switch does.
   await openMenu(page);
   await expect(share(page)).toHaveAttribute("aria-checked", "false");
-  await expect(page.getByText("Claude can answer comments here")).toBeVisible();
+  await expect(page.locator(".menu .sec").getByText("Claude can answer comments here")).toBeVisible();
   expect(existsSync(file.replace(/html$/, "comments.json"))).toBe(false);
   await expect(pipeup("comments", file)).rejects.toThrow(/nothing is shared/);
 
   // On: the agent reads the comment with one command.
   await share(page).click();
   await expect(share(page)).toHaveAttribute("aria-checked", "true");
-  await expect(page.getByText("Sharing comments with Claude")).toBeVisible();
+  await expect(page.locator(".menu .sec").getByText("Sharing comments with Claude")).toBeVisible();
   await expect.poll(async () => (await pipeup("comments", file)).stdout).toContain(`- **Thread:** ${id}`);
   const data = JSON.parse((await pipeup("comments", file, "--json")).stdout);
   expect(data.threads[0]).toMatchObject({ id, state: "open" });
