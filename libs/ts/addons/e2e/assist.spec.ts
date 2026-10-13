@@ -104,7 +104,7 @@ test("a thread is looked at once, and again only when something is added to it",
   await expect.poll(() => page.evaluate(() => (window as any).__calls.length), { timeout: 15000 }).toBe(4);
 });
 
-test("its reply is drawn with the glowing AI ring, and streams in while it is written", async ({ page }) => {
+test("its reply is drawn with the AI ring, and streams in while it is written", async ({ page }) => {
   await start(page);
   await page.evaluate(() => ((window as any).__pieceMs = 2500));
   await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
@@ -113,7 +113,12 @@ test("its reply is drawn with the glowing AI ring, and streams in while it is wr
   const pop = page.locator(".layer");
   // While it is being written: the words so far, the busy ring, and "writing now".
   await expect(pop.locator(".ghost")).toContainText("Do you mean the July date", { timeout: 20000 });
-  await expect(pop.locator(".ghost .av.ai.busy")).toBeVisible();
+  await expect(pop.locator("[data-pipeup-writing=row] [data-pipeup-ai]")).toBeVisible();
+  // The ring and the dots are the add-on's own styles, found by Pipeup's documented hooks.
+  const ring = pop.locator("[data-pipeup-writing=row] [data-pipeup-ai]");
+  expect(await ring.evaluate((el) => getComputedStyle(el, "::after").animationName)).toBe("assist-ring");
+  const words = pop.locator("[data-pipeup-writing=words]");
+  expect(await words.evaluate((el) => getComputedStyle(el, "::after").animationName)).toBe("assist-dots");
   await expect(pop.locator(".ghost")).toContainText("AI assistant · writing now");
   // Finished: a real reply with the ring, no longer a preview.
   await expect(pop.locator(".ghost")).toHaveCount(0, { timeout: 15000 });

@@ -111,8 +111,7 @@ test("on a dark page, words in the column read against their own backing, not th
   await seedText(page, "#p2", "managers", "Who owns this?");
   const tx = page.locator(".th .tx");
   await expect(tx).toContainText("Who owns this?");
-  const ratio = await tx.evaluate(readingOf);
-  expect(ratio).toBeGreaterThanOrEqual(4.5);
+  await expect.poll(() => tx.evaluate(readingOf)).toBeGreaterThanOrEqual(4.5);
 });
 
 const pageWith = async (page: Page, rules = "") => {
@@ -147,6 +146,26 @@ const seen = (page: Page, selector = ".menu .mi .lb") =>
     });
 const ratioOf = (page: Page, selector = ".menu .mi .lb") =>
   page.locator(selector).first().evaluate(readingOf);
+/**
+ * `seen`, once the element is really there: the column redraws as comments settle, and a computed style read from an
+ * element that has just been replaced comes back empty.
+ */
+const settledSeen = async (page: Page, selector?: string) => {
+  let last = await seen(page, selector);
+  await expect
+    .poll(async () => {
+      last = await seen(page, selector);
+      return last.fontSize;
+    })
+    .not.toBe("");
+  return last;
+};
+/** The contrast of the words at `selector`, waiting out a redraw. */
+const settledRatio = async (page: Page, selector?: string) => {
+  let ratio = 0;
+  await expect.poll(async () => (ratio = await ratioOf(page, selector))).toBeGreaterThanOrEqual(4.5);
+  return ratio;
+};
 
 const HOSTILE = ["star", "vars", "body", "scheme", "rtl", "resets", "star,vars,body,scheme,rtl,resets"];
 // The column only appears where the page leaves room for it, so these compare the menu, which is always there.
@@ -157,14 +176,14 @@ for (const rules of HOSTILE) {
   }) => {
     await pageWith(page);
     await openMenu(page);
-    const plain = await seen(page);
+    const plain = await settledSeen(page);
     // Its own browser context, so the first page's saved comment isn't here too.
     const other = await (await browser.newContext()).newPage();
     await pageWith(other, rules);
     await openMenu(other);
-    const hostile = await seen(other);
+    const hostile = await settledSeen(other);
     expect(hostile).toEqual(plain);
-    expect(await ratioOf(other)).toBeGreaterThanOrEqual(4.5);
+    await settledRatio(other);
     await expect(layer(other)).not.toHaveClass(/dark/);
     await other.context().close();
   });
@@ -178,13 +197,13 @@ for (const rules of ["star", "vars", "body", "scheme"]) {
   }) => {
     await pageWith(page);
     await expect(page.locator(".th .tx")).toContainText("Who owns this?");
-    const plain = await seen(page, ".th .tx");
+    const plain = await settledSeen(page, ".th .tx");
     const other = await (await browser.newContext()).newPage();
     await pageWith(other, rules);
     await expect(other.locator(".th .tx")).toContainText("Who owns this?");
-    const hostile = await seen(other, ".th .tx");
+    const hostile = await settledSeen(other, ".th .tx");
     expect(hostile).toEqual(plain);
-    expect(await ratioOf(other, ".th .tx")).toBeGreaterThanOrEqual(4.5);
+    await settledRatio(other, ".th .tx");
     await other.context().close();
   });
 }
@@ -193,7 +212,7 @@ test("with forced colours on, Pipeup's words still read against their backing", 
   await page.emulateMedia({ forcedColors: "active" });
   await pageWith(page);
   await openMenu(page);
-  expect(await ratioOf(page)).toBeGreaterThanOrEqual(4.5);
+  await settledRatio(page);
 });
 
 test("the Look row in the menu overrides the page, and the choice is kept", async ({ page }) => {
@@ -208,7 +227,7 @@ test("the Look row in the menu overrides the page, and the choice is kept", asyn
   await expect(row).toContainText("Dark");
   await expect(layer(page)).toHaveClass(/dark/);
   // The page's own look is still light; Pipeup's words still read on their own backing.
-  expect(await ratioOf(page)).toBeGreaterThanOrEqual(4.5);
+  await settledRatio(page);
   await page.reload();
   await page.evaluate(async () => {
     const w = window as any;
