@@ -1,5 +1,5 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
-import { copyFile, mkdtemp, writeFile } from "node:fs/promises";
+import { copyFile, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { request } from "node:http";
 import { tmpdir } from "node:os";
@@ -18,7 +18,7 @@ const html = `<!doctype html>
 <html lang="en" ${DOC}>
 <head><meta charset="utf-8"><title>Brief</title></head>
 <body><main><p id="p1">The plan promises a 20% lift in the first quarter.</p></main>
-<script src="pipeup.min.js"></script><script src="agents.min.js"></script></body></html>`;
+<script src="pipeup.min.js"></script></body></html>`;
 
 const children: ChildProcess[] = [];
 test.afterEach(() => {
@@ -31,7 +31,15 @@ async function start() {
   const file = join(dir, "brief.html");
   await writeFile(file, html);
   await copyFile(dist, join(dir, "pipeup.min.js"));
+  // A copy that includes the add-on itself, opened straight from the disk (no link).
   await copyFile(agents, join(dir, "agents.min.js"));
+  await writeFile(
+    join(dir, "plain.html"),
+    html.replace(
+      '<script src="pipeup.min.js"></script>',
+      '<script src="pipeup.min.js"></script><script src="agents.min.js"></script>',
+    ),
+  );
   const pipeup = (...args: string[]) => run("node", [cli, ...args], { env });
   const child = spawn("node", [cli, "watch", file, "--agent", "Claude"], { env });
   children.push(child);
@@ -169,8 +177,64 @@ test("only the page it serves is answered: wrong host, wrong origin, other paths
 
 test("a page not shown through a link has no switch", async ({ page }) => {
   const { dir } = await start();
-  await page.goto(`file://${join(dir, "brief.html")}`);
+  await page.goto(`file://${join(dir, "plain.html")}`);
   await comment(page);
   await openMenu(page);
   await expect(share(page)).toHaveCount(0);
+});
+
+test("the add-on comes from the link, and the page's file on disk is not changed", async ({ page }) => {
+  const { file, url } = await start();
+  await page.goto(url);
+  await comment(page);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).Pipeup.addons().map((a: any) => a.id)))
+    .toContain("agents");
+  expect(await readFile(file, "utf8")).toBe(html);
+});
+
+const fakePage = async (scripts: Record<string, string>, tags: string) => {
+  const dir = await mkdtemp(join(tmpdir(), "pipeup-fake-"));
+  for (const [name, text] of Object.entries(scripts)) await writeFile(join(dir, name), text);
+  const file = join(dir, "p.html");
+  await writeFile(
+    file,
+    `<!doctype html><html lang="en" ${DOC}><body><p id="p1">Hi.</p>${tags}</body></html>`,
+  );
+  const env = { ...process.env, PIPEUP_AGENT_FILE: join(dir, "agent.json") };
+  return { file, env };
+};
+
+test("watch refuses a page whose Pipeup is before 0.6, and says what to change", async () => {
+  const { file, env } = await fakePage(
+    { "old.js": 'var a="pipeup-root",b="pipeupAddons"' },
+    '<script src="old.js"></script>',
+  );
+  const err = await run("node", [cli, "watch", file], { env }).then(
+    () => null,
+    (e: { stderr: string }) => e.stderr,
+  );
+  expect(err).toMatch(/can't take an agent/);
+  expect(err).toMatch(/0\.6 or later/);
+});
+
+test("watch starts for a 0.6.x page and adds nothing to it", async ({ request: api }) => {
+  const { file, env } = await fakePage(
+    { "mid.js": 'var a="pipeup-root",b="pipeupReplies"' },
+    '<script src="mid.js"></script>',
+  );
+  const child = spawn("node", [cli, "watch", file, "--agent", "Claude"], { env });
+  children.push(child);
+  const out = await new Promise<string>((ok, no) => {
+    let text = "";
+    child.stdout.on("data", (d) => {
+      text += d;
+      if (/built in/.test(text)) ok(text);
+    });
+    child.on("exit", () => no(new Error(`watch ended: ${text}`)));
+  });
+  const url = /Open this page: (\S+)/.exec(out)![1]!;
+  const body = await (await api.get(url)).text();
+  expect(body).toContain("data-pipeup-link=");
+  expect(body).not.toContain("agents.js");
 });
