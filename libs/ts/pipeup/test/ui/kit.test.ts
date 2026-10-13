@@ -110,7 +110,7 @@ describe("styles", () => {
 
 describe("host", () => {
   it("adds one ignored, fixed, click-through root with an open shadow and a layer", () => {
-    const host = createHost({ font: "serif", accent: "#123456", dark: true, on: "#fff" });
+    const host = createHost({ font: "serif", accent: "#123456", dark: true, on: "#fff" }, "");
     expect(host.element.tagName).toBe("PIPEUP-ROOT");
     expect(host.element.parentElement).toBe(document.documentElement);
     expect(host.element.hasAttribute("data-pipeup-ignore")).toBe(true);

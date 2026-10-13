@@ -40,6 +40,8 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
+  /** Pipeup's stylesheet (passed in so the bundles can carry it last, where it compresses best). */
+  styles: string;
 }
 
 export interface App {
@@ -93,7 +95,7 @@ export function startApp(o: AppOptions): App {
   };
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
-  const host = createHost(theme);
+  const host = createHost(theme, o.styles);
   const sheet = installPageSheet(document, theme.dark);
   sheet.fade(0);
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;

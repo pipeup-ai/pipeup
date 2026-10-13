@@ -1,5 +1,4 @@
 import { PANEL, popover } from "./layout";
-import { STYLES } from "./styles";
 import { applyTheme, type Theme } from "./theme";
 
 export interface Host {
@@ -13,7 +12,7 @@ export interface Host {
  * Pipeup's only element in the page: a fixed, click-through <pipeup-root> under <html> with an open shadow
  * root (open so tools like `pipeup check` can measure it). It never changes the page's layout.
  */
-export function createHost(theme: Theme, doc: Document = document): Host {
+export function createHost(theme: Theme, styles: string, doc: Document = document): Host {
   const element = doc.createElement("pipeup-root");
   element.setAttribute("data-pipeup-ignore", "");
   element.style.cssText =
@@ -22,11 +21,11 @@ export function createHost(theme: Theme, doc: Document = document): Host {
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in shadow) {
     const sheet = new Sheet();
-    sheet.replaceSync(STYLES);
+    sheet.replaceSync(styles);
     shadow.adoptedStyleSheets = [sheet];
   } else {
     const style = doc.createElement("style");
-    style.textContent = STYLES;
+    style.textContent = styles;
     shadow.append(style);
   }
   const layer = doc.createElement("div");

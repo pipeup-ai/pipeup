@@ -9,7 +9,7 @@ change the API and the stored comment format.
 
 ### Changed
 
-- **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less: Pipeup is 49.9 KB gzip (52.3 KB in 0.7.0) and its budget drops from 56 to 50 KB. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
+- **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less: Pipeup is 49.9 KB gzip (52.3 KB in 0.7.0) and its budget drops from 56 to 50 KB. A leaner build (the classic script without CommonJS interop, the stylesheet after the code, ASCII-only output) brings it to 48.8 KB, with no change in behaviour. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
 
 ### Added
 
