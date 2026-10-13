@@ -1,6 +1,6 @@
 # Design: the 0.8 size pass
 
-Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: draft, for review with the spec.
+Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: approved 2026-10-13, portable identities move to an add-on.
 
 ## Where the bytes are (0.7.0, `origin/next`)
 
@@ -49,3 +49,4 @@ pass this cycle can't be a polish: reaching 50 KB from 52.3 KB means removing ab
 ## Change log
 
 - 2026-10-13 — First draft, from measurements of 0.7.0.
+- 2026-10-13 — Approved by the maintainer, including the identity add-on.

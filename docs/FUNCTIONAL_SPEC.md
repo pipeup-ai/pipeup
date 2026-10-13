@@ -1267,7 +1267,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   where a feature moves into one (below).
 - **Features that few pages or people use may move into an add-on**, as agent support did in 0.7, but only with the maintainer's
   agreement and only if the move is invisible to anyone who doesn't use the feature:
-  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on
+  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on (approved)
     that the author includes when they want it. Without it the menu has no such row, the ordinary identity works exactly as today,
     and comments written under a portable identity are still shown and verified by Pipeup itself.
   - Reactions, mentions and the appearance work stay in Pipeup: most reviewers use them, and they shape what every page looks like.
@@ -1486,3 +1486,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.
 - 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.
 - 2026-10-13 — Draft for review: a size pass for 0.8 (section 16a): Pipeup alone down to 50 KB gzip, behaviour unchanged, portable identities possibly moving to an add-on. 0.8 also lists `check` as shipped in 0.7.
+- 2026-10-13 — Approved: the 0.8 size pass (section 16a), with portable identities moving to an add-on.
