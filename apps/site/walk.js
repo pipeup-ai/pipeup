@@ -1,6 +1,6 @@
 // The walkthrough pages: each plays its scene, has its own prompt, and the footer menu.
 (() => {
-const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0-beta.1/dist/pipeup.min.js"><\/script>';
+const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0-beta.2/dist/pipeup.min.js"><\/script>';
 const SITE = "https://pipeup-ai.github.io/pipeup/"; // The canonical address.
 const base = location.protocol.startsWith("http") ? new URL(".", location.href).href : SITE; // From disk: the published site.
 const GUIDE = `${base}skills/pipeup-integrate/SKILL.md`;

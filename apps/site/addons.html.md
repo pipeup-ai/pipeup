@@ -13,7 +13,7 @@ Comments reach everyone who has the page.
 - **Sends**: sealed comments, to a service the author picks: a PrivateBin or their own mailbox (see below). The service can't read them.
 - **Asks first**: nothing is shared until the reviewer chooses to.
 - **Try it**: on your own computer, with a local demo and its own sharing service (no online try page, so nothing goes to a public service).
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0-beta.1/dist/share.min.js" integrity="{{SRI:share}}" crossorigin="anonymous"></script>`, and put the sharing address the author gives you on the `<html>` element as `data-pipeup-share="<address>"`, exactly as written. Ask the author for the address; don't make one up or try it.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0-beta.2/dist/share.min.js" integrity="{{SRI:share}}" crossorigin="anonymous"></script>`, and put the sharing address the author gives you on the `<html>` element as `data-pipeup-share="<address>"`, exactly as written. Ask the author for the address; don't make one up or try it.
 
 ## Voice
 
@@ -22,7 +22,7 @@ Dictate a comment instead of typing it.
 - **Sends**: nothing of its own. The browser's own speech engine does the listening, and in some browsers it sends the audio to its maker.
 - **Asks first**: a short note, then the browser's own microphone prompt.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/voice.html
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@0.7.0-beta.1/dist/voice.min.js" integrity="{{SRI:voice}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@0.7.0-beta.2/dist/voice.min.js" integrity="{{SRI:voice}}" crossorigin="anonymous"></script>`.
 
 ## Live
 
@@ -31,7 +31,7 @@ See who else is on the page, and where.
 - **Sends**: presence and comments, browser to browser. Public relays only introduce the reviewers to each other.
 - **Asks first**: each reviewer, before anything connects.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/live.html (open it in two browsers)
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/live@0.7.0-beta.1/dist/live.min.js" integrity="{{SRI:live}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/live@0.7.0-beta.2/dist/live.min.js" integrity="{{SRI:live}}" crossorigin="anonymous"></script>`.
 
 ## Assist
 
@@ -40,7 +40,7 @@ A small AI model on the reviewer's device reads the whole page and points to rel
 - **Sends**: nothing. The model runs on the device, and the browser may download it once.
 - **Asks first**: each reviewer, with the model, its size and what it reads, before it turns on.
 - **Try it**: https://pipeup-ai.github.io/pipeup/try/assist.html, or on slides: https://pipeup-ai.github.io/pipeup/try/assist-deck.html
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/assist@0.7.0-beta.1/dist/assist.min.js" integrity="{{SRI:assist}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/assist@0.7.0-beta.2/dist/assist.min.js" integrity="{{SRI:assist}}" crossorigin="anonymous"></script>`.
 
 ## Agents
 
@@ -48,7 +48,7 @@ Lets an AI agent answer comments: it shows the replies the agent wrote into a re
 
 - **Sends**: nothing, until you switch **Share with my agent** on (only on a page shown with `pipeup watch`); then this page's comments go to the program on your own computer. Nothing leaves the computer.
 - **Asks first**: you, with a switch that is off every time the page loads.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.7.0-beta.1/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.7.0-beta.2/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
 
 ## Emoji
 
@@ -56,7 +56,7 @@ The full set of emoji for reactions: search, the groups phones use, recently use
 
 - **Sends**: nothing. The emoji are part of the script.
 - **Asks first**: nothing to ask; it only adds a More button to the reaction row.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/emoji@0.7.0-beta.1/dist/emoji.min.js" integrity="{{SRI:emoji}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/emoji@0.7.0-beta.2/dist/emoji.min.js" integrity="{{SRI:emoji}}" crossorigin="anonymous"></script>`.
 
 ## Inbox
 
@@ -64,7 +64,7 @@ Tells people they were mentioned, even on pages they haven't opened: a note, sea
 
 - **Sends**: only after each reviewer switches **Mentions by inbox** on: a sealed note for each person they mention, and a check of their own inbox, at your inbox service. The service sees that a note arrived, its size and when, and a network address, never who it is from or what it says.
 - **Needs**: `data-pipeup-inbox="https://…"` on the page, and an inbox service: the reference mailbox server, `npx @pipeup/mailbox`.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/inbox@0.6.0/dist/inbox.min.js" integrity="{{SRI:inbox}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/inbox@0.7.0-beta.2/dist/inbox.min.js" integrity="{{SRI:inbox}}" crossorigin="anonymous"></script>`.
 
 ## GitHub
 
@@ -72,14 +72,14 @@ Offers to tell people on GitHub when a comment mentions them: a menu row opens a
 
 - **Sends**: nothing by itself. Pressing the row opens github.com with the issue filled in; you submit it there.
 - **Needs**: `data-pipeup-github-repo="owner/repo"` on the page, and optionally `data-pipeup-github-people="octocat hubot"`.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/github@0.7.0-beta.1/dist/github.min.js" integrity="{{SRI:github}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/github@0.7.0-beta.2/dist/github.min.js" integrity="{{SRI:github}}" crossorigin="anonymous"></script>`.
 
 ## Updates
 
 Tells you, on your own computer, when a newer Pipeup or a security fix is out.
 
 - **Sends**: one request a day for the project's signed update list, only on your own computer (a file, localhost, or where you ask). GitHub Pages sees your network address; reviewers' browsers never ask.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/updates@0.7.0-beta.1/dist/updates.min.js" integrity="{{SRI:updates}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/updates@0.7.0-beta.2/dist/updates.min.js" integrity="{{SRI:updates}}" crossorigin="anonymous"></script>`.
 
 ## Your own mailbox
 
