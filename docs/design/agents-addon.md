@@ -1,7 +1,7 @@
 # The agents add-on
 
-Status: **draft, for review**. Functional requirements: [FUNCTIONAL_SPEC §15d](../FUNCTIONAL_SPEC.md) (with §15b and §15c,
-which say what a person sees and what an agent may do, unchanged). Targets 0.7 (decided 2026-10-12).
+Status: **built** in #45 (the `listnote` slot), #46 (the add-on, and its removal from core), #47 (`pipeup watch`) and #48 (skills and site). Functional requirements: [FUNCTIONAL_SPEC §15d](../FUNCTIONAL_SPEC.md) (with §15b and §15c,
+which say what a person sees and what an agent may do, unchanged). Ships in 0.7 (decided 2026-10-12).
 
 Code paths are relative to `libs/ts/pipeup/`. Today's design: [agent-replies.md](agent-replies.md).
 
@@ -126,3 +126,4 @@ sentence; the added bytes of core's check stay under 150.
 
 - 2026-10-12 — First draft.
 - 2026-10-12 — Decided: ships in 0.7; `watch` refuses a page before 0.6, skips the add-on on 0.6.x, adds it on 0.7 and later.
+- 2026-10-12 — Built: the slot, the add-on (3.5 KB gzip), core without it (43.3 KB gzip), `watch` detection, injection and refusal (it reads a script's own text as well as its address), and the skills and site.

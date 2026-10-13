@@ -981,7 +981,7 @@ The page's side of the link is part of the agents add-on (§15d); `pipeup watch`
 
 ### 15d. The agents add-on
 
-*Proposed, not built.* Reading an agent's replies, the live link and the prompt for an agent are needed only by pages
+*Built (0.7).* Reading an agent's replies, the live link and the prompt for an agent are needed only by pages
 that have an agent, so they move out of Pipeup itself into an add-on, `agents`, and every page without an agent no
 longer downloads them. Everything §15b and §15c say about what a person sees and what an agent may do stays as it is.
 
@@ -1241,3 +1241,4 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
 - 2026-10-12 — Proposed (not built): agent support moves out of Pipeup itself into an `agents` add-on (reading replies, the live link, the prompt and the menu and All comments lines); comments for an agent, the addressed note and the AI marking stay; `pipeup watch` adds the add-on itself; pages on 0.6 are unchanged (section 15d, in 0.7).
 - 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
+- 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
