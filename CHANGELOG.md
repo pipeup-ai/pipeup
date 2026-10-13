@@ -16,6 +16,7 @@ change the API and the stored comment format.
 This pre-release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site. It is a beta: try it from the `next` channel and tell us what breaks.
 
 ### Fixed
+
 - **Pipeup follows the page's light or dark look wherever the page makes the change**, not only on `<html>` and `<body>`: it reads the background actually painted behind its column and panel, and the page highlights now switch together with the rest of Pipeup (they used to keep the look they started with). An author can set the look with `data-pipeup-theme="light|dark"` on `<html>`.
 - **Pipeup reads modern colours** (`oklch()`, `color()`, `color-mix()`) when it works out whether the page is light or dark, so pages written with them are no longer misread.
 - **It tells you what the page does to it.** Styles on `<html>` that fade, filter, blend, transform or zoom everything under it can't be undone from inside Pipeup, so Pipeup says so once in the browser console, and says when its words may be hard to read. `pu.appearance()` returns the same facts (its look, who chose it, the contrast, the effects) for `pipeup check` and agents.
@@ -26,11 +27,13 @@ This pre-release is about talking to each other: reactions, mentions, identities
 - Faint grey text is darker (light look) and lighter (dark look) so every text colour reaches 4.5 to 1 on its surface.
 
 ### Changed
+
 - **Agent support is now an add-on, `@pipeup/agents`.** Reading an agent's replies file, the live link started by `pipeup watch`, and **Copy a prompt for my agent** moved out of Pipeup into it, so pages without an agent no longer download them. What stays in Pipeup: `Pipeup.comments()`, Copy as Markdown, the addressed note with Resolve and Still not right, and the AI marking. A page that lists an agent (`data-pipeup-agents`) without the add-on says so once in the browser console. Replies files, signed replies and the command line are unchanged. Pages pinned to 0.6.x keep their built-in support. **`pipeup watch` adds the add-on itself** to the page it shows (from the copy that ships in the `pipeup` package; the page's file is not changed), refuses a page whose Pipeup is before 0.6 with a message saying what to change, and adds nothing to a 0.6.x page, whose Pipeup already has agent support.
 
 ### Added
+
 - **Mentions.** Typing `@` in a comment or reply lists the people in the document (everyone who has commented or reacted), the agents the page lists, and people a page or add-on supplies (`Pipeup.setPeople`); the choice is stored with the comment, signed with it, and shown as a tinted name. When a comment names you, Pipeup says so once ("Sam mentioned you in 1 comment"), All comments gets a **Mentions of me** switch, and opening the thread marks it **seen** (a signed `seen` op, so your other devices know). Two people with one name show with a short tag (`Sam · 4F2A`) so they can be told apart, in comments, reactions and exports.
-- **Portable identities.** **My identity** in the menu: an ordinary identity can't leave the browser, so *Make it portable* makes a new one from a 32-byte seed you keep as a recovery code (`PU1-…`, with a checksum) or a `.pipeup-id` file; *Use a recovery code* brings that identity to another browser or computer. Comments written before stay under the old identity. Ordinary identities are unchanged and still can't be exported.
+- **Portable identities.** **My identity** in the menu: an ordinary identity can't leave the browser, so _Make it portable_ makes a new one from a 32-byte seed you keep as a recovery code (`PU1-…`, with a checksum) or a `.pipeup-id` file; _Use a recovery code_ brings that identity to another browser or computer. Comments written before stay under the old identity. Ordinary identities are unchanged and still can't be exported.
 - **Let people reach you.** In **My identity** you can share an email address or a GitHub name (`gh:name`) with everyone who has the comments (two new signed op kinds, `contact` and `uncontact`; you can stop sharing). After a comment that mentions someone who shared an email, Pipeup offers to open your own mail with the words and the page filled in; it sends nothing itself.
 - **The mentions inbox.** `@pipeup/inbox` leaves a sealed note for each person you mention at an inbox service the page names (`data-pipeup-inbox`), so they find it from any browser that holds their identity (**Mentions waiting** in the menu). The service is the reference mailbox server, which now speaks a second contract, `pm2` (`PUT/GET /i/<inbox>/key`, `POST/GET /i/<inbox>`, `DELETE /i/<inbox>/<note>`): it stores ciphertext it can't read, from senders it can't name, with a small proof of work per note, a note limit per inbox, and deletion only by the owner's signature. `pm1` is unchanged.
 - **`@pipeup/github`**: when a comment mentions someone reachable on GitHub, a menu row opens GitHub's new-issue page on the page's repository (`data-pipeup-github-repo`) with their @name, the words and the page filled in.
@@ -43,6 +46,7 @@ This pre-release is about talking to each other: reactions, mentions, identities
 This release is about agents: they can read a page's comments, answer them, and be installed in one step.
 
 ### Added
+
 - **Install the skills once.** A Claude Code plugin (`/plugin install pipeup --marketplace pipeup-ai/pipeup`) and `npx pipeup skills install` for Claude Code and Codex (`~/.claude/skills`, `~/.agents/skills`, or `--project`). It says what it will write, asks first, never replaces a skill you changed (unless `--replace`), and `skills remove` takes them out. The skills ship inside the `pipeup` package and make no network request.
 - A new skill, **pipeup-add** ("add comments to this page"): the short, ordered steps (pinned script with its integrity hash, document identity, no add-ons unless asked, the allow-list). The integrate skill is now the full reference. Every skill says which Pipeup version it was written for.
 - `tools/sync-skills.mjs` keeps the plugin's copy of the skills equal to their one source; a test fails if they differ or a version is stale.
@@ -55,6 +59,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 - **A live link to an agent on the same computer.** `npx pipeup watch report.html --agent Claude` shows the page from your computer (address works only there) and lists the agent for it while it runs; the page's menu gets **Share with my agent**, off on every load. Switched on, the page sends its comments to the link, and the agent reads them with `npx pipeup comments report.html` (no browser, `--all`, `--json`) and answers with `pipeup reply`, which reaches the open page within seconds. The link accepts only the page it serves, from the same computer, and keeps comments in `report.comments.json` next to the page.
 
 ### Changed
+
 - The skills no longer say the command line is "arriving in 0.6" where a step works today.
 - The README, `llms.txt`, the walkthrough page and the Markdown copies lead with the install commands; the prompt stays as the fallback.
 - All comments: the line from an open comment now ends at the comment's bubble on the page when there is one (no dot), instead of at the middle of its block. When an agent's replies are for comments this page doesn't have, the panel says so.
@@ -63,6 +68,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 ## [0.5.4] - 2026-10-10
 
 ### Added
+
 - A page can list the add-ons that may run: `<html data-pipeup-addons="share,my-addon">` (`none` lets none run; without it every add-on runs). Any other add-on stays off, with the reason "this page doesn't allow it". Best effort: it stops add-ons the author didn't choose, not a page that is already compromised.
 - A guide page for making your own add-on (`addons-guide.html`, from `docs/ADDONS_GUIDE.md`), including using add-ons inside a company, what an add-on works with, and keeping add-ons intentional; a Make-your-own card on the Add-ons page; the template now builds one bundled, pinned file.
 - **Send to Git**, an example of an add-on a company writes for itself (not from the Pipeup project): it sends a review as Markdown to a service the company runs, which files it in Git. It comes with a stand-in service, a GitHub reference service, a contract checker and a try page, and the agent skill `pipeup-send-to-git-setup`.
@@ -73,6 +79,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 - The Add-ons page's prompts, `llms.txt`, the integrate skill and each add-on's README tell agents to pin add-on scripts with their integrity hash, list the add-on in `data-pipeup-addons`, and tell the author about a content security policy.
 
 ### Changed (the website)
+
 - The file in the walkthrough scenes looks like an HTML file: a larger page icon with a code mark and an orange HTML badge.
 - The two walkthrough pages are denser: briefer words and four one-line steps beside the animation, so each fits one screen with no scrolling.
 - The two walkthrough pages' footer matches the Add-ons page: a rule above it and the Add-ons and For agents links on the right (For agents offers that page's Markdown copy).
@@ -84,11 +91,13 @@ This release is about agents: they can read a page's comments, answer them, and 
 ## [0.5.3] - 2026-10-09
 
 ### Added
+
 - A Try it page for Voice, Live and Assist (with a practice mode and a slides version) from the Add-ons page; Share points to a local demo, and the mailbox has no online try.
 - A guide (docs/ADDONS_GUIDE.md) and a copy-ready template (libs/ts/addons/template) for making and publishing your own add-on under your own name.
 - The Add-ons page now covers Assist (demo, Copy prompt, script tag) and the optional mailbox server that Share can use; llms.txt and the Markdown copy match.
 
 ### Changed
+
 - Assist reads every slide of a deck (marked slides and reveal.js alike), the one showing, the one commented on and all the others, instead of lumping unmarked content into the slide on screen.
 - "Reviewed by AI · nothing to add" has a small Check again that makes Assist look at the thread afresh; threads checked by an older Assist are looked at once more.
 - Assist shows related information as pills only, under "This may be related:"; hovering or focusing a pill shows the sentence it points to.
@@ -97,6 +106,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 - The line from an open All comments row now runs down the margin beside the panel and turns in to the far right of the marked words' row, or along the gap above the block, instead of cutting across the page.
 
 ### Fixed
+
 - An AI reply's ring sits at the top right of the reply, like any avatar, instead of over its words, and it pulses outward inside its own box, so nothing is cropped.
 - Assist shows what a reply relied on as small reference pills (at most three, never an address): "[1] Risks" for a passage, "Slide 5" with a slide icon for a slide, a notes heading; pressing one goes there. It reads every slide of a deck, so the answer can come from slides other than the one commented on.
 - A thread the AI assistant has looked at and had nothing to add to says so ("Reviewed by AI · nothing to add"), and says "AI assistant is reading this…" while it does. `host.setThreadMark` is the add-on slot for it.
@@ -106,10 +116,12 @@ This release is about agents: they can read a page's comments, answer them, and 
 ## [0.5.2] - 2026-10-09
 
 ### Added
+
 - **`@pipeup/assist`**: short replies to comments from a small AI model running on the reviewer's own device (the browser's built-in model by default; a page can supply its own engine). Turned on by the reviewer, it decides for each comment whether a reply would help (ambiguity, related information or tone), streams a short reply into the thread under the name "AI assistant (on this device)", links to the author's Markdown notes where it used them, and remembers what it has looked at so it looks again only when something is added.
 - For add-ons that write AI replies: `host.setThreadNote` shows a reply as it is being written at the end of a thread; the name "AI assistant" is kept for AI replies and they are drawn with a gently glowing ring; `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported.
 
 ### Changed
+
 - **All comments is interactive.** A row is a preview; choosing it opens the thread out in the panel, where you can reply, resolve or reopen, and copy it. The page scrolls to its place and a thin line joins the open row to it. Nothing opens on the page, and the side popover is gone.
 
 - An open thread's popover always shows who and when, with Copy and Resolve, so it no longer jumps in height when hovered; the chosen block's outline and naming bar step aside while a thread is open.
@@ -118,15 +130,18 @@ This release is about agents: they can read a page's comments, answer them, and 
 ## [0.5.1] - 2026-10-08
 
 ### Fixed
+
 - The comment control's icon is readable when a page's link colour is pale (on a dark page, the icon was white on pale blue in comment mode).
 - Pipeup follows a page that switches between light and dark after it has loaded.
 
 ### Changed
+
 - Comment boxes are wider (400 px) on windows 900 px wide or more.
 
 ## [0.5.0] - 2026-10-08
 
 ### Added
+
 - **Add-ons.** One core plus optional add-ons, each one more script (or one combined file such as
   `pipeup+share.min.js`), working from a page opened from disk in any script order:
   - `@pipeup/share`: comments shared through an encrypted service the author picks (PrivateBin, or an HTTP
@@ -135,7 +150,7 @@ This release is about agents: they can read a page's comments, answer them, and 
     and a plain consent sentence.
   - `@pipeup/live`: live comments and presence between people on the same page, peer to peer.
   - `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract (`pm1`) and its `check` command.
-  Each add-on says in one sentence what it sends and to whom. The core still makes no network requests.
+    Each add-on says in one sentence what it sends and to whom. The core still makes no network requests.
 - `Pipeup.use(addon)` and `Pipeup.addons()`, and the add-on host (menu rows, notices, announcements, a note above
   the new-comment box, composer tools, side panels, styles, status, overlay, frame and UI callbacks), typed and
   versioned (`ADDON_API` 1).
@@ -145,6 +160,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 - A website page for the add-ons (what each sends, a short animated demo and a Copy prompt for each), linked from the footer. The home page and its Copy prompt stay core only.
 
 ### Changed
+
 - Tab on the page closes an empty comment box left open, as a click elsewhere does.
 - A resolved thread stays open, with a sentence saying so, while words are half-written in its reply line.
 - Ops are stored and exported as `{ body, sig }` only, and each is bounded in size. A saved change that can't be
@@ -153,6 +169,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 - The bundle is 40.5 KB gzip (36.8 KB in 0.4.1): add-on support cost 3.8 KB, and the min and esm budgets are now 42 KB.
 
 ### Fixed
+
 - **The guidance for AI agents no longer tells them to download a file.** `llms.txt` and the integrate skill now say to add the pinned CDN script tag by editing the HTML only; saving a local copy for offline pages is left to the user. Some agent permission classifiers blocked the old `curl` step.
 
 ## [0.4.1] - 2026-10-07
@@ -160,6 +177,7 @@ This release is about agents: they can read a page's comments, answer them, and 
 Shipped first as pre-release 0.4.1-beta.1.
 
 ### Fixed
+
 - **Tab in comment mode always moves between blocks**, including when comment mode was turned on with the mouse
   and after clicking a block. The first Tab carries on from the block last clicked, commented on or under the
   pointer (Shift+Tab goes back from it); from the Comment control's open menu it closes the menu first.
@@ -169,6 +187,7 @@ Shipped first as pre-release 0.4.1-beta.1.
 - Moving the mouse onto another block while the keyboard's cursor is out hands the outline to the mouse.
 
 ### Changed
+
 - **Esc on the block cursor leaves comment mode** (after a comment box and an open thread), with focus back
   where it was, or on the Comment control. It no longer puts the cursor away and gives Tab back to the page.
 - The mouse hint mentions Tab. The bundle is about 37 KB gzip (budget 40 KB).
@@ -178,6 +197,7 @@ Shipped first as pre-release 0.4.1-beta.1.
 Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
 
 ### Added
+
 - **Slides and hidden views.** Pipeup follows a deck's current slide by itself (slides marked
   `data-pipeup-slide`, or reveal.js) and shows only that slide's comments; they ease out and in as the slide
   changes. New comments remember their slide and the page's view.
@@ -203,6 +223,7 @@ Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
 - `pipeup/package.json` can be imported (it is in the package's `exports`).
 
 ### Changed
+
 - The control's number counts the open threads here; a small dot and its label ("2 here · 5 on other
   slides") say how many are elsewhere. Its name says when comment mode is on.
 - Choosing a thread on another slide or view in All comments goes there first, then opens it; if it can't, it
@@ -226,6 +247,7 @@ Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
   tooling sets the version everywhere and smoke-tests npm, the GitHub Release, the CDNs and the site.
 
 ### Fixed
+
 - A comment being written on a slide or view that has gone is no longer lost or stuck: opening another thread,
   choosing one in All comments, or commenting on selected words goes back to it.
 - A deck's hook that reports no slide number, or a saved slide that is not a plain slide number, is ignored.
@@ -237,6 +259,7 @@ Shipped first as pre-releases 0.4.0-beta.0 to beta.3.
 ## [0.3.2] - 2026-10-06
 
 ### Changed
+
 - Pre-releases have their own channel: the npm `next` tag and a marked copy of the site at
   `/next/`, so a milestone can be tried before it reaches everyone.
 - The site is deployed after a release is published, so it never points at a version npm doesn't
@@ -250,6 +273,7 @@ No change to the library's behaviour.
 ## [0.3.1] - 2026-10-06
 
 ### Changed
+
 - Releases publish to npm with trusted publishing: the release workflow proves its identity to npm,
   so no npm token is stored. Provenance is unchanged.
 - The pinned CDN address in the README, the integrate skill and llms.txt points to 0.3.1.
