@@ -154,13 +154,13 @@ The same server also keeps **inboxes**, for the `@pipeup/inbox` add-on: notes th
 to the person, so the server stores ciphertext it can't read, from senders it can't name, for people it knows only as
 a hash. `pm1` (mailboxes) is unchanged.
 
-| Endpoint | Purpose |
-|---|---|
-| `PUT <base>/i/<inbox>/key` | a person publishes their public encryption key, proved by their signature |
-| `GET <base>/i/<inbox>/key` | a sender reads it |
-| `POST <base>/i/<inbox>` | leave a sealed note (`{ ct, work }`: with a small proof of work) |
-| `GET <base>/i/<inbox>?since=<cursor>` | the owner reads what is new |
-| `DELETE <base>/i/<inbox>/<note>` | the owner takes a note away (`X-Pipeup-Key`, `X-Pipeup-Sig`) |
+| Endpoint                              | Purpose                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| `PUT <base>/i/<inbox>/key`            | a person publishes their public encryption key, proved by their signature |
+| `GET <base>/i/<inbox>/key`            | a sender reads it                                                         |
+| `POST <base>/i/<inbox>`               | leave a sealed note (`{ ct, work }`: with a small proof of work)          |
+| `GET <base>/i/<inbox>?since=<cursor>` | the owner reads what is new                                               |
+| `DELETE <base>/i/<inbox>/<note>`      | the owner takes a note away (`X-Pipeup-Key`, `X-Pipeup-Sig`)              |
 
 Options: `inboxWork` (proof-of-work bits, 14), `inboxToken` (a note then needs `Authorization: Bearer`), `inboxNotes`
 (notes per inbox, 1000). Notes are kept as long as mailboxes are (`keepDays`).

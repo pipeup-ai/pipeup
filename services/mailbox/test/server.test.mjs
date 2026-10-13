@@ -460,7 +460,12 @@ describe("a person's inbox (pm2)", async () => {
   const person = () => {
     const { publicKey, privateKey } = generateKeyPairSync("ed25519");
     const ed = publicKey.export({ format: "jwk" }).x;
-    return { ed, id: inboxId(ed), sign: (purpose, data) => sign(null, Buffer.from(`pipeup:${purpose}\n${data}`), privateKey).toString("base64url") };
+    return {
+      ed,
+      id: inboxId(ed),
+      sign: (purpose, data) =>
+        sign(null, Buffer.from(`pipeup:${purpose}\n${data}`), privateKey).toString("base64url"),
+    };
   };
   /** A note for `id` with its small proof of work found. */
   const note = (id, text, bits = 8) => {
@@ -490,8 +495,15 @@ describe("a person's inbox (pm2)", async () => {
     assert.deepEqual((await t.j("GET", `/i/${a.id}/key`)).body, { v: 2, ...body });
     // Someone else can't set it, nor can a key that isn't this inbox's.
     const eve = person();
-    assert.equal((await t.j("PUT", `/i/${a.id}/key`, { ed: eve.ed, pub, sig: eve.sign("inbox/key", `${a.id}:${pub}`) })).status, 400);
-    assert.equal((await t.j("PUT", `/i/${a.id}/key`, { ...body, sig: eve.sign("inbox/key", "x") })).status, 403);
+    assert.equal(
+      (await t.j("PUT", `/i/${a.id}/key`, { ed: eve.ed, pub, sig: eve.sign("inbox/key", `${a.id}:${pub}`) }))
+        .status,
+      400,
+    );
+    assert.equal(
+      (await t.j("PUT", `/i/${a.id}/key`, { ...body, sig: eve.sign("inbox/key", "x") })).status,
+      403,
+    );
   });
 
   test("anyone can leave a note with its proof of work; the owner reads what is new", async () => {
@@ -504,7 +516,10 @@ describe("a person's inbox (pm2)", async () => {
     assert.equal(all.body.notes.length, 2);
     assert.equal(all.body.more, false);
     const after1 = await t.j("GET", `/i/${a.id}?since=1`);
-    assert.deepEqual(after1.body.notes.map((n) => n.ct), [note(a.id, "two").ct]);
+    assert.deepEqual(
+      after1.body.notes.map((n) => n.ct),
+      [note(a.id, "two").ct],
+    );
     assert.equal((await t.j("GET", `/i/${a.id}?since=x`)).status, 409);
   });
 
@@ -520,7 +535,8 @@ describe("a person's inbox (pm2)", async () => {
 
   test("an inbox holds so many notes, and says when it is full", async () => {
     const a = person();
-    for (const s of ["a", "b", "c"]) assert.equal((await t.j("POST", `/i/${a.id}`, note(a.id, s))).status, 201);
+    for (const s of ["a", "b", "c"])
+      assert.equal((await t.j("POST", `/i/${a.id}`, note(a.id, s))).status, 201);
     const full = await t.j("POST", `/i/${a.id}`, note(a.id, "d"));
     assert.equal(full.status, 507);
   });

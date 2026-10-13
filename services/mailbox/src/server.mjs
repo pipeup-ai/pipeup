@@ -150,7 +150,9 @@ export function createMailboxServer(options = {}) {
       const inboxPath = /\/i\/[0-9A-Z]{26}/.test(path);
       return send(res, 204, null, {
         "Access-Control-Allow-Methods": inboxPath ? "GET, POST, PUT, DELETE" : "GET, POST, DELETE",
-        "Access-Control-Allow-Headers": inboxPath ? "Content-Type, Authorization, X-Pipeup-Key, X-Pipeup-Sig" : "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": inboxPath
+          ? "Content-Type, Authorization, X-Pipeup-Key, X-Pipeup-Sig"
+          : "Content-Type, Authorization",
         "Access-Control-Max-Age": "86400",
         "Access-Control-Allow-Private-Network": "true",
       });

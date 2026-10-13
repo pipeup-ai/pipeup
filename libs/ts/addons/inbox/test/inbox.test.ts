@@ -66,7 +66,9 @@ describe("a sealed note", () => {
     const eve = await keyFrom(await (await ed()).sign("inbox/seed", "x25519"));
     const ct = await seal(sam.publicKey, "Hi @Sam, ready? 👍");
     expect(ct).toMatch(/^pi1\.[A-Za-z0-9_-]+$/);
-    expect(ct).not.toContain("Hi");
+    // The words are not in it, whichever way it is read (a short word could turn up in base64 by chance).
+    expect(ct).not.toContain("Hi @Sam");
+    expect(atob(ct.slice(4).replace(/-/g, "+").replace(/_/g, "/"))).not.toContain("Hi @Sam");
     expect(await open(sam, ct)).toBe("Hi @Sam, ready? 👍");
     expect(await open(eve, ct)).toBeNull();
   });
