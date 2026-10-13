@@ -258,6 +258,10 @@ transition:background-color .2s var(--eo)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
 .ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
 .ag[hidden]{display:none}
+.lns{display:flex;flex-direction:column}
+.ln{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--in) var(--eo),opacity var(--in) var(--eo)}
+.ln.show{grid-template-rows:1fr;opacity:1}
+.ln>.lw{overflow:hidden;min-height:0}
 .ag button{margin-left:auto;flex:none;padding:0 6px;border-radius:6px;color:var(--fa);transition:color .2s var(--eo),background-color .2s var(--eo)}.ag button:hover:not(:disabled),.ag button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}.ag button:disabled{opacity:.5;cursor:default}
 .adr{margin:8px 0 0 14px;padding:8px 10px;border-radius:8px;background:var(--so);font-size:13px;color:var(--k);animation:pu-in var(--mv) var(--eo) both}
 .adr small{display:block;font-size:12px;color:var(--fa)}
@@ -275,6 +279,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 }
 
 @media (prefers-reduced-motion: reduce){
+.ln{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
 .sw::after{transform:none!important;transition-property:opacity}

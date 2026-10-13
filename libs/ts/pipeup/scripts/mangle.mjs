@@ -34,6 +34,7 @@ export const PUBLIC_NAMES = [
   "openPanel",
   "addStyles",
   "setStatus",
+  "setListNote",
   "overlay",
   "onFrame",
   "where",

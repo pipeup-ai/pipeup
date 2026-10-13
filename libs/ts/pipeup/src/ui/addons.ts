@@ -26,7 +26,8 @@ export type Capability =
   | "status"
   | "overlay"
   | "here"
-  | "sign";
+  | "sign"
+  | "listnote";
 
 const CAPABILITIES: readonly Capability[] = [
   "sync",
@@ -40,6 +41,7 @@ const CAPABILITIES: readonly Capability[] = [
   "overlay",
   "here",
   "sign",
+  "listnote",
 ];
 
 export interface NetworkUse {
@@ -121,6 +123,12 @@ export interface Status {
   people?: readonly { key: string; name: string; view?: ViewState }[];
 }
 
+/** A quiet line under the All comments header: words, and optionally one text button ("Check for replies"). */
+export interface ListNote {
+  text: string;
+  action?: { label: string; run(): Promise<void> };
+}
+
 export interface UiSnapshot {
   /** Comments are showing. */
   shown: boolean;
@@ -166,6 +174,8 @@ export interface AddonHost {
   openPanel(content: Node, options: PanelOptions): PanelHandle;
   addStyles(css: string): Off;
   setStatus(status: Status | null): void;
+  /** Shows (or, with null, removes) this add-on's line under the All comments header. */
+  setListNote(note: ListNote | null): void;
   overlay(): HTMLElement;
   onFrame(fn: () => void): Off;
   /** What a comment on `at` would save. */
@@ -198,6 +208,7 @@ export class Surface {
   private readonly marked = new Map<string, Set<string>>();
   private paint = 0;
   readonly statuses = new Map<string, Status>();
+  readonly listNotes = new Map<string, ListNote>();
   private readonly toolList: ComposerTool[] = [];
   private readonly frames = new Set<() => void>();
   private readonly uis = new Set<(ui: UiSnapshot) => void>();
@@ -506,7 +517,7 @@ export class Surface {
     this.undo.delete(id);
     this.overlays.get(id)?.remove();
     this.overlays.delete(id);
-    for (const m of [this.notes, this.statuses, this.pending]) m.delete(id);
+    for (const m of [this.notes, this.statuses, this.listNotes, this.pending]) m.delete(id);
     for (const thread of this.writing.get(id) ?? []) threadNotes.delete(thread);
     this.writing.delete(id);
     for (const thread of this.marked.get(id) ?? []) {
@@ -692,6 +703,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     openPanel: live((content, o) => surface.panel(id, content, o)),
     addStyles: live((css) => surface.addSheet(id, css)),
     setStatus: live((status) => surface.setIn(surface.statuses, id, status)),
+    setListNote: live((note) => surface.setIn(surface.listNotes, id, note)),
     overlay: () => surface.ovFor(id),
     onFrame: live((fn) => surface.onTick(id, fn)),
     where: (at) => surface.ctx.here.view(at),

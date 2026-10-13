@@ -66,7 +66,7 @@ it.
  Pipeup ── each mount ──► addon.setup(host)
    host.document   id · me · threads · ops · onChange(added, source)     (read only)
    host.merge      the only way in for other people's ops                ◄── also headless (pipeup/core)
-   host.addMenuItem · notify · announce · setComposerNote · addComposerTool · openPanel · setStatus · overlay …
+   host.addMenuItem · notify · announce · setComposerNote · addComposerTool · openPanel · setStatus · setListNote · overlay …
 ```
 
 | Layer | Where | Versioned by | Size counts against |
@@ -298,6 +298,8 @@ export interface AddonHost {
 
   // stage 3
   setStatus(status: Status | null): void;
+  /** A quiet line under the All comments header, with an optional text button; null removes it. Capability `listnote`. */
+  setListNote(note: { text: string; action?: { label: string; run(): Promise<void> } } | null): void;
   overlay(): HTMLElement;
   onFrame(fn: () => void): Off;
   where(at?: Node): ViewState | undefined;   // what a comment on `at` would save (Here.view)
@@ -1757,3 +1759,4 @@ gets into the core").
   and colour (the avatar is drawn from the name they gave, not from their display name, so unnamed people show their
   animal instead of a letter). `AddonDocument` gains a read-only `name`. The live budget is 11 KB (was 10.5 KB).
 - 2026-10-09: `host.setThreadNote(thread, text | null)` shows an add-on's reply as it is being written at the end of a thread (not a comment until the add-on merges the signed op). The name "AI assistant" (and "AI assistant …") is kept for AI replies: a person can't choose it, and a reply under it is drawn with a gently glowing AI ring. `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported so an add-on can author replies under its own key. Cost: +0.4 KB gzip. For the Assist add-on ([assist.md](assist.md)).
+- 2026-10-12: `setListNote` and the `listnote` capability (additive, `ADDON_API` stays 1): a line under the All comments header with an optional button, eased in and out, removed with the add-on. First user: the agents add-on ([agents-addon.md](agents-addon.md)).
