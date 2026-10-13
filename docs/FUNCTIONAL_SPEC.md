@@ -353,6 +353,19 @@ any of them off.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
+## 7a. Copying comments for AI
+
+- Copying a thread or copying all produces text an AI assistant can act on directly.
+- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
+  for each one: where it is (slide or section, then the element), the element's stable identifier,
+  the exact quoted text or pin position, who started it and when, then the comment and its replies
+  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
+  (noting resolved ones are left out) and a one-line instruction to work through them and say what
+  changed.
+- **Copy as Text** gives **plain text** — where it is, then just the names and words.
+- There is no copy-format setting.
+- Resolved threads are left out of both copy rows.
+
 ## 7b. Reactions
 
 *Built (0.7).* The quick row opens inline under the comment, and the full picker is the `emoji` add-on.
@@ -389,19 +402,6 @@ any of them off.
   quick row and still shows every reaction anyone gave. See §19.
 - Fully usable by keyboard and screen reader: each reaction is a button that says the emoji's name,
   how many people gave it and whether you did ("Thumbs up, 3 people, including you").
-
-## 7a. Copying comments for AI
-
-- Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
-  for each one: where it is (slide or section, then the element), the element's stable identifier,
-  the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
-  (noting resolved ones are left out) and a one-line instruction to work through them and say what
-  changed.
-- **Copy as Text** gives **plain text** — where it is, then just the names and words.
-- There is no copy-format setting.
-- Resolved threads are left out of both copy rows.
 
 ## 8. Staying attached on changing pages
 
