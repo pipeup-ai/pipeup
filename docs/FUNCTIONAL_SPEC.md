@@ -1233,7 +1233,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 ### 15e. Setting a page up: `pipeup init`
 
-*Proposed (0.8).* One command does what the `pipeup-add` skill asks an agent to do by hand, so an author (or an agent)
+*Approved (0.8).* One command does what the `pipeup-add` skill asks an agent to do by hand, so an author (or an agent)
 can add Pipeup to a page without looking anything up.
 
 - **`pipeup init <page.html>`** adds Pipeup to the page: the script for the version the command comes with, pinned to
@@ -1252,8 +1252,10 @@ can add Pipeup to a page without looking anything up.
   address, a repository) asks for it, or with `--yes` refuses and says what to pass; it never guesses or picks a service.
 - **An agent, on request.** `--agent` lists this computer's agent (made with `pipeup agent`) on the page and adds the
   agents add-on (§15d).
-- **It doesn't mark the page's blocks, charts or slides.** That needs judgement about what each part is; it says so,
-  and suggests the `pipeup-add` skill and `pipeup check`.
+- **It offers to mark the page's blocks, charts and slides** with stable names, so comments stay attached when the
+  page changes (§4). It proposes a short name for each part it finds, says what it took each part to be, and the author
+  accepts, renames or skips each one; nothing is marked without that. It never renames a mark the page already has.
+  `--yes` skips this step (it marks nothing) and `--marks` goes straight to it on a page already set up.
 - It makes no network request, works the same for a page on disk or in a project, and never writes a stop key or
   anything secret into the page.
 - Exit codes: 0 done (or nothing to do), 1 a file couldn't be read or written, 2 the command wasn't understood or needs
@@ -1261,15 +1263,17 @@ can add Pipeup to a page without looking anything up.
 
 ### 15f. Reading a page's comments without a browser: `pipeup read`
 
-*Proposed (0.8).* `pipeup comments` (§15c) reads what an open page shares over the live link. `pipeup read` reads
+*Approved (0.8).* `pipeup comments` (§15c) reads what an open page shares over the live link. `pipeup read` reads
 the comments an author can reach **without opening the page**: what reviewers sent back, the page's shared copy, and an
 agent's replies.
 
 - **`pipeup read <page.html>`** prints the page's comments as Markdown, the same as **Copy as Markdown**, or with
   `--json` as data in the same form as `Pipeup.comments()` (§15b). Open threads only, unless `--all`.
 - **Where it reads from:**
-  - **feedback files** the author passes with `--from <file>` (once per file): sealed feedback files (§11), opened with
-    the page's document identity, and files of exported comments;
+  - **feedback files** the author passes with `--from <file or folder>` (once per file or folder): sealed feedback files
+    (§11), opened with the page's document identity, and files of exported comments. Given a folder, it reads every
+    feedback file in it (not in folders inside it unless `--deep`), says how many it read, and names any it skipped
+    and why (not a feedback file, another document's, unreadable);
   - **the page's shared copy**, when the page has a sharing line (§11): it asks the service the page names, and only
     that service; `--no-share` reads nothing from the network;
   - **the page's replies file**, if there is one: replies from agents the page lists (§15b).
@@ -1379,9 +1383,6 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   before the sign-in the page supplies.
 - Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
   the author's own browser.
-- `pipeup init`: whether it should offer to mark a page's blocks (with the author checking each name), or leave that to
-  the skill.
-- `pipeup read`: whether it should also read a folder of feedback files in one go.
 
 ---
 
@@ -1545,3 +1546,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Approved: the 0.8 size pass (section 16a), with portable identities moving to an add-on.
 - 2026-10-13 — Built (0.8): portable identities moved into the identity add-on (sections 10a and 16a); Pipeup alone is 49.9 KB gzip and its budget is 50 KB. The My identity row now sits with the add-ons' rows in the menu.
 - 2026-10-13 — Draft for review: `pipeup init` (section 15e) and `pipeup read` (section 15f), the rest of the command line for 0.8.
+- 2026-10-13 — Approved: `pipeup init` offers to mark blocks, charts and slides, the author accepting, renaming or skipping each (section 15e); `pipeup read` reads a folder of feedback files (section 15f).
