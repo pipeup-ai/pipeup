@@ -12,7 +12,15 @@ export interface AgentThread {
   quote?: string;
   pin?: string;
   addressed?: { note: string; by: string };
-  comments: { id: string; by: string; agent: boolean; at: string; text: string }[];
+  comments: {
+    id: string;
+    by: string;
+    agent: boolean;
+    at: string;
+    text: string;
+    /** Who reacted with what; absent when nobody did. */
+    reactions?: { emoji: string; by: string[] }[];
+  }[];
 }
 
 export interface AgentComments {
@@ -37,6 +45,9 @@ export function agentComments(items: ExportItem[], meta: ExportMeta): AgentComme
           agent: isAiName(c.name),
           at: new Date(c.at).toISOString(),
           text: c.deleted ? "" : c.text,
+          ...(c.reactions.length
+            ? { reactions: c.reactions.map((r) => ({ emoji: r.emoji, by: r.by.map(nameOf) })) }
+            : {}),
         })),
       };
       if (l.id) out.element = l.id;

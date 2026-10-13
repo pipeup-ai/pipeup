@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { createInbox } from "./inbox.mjs";
 
 const MAX_BODY = 524288;
 const PAGE_BYTES = 4 * 1024 * 1024;
@@ -27,6 +28,9 @@ const same = (a, b) => timingSafeEqual(sha(a), sha(b));
  * @property {() => number} [now] clock in ms (tests)
  * @property {number} [pageBytes] page size limits (tests)
  * @property {number} [pageBatches]
+ * @property {number} [inboxWork] proof-of-work bits a note in a person's inbox needs (default 14; contract pm2)
+ * @property {string} [inboxToken] when set, a note needs `Authorization: Bearer <it>`
+ * @property {number} [inboxNotes] notes one inbox holds (default 1000)
  */
 
 /**
@@ -109,14 +113,14 @@ export function createMailboxServer(options = {}) {
   }
 
   /** Reads the body as text; null when it is over the limit (the rest is drained). */
-  function readBody(req) {
+  function readBody(req, max = MAX_BODY) {
     return new Promise((resolve) => {
       const parts = [];
       let size = 0;
-      let over = Number(req.headers["content-length"] ?? 0) > MAX_BODY;
+      let over = Number(req.headers["content-length"] ?? 0) > max;
       req.on("data", (c) => {
         size += c.length;
-        if (size > MAX_BODY) over = true;
+        if (size > max) over = true;
         if (!over) parts.push(c);
       });
       req.on("end", () => resolve(over ? null : Buffer.concat(parts).toString("utf8")));
@@ -132,18 +136,28 @@ export function createMailboxServer(options = {}) {
     }
   };
 
+  const inbox = createInbox(
+    { dir, now, work: o.inboxWork ?? 14, token: o.inboxToken, maxNotes: o.inboxNotes ?? 1000, keepDays },
+    { send, fail, limited, readBody, json, same },
+  );
+
   async function handle(req, res) {
     const url = new URL(req.url ?? "/", "http://x");
     const path = url.pathname.replace(/\/+$/, "");
     const method = req.method ?? "GET";
     if (method === "OPTIONS") {
+      // pm1 answers exactly as before; an inbox (pm2) also needs PUT and its two signature headers.
+      const inboxPath = /\/i\/[0-9A-Z]{26}/.test(path);
       return send(res, 204, null, {
-        "Access-Control-Allow-Methods": "GET, POST, DELETE",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Methods": inboxPath ? "GET, POST, PUT, DELETE" : "GET, POST, DELETE",
+        "Access-Control-Allow-Headers": inboxPath
+          ? "Content-Type, Authorization, X-Pipeup-Key, X-Pipeup-Sig"
+          : "Content-Type, Authorization",
         "Access-Control-Max-Age": "86400",
         "Access-Control-Allow-Private-Network": "true",
       });
     }
+    if (await inbox.handle(req, res, path, method, url)) return;
     const mm = /^(.*)\/m\/([A-Za-z0-9_-]{22,64})(\/ops)?$/.exec(path);
     const isCreate = /\/m$/.test(path) && !mm;
     if (!mm && !isCreate) return fail(res, 404, "not-found", "No such endpoint.");

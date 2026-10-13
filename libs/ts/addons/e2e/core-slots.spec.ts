@@ -324,3 +324,88 @@ test("other people's new comments are announced as one short sentence, never whi
   await page.locator(".menu.show").getByText("Start commenting").click();
   await expect(page.locator(".layer > .sr")).toHaveText("1 new comment from Ada", { timeout: 5000 });
 });
+
+test("listnote: a line under the All comments header, with a button, that eases in and goes with the add-on", async ({
+  page,
+}) => {
+  await blank(page);
+  await load(page, CORE);
+  await mount(page);
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__ran = 0;
+    w.__host = null;
+    w.Pipeup.use({
+      id: "lines",
+      api: 1,
+      version: "1",
+      needs: ["listnote"],
+      network: { when: "never", to: [], says: "Nothing leaves this device." },
+      setup(host: any) {
+        w.__host = host;
+        host.setListNote({
+          text: "Claude has answered 3 of 5 open comments",
+          action: {
+            label: "Check for replies",
+            run: async () => {
+              w.__ran++;
+            },
+          },
+        });
+      },
+    });
+  });
+  await expect.poll(() => info(page)).toEqual(["lines:on"]);
+  await page.evaluate(() => {
+    const w = window as any;
+    return w.pu.document.comment(
+      w.Pipeup.describeElement(document.querySelector("p"), document.body),
+      "A comment",
+    );
+  });
+  await openMenu(page);
+  await page
+    .locator(".menu.show")
+    .getByRole("menuitem", { name: /All comments/ })
+    .click();
+  const line = page.locator(".all.show .ln");
+  await expect(line).toHaveCount(1);
+  await expect(line).toContainText("Claude has answered 3 of 5 open comments");
+  await expect(line).toHaveClass(/show/);
+  // It sits under the header and above the list.
+  const [hd, ln, list] = await Promise.all(
+    [".all.show .hd", ".all.show .ln", ".all.show .list"].map((q) => page.locator(q).boundingBox()),
+  );
+  expect(ln!.y).toBeGreaterThanOrEqual(hd!.y + hd!.height - 1);
+  expect(list!.y).toBeGreaterThanOrEqual(ln!.y + ln!.height - 1);
+  // The button runs the add-on's action, and the words can change in place.
+  await line.getByRole("button", { name: "Check for replies" }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__ran)).toBe(1);
+  await page.evaluate(() =>
+    (window as any).__host.setListNote({ text: "Claude has answered 4 of 5 open comments" }),
+  );
+  await expect(line).toContainText("4 of 5");
+  await expect(line.getByRole("button")).toHaveCount(0);
+  // Taking it away eases it out, then removes it; so does unmounting.
+  await page.evaluate(() => (window as any).__host.setListNote(null));
+  await expect(line).toHaveCount(0);
+});
+
+test("an add-on that needs a slot this Pipeup does not have stays off, with its reason", async ({ page }) => {
+  await blank(page);
+  await load(page, CORE);
+  await mount(page);
+  await page.evaluate(() =>
+    (window as any).Pipeup.use({
+      id: "future",
+      api: 1,
+      version: "1",
+      needs: ["no-such-slot"],
+      network: { when: "never", to: [], says: "x" },
+      setup() {},
+    }),
+  );
+  const [a] = await page.evaluate(() => (window as any).Pipeup.addons());
+  expect(a).toMatchObject({ id: "future", state: "off" });
+  expect(a.reason).toMatch(/no-such-slot/);
+});

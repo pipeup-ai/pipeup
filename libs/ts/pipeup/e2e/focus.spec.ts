@@ -22,11 +22,13 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toContain("Copy a prompt for my agent");
+  expect((await focusInPipeup(page)).text).toContain("Look");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Copy as Text");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
+  await page.keyboard.press("ArrowUp");
+  expect((await focusInPipeup(page)).text).toContain("My identity");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Add name");
   await page.keyboard.press("Home");

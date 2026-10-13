@@ -1,8 +1,9 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
+import { codeOf } from "./crypto/portable";
 import { OpLog, type NewOp } from "./model/log";
 import { isAiName } from "./model/animals";
-import { LIMITS, MAX_TEXT } from "./model/ops";
-import type { Anchor, Comment, SignedOp, Thread } from "./model/types";
+import { compareOps, CONTACT, isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
+import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
 import { utf8 } from "./util/encoding";
@@ -100,25 +101,39 @@ export class PipeupDocument {
     return () => this.listeners.delete(fn);
   }
 
-  comment(anchor: Anchor, text: string): Promise<string> {
-    return this.enqueue(() => this.write({ kind: "create", anchor, text: checkText(text) }));
+  comment(anchor: Anchor, text: string, mentions?: Mention[]): Promise<string> {
+    return this.enqueue(() =>
+      this.write({
+        kind: "create",
+        anchor,
+        text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
+      }),
+    );
   }
 
-  reply(parentId: string, text: string): Promise<string> {
+  reply(parentId: string, text: string, mentions?: Mention[]): Promise<string> {
     return this.enqueue(() =>
       this.write({
         kind: "reply",
         thread: this.find(parentId).thread,
         target: parentId,
         text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
       }),
     );
   }
 
-  edit(commentId: string, text: string): Promise<void> {
+  edit(commentId: string, text: string, mentions?: Mention[]): Promise<void> {
     return this.enqueue(async () => {
       const { thread } = this.mine(commentId);
-      await this.write({ kind: "edit", thread, target: commentId, text: checkText(text) });
+      await this.write({
+        kind: "edit",
+        thread,
+        target: commentId,
+        text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
+      });
     });
   }
 
@@ -126,6 +141,74 @@ export class PipeupDocument {
     return this.enqueue(async () => {
       const { thread } = this.mine(commentId);
       await this.write({ kind: "delete", thread, target: commentId });
+    });
+  }
+
+  /** Shares a way to reach this reviewer (an email address, or `gh:<GitHub name>`) with everyone who has the comments. */
+  contact(value: string): Promise<void> {
+    const text = value.trim();
+    if (!CONTACT.test(text))
+      return Promise.reject(new Error("pipeup: that isn't an email address or a GitHub name"));
+    return this.enqueue(async () => void (await this.write({ kind: "contact", thread: this.me, text })));
+  }
+
+  /** Stops sharing it: people who learn of this later won't see it. */
+  uncontact(): Promise<void> {
+    return this.enqueue(async () => void (await this.write({ kind: "uncontact", thread: this.me })));
+  }
+
+  /** The ways people have chosen to be reached, by writer: the latest each shared, unless they stopped sharing. */
+  contacts(): Map<string, string> {
+    const out = new Map<string, string>();
+    for (const { body } of [...this.log.all()].sort(compareOps)) {
+      if (body.kind === "contact" && body.text) out.set(body.author, body.text);
+      else if (body.kind === "uncontact") out.delete(body.author);
+    }
+    return out;
+  }
+
+  /** This reviewer's identity was made portable, so it has a recovery code (an ordinary one can't leave the browser). */
+  get portable(): boolean {
+    return this.options.identity.privateKey.extractable;
+  }
+
+  /** The recovery code of a portable identity; null for an ordinary one. */
+  identityCode(): Promise<string | null> {
+    return codeOf(this.options.identity);
+  }
+
+  /** Marks comments read by this reviewer (one `seen` op each, for those not already marked), so every device knows. */
+  seen(commentIds: readonly string[]): Promise<void> {
+    return this.enqueue(async () => {
+      for (const id of commentIds) {
+        const found = this.comments.get(id);
+        if (found && !found.comment.seenBy?.includes(this.me))
+          await this.write({ kind: "seen", thread: found.thread, target: id });
+      }
+    });
+  }
+
+  /** Reacts to a comment with one emoji; reacting twice with the same emoji changes nothing. */
+  react(commentId: string, emoji: string): Promise<void> {
+    return this.enqueue(async () => {
+      await this.write({
+        kind: "react",
+        thread: this.find(commentId).thread,
+        target: commentId,
+        text: checkEmoji(emoji),
+      });
+    });
+  }
+
+  /** Takes back this reviewer's own reaction. */
+  unreact(commentId: string, emoji: string): Promise<void> {
+    return this.enqueue(async () => {
+      await this.write({
+        kind: "unreact",
+        thread: this.find(commentId).thread,
+        target: commentId,
+        text: checkEmoji(emoji),
+      });
     });
   }
 
@@ -263,6 +346,11 @@ function checkText(text: string): string {
   if (!t) throw new Error("pipeup: a comment needs some words");
   if (t.length > MAX_TEXT) throw new Error(`pipeup: comments are limited to ${MAX_TEXT} characters`);
   return t;
+}
+
+function checkEmoji(emoji: string): string {
+  if (!isEmoji(emoji)) throw new Error("pipeup: a reaction is one emoji");
+  return emoji;
 }
 
 function checkName(name: string): string {

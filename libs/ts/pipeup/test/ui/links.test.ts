@@ -97,6 +97,7 @@ describe("linkify", () => {
       edited: false,
       deleted: false,
       replies: [],
+      reactions: [],
     });
     const t: Thread = {
       id: "t",
@@ -105,6 +106,10 @@ describe("linkify", () => {
       root: { ...c("t", "Spec: https://x.test/spec"), replies: [c("r", "Also https://x.test/more")] },
     };
     const actions = {
+      me: "me",
+      picker: () => null,
+      people: () => [],
+      react: vi.fn(),
       reply: vi.fn(),
       resolve: vi.fn(),
       reopen: vi.fn(),

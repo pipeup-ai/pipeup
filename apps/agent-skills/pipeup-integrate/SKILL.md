@@ -5,7 +5,7 @@ description: Use when creating or editing an HTML document, slide deck, report, 
 
 # Add Pipeup to a page: the full reference
 
-Written for Pipeup 0.6.0. For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.7.0 For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place: select text, click any element (including
 buttons and charts) or drop a pin on a slide. Your job is to make the page *reviewable* while it
@@ -75,7 +75,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -157,7 +157,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -175,7 +175,7 @@ page opened from disk and in any script order, and they are released with Pipeup
 
 - **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
   pick a sharing service yourself: the author chooses one.
-- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.6.0/dist/share.min.js`
+- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0/dist/share.min.js`
   with its `integrity` from the release notes), or use the combined file `pipeup+share.min.js` instead of Pipeup's.
 - Sharing is set up by the author with the command line (`npx @pipeup/share create page.html --server …`), which writes
   `data-pipeup-share` into the file and prints a stop key once. **Never write `data-pipeup-share` yourself and never
@@ -193,14 +193,23 @@ page opened from disk and in any script order, and they are released with Pipeup
   the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git (Save to GitHub, or Send to Git through a company service), use the skill
   pipeup-send-to-git-setup.
 - **Letting an agent answer comments.** Only when the author asks. Agents read a page's comments with
-  `await Pipeup.comments()` and answer in a replies file next to the page (`pipeup-apply` is the skill for that).
-  Setting it up: the agent runs `npx pipeup agent --name Claude`, which prints its public key; add that key to `<html>` as
-  `data-pipeup-agents="<key>"` (append to an existing list, keep every entry). Say in plain words what that lets it
-  do: reply in threads and mark them addressed, never resolve or change anyone's comment. The page ignores replies from
-  keys it doesn't list. Never write a key you weren't given, and never put an agent's private key in the page.
+  `await Pipeup.comments()` (part of Pipeup itself) and answer in a replies file next to the page (`pipeup-apply` is the
+  skill for that). Showing those answers in the page is the **agents add-on**, so listing an agent means two things:
+  1. The agent runs `npx pipeup agent --name Claude`, which prints its public key; add that key to `<html>` as
+     `data-pipeup-agents="<key>"` (append to an existing list, keep every entry). Never write a key you weren't given,
+     and never put an agent's private key in the page.
+  2. Add the agents add-on after the Pipeup script, pinned with its `integrity` hash like any add-on:
+     `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@<version>/dist/agents.min.js" integrity="…" crossorigin="anonymous"></script>`,
+     and add `agents` to `data-pipeup-addons` if the page has that list. Say in plain words what it does: it reads the
+     replies file next to the page, and when the page is shown with `pipeup watch` and the author switches it on, it
+     sends the page's comments to the program on their computer; nothing leaves the computer. It also lets the agent
+     reply in threads and mark them addressed, never resolve or change anyone's comment. The page ignores replies from
+     keys it doesn't list. Without the add-on the page says so once in the browser console and no replies show.
   On their own computer the author can instead run `npx pipeup watch page.html --agent Claude`: it shows the page with a
-  **Share with my agent** switch (off until they turn it on), lists the agent while it runs, and lets the agent read with
-  `npx pipeup comments page.html`. Nothing is written into the page file.
+  **Share with my agent** switch (off until they turn it on), lists the agent while it runs, **adds the agents add-on to
+  the page it shows itself**, and lets the agent read with `npx pipeup comments page.html`. Nothing is written into the
+  page file. (It refuses a page whose Pipeup is older than 0.6 and says what to change; a 0.6.x page already has agent
+  support built in.)
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
   about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
 

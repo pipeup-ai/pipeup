@@ -6,7 +6,7 @@ accounts and no servers: comments stay in each reviewer's browser, and **Copy as
 Markdown that says exactly where each comment is, ready to send to the author or paste into an AI
 agent.
 
-> **Status: alpha (0.6.0).** The API and the stored comment format may change before 1.0. Pin an
+> **Status: alpha (0.7.0).** The API and the stored comment format may change before 1.0. Pin an
 > exact version.
 
 - Website: https://pipeup-ai.github.io/pipeup/
@@ -25,7 +25,7 @@ Give the page a document key once, then load the pinned script just before `</bo
 <html data-pipeup-doc="<key>">
   ...
   <script
-    src="https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js"
+    src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"
     integrity="sha384-…"
     crossorigin="anonymous"
   ></script>
@@ -87,7 +87,7 @@ setting up saving reviews in Git) are in [apps/agent-skills](apps/agent-skills/)
 | Path | What |
 |---|---|
 | `libs/ts/pipeup` | The library: npm package `pipeup` and the CDN build `dist/pipeup.min.js` |
-| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
+| `libs/ts/addons` | The add-ons (`share`, `voice`, `live`, `assist`, `agents`, `emoji`, `github`, `updates`, `inbox`), the private kit they share, their browser tests, and a [template](libs/ts/addons/template) and [guide](docs/ADDONS_GUIDE.md) for making your own |
 | `services/mailbox` | `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract, and its checker |
 | `apps/site` | The website, its Try pages, `llms.txt` and the build script (`apps/site/build.sh`) |
 | `apps/agent-skills` | Agent skills: integrate, summarise and apply |

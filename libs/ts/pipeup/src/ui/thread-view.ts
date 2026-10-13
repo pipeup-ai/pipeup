@@ -1,14 +1,24 @@
 import { formatAgo } from "../export/format";
 import { AI_NAME, isAiName, nameOf } from "../model/animals";
-import type { Comment, Thread } from "../model/types";
+import type { Comment, Mention, Thread } from "../model/types";
 import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
 import { markAgain, threadMarks, threadNotes } from "./notes";
+import { names, type Person } from "./mentions";
+import { reactionRow, type ReactionPicker } from "./reactions";
 
 export interface ThreadActions {
-  reply(parentId: string, text: string): Promise<void>;
+  /** This reviewer's key, to mark their own reactions. */
+  readonly me: string;
+  reply(parentId: string, text: string, mentions?: Mention[]): Promise<void>;
+  /** Who can be mentioned with `@` in a reply. */
+  people(): Person[];
+  /** Gives (`on`) or takes back this reviewer's reaction to a comment. */
+  react(commentId: string, emoji: string, on: boolean): Promise<void>;
+  /** The full emoji picker, when an add-on provides one. */
+  picker(): ReactionPicker | null;
   resolve(threadId: string): Promise<void>;
   reopen(threadId: string): Promise<void>;
   /** "Still not right" on an addressed thread: reopens it and puts the cursor in its reply line. */
@@ -54,7 +64,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         label: "Reply",
         kind: "reply",
         thread: () => id,
-        onSend: (text) => actions.reply(id, text),
+        people: () => actions.people(),
+        onSend: (text, mentions) => actions.reply(id, text, mentions),
         onCancel: actions.close,
       }).element,
     ),
@@ -78,6 +89,10 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
    * moved into the new one instead: it eases in once, when it first appears, and never again. When the face
    * changes (its writer added a name), the old one stays beneath until the new one has eased in over it.
    */
+  /** Comments whose quick row of reactions is open, and the chips already shown (so only new ones ease in). */
+  const quickOpen = new Set<string>();
+  const reactionsSeen = new Set<string>();
+  let current = first;
   let faces = new Map<string, { key: string; el: HTMLElement }>();
   let nextFaces = new Map<string, { key: string; el: HTMLElement }>();
   const leaving = new Map<string, HTMLElement>();
@@ -114,17 +129,57 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   ): void {
     Object.assign(o, next);
     id = t.id;
+    current = t;
     const now = (o.now ?? Date.now)();
     const n = t.root.replies.length;
     const who = (c: Comment) => h("span", { class: "who" }, `${nameOf(c)} · ${formatAgo(c.at, now)}`);
+    /** A comment's words with the people it names marked (yours stronger); links and references as usual. */
+    const body = (c: Comment): (string | Node)[] => {
+      const plain = (t: string) => (isAiName(c.name) ? referenced(t) : linkify(t));
+      if (!c.mentions?.length) return plain(c.text);
+      const out: (string | Node)[] = [];
+      let at = 0;
+      for (const m of c.mentions) {
+        if (m.start < at) continue;
+        out.push(...plain(c.text.slice(at, m.start)));
+        out.push(
+          h(
+            "span",
+            { class: names(c, [actions.me]) && m.ref === actions.me ? "mn me" : "mn" },
+            c.text.slice(m.start, m.end),
+          ),
+        );
+        at = m.end;
+      }
+      return [...out, ...plain(c.text.slice(at))];
+    };
     const words = (c: Comment) =>
       h(
         "div",
         { class: c.deleted ? "tx del" : "tx" },
-        ...(c.deleted
-          ? ["Deleted"]
-          : [...(isAiName(c.name) ? referenced(c.text) : linkify(c.text)), c.edited ? " (edited)" : ""]),
+        ...(c.deleted ? ["Deleted"] : [...body(c), c.edited ? " (edited)" : ""]),
       );
+    const reactions = (c: Comment) =>
+      reactionRow(c, {
+        me: actions.me,
+        picker: actions.picker(),
+        resolved: t.resolved,
+        quick: quickOpen.has(c.id),
+        seen: reactionsSeen,
+        react: (emoji, on) => {
+          quickOpen.delete(c.id);
+          void actions.react(c.id, emoji, on);
+          update(current);
+        },
+      });
+    /** The button that opens the quick row; none on a resolved thread or a deleted comment. */
+    const reactButton = (c: Comment) =>
+      t.resolved || c.deleted
+        ? null
+        : button("smile", "React", () => {
+            if (!quickOpen.delete(c.id)) quickOpen.add(c.id);
+            update(current);
+          });
     const restText = t.resolved
       ? "Resolved" + (n ? ` · ${plural(n)}` : "")
       : t.addressed
@@ -143,6 +198,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         h(
           "span",
           { class: "acts" },
+          reactButton(t.root),
           button("copy", "Copy thread", () => actions.copy(t.id)),
           t.resolved
             ? button("reopen", "Reopen", () => void actions.reopen(t.id))
@@ -157,7 +213,15 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         : null;
     nextFaces = new Map();
     // Each comment keeps room for its avatar at the top right, so the words never move or narrow for it.
-    const nextRoot = h("div", { class: "root" }, ...face(t.root), context, words(t.root), footer);
+    const nextRoot = h(
+      "div",
+      { class: "root" },
+      ...face(t.root),
+      context,
+      words(t.root),
+      reactions(t.root),
+      footer,
+    );
     root.replaceWith(nextRoot);
     root = nextRoot;
 
@@ -175,7 +239,12 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
                 { class: "it" },
                 ...face(c),
                 words(c),
-                h("div", { class: o.variant === "column" ? "rft" : "rft open" }, who(c)),
+                reactions(c),
+                h(
+                  "div",
+                  { class: o.variant === "column" ? "rft" : "rft open" },
+                  h("span", { class: "rrow" }, who(c), h("span", { class: "acts" }, reactButton(c))),
+                ),
               ),
             ),
             // A reply being written by an add-on (an AI's, streaming in): not a comment yet, so only shown.
@@ -183,9 +252,9 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
               ? null
               : h(
                   "div",
-                  { class: "it ghost" },
-                  avatar("", AI_NAME, true),
-                  h("div", { class: "tx" }, writing, h("span", { class: "dots" }, h("i"), h("i"), h("i"))),
+                  { class: "it ghost", "data-pipeup-writing": "row" },
+                  avatar("", AI_NAME),
+                  h("div", { class: "tx", "data-pipeup-writing": "words" }, writing),
                   h("div", { class: "rft open" }, h("span", { class: "who" }, `${AI_NAME} · writing now`)),
                 ),
           )

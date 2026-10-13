@@ -1,18 +1,19 @@
 /** Pipeup's stylesheet, scoped to its shadow root. Light by default; `.dark` follows a dark page. */
 export const STYLES = `
 /* Inherited page styles are reset on .layer below; custom properties pass through all:initial. */
-:host{all:initial}
+:host{all:initial;direction:ltr;unicode-bidi:normal}
 *{box-sizing:border-box}
 button{appearance:none;font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 svg{display:block}
-.layer{all:initial;display:block;position:fixed;inset:0;pointer-events:none;font:13px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--k);
---k:#2C2C2A;--mu:#5F5E5A;--fa:#888780;--ln:#E5E3DA;--ru:#ECEAE2;--so:#FAFAF7;--su:#FFFFFF;--ho:#F1EFE8;
+.layer{all:initial;direction:ltr;unicode-bidi:normal;display:block;position:fixed;inset:0;pointer-events:none;font:13px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--k);
+--k:#2C2C2A;--mu:#5F5E5A;--fa:#6B6A64;--ln:#E5E3DA;--ru:#ECEAE2;--so:#FAFAF7;--su:#FFFFFF;--ho:#F1EFE8;
 --as:color-mix(in srgb,var(--pu-accent,#534AB7) 12%,transparent);
 --sh:0 8px 28px rgba(44,44,42,.10);
 --in:.26s;--mv:.34s;--out:.2s;--pl:1.2s;
 --eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1);
 --pu-text:var(--k);--pu-muted:var(--mu);--pu-faint:var(--fa);--pu-line:var(--ln);--pu-surface:var(--su);--pu-soft:var(--so);--pu-hover:var(--ho);--pu-shadow:var(--sh);--pu-ease:var(--eo)}
-.layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#8D8B84;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
+.layer{transition:opacity .24s var(--eo)}.layer.sw{opacity:0;transition-duration:.16s;transition-timing-function:var(--ei)}
+.layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#9A9892;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
 
 .tx{font-size:14px;line-height:1.5;color:var(--k);white-space:pre-wrap;overflow-wrap:anywhere}
@@ -47,7 +48,7 @@ svg{display:block}
 .more>div{overflow:hidden;min-height:0}
 .th:not(.on) .more{grid-template-rows:0fr}
 
-.row{display:flex;align-items:center;gap:8px;padding:8px 0 2px;cursor:text}
+.row{position:relative;display:flex;align-items:center;gap:8px;padding:8px 0 2px;cursor:text}
 .input{flex:1;min-width:0;height:27px;display:block;border:0;border-bottom:1px solid var(--ln);outline:none;resize:none;overflow:hidden;
 font:inherit;font-size:14px;line-height:1.5;padding:3px 0;color:var(--k);background:transparent;transition:border-color var(--in) var(--eo)}
 .row:hover .input,.input:hover{border-bottom-color:var(--mu)}
@@ -67,27 +68,51 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 /* Ten colours (.c0 Red to .c9 Grey, as COLOURS): a soft tint and a dark drawing, swapped round on dark pages. */
 .av{--av-l:92%;--av-d:30%;--s:60%;background:hsl(var(--h) var(--s) var(--av-l));color:hsl(var(--h) var(--s) var(--av-d))}
 .dark .av{--av-l:20%;--av-d:78%}
-/* An AI's reply: a plain disc with a violet ring that pulses outward, all inside the avatar's own box so nothing is cropped. */
+/* An AI's reply: a plain disc with a violet ring, all inside the avatar's own box so nothing is cropped. */
 .av.ai{position:relative;border-radius:50%;background:var(--su);color:var(--pu-accent);font-size:9px;letter-spacing:.02em}
-.av.ai::before,.av.ai::after{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid var(--pu-accent);pointer-events:none}
-.av.ai::after{animation:pu-pulse-ring 3s var(--eo) infinite}
-.av.ai.busy::after{animation-duration:1.6s}
+.av.ai::before{content:"";position:absolute;inset:3px;border-radius:50%;border:1.5px solid var(--pu-accent);pointer-events:none}
 .root>.av.ai,.it>.av.ai{position:absolute}
-@keyframes pu-pulse-ring{0%{opacity:.7;transform:scale(1)}80%,100%{opacity:0;transform:scale(1.375)}}
 .refs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;white-space:normal}
 .refs .ref{display:inline-flex;align-items:center;gap:5px;max-width:160px;padding:1px 9px;border:1px solid var(--ln);border-radius:999px;background:var(--so);color:var(--mu);font:inherit;font-size:11.5px;line-height:1.6;text-decoration:none;cursor:pointer;transition:background-color .2s var(--eo),color .2s var(--eo),border-color .2s var(--eo)}
 .refs .ref:hover,.refs .ref:focus-visible{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent);outline:none}
 .ref span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rxp{position:fixed;width:320px;height:340px;border-radius:12px;overflow:hidden;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
+.rxp.show{opacity:1;transform:none;pointer-events:auto}
+.mn{border-radius:4px;padding:0 2px;background:var(--as);color:var(--pu-accent)}
+.mn.me{font-weight:600}
+.mnl{position:absolute;left:0;bottom:100%;margin:0 0 4px;padding:4px;list-style:none;min-width:180px;max-width:100%;border:1px solid var(--ln);border-radius:10px;background:var(--su);box-shadow:var(--sh);opacity:0;transform:translateY(4px);pointer-events:none;z-index:4;transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
+.mnl.show{opacity:1;transform:none;pointer-events:auto}
+.mnl li{display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:6px;font-size:13px;color:var(--k);cursor:pointer}
+.mnl li small{font-size:11px;color:var(--fa)}
+.mnl li.on,.mnl li:hover{background:var(--as);color:var(--pu-accent)}
+.dlg{position:fixed;left:50%;top:18vh;width:min(380px,calc(100vw - 32px));padding:16px 18px;border:1px solid var(--ln);border-radius:14px;background:var(--su);box-shadow:var(--sh);color:var(--k);opacity:0;transform:translate(-50%,6px);pointer-events:none;transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
+.dlg.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.dlg-t{margin:0 0 8px;font-size:15px;font-weight:600}
+.dlg-b p{margin:0 0 8px;font-size:13px;line-height:1.5;color:var(--mu)}
+.dlg-c{display:block;margin:8px 0;padding:8px 10px;border-radius:8px;background:var(--so);font:12px/1.6 ui-monospace,monospace;word-break:break-all;user-select:all}
+.dlg-f{width:100%;margin:6px 0;padding:8px;border:1px solid var(--ln);border-radius:8px;background:var(--so);color:var(--k);font:12px/1.5 ui-monospace,monospace}
+.dlg-m{min-height:1.2em;margin:4px 0;font-size:12px;color:var(--pu-accent)}
+.dlg-a{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}
+.dlg-btn{padding:6px 12px;border:1px solid var(--ln);border-radius:8px;font-size:13px;color:var(--k);transition:background-color .2s var(--eo)}
+.dlg-btn:hover,.dlg-btn:focus-visible{background:var(--ho);outline:none}
+.dlg-btn.primary{border-color:var(--pu-accent);color:var(--pu-accent)}
+.toast.act{pointer-events:auto}
+.ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
+.dlg-h{margin:12px 0 4px;font-size:13px;font-weight:600}
+.rx .n{font-size:11px}
+.rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
+.rx:disabled{cursor:default;opacity:.7}
+.rx.new,.rxq.new{animation:pu-in var(--mv) var(--eo) both}
+.rxs{align-items:center}
+.rxq{display:inline-flex;gap:2px}
+.rxo{padding:2px 5px;border-radius:8px;font-size:16px;line-height:1.3;transition:background-color .2s var(--eo)}
+.rxo:hover,.rxo:focus-visible,.rxo[aria-pressed=true]{background:var(--as);outline:none}
+.rrow{min-width:0;flex:1;display:flex;align-items:center}
 .refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 .ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
 .seen button{margin-left:auto;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--fa);font:inherit;cursor:pointer;transition:color .2s var(--eo),background-color .2s var(--eo)}.seen button:hover,.seen button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
-.ghost .dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
-.ghost .dots i{width:4px;height:4px;border-radius:50%;background:var(--fa);animation:pu-dot 1.6s var(--eio) infinite}
-.ghost .dots i:nth-child(2){animation-delay:.2s}
-.ghost .dots i:nth-child(3){animation-delay:.4s}
-@keyframes pu-dot{0%,100%{opacity:.25}50%{opacity:1}}
 .c0{--h:0}.c1{--h:25}.c2{--h:50}.c3{--h:130}.c4{--h:175}.c5{--h:215}.c6{--h:270}.c7{--h:330}.c8{--h:28;--s:35%}.c9{--h:220;--s:8%}
 .me{flex:none;display:grid}
 .me>.av{grid-area:1/1;width:26px;height:26px;font-size:13px}
@@ -116,7 +141,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .bub.in:hover,.bub.on{transform:scale(1.18)}
 .bub.done{background:var(--fa)}
 .bub.ghost{pointer-events:none}
-.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
+.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode,.rxp{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
 .tip{position:fixed;max-width:260px;border-radius:10px;padding:7px 10px;opacity:0;transform:translateY(3px);
 transition:opacity .22s var(--eo),transform .26s var(--eo)}
 .tip.show{opacity:1;transform:none;pointer-events:auto;cursor:pointer;
@@ -133,7 +158,7 @@ transition:opacity .3s var(--eo)}
 
 /* Document column. */
 .col{position:fixed;left:0;top:0;pointer-events:none;transition:opacity var(--in) var(--eo)}
-.th{position:absolute;left:0;right:0;top:0;padding:4px 4px 4px 12px;pointer-events:auto;cursor:pointer;box-shadow:inset 2px 0 0 transparent;
+.th{position:absolute;left:0;right:0;top:0;padding:4px 4px 4px 12px;background:var(--su);border-radius:8px;pointer-events:auto;cursor:pointer;box-shadow:inset 2px 0 0 transparent;
 transition:transform var(--mv) var(--eio),box-shadow var(--in) var(--eo),opacity var(--in) var(--eo)}
 .th.hot{box-shadow:inset 2px 0 0 var(--ln)}
 .th.on{box-shadow:inset 2px 0 0 var(--pu-accent);cursor:default}
@@ -162,7 +187,7 @@ border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) va
 markers that hold focus are invisible. */
 .pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}
 .km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sr,.mn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
 white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
@@ -258,6 +283,10 @@ transition:background-color .2s var(--eo)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
 .ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
 .ag[hidden]{display:none}
+.lns{display:flex;flex-direction:column}
+.ln{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--in) var(--eo),opacity var(--in) var(--eo)}
+.ln.show{grid-template-rows:1fr;opacity:1}
+.ln>.lw{overflow:hidden;min-height:0}
 .ag button{margin-left:auto;flex:none;padding:0 6px;border-radius:6px;color:var(--fa);transition:color .2s var(--eo),background-color .2s var(--eo)}.ag button:hover:not(:disabled),.ag button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}.ag button:disabled{opacity:.5;cursor:default}
 .adr{margin:8px 0 0 14px;padding:8px 10px;border-radius:8px;background:var(--so);font-size:13px;color:var(--k);animation:pu-in var(--mv) var(--eo) both}
 .adr small{display:block;font-size:12px;color:var(--fa)}
@@ -269,14 +298,27 @@ transition:background-color .2s var(--eo)}
 transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* Touch: fingers need bigger targets than pointers (44 px for the menu's rows, 36 and more for buttons). */
+@media (pointer:coarse){
+.mi{min-height:44px}
+.ib{min-width:36px;min-height:36px}
+.rxo{min-width:40px;min-height:40px}
+.refs .ref{min-height:34px}
+.mnl li{min-height:40px}
+.dlg-btn,.hs{min-height:40px}
+.send{min-width:36px;min-height:36px}
+}
+
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}
 .layer :is(.ib,.mi,.nb,.hs,.selbar button,.say button,.xb button):focus-visible{outline:2px solid Highlight}
 }
 
 @media (prefers-reduced-motion: reduce){
+.ln{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc,.rxp,.mnl{transform:none!important}
+.dlg{transform:translate(-50%,0)!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}
@@ -286,8 +328,6 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 .all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}
 .av,.nf{transform:none!important}
-.av.ai::after{animation:none;opacity:0}
-.ghost .dots i{animation:none;opacity:.6}
 @keyframes pu-pulse{0%{opacity:0}35%{opacity:.85}100%{opacity:0}}
 }
 `;

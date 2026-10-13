@@ -2,7 +2,7 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.6.0).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.7.0).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
@@ -21,14 +21,14 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value
 (`node scripts/sri.mjs` prints it for a local build). Make a document key with
 `await Pipeup.newDocumentAttribute()` and keep it once people have commented.
 
-**Add-ons.** Optional extra scripts add features (`@pipeup/share`, `voice`, `live`, `assist`), and anyone can write their own
+**Add-ons.** Optional extra scripts add features (`@pipeup/share`, `voice`, `live`, `assist`, `agents`, `emoji`, `github`, `updates`, `inbox`), and anyone can write their own
 (a company's, for example) without the Pipeup project's permission: see the
 [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html). Add-ons run with the page's full power, so keep them
 intentional (best effort): pin each script with its `integrity` hash, name the add-ons that may run with

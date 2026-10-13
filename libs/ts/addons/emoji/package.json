@@ -1,0 +1,47 @@
+{
+  "name": "@pipeup/emoji",
+  "version": "0.7.0",
+  "description": "The full set of emoji for reactions on a Pipeup page: search, groups, recently used and skin tones, from the device's own emoji.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/emoji"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/emoji.esm.js",
+  "module": "./dist/emoji.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/emoji.min.js",
+  "unpkg": "dist/emoji.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.7.0"
+  },
+  "pipeup": {
+    "network": {
+      "when": "never",
+      "to": [],
+      "says": "Nothing is sent anywhere: the emoji are part of this script."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/emoji.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

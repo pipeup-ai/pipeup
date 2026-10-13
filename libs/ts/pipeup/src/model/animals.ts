@@ -40,9 +40,23 @@ export const colourOf = (author: string): number => Math.floor(mix(author) / ANI
 export const animalName = (author: string): string =>
   `${COLOURS[colourOf(author)]} ${ANIMALS[animalOf(author)]}`;
 
-/** What to call a comment's writer: their name, or their animal until they add one. An agent shows as "Claude", not "AI assistant · Claude". */
-export const nameOf = (c: { author: string; name: string }): string =>
-  c.name.replace(/^AI assistant · /, "") || animalName(c.author);
+/** A short, stable tag from a reviewer's key ("4F2A"), shown beside a name only where two people share it. */
+export function shortId(author: string): string {
+  const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  let x = mix(`id:${author}`);
+  let out = "";
+  for (let i = 0; i < 4; i++, x >>>= 5) out += alphabet[x & 31];
+  return out;
+}
+
+/**
+ * What to call a comment's writer: their name, or their animal until they add one; with their short tag when another
+ * person in the document has the same name. An agent shows as "Claude", not "AI assistant · Claude".
+ */
+export const nameOf = (c: { author: string; name: string; alike?: boolean }): string => {
+  const base = c.name.replace(/^AI assistant · /, "") || animalName(c.author);
+  return c.alike ? `${base} · ${shortId(c.author)}` : base;
+};
 
 /** The name an assistant's replies carry: a person can't choose it, and a reply under it is drawn as an AI's. */
 export const AI_NAME = "AI assistant";

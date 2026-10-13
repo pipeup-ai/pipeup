@@ -37,9 +37,9 @@ export const faceOf = (author: string, name: string): string => initial(name) ||
  * A squircle avatar: the writer's animal drawn in its colour on a tint of it, or their initial in the same colours once they have a
  * name. Decorative: the name is always written beside it, so screen readers skip it.
  */
-export function avatar(author: string, name: string, busy = false): HTMLElement {
-  // An AI's replies: a plain disc with a gently glowing ring, so it is plain at a glance that a model wrote them.
-  if (isAiName(name)) return h("span", { class: busy ? "av ai busy" : "av ai", "aria-hidden": "true" }, "AI");
+export function avatar(author: string, name: string): HTMLElement {
+  // An AI's replies: a plain disc with a violet ring, so it is plain at a glance that a model wrote them.
+  if (isAiName(name)) return h("span", { class: "av ai", "data-pipeup-ai": "", "aria-hidden": "true" }, "AI");
   return h(
     "span",
     { class: `av c${colourOf(author)}`, "aria-hidden": "true", "data-animal": animalName(author) },

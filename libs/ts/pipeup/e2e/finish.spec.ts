@@ -79,6 +79,15 @@ test("a comment waiting for the deferred pass never flashes under 'No longer on 
   await seedText(page, "#p1", "targeting a 20% lift in week-one retention", "Is this realistic?");
   await expect(page.locator(".th")).toHaveCount(1);
   await settled(page.locator(".th"));
+  // Under load the column can still be settling into place: wait until the thread has stopped moving.
+  await expect
+    .poll(async () => {
+      const at = () => page.locator(".th").evaluate((el) => getComputedStyle(el).transform);
+      const first = await at();
+      await page.waitForTimeout(250);
+      return first === (await at());
+    })
+    .toBe(true);
   const rest = await page.locator(".th").evaluate((el) => (el as HTMLElement).style.transform);
   await page.evaluate(() => {
     const w = window as any;
@@ -191,7 +200,7 @@ test("hostile page styles can't break or hide Pipeup's own UI", async ({ page })
   expect(look.size).toBe("14px");
   // The page's text moved (its own styles), so the thread follows it; the launcher stays put and works.
   await openMenu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(6);
+  await expect(page.locator(".menu.show .mi")).toHaveCount(7);
   expect(
     await page
       .locator(".menu .mi")

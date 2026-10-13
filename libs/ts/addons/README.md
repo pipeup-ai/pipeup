@@ -8,6 +8,8 @@ Optional features for Pipeup, each one more script. The design is [docs/design/a
 | `voice/`  | `@pipeup/voice`  | Dictating comments with the browser's own speech engine                                                                               |
 | `live/`   | `@pipeup/live`   | Live comments and presence between people on the page, peer to peer                                                                   |
 | `assist/` | `@pipeup/assist` | Short replies to comments from a small AI model on the reviewer's own device                                                          |
+| `emoji/`  | `@pipeup/emoji`  | The full set of emoji for reactions: search, groups, recently used and a skin tone                                                    |
+| `agents/` | `@pipeup/agents` | Shows an AI agent's replies, is the page's side of the live link from `pipeup watch`, and offers the prompt for an agent              |
 | `kit/`    | private          | The code the add-ons share: key ladder, sealed envelope, settings, sync engine, transports. Bundled into each add-on; never published |
 | `test/`   | private          | A fixture add-on that uses every slot, for the browser tests                                                                          |
 
@@ -33,4 +35,4 @@ npm run demo       # a local mailbox and relay and a try page for all three add-
 
 Each add-on builds to `dist/<id>.min.js` (a classic script that registers itself), `dist/<id>.esm.js`
 (`import share from "@pipeup/share"; use(share())`), and `dist/pipeup+<id>.min.js` (Pipeup and the add-on in
-one file, byte for byte). Gzip budgets: share 8.5 KB, voice 4 KB, live 11 KB, assist 8 KB.
+one file, byte for byte). Gzip budgets: share 8.5 KB, voice 4 KB, live 11 KB, assist 8 KB, agents 5 KB, emoji 32 KB, github 3 KB, updates 4 KB, inbox 8 KB.

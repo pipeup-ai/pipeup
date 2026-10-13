@@ -1,11 +1,14 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
-// 46 KB: it was 42 KB while add-on support was in (+3.8 KB over 0.4.1's 36.8 KB), then agents reading and answering comments
-// added 2.6 KB and the live link to an agent 0.4 KB (design: docs/design/agent-replies.md).
+// 56 KB: it was 42 KB while add-on support was in (+3.8 KB over 0.4.1's 36.8 KB), then agents reading and answering comments
+// added 2.6 KB and the live link to an agent 0.4 KB (design: docs/design/agent-replies.md); then reading the
+// page's light or dark look reliably and the reviewer's Look choice added 0.3 KB (design: docs/design/page-isolation.md); the budget
+// went to 50 KB for reactions and mentions, and to 56 KB when reactions, the picker slot, mentions, portable
+// identities and the page-isolation work all landed in core (agent support had left it).
 const BUDGETS = {
-  "dist/pipeup.min.js": 46 * 1024,
-  "dist/pipeup.esm.js": 46 * 1024,
+  "dist/pipeup.min.js": 56 * 1024,
+  "dist/pipeup.esm.js": 56 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

@@ -27,10 +27,13 @@ format may still change; the README says the project is in alpha until 1.0.
 | **0.4** | **Slides, hidden views, and the keyboard and screen-reader cursor** (shipped) |
 | **0.5** | **Add-ons**: add-on support, `share` (comments shared through an encrypted service), `voice` (dictating comments) and `live` (live review and presence, peer to peer), and the mailbox server |
 | **0.6** | **Agents**: read a page's comments (`Pipeup.comments()`), answer them in a replies file and mark them addressed, a live link to an agent on the same computer, and the skills installed as a Claude Code plugin or with `pipeup skills install`; the `pipeup` command line begins (`agent`, `reply`, `watch`, `comments`, `skills`) |
-| 0.7 | Touch and the narrow-page drawer |
+| **0.7** | **Talking to each other**: reactions (`@pipeup/emoji`), mentions, portable identities and the mentions inbox (`@pipeup/inbox`, `@pipeup/github`), signed update notices (`@pipeup/updates`), one look on every site, touch sizes and `pipeup check`; agent support becomes an add-on, `@pipeup/agents` (shipped) |
 | 0.8 | The rest of the command line (`init`, `check`, `read`) |
 | 1.0 | Stable API and stored format |
 
+- **The agents add-on ships inside the `pipeup` package too.** `pipeup watch` serves it from `dist/pipeup.agents.js`, a copy
+  that the add-ons build (`libs/ts/addons/scripts/build-all.mjs`) puts there. The release builds and checks the add-ons
+  before it publishes the core, so the published package carries the copy; if it is ever missing, `watch` says so in words.
 - Patch versions (`0.3.1`) fix bugs or release plumbing without changing behaviour people rely on.
 - Pre-releases (`0.5.0-beta.1`, `-beta.2`, …) let a milestone be tried for real before it reaches
   everyone. They go to the npm `next` tag and never move `latest`. See
@@ -66,6 +69,12 @@ format may still change; the README says the project is in alpha until 1.0.
    provenance), and creates the GitHub Release with the CHANGELOG notes, install lines and SRI hash. If
    the check fails, nothing is published. When it succeeds, the Pages workflow deploys the site, so the
    site never points at a version npm doesn't have yet.
+   - **Publish the update list** (the `updates` add-on and `pipeup check` read it): keep `docs/advisories.json` current
+     (a `security` advisory names the affected versions and the fix), then `node tools/make-updates.mjs`,
+     `node tools/sign-updates.mjs sign` (your Keychain asks for your password or Touch ID) and
+     `node tools/sign-updates.mjs verify`, and commit `apps/site/updates.json` in the release pull request. The list
+     expires after 90 days, so re-sign it before then even without a release. The key is made once with
+     `node tools/sign-updates.mjs init`; its public half goes in `tools/updates-keys.json` (with an offline standby).
 4. **Check it landed:** `tools/smoke-release.sh X.Y.Z` (see *After a release*).
 5. **After a promotion**, point npm's `next` tag at the stable version so it doesn't linger on the beta:
    `npm dist-tag add pipeup@X.Y.Z next` (a maintainer, with 2FA). Pages redirects `/next/` to the stable

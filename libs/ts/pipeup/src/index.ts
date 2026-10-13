@@ -1,5 +1,7 @@
 export * from "./core";
 export { comments, mount, type MountOptions, type PipeupInstance } from "./ui/mount";
+export type { Appearance } from "./ui/legible";
+export { setPeople, type Person } from "./ui/mentions";
 export {
   ADDON_API,
   addons,
@@ -12,6 +14,8 @@ export {
   type ComposerTool,
   type Dictation,
   type ItemHandle,
+  type ListNote,
+  type ReactionPicker,
   type MenuItem,
   type NetworkUse,
   type Off,

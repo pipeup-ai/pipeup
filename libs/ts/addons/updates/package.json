@@ -1,0 +1,49 @@
+{
+  "name": "@pipeup/updates",
+  "version": "0.7.0",
+  "description": "Tells the author, on their own computer, when a newer Pipeup or a security fix is out, from the project's signed update list.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/updates"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/updates.esm.js",
+  "module": "./dist/updates.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/updates.min.js",
+  "unpkg": "dist/updates.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.7.0"
+  },
+  "pipeup": {
+    "network": {
+      "when": "page-configured",
+      "to": [
+        "pipeup-ai.github.io"
+      ],
+      "says": "Checks the Pipeup project's published update list (GitHub Pages) once a day, only on this computer or where the page's author asked; that service can see your network address."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/updates.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

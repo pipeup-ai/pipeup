@@ -14,7 +14,7 @@ On the home page, the first screen shows Pipeup on a document, slides, a website
 You want to read it and give feedback.
 
 1. Open the file in your browser. If you see a small round comment button at the bottom right, skip to step 3.
-2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
+2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
 3. Comment: select words and click the comment icon, or press Shift+Option+C (Shift+Alt+C) and click any block. With the keyboard: Tab moves between blocks, Enter comments, Esc finishes.
 4. Send it back: **Copy as Markdown** copies every comment with exactly where it is. Paste it in a message or email to whoever sent the file.
 
@@ -27,7 +27,7 @@ You want feedback on it.
 1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
 2. Share the file: email, chat, a drive or a website. It works straight from the file.
 3. People comment on the page.
-4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
+4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** (with the agents add-on) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
 
 You decide how comments travel. By default they stay in each reviewer's browser until they send them.
 

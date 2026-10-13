@@ -175,3 +175,96 @@ describe("ops", () => {
     ]);
   });
 });
+
+describe("reactions", () => {
+  const body = (over: Record<string, unknown> = {}) => ({
+    sig: "",
+    body: {
+      v: 1,
+      id: "x".repeat(43),
+      kind: "react",
+      doc: "d",
+      thread: "t".repeat(43),
+      target: "c".repeat(43),
+      text: "👍",
+      author: "A".repeat(43),
+      name: "",
+      clock: 1,
+      at: 1,
+      ...over,
+    },
+  });
+
+  it("carry one emoji and name a comment", () => {
+    for (const e of ["👍", "❤️", "👍🏽", "🇳🇿", "1️⃣", "👨‍👩‍👧‍👦", "🏳️‍🌈"])
+      expect(isWellFormed(body({ text: e }))).toBe(true);
+    expect(isWellFormed(body({ kind: "unreact" }))).toBe(true);
+  });
+
+  it("are refused when they carry anything else", () => {
+    for (const bad of [
+      "",
+      "a",
+      "👍👍",
+      "👍 ",
+      "hi 👍",
+      "<b>",
+      "👍\n",
+      "x".repeat(40),
+      ["👨‍👩‍👧‍👦", "👨‍👩‍👧‍👦", "👨‍👩‍👧‍👦"].join("\u200D"),
+    ])
+      expect(isWellFormed(body({ text: bad }))).toBe(false);
+    expect(isWellFormed(body({ text: undefined }))).toBe(false);
+    expect(isWellFormed(body({ target: undefined }))).toBe(false);
+  });
+});
+
+describe("mentions and seen", () => {
+  const key = "K".repeat(43);
+  const base = (over: Record<string, unknown> = {}) => ({
+    sig: "",
+    body: {
+      v: 1,
+      id: "x".repeat(43),
+      kind: "reply",
+      doc: "d",
+      thread: "t".repeat(43),
+      target: "c".repeat(43),
+      text: "hi @Sam, ready?",
+      author: "A".repeat(43),
+      name: "",
+      clock: 1,
+      at: 1,
+      ...over,
+    },
+  });
+
+  it("point into the words, at a writer's key or a supplied person", () => {
+    expect(isWellFormed(base({ mentions: [{ start: 3, end: 7, ref: key }] }))).toBe(true);
+    expect(isWellFormed(base({ mentions: [{ start: 3, end: 7, ref: "host:u-123" }] }))).toBe(true);
+    expect(isWellFormed(base({ mentions: [{ start: 3, end: 7, ref: "gh:octo-cat" }] }))).toBe(true);
+  });
+
+  it("are refused when they point outside the words, at nobody, or are too many", () => {
+    for (const m of [
+      { start: -1, end: 4, ref: key },
+      { start: 5, end: 5, ref: key },
+      { start: 3, end: 999, ref: key },
+      { start: 3, end: 7, ref: "nobody" },
+      { start: 3, end: 7, ref: "host:" },
+      { start: 1.5, end: 7, ref: key },
+    ])
+      expect(isWellFormed(base({ mentions: [m] }))).toBe(false);
+    expect(
+      isWellFormed(base({ mentions: Array.from({ length: 21 }, () => ({ start: 0, end: 1, ref: key })) })),
+    ).toBe(false);
+    expect(isWellFormed(base({ mentions: "x" }))).toBe(false);
+    // Only ops with words may carry them.
+    expect(isWellFormed(base({ kind: "resolve", mentions: [{ start: 3, end: 7, ref: key }] }))).toBe(false);
+  });
+
+  it("have a seen op that names the comment read", () => {
+    expect(isWellFormed(base({ kind: "seen", text: undefined }))).toBe(true);
+    expect(isWellFormed(base({ kind: "seen", text: undefined, target: undefined }))).toBe(false);
+  });
+});

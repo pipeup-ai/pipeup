@@ -1,0 +1,49 @@
+{
+  "name": "@pipeup/github",
+  "version": "0.7.0",
+  "description": "Offers to tell people on GitHub when a comment mentions them: opens a new issue on the author's repository with their @name in it.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/github"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/github.esm.js",
+  "module": "./dist/github.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/github.min.js",
+  "unpkg": "dist/github.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.7.0"
+  },
+  "pipeup": {
+    "network": {
+      "when": "after-consent",
+      "to": [
+        "github.com"
+      ],
+      "says": "Only when you press Mention on GitHub: your browser opens GitHub's new-issue page with the person's @name and the comment's words filled in; nothing is sent until you submit it there."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/github.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

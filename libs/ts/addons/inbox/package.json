@@ -1,0 +1,49 @@
+{
+  "name": "@pipeup/inbox",
+  "version": "0.7.0",
+  "description": "Tells people they were mentioned, even on pages they haven't opened: a note sealed so only they can read it, left at an inbox service the page's author names.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/inbox"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/inbox.esm.js",
+  "module": "./dist/inbox.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/inbox.min.js",
+  "unpkg": "dist/inbox.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.7.0"
+  },
+  "pipeup": {
+    "network": {
+      "when": "after-consent",
+      "to": [
+        "the inbox service the page names (data-pipeup-inbox)"
+      ],
+      "says": "Only after you switch on Mentions by inbox: when you mention someone, a short note (who, your words, the page's address) is left for them at the page's inbox service, sealed so only they can read it; and your own inbox is checked there. The service sees that a note arrived, its size and when, and your network address, never who it is from or what it says."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/inbox.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

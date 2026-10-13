@@ -20,11 +20,36 @@ export const LIMITS = {
   viewEntries: 16,
   viewKey: 64,
   viewValue: 200,
+  mentions: 20,
 } as const;
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
+/** Who a mention names: a writer's key, or a person the page or an add-on supplied (`host:<id>`, `gh:<name>`). */
+/** A way to reach someone that they chose to share: an email address, or a GitHub name (`gh:octocat`). */
+export const CONTACT = /^(?:[^\s@<>"]{1,64}@[^\s@<>"]{1,190}\.[^\s@<>"]{2,24}|gh:[A-Za-z0-9-]{1,39})$/;
+const PERSON = /^(?:[A-Za-z0-9_-]{43}|(?:host|gh):[A-Za-z0-9._@-]{1,64})$/;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
-const KINDS = new Set<unknown>(["create", "reply", "edit", "delete", "resolve", "reopen", "addressed"]);
+const KINDS = new Set<unknown>([
+  "create",
+  "reply",
+  "edit",
+  "delete",
+  "resolve",
+  "reopen",
+  "addressed",
+  "react",
+  "unreact",
+  "seen",
+  "contact",
+  "uncontact",
+]);
+/** One emoji: a flag, a keycap, or a pictograph with its modifiers, optionally joined with others (a family, a person with a job). */
+const EMOJI =
+  /^(?:\p{Regional_Indicator}{2}|[#*0-9]\uFE0F?\u20E3|\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F|\p{Emoji_Modifier})?)*)$/u;
+/** The longest a single emoji may be, in code points (the longest family is 11). */
+const MAX_EMOJI = 16;
+export const isEmoji = (s: unknown): s is string =>
+  typeof s === "string" && EMOJI.test(s) && [...s].length <= MAX_EMOJI;
 
 export async function signOp(body: OpBody, identity: Identity): Promise<SignedOp> {
   if (body.author !== identity.publicKey) throw new Error("pipeup: an op must be signed by its author");
@@ -80,6 +105,24 @@ export function isWellFormed(op: unknown): op is SignedOp {
   const needsText = b.kind === "create" || b.kind === "reply" || b.kind === "edit" || b.kind === "addressed";
   if (needsText && !b.text) return false;
   if ((b.kind === "reply" || b.kind === "edit" || b.kind === "delete") && !b.target) return false;
+  // Mentions point into the words, and only the ops that carry words may have them.
+  if (b.mentions !== undefined) {
+    const carries = b.kind === "create" || b.kind === "reply" || b.kind === "edit";
+    if (!carries || !Array.isArray(b.mentions) || b.mentions.length > LIMITS.mentions) return false;
+    const length = b.text?.length ?? 0;
+    for (const m of b.mentions as unknown[]) {
+      if (!isObj(m) || !Number.isSafeInteger(m.start) || !Number.isSafeInteger(m.end)) return false;
+      const { start, end, ref } = m as { start: number; end: number; ref: unknown };
+      if (start < 0 || end <= start || end > length || typeof ref !== "string" || !PERSON.test(ref))
+        return false;
+    }
+  }
+  // A contact is the writer's own, shared on purpose: it names no comment.
+  if (b.kind === "contact" && (typeof b.text !== "string" || !CONTACT.test(b.text))) return false;
+  // Seen names the comment that was read.
+  if (b.kind === "seen" && !b.target) return false;
+  // A reaction names the comment and carries exactly one emoji.
+  if ((b.kind === "react" || b.kind === "unreact") && (!b.target || !isEmoji(b.text))) return false;
   if (b.kind === "create") {
     if (b.id !== b.thread || !isAnchor(b.anchor)) return false;
   }

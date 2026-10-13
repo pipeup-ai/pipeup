@@ -3,11 +3,12 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { attachAddons, drainQueue, firstCore } from "./addons";
+import { addons, attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
-import { VERSION } from "../core";
+import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
+import type { Appearance } from "./legible";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -24,6 +25,8 @@ export interface PipeupInstance {
   readonly document: PipeupDocument;
   /** The page's comments, for an agent: open threads, or every thread with `all`. */
   comments(options?: { all?: boolean }): AgentComments;
+  /** How Pipeup looks and why (for `pipeup check` and agents): its look, who chose it, and what the page's styles do to it. */
+  appearance(): Appearance;
   flush(): Promise<void>;
   unmount(): void;
 }
@@ -89,6 +92,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     profile = { ...profile, name: given };
     await kept.saveProfile(profile);
   }
+  // Ask the browser not to clear what Pipeup keeps (best effort): a cleared browser would start the reviewer over.
+  void navigator.storage?.persist?.().catch(() => {});
   const doc = await PipeupDocument.open({
     doc: id,
     key,
@@ -106,6 +111,10 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       onName: async (name) => {
         doc.name = name;
         profile = { ...profile, name };
+        await kept.saveProfile(profile);
+      },
+      onIdentity: async (identity) => {
+        profile = { ...profile, identity };
         await kept.saveProfile(profile);
       },
     });
@@ -126,6 +135,23 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     ephemeral,
     version: VERSION,
   });
+  // Agent support is an add-on: a page that lists an agent without it is told once, in the console, and loses nothing else.
+  const agentsWarning = /\S/.test(document.documentElement.getAttribute("data-pipeup-agents") ?? "")
+    ? window.setTimeout(() => {
+        if (!addons().some((a) => a.id === "agents"))
+          console.warn(
+            "pipeup: this page lists an agent (data-pipeup-agents), but the agents add-on isn't on the page, so replies won't show. Add @pipeup/agents (see the Add-ons page).",
+          );
+      }, 1000)
+    : 0;
+  // A Pipeup over a year old says so once, in the console (nothing is sent anywhere to find out); the author can silence it.
+  if (
+    document.documentElement.getAttribute("data-pipeup-updates") !== "off" &&
+    Date.now() - Date.parse(BUILT) > 365 * 864e5
+  )
+    console.info(
+      `pipeup: this is Pipeup ${VERSION}, from ${BUILT}; newer versions exist. See https://github.com/pipeup-ai/pipeup/blob/main/CHANGELOG.md`,
+    );
   let unmounted = false;
   window.addEventListener("pagehide", onHide);
   return {
@@ -137,11 +163,13 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
         exportedAt: new Date(),
         all,
       }),
+    appearance: () => ({ ...app.appearance() }),
     flush: () => doc.flush(),
     unmount: () => {
       if (unmounted) return;
       unmounted = true;
       window.removeEventListener("pagehide", onHide);
+      window.clearTimeout(agentsWarning);
       detach();
       app.destroy();
       setSlideHook(null);

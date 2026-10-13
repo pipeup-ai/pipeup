@@ -13,8 +13,9 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
   bundled in or loaded at run time. Tools for building and testing are fine as dev dependencies. No
   analytics or telemetry anywhere. The bundle stays inside
   its size budget (`libs/ts/pipeup/scripts/size.mjs`).
-- Pipeup's UI, the website, diagrams and mock-ups are light mode only. Every transition eases; nothing
-  appears, moves or disappears abruptly.
+- Pipeup's UI has a light look and a dark look, both complete and tested, and never mixed (spec §9). The
+  website, diagrams and mock-ups are light mode only. Every transition eases; nothing appears, moves or
+  disappears abruptly.
 - Use fictional names (Sam, Ada, Lee…) in code, tests and docs; never real people's names or addresses.
 
 ## Workflow

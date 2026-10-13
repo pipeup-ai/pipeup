@@ -4,6 +4,7 @@
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
+import { check, table } from "./check.mjs";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
 
@@ -18,13 +19,19 @@ const USAGE = `pipeup skills install|remove|list [--project] [--agent claude|cod
   project, or with --project for this folder only. It says what it will write, asks first (--yes to go ahead without
   asking), and never replaces a skill you changed unless you say --replace.
 
+pipeup check <page.html> [--json]
+  Loads the page with and without Pipeup at 375, 768 and 1440 px (with Playwright, which you install) and says what
+  Pipeup changes or covers, and what the page could do better: pass, WARN or FAIL for each. Exits 1 on any FAIL.
+
 pipeup agent [--name <name>]
   Makes this computer's agent key (once) and prints the public key to list on the page:
   <html data-pipeup-agents="<key>">
 
 pipeup watch <page.html> [--agent <name>] [--port <number>]
   Shows the page from this computer, with a live link to the agent: the page offers "Share with my agent"
-  (off until the person switches it on), and the agent is listed for this page while the link runs.
+  (off until the person switches it on), and the agent is listed for this page while the link runs. It adds the
+  agents add-on to the page it shows (the file is not changed), unless the page's Pipeup already has agent support
+  (0.6.x), and refuses a page whose Pipeup is older than 0.6.
 
 pipeup comments <page.html> [--all] [--json]
   Prints the comments the page has shared (open threads, or all with --all), as Markdown or, with --json, as data.
@@ -176,6 +183,16 @@ else if (command === "skills") {
   } catch (e) {
     fail(e.message);
   }
+} else if (command === "check") {
+  const page = args._[0];
+  if (!page) fail(`missing the page\n\n${USAGE}`);
+  try {
+    const { results, ok } = await check({ page });
+    console.log(args.json === true ? JSON.stringify({ ok, results }, null, 2) : table(results));
+    process.exit(ok ? 0 : 1);
+  } catch (e) {
+    fail(e.message);
+  }
 } else if (command === "comments") {
   const page = args._[0];
   if (!page) fail(`missing the page\n\n${USAGE}`);
@@ -189,16 +206,29 @@ else if (command === "skills") {
   if (!page) fail(`missing the page\n\n${USAGE}`);
   await pageDoc(page);
   const { identity, name } = await loadAgent(typeof args.agent === "string" ? args.agent : undefined);
-  const link = await watch({
-    page,
-    agent: name,
-    key: identity.publicKey,
-    port: typeof args.port === "string" ? Number(args.port) : 0,
-  });
+  let link;
+  try {
+    link = await watch({
+      page,
+      agent: name,
+      key: identity.publicKey,
+      port: typeof args.port === "string" ? Number(args.port) : 0,
+    });
+  } catch (e) {
+    fail(e.message);
+  }
   console.log(`Open this page: ${link.url}\n`);
   console.log(
     `While this runs, ${name} is listed for the page and the page offers "Share with my agent" (off until you switch it on).`,
   );
+  if (link.addon)
+    console.log(
+      link.support === "unknown"
+        ? "It couldn't tell which Pipeup the page uses, so it adds the agents add-on to the page it shows (the add-on stays off on a Pipeup that already has agent support). The page's file is not changed."
+        : "It adds the agents add-on to the page it shows. The page's file is not changed.",
+    );
+  else if (link.support === "builtin")
+    console.log("This page's Pipeup (0.6) has agent support built in, so nothing is added to it.");
   console.log(
     `Read:  npx pipeup comments ${page}\nReply: npx pipeup reply --page ${page} --thread <id> "words" --addressed "note"\nStop:  Ctrl-C (comments stay in ${basename(link.sidecar)})`,
   );

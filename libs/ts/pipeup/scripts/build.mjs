@@ -51,7 +51,11 @@ await build({ ...common, entryPoints: ["src/core.ts"], format: "esm", outfile: "
 // A second minifier over esbuild's output: terser folds and mangles more, and its output is a few percent smaller
 // both gzipped and brotli compressed. Top-level names are left alone (the classic script's `Pipeup` global, and
 // the modules' exports), and the source maps are carried through.
-for (const [file, module] of [["pipeup.min.js", false], ["pipeup.esm.js", true], ["pipeup.core.js", true]]) {
+for (const [file, module] of [
+  ["pipeup.min.js", false],
+  ["pipeup.esm.js", true],
+  ["pipeup.core.js", true],
+]) {
   const path = `dist/${file}`;
   const result = await minify(await readFile(path, "utf8"), {
     module,
