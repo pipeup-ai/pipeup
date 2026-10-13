@@ -6,8 +6,7 @@ export function toB64u(bytes: Uint8Array): string {
 }
 
 export function fromB64u(text: string): Uint8Array<ArrayBuffer> {
-  const b64 = text.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((text.length + 3) % 4);
-  const binary = atob(b64);
+  const binary = atob(text.replace(/-/g, "+").replace(/_/g, "/"));
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
   return out;

@@ -2,7 +2,7 @@
 
 **Status:** Draft for review
 **Owner:** Pipeup maintainers
-**Last updated:** 2026-10-07 (Tab always moves between blocks in comment mode)
+**Last updated:** 2026-10-08 (add-ons built)
 
 This document describes *what* Pipeup does. It is **functional only** — it does not prescribe
 languages, frameworks, protocols, ciphers or hosting internals. Those live in the dev design
@@ -28,12 +28,14 @@ Principles:
 
 - **The page stays the author's.** Pipeup never changes how the page looks or behaves when
   comments are closed, and never covers its content.
-- **Private by default.** Without any setup, comments stay on the reviewer's own machine.
-  Nothing leaves it unless someone deliberately shares.
-- **No service to run.** Pipeup works without any server operated by the Pipeup project.
-  Authors who want live rooms host their own relay on a free account in one step.
-- **Untrusted relay.** Whoever runs a relay, including its hosting company, can never read or
-  forge comments.
+- **Private by default.** Without any setup, comments stay on the reviewer's own machine. Pipeup itself
+  never sends anything anywhere. Only add-ons the author chooses to include can send anything, and each
+  one says what it sends.
+- **No service to run.** Pipeup works without any server operated by the Pipeup project. Authors who
+  want shared or live comments include an add-on that uses a free service they pick, or later a relay
+  they own.
+- **Untrusted services.** No service that carries comments can read or forge them. That covers a free
+  sharing service, a meeting point between reviewers, and a relay and its hosting company.
 - **Agent-ready.** Agents can add Pipeup to a page, verify they did it well, and read and act on
   the feedback.
 
@@ -87,6 +89,13 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
 - A page can **include Pipeup entirely inside the file**, so it works with no network at all.
 - Pipeup works the same whether the page is **opened from disk**, served from a local server, or
   hosted on the web.
+- An author can add **optional features as add-ons**: shared comments, live review and dictation. Each
+  add-on is one more line in the page, and the lines work in any order. Pipeup and its add-ons can
+  also be included as **one combined file**, which can sit inside the page.
+- Add-ons work whether the page is opened from disk, served locally or hosted on the web.
+- A page without add-ons works exactly as before. It pays only for the small add-on support built into
+  Pipeup.
+- If Pipeup is included twice on one page, it runs once and the check reports the mistake.
 - Authors can optionally mark up their page to help Pipeup:
   - a **document identity**, so copies of the same file on different machines are recognised as
     the same document;
@@ -232,8 +241,7 @@ any of them off.
   column and open threads are all out of sight; the comment control still shows the number of open
   threads. Pages open with comments hidden, since comment mode starts off.
 - Choosing a thread from All comments shows the comments while the panel stays open. When the panel
-  closes and comment mode is off, they hide again. (On narrow screens, where the panel steps aside
-  to show the chosen thread, they stay shown until that thread is closed.)
+  closes and comment mode is off, they hide again.
 - Showing and hiding **eases**; nothing snaps. With reduced motion they only fade.
 - In comment mode, hovering a highlight previews its thread and clicking it opens the thread, rather
   than choosing the block, unless a comment is being written.
@@ -330,11 +338,18 @@ any of them off.
     the panel closes, so the panel covers none of the page's content (§9).
   - **Show resolved** is a small switch in the panel's header: it brings resolved threads back,
     muted, each with **Reopen**, in the panel and on the page.
-  - Choosing a thread **reveals where it is**, scrolling to it and opening it, while the panel stays
-    open, so a reviewer can step through comments.
-  - The panel closes with its close button, Esc, or a click on the page.
-  - On narrow screens the panel takes the full width, and choosing a thread closes it so the thread
-    can be seen.
+  - A row is a **preview**: the first words of the thread and where it is. Choosing a row **opens the
+    thread out in the panel** as the thread itself: its comments and replies, who and when, Copy,
+    Resolve (or Reopen) and a reply line, all usable there. Nothing opens on the page.
+  - Choosing a row also **reveals where the thread is**: the page scrolls to it, its words are marked,
+    and a thin line eases in from the open row to that place, following scrolling, until the row is
+    closed. Threads with no place to point at (content gone, or on another slide or view) open the
+    same way with no line, and say where they are.
+  - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
+    closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
+    Show resolved is on.
+  - The panel closes with its close button, Esc (after any open thread), or a click on the page.
+  - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
@@ -350,6 +365,43 @@ any of them off.
 - **Copy as Text** gives **plain text** — where it is, then just the names and words.
 - There is no copy-format setting.
 - Resolved threads are left out of both copy rows.
+
+## 7b. Reactions
+
+*Built (0.7).* The quick row opens inline under the comment, and the full picker is the `emoji` add-on.
+
+- A reviewer can **react to any comment or reply with a standard emoji**, the same ones as on a phone.
+  A reaction is a quick answer that needs no words ("seen", "agree", "thanks").
+- **A reviewer has at most one reaction of each emoji on a comment.** Choosing it again takes it back.
+  They can give several different emoji to the same comment.
+- **Choosing an emoji:** a short row of common reactions (👍 ❤️ 😂 🎉 😮 🙏) is always offered. A "more"
+  button opens the full standard set, in the groups phones use, with search, recently used and the
+  skin-tone variants; the tone a reviewer picks is remembered. Only emoji the device can draw are offered.
+- **What you see at rest.** Reactions are quiet, like the rest of a thread: a comment with reactions
+  shows each emoji with a small count beneath its words; a comment with none shows nothing. The
+  control to add one appears with the other details when the pointer is over the comment or focus is on
+  it, and beside the reply and resolve controls inside an open thread.
+- Your own reactions are marked. **Pointing at or focusing a reaction shows who gave it**, by name as
+  shown elsewhere, with "You" first.
+- Adding, changing and removing a reaction **ease**; counts roll, as other counts do. Reduced motion
+  turns them into soft fades.
+- **Everywhere comments show:** the column, bubbles, the open thread and All comments (as counts,
+  without the control). Copying for AI (§7a) and `Pipeup.comments()` (§15b) include reactions, as a
+  line such as "👍 2 (Sam, Red Fox)" under the comment.
+- **No forging.** A reaction comes from the reviewer who gave it and can't appear to come from
+  someone else or be removed by anyone else. A thread's reactions are kept when comments travel
+  through sharing, live review or an agent's replies file, and are checked as strictly as comments.
+- **Limits.** A single comment keeps to a small number of different emoji so it can't be flooded.
+- **Deleted and resolved.** Deleting a comment removes its reactions. A resolved thread still shows its
+  reactions; they can be added or taken back again after it is reopened.
+- **Agents** can react and are shown as AI assistants, as their replies are (§15b); they react to
+  acknowledge, never to resolve.
+- Older copies of Pipeup (and add-ons) that don't know reactions **ignore them and keep showing the
+  comments**; they never reject a comment because of one.
+- The **full emoji picker is an add-on** (`emoji`) so the core stays small; without it a page has the
+  quick row and still shows every reaction anyone gave. See §19.
+- Fully usable by keyboard and screen reader: each reaction is a button that says the emoji's name,
+  how many people gave it and whether you did ("Thumbs up, 3 people, including you").
 
 ## 8. Staying attached on changing pages
 
@@ -393,6 +445,36 @@ any of them off.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
+- **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
+  spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
+  page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
+  are the page's font family and accent colour, as above; nothing else of the page's styling reaches it: text is readable, nothing is
+  faded, stretched, flipped or restyled, and nothing is clipped by the page. This covers the column,
+  bubbles, threads, the panel, menus, the composer, highlights, pins, tooltips, toasts and add-ons'
+  own parts.
+- **Pipeup has a light look and a dark look, and both work.** Each is designed and tested in full, on any
+  page. They are not a filter over each other.
+- **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with a
+  fade.
+- **Which look.** Pipeup follows the page's light or dark appearance when the page makes it clear, and is
+  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Look row in the menu; the choice is
+  remembered in their browser and beats everything else. The author can set a look for the page (`data-pipeup-theme="light"` or `"dark"` on `<html>`), which
+  beats detection. If the page changes appearance later (a switch on the page), Pipeup follows however
+  the page makes the change, not only when it changes the page's top-level elements.
+- **Pipeup's own surfaces never depend on the page's colours.** Every card, thread, panel, menu, composer,
+  tooltip, toast and add-on part is drawn with its own solid background, text, border and shadow, chosen
+  together so text is always readable (at least 4.5 to 1, and 3 to 1 for icons and outlines) in both looks.
+  Words that sit directly on the page (a thread at rest in the column) keep their soft, boxless look but
+  always sit on their own soft backing, so they stay readable whatever the page behind them is. The only
+  parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
+  readable under them in both looks.
+- **Pipeup says what the page does to it.** Styles on the page's top-level element that fade, filter, blend,
+  transform or zoom everything under it reach Pipeup too, and can't be undone from inside it. Pipeup
+  notes them once in the browser console, says when its words may be hard to read under them, and reports the same
+  in the check (§15). It reads colours written in any modern format (`oklch()`, `color-mix()` and so on) when it
+  works out the page's look.
+- Pipeup is checked against pages with deliberately hostile styles, and against real sites that have
+  shown a clash, before a release.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
   every thread, the menu and All comments can be reached and used without a pointer; focus is never
   lost after sending, cancelling or closing; and screen readers are told which block a comment is
@@ -421,7 +503,98 @@ any of them off.
   shows their initial. Until they do, they appear as their animal, including in copied comments.
 - A reviewer's identity is **tied to their browser**. Their own comments are recognised as theirs
   so only they can edit or delete them.
-- Nobody can post a comment that **appears to come from someone else**, even in a shared room.
+- Nobody can post a comment that **appears to come from someone else**, even in a shared or live
+  document. Nobody can appear in live presence as someone else.
+- When two people in a shared or live document use the same name, Pipeup shows a way to tell them
+  apart.
+
+## 10a. Mentions and notifications
+
+*Built (0.7).* Names, mentions, the `@` list, *Mentions of me*, the seen marks, short tags for the same name, the recovery code and file, and contacts with the by-hand email offer are built; the GitHub add-on is `github`, and the inbox is the `inbox` add-on with the reference mailbox server.
+
+Pipeup has no accounts and no server of its own, so a mention works in layers: it always works inside
+the page, and reaches people outside the page only in ways the reviewer or the author chooses.
+
+**Mentioning someone**
+
+- Typing `@` in a comment or reply offers **people to mention**, narrowing as the reviewer types, chosen
+  by keyboard or pointer:
+  - everyone who has commented or replied in this document;
+  - the agents the page lists (§15b);
+  - people the page's author supplies (below);
+  - people from an add-on's directory, when the page has one.
+- A mention **points at a person**, not only a name: it keeps working if they rename themselves, and two
+  people called Sam stay apart. It reads as the name, softly tinted, in the comment; copying keeps
+  `@Name`. An `@` that matches nobody stays plain words.
+- Comment words are still text only; a mention is never a link, markup or a way to run anything.
+
+**Being mentioned**
+
+- When someone opens a page where they are mentioned, Pipeup **says so once** ("Sam mentioned you in 2
+  comments") and All comments can show **only comments that mention me**. "Me" means this reviewer in
+  this browser, or the signed-in person the page's author supplies.
+- Mentioning an agent marks the comment as one that agent should answer first (§15b).
+
+**Reaching people outside the page**
+
+Pipeup itself sends nothing (§14). A mention can reach a person only through:
+
+1. **The reviewer, by hand.** After sending, Pipeup offers "Let Sam know", which opens the reviewer's own
+   mail or chat app with the words and a link to the comment filled in, when the reviewer knows how to
+   reach them. The reviewer sends it; Pipeup never sends for them. This works on any page.
+2. **An add-on**, chosen by the author and following §11a: first, a note in a GitHub issue or
+   pull request; later, for example a message to a chat channel through the author's own webhook, or email through the
+   author's own service. Each says in one sentence what it sends and to whom, and sends nothing before
+   the reviewer agrees.
+3. **The page's own system.** The author can give Pipeup the signed-in person and the people who can be
+   mentioned, and a place to hand mentions to (the page's own notifications). Pipeup then shows those
+   people as supplied by the page and sends nothing itself.
+
+**Who someone is**
+
+- By default a reviewer is still an animal in a colour with an optional name (§10): names are not
+  proof. A mention of "Sam" does not show that the person who replies as "Sam" is the same Sam.
+- A person can be **shown as verified** when the page's author supplies who they are (single sign-on
+  stays the page's business; Pipeup does not talk to sign-in providers), or an add-on proves a handle
+  (for example a GitHub name). Verified people are marked, and say who vouches.
+- A reviewer may **add an email or handle** to their profile so others can reach them. It stays in their
+  browser; it is shown to other people in the document only if the reviewer chooses, and it is never put
+  into a comment, a copy for AI or any service without their agreement.
+- **Everyone who comments is known by the name they gave**, and each person has a **durable ID** behind it
+  that stays the same across their comments in a document and across documents. A short form of the ID
+  (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
+  their names match.
+- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
+- **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. For a portable identity, **My identity**
+  has **Back up my identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
+  themselves, and **Use my identity**, which
+  restores it from either in another browser or device so earlier comments and mentions still count as theirs. Pipeup
+  never keeps the recovery code anywhere else and never sends it.
+- **Without a backup,** a cleared browser starts a new person. Comments made earlier stay under the old
+  ID, mentions of it reach no one, and others see the old name marked "(earlier)". Pipeup says this
+  plainly before the person can lose it, and never merges by name to hide it.
+- **Two devices are two people until linked** with the recovery code.
+- Pipeup never matches people across documents, and never builds a list of people beyond what one
+  document shows.
+
+**Picking up what was left behind**
+
+- A comment, reply, reaction or mention is saved wherever the page's comments are saved, so **any copy of
+  the page** (another browser, another device, an agent) that can open the comments **sees what was left**
+  and marks it seen. When a person reads a mention on one device, it shows as read on their others.
+- A person has an **inbox**, so a mention in a document they haven't opened still reaches
+  them. The person who mentions leaves a small note for them ("Sam mentioned you", with a link), sealed so
+  only they can read it. They collect their notes from any browser or device that holds their identity.
+  The service keeping the notes sees only that something arrived, its size and its timing, and never
+  who sent it, who it is for, or what it says. It is a choice the author makes (a page says whose inbox
+  service it uses), and a reviewer agrees before anything is left. It is limited so it can't be used to
+  flood someone.
+
+**Everyone**
+
+- Fully usable by keyboard and screen reader: the list of people is announced as it narrows, and the
+  chosen person is read out.
+- The list and the mention eases in and out like everything else, in light appearance.
 
 ## 11. Saving and sharing feedback
 
@@ -442,30 +615,298 @@ any of them off.
   tool. They have **no controls in the page yet**: no Send feedback, no Add feedback, and dropping a
   file on the page does nothing.
 
-**Shared rooms**
+**Shared comments (sharing add-on)**
 
-- An author can turn a document into a **room** on a relay they own. Everyone in the room sees
-  comments appear as they are written, and comments persist while nobody is online.
-- The author shares an **invite** — a link, or a code to enter on a page opened from disk.
-  Only people with the invite can read or write.
-- An author can choose for the invite to be **built into the file**, so anyone holding the file
-  joins automatically, or to be **shared separately**, for sensitive documents.
-- An author can **close a room** and start a new one to remove everyone's access.
-- If the connection drops, a reviewer keeps working; their changes are sent when it returns.
-- A room's comments can still be copied out at any time (and, once feedback files have controls,
-  exported to one).
+- An author can share a document's comments through a free, encrypted service that the author picks.
+  Pipeup never picks a service by itself.
+  - Everyone who has the page sees the comments others have chosen to share.
+  - Comments last while nobody is online, for as long as the service keeps them.
+  - New comments usually arrive within a minute while people are commenting, and within a few minutes
+    otherwise. Pages in a background tab update more slowly.
+- **The author sets up sharing with the command-line tool.** It writes the sharing line into the file,
+  tells the author how long the chosen service will keep the shared copy, and shows a private stop key
+  once, separately from the file. The stop key is never put in the page.
+- An organisation can host the shared copy on its own server. That server only ever holds comments it
+  can't read; it can see when and how much is sent, and from which network addresses. The organisation
+  decides how long the shared copy is kept.
+- Reviewers can't create a shared copy from inside the page.
+- The sharing address and its key are **built into the file**, so anyone holding the file can read and
+  add shared comments.
+- Before a reviewer writes their first comment on a shared page, Pipeup tells them that comments there
+  are shared with everyone who has the page.
+- **Comments a reviewer wrote before the page was shared are not sent until they choose.** They can
+  share those earlier comments or keep them on their machine.
+- Each reviewer chooses whether **to send their own comments** to the shared copy. They still see
+  everyone else's.
+  - Comments written while they aren't sending stay on their machine, including later edits and replies
+    in those threads.
+  - What was already sent stays in the shared copy.
+- Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
+  someone else by file or live review. People who already received your comments could still pass them
+  on themselves, and Pipeup says so where you choose whether to send.
+- Pipeup says in words whether the shared copy is:
+  - up to date;
+  - waiting to send changes;
+  - offline;
+  - about to expire, and when;
+  - gone.
+- If the connection drops, a reviewer keeps working, and their changes are sent when it returns.
+- In a browser that can't keep comments, the shared copy keeps the comments the reviewer sends, and
+  Pipeup says so.
+- An author can **stop sharing**. They can also **start again at a new address**: people who only hold
+  the old file then can't read or add new comments. Reviewers who open the new file bring the comments
+  they had already shared, without being asked again. Anyone who already had access keeps what they
+  saw, and Pipeup says so plainly.
+- Where the service only lets the author delete part of a large shared copy, stopping sharing says which
+  parts remain and when they expire.
+- The website states how much each reviewer downloads while a shared page is open, so authors can choose
+  a suitable service.
+- Shared comments can always be copied out.
+- Deleting a comment hides it everywhere. Anyone who already received it keeps its words in their copy.
 
-## 12. Presence (in rooms)
+**Comments arriving while you read or write (shared and live)**
 
-- Avatars show **who is here now**, and on decks, **which slide each person is on**.
-- Live **cursors** and **"typing…"** indicators, which each person can turn off for themselves.
+- Words being written are never lost when others change the comment: a reply being written stays, with
+  its words, if the comment is resolved or deleted by someone else meanwhile.
+- Comments arriving from others never move the reviewer's cursor, selection or scroll position, and
+  never open or close a comment.
+- Screen-reader users hear new comments from others as one short summary, such as "2 new comments from
+  Blue Owl", at most every few seconds, never while they are writing and never while comments are
+  closed. Live cursors are never announced.
+
+**Live review (live add-on)**
+
+- People viewing the same page at the same time can **go live**. Their new comments, replies, edits,
+  deletions, resolves and reopens then appear for each other within about a second.
+- Each reviewer chooses whether to go live.
+  - Before they do, they are told that the other people who are live will see their network address.
+  - An author can make going live the default for their page. Reviewers are still told before they are
+    first connected, which happens only once they open Pipeup, and can turn it off.
+- Live review works without a shared copy: people merge their comments when they meet. Without a
+  shared copy, comments made while nobody else is live reach others only when they next meet.
+- Up to 8 people can be live together.
+- Only people with the same version of the file meet live. After the author starts sharing or changes
+  the sharing address, people with the old file and the new one don't see each other, and Pipeup says
+  when nobody else is here with this version of the page.
+- **Some networks, often office networks, don't allow direct connections.** Then Pipeup says in words
+  that it can't reach that person directly. With a shared copy, their comments still reach each other,
+  more slowly.
+
+**Rooms on the author's own relay (later add-on)**
+
+- An author can turn a document into a **room** on a relay they own.
+  - Everyone in the room sees comments appear as they are written.
+  - Comments persist while nobody is online.
+- The author shares an **invite**: a link, or a code to enter on a page opened from disk. Only people
+  with the invite can read or write.
+- An author can choose for the invite to be **built into the file**, or **shared separately** for
+  sensitive documents.
+- An author can **close a room** and start a new one, to remove everyone's access.
+
+**What each kind of sharing keeps.** The website and each add-on's page state which of these promises
+the add-on keeps:
+
+- whether comments last while nobody is online;
+- live updates;
+- presence;
+- who can read;
+- who can write;
+- whether missing comments can be detected;
+- whether the author can list and delete what is stored.
+
+A shared copy on a free service can't stop anyone holding the address from adding unreadable data,
+which Pipeup discards. It also can't tell when something is missing.
+
+## 11a. Add-ons
+
+- Optional features come as add-ons. Authors include only the ones they want, and reviewers download
+  only those.
+- Each add-on states in one plain sentence:
+  - whether it uses the network;
+  - which services it contacts;
+  - what those services, and other reviewers, can see.
+
+  The website, the docs, the agent skills and the check repeat that sentence.
+- Pipeup itself makes no network requests, with or without add-ons. Only an add-on sends anything.
+- **Whatever add-on a page includes, Pipeup checks every comment arriving from elsewhere as strictly as
+  one opened from a file.** No add-on can make Pipeup accept a comment that is forged, altered or meant
+  for another document.
+- **Add-ons published by the Pipeup project:**
+  - send only to the services they name;
+  - send nothing before the reviewer agrees, where they need agreement (going live, dictating);
+  - never change the page's own content;
+  - never post, edit or resolve anything on a reviewer's behalf; they may only fill in words that the
+    reviewer then sends;
+  - never send one reviewer's comments to a sharing service on another reviewer's behalf.
+- **Add-ons from anyone else run with the page's full power.** Pipeup doesn't vouch for them, and the
+  website says so.
+- An add-on that can't work with the Pipeup version on the page stays off and says why. It never
+  half-works.
+- Authors and agents can see which add-ons a page has, and whether each one is on.
+- Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
+  dark appearance and reduced motion, and keep every rule that words being written are never lost.
+- **While comments are closed, add-ons add nothing to the page except words in the comment control's
+  label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
+  next opens Pipeup.
+
+### Making your own add-on
+
+Anyone can make an add-on and publish it under their own name, anywhere. Nothing needs the Pipeup project's
+permission, a registration, or a place in its npm scope.
+
+- **A guide, in plain words, on one page.** It explains, in this order: what an add-on is and what a page's author
+  does to include one; what an add-on can do (add a row to the menu, open a panel, show a note on a thread, show a
+  status, read the comments, and bring in other people's comments, which Pipeup checks as strictly as any); what it
+  can't do (make Pipeup accept a comment that is forged, altered or for another document); the one plain sentence
+  every add-on gives about what it sends and to whom, and that reviewers are shown it before anything is sent; how a
+  page includes the add-on; how to try it and test it; and what the Pipeup project does and doesn't stand behind (it
+  vouches for its own add-ons only). It ends with a small complete example the reader can paste and run.
+- **A template to copy.** A folder, usable without the rest of Pipeup's source, holding a small working add-on (a
+  menu row that opens a panel and says its one sentence), a page to try it on, a browser test of it, and a short
+  README with the steps to publish it under the maker's own name. A copy works and passes its own checks before
+  anything is changed.
+- **Names.** An add-on's name is its own: letters, digits and dashes, 2 to 24 characters, written by the maker (a
+  maker's name in front keeps it distinct, for example "myteam-translate"). The names of the Pipeup project's add-ons
+  (share, voice, live, assist) are theirs, and the guide asks everyone else not to use them. Pipeup can't tell
+  an add-on's maker from its name, so it doesn't refuse them: two add-ons with the same name on one page, the first
+  is used, and the second is ignored with a message.
+- **Nothing is taken on trust.** The guide, the template and the website say that add-ons from anyone else run with
+  the page's full power and that Pipeup doesn't vouch for them.
+- **Where to find it.** The guide is linked from the website's Add-ons page, the README and the add-ons folder, with
+  one line saying what it is for. The page's list of Pipeup's own add-ons is unchanged.
+- **Using add-ons inside a company.** The guide has a short section for companies that want their own add-ons (a
+  link to their ticket tracker or document system, their own sign-in, their own review rules) without publishing
+  anything under the Pipeup project's name. It says, in plain words: the add-on is one script file the company hosts
+  itself (on its intranet or artifact store, through a private package registry under its own scope, or beside the
+  page); the page pins it (a fixed version and an integrity hash) so it can't change underneath reviewers; the
+  page's author decides which scripts run, so only the add-ons the company includes ever do; the company reviews the
+  add-on like any code on its pages, because it runs with the page's full power; and the company's own sentence about
+  what it sends (to its own servers) is what reviewers are shown first. Nothing leaves the company unless the add-on
+  says so.
+- **Two ways to send comments somewhere your company controls.** The guide starts its company section with the choice:
+  1. **No new code**: use the Share add-on with the company's own mailbox (a server the company runs that keeps only
+     sealed comments it can't read, speaking the published mailbox contract). This is the safe default for "comments
+     must stay inside the company".
+  2. **Your own add-on**: for what the mailbox can't do, such as turning comments into tickets, filing them in the
+     company's document system, or using the company's sign-in. This is what the worked example shows.
+- **What an add-on works with, written down.** The guide describes, in plain words, what an add-on is given and can
+  rely on: the document's threads (each with where it is on the page, whether it is resolved, and its comments with
+  who wrote them, when, and whether edited or deleted), a way to hear when they change, the signed comments underneath
+  for add-ons that carry them somewhere, and a way to sign something as the reviewer. It says which parts are fixed
+  from one Pipeup version to the next (the add-on's API number, and the form of a signed comment) and what an add-on
+  must do when it meets a newer one (stay off and say why). The add-on's types, published with Pipeup, are the
+  reference and the guide points to them.
+- **Reading comments needs no encryption.** Comments are plain text in the reviewer's browser; Share seals them only
+  while they travel through a service the company doesn't control. An add-on that sends them to the company's own
+  system, over a secure connection, needs no crypto. The guide says so, and says when sealing is worth writing (a
+  store the company doesn't control).
+- **The review as a Markdown file.** Pipeup already writes a review as Markdown that says exactly where each comment
+  is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
+  company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
+- **A worked example from "another company".** The repository holds a complete example add-on written the way a
+  company would write one, outside the Pipeup project's names and carrying no real company's name: "Send to Git". It adds one row to the menu, "Send
+  to Git", that sends the review as that Markdown file to a service the page names, which saves it in the
+  company's Git repository for later processing and AI work. Before anything is sent it asks, saying what it will
+  send and to where. It sends over a secure connection only (or to the reviewer's own computer, for trying it), says
+  in words how it went (including where the file was saved), and never posts, edits or resolves a comment on anyone's
+  behalf. The add-on never holds a Git password or token: the company's own service does the saving. **Its side of
+  the integration is written down as a small contract**, in the example's README: the address, the request (the page's
+  title and address, when, and the Markdown), the answer it expects (the saved path and commit), and how it treats an
+  error, so a company knows what its own service must accept. It comes with a tiny stand-in service that follows the
+  contract: run on the same computer, it saves each review as a Markdown file in a local Git repository and commits it.
+  The example is clearly labelled as not from the Pipeup project, and shows the three ways to hand the script out. The
+  guide also lists the other ways to get a review into Git (the reviewer saves the file and commits it themselves; the
+  add-on saves into a folder on the reviewer's computer where supported) and says why the company's own service is the
+  better choice at scale.
+- **Keeping add-ons intentional (best effort).** An add-on is a script on the page and runs with the page's full power,
+  so nothing here can stop someone who can already edit the page. The aim is to stop add-ons the author didn't choose
+  (a stray or copied-in script) and to help authors and companies lock down what runs:
+  - **An allow-list the author sets.** The page's author can name the add-ons that may run, in one attribute on the
+    page (`data-pipeup-addons="share,send-to-git"`). When it is there, only those add-ons run; any other is ignored,
+    shows in the add-on list as off with the reason "this page doesn't allow it", and puts one plain line in the
+    console. A value of "none" lets no add-on run. When the attribute is absent, every add-on runs as today, so
+    existing pages keep working. Reviewers see no change.
+  - **Pinned and checked scripts.** Authors are told to pin each add-on's script to a fixed version with its integrity
+    hash (or to host one bundled file and pin that), and to set a content security policy that allows only the
+    script and network hosts they intend, because an add-on's "what it sends" sentence is a statement and a policy is
+    what enforces it. For Pipeup's own add-ons the guide gives the exact policy lines from their declared hosts.
+  - **One bundled file.** For companies the guide recommends one file that holds Pipeup and the add-on together,
+    hosted by the company and pinned. The template builds that file and prints its integrity hash.
+  - **Said plainly.** The guide, the website and the agent files say this is best effort: it protects against stray
+    scripts, not against a page that is already compromised, and an add-on's name can't prove who made it (the
+    first add-on with a name wins).
+  - **Agents do the setting up.** Everything an agent reads about adding an add-on tells it to add the pinned script
+    with its integrity hash, to list only the add-ons the author asked for in the allow-list attribute, and to
+    suggest the matching content security policy for the author to apply (never to apply one that could break the
+    page without saying so). The surfaces are: llms.txt and llms-full.txt; the integrate agent skill; each add-on's
+    Copy prompt and script-tag button on the Add-ons page; the Markdown copies of the Add-ons page, the guide page and
+    the home page; the guide; and each add-on's README and the template's README.
+  - **Not part of this change:** a list in the menu that shows reviewers which add-ons are active (and which are not
+    from Pipeup), and running add-ons in a sandboxed frame; both are for later, and the first changes the core.
+- **Setting up the company's side (GitHub).** The browser never talks to GitHub. A small service the company runs sits
+  between: it knows who is sending (through the company's sign-in), checks the request, chooses the file's path itself
+  so a request can't write elsewhere, limits size and rate, keeps a record, writes the Markdown to the repository, and
+  answers with the saved path and commit (or pull request). The guide describes the ways to give that service access,
+  best first: a **GitHub App** installed on only the review repository, writing to a branch and opening a pull request
+  (never pushing to the main branch); a fine-grained access token on a bot account, limited to one repository, for a
+  pilot; a GitHub Actions workflow started by a webhook for short reviews. It says why the add-on never holds a token
+  and why the page never calls GitHub directly. GitHub Enterprise Server works the same at the company's own address.
+  Parts shipped with the example, so a company starts from something that works:
+  - **A GitHub-backed reference service**, beside the stand-in one, that follows the same written contract, written
+    without outside code (like the mailbox reference server), so a company can read all of it.
+  - **A contract checker**: one command that sends a sample review to a company's service and says, in words, whether
+    it follows the contract (so a company knows its own version works before pointing a page at it).
+  - **A setup skill for agents**, shipped with Pipeup's agent skills, that walks a company engineer's agent through:
+    choosing the GitHub option, creating the GitHub App from a manifest the person approves (the agent can't approve
+    permissions for them), generating the service from the reference one, setting its settings, giving the page the
+    service address, the allow-list entry and the matching content security policy line, and running the checker. It
+    never asks for a token to be pasted into a page or a chat.
+- **Two worked examples, for two situations.** Both are written the way a company would write them, outside the Pipeup
+  project's names, and clearly labelled as not from the project:
+  1. **"Send to Git"** (needs the company's own service): the reviewer's comments go to a service the company runs, which
+     files them in Git. For teams: sign-in, a record of who saved what, pull requests.
+  2. **"Save to GitHub"** (needs no server and no token): one menu row opens GitHub's own "new file" page in a new tab with
+     the review already filled in (the Markdown that Copy as Markdown makes, in a file path chosen from the page's name
+     and the time). The reviewer signs in to GitHub as themselves and presses GitHub's commit button (or "propose
+     changes", when they can't write to the repository). It asks first, saying what will be filled in and where. The
+     page names the repository, and optionally the branch and folder, and, for GitHub Enterprise Server, the host. When
+     the review is too long to travel in an address, it copies the Markdown for the reviewer to paste and opens the same
+     page with the file name filled in, and says so in words. It never holds or sees a token, and never posts, edits or
+     resolves a comment.
+- **Choosing a way, written down.** The guide's company section lists the ways to get a review into Git and when each fits: the
+  company's service using the GitHub API (pull requests, sign-in, records); the same service running Git itself with a
+  deploy key (any Git host); the host's API for another host (GitLab, Bitbucket, Azure DevOps, Gitea); GitHub's prefilled new-file or new-issue
+  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy as Markdown pasted to an
+  agent or an issue. It names what needs a server and says which of them the examples show.
+- **As little friction as possible: the agent does the setting up.** Each example has one Copy prompt that gives the person's AI
+  agent everything it needs (the setup skill). The setup skill covers both examples and starts by asking which fits (no server,
+  or the company's service) and which repository. For "Save to GitHub" the agent only edits the page and tells the person
+  what to expect: the person has nothing to approve and no token to make. For "Send to Git" the agent does everything it
+  can: it gets the example, builds it, and runs the service and the page; the few things only the person can do are kept
+  to one click each: approving the GitHub App (the agent starts GitHub's own "create an app from a manifest" flow, which
+  asks the person to press one button, and keeps the app's key in a private file on their computer, never in the chat or a
+  page) and installing it on the repository. The skill says plainly which steps are the person's and why. It never asks for a
+  token to be pasted anywhere.
+- **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
+  not from Pipeup (both are for later, and the second changes the core).
+
+## 12. Presence (live review)
+
+- While live, avatars show **who is here now**. On decks they also show **which slide each person is
+  on**.
+- Live **cursors**, **selections** and **"typing…"** show where others are. Each person can turn
+  cursors and selections off for themselves: they then neither send nor see them.
 - A **follow** action jumps to the slide or place another person is looking at.
-- Presence is never stored; it exists only while people are connected.
+- Cursors and selections show only while comments are showing. While comments are closed, only the
+  comment control's label and tooltip say who is live.
+- Screen-reader users hear when someone joins or leaves, as a short summary, while comments are
+  showing.
+- Presence is never stored. It exists only while people are connected.
 
 ## 13. The relay
 
-- An author can **create their own relay with one step** on a free hosting account they own.
-  The first supported host is Cloudflare.
+- As a later add-on, an author can **create their own relay with one step** on a free hosting
+  account they own. The first supported host is Cloudflare.
 - Running a relay on a free account **never produces a bill**: when free limits are reached the
   relay stops accepting new data and says so, rather than charging.
 - The relay enforces limits per room — size, rate of writes, number of people — and rooms that
@@ -477,19 +918,86 @@ any of them off.
 
 ## 14. Security and privacy
 
-- **Nobody but the room's members can read comments**, including the relay operator and its
-  hosting company.
-- The relay and its host can see only **that a room exists, the size and timing of traffic and
-  members' network addresses** — never comment text, names, cursors, quoted text or the document.
-- **Comments cannot be forged or altered** by other members or by the relay. The relay can at
-  most withhold or drop data; Pipeup shows when it can tell something is missing.
+- **Only people holding the page can read shared comments.** Later, for rooms shared separately, only
+  people holding the invite can. That excludes every service carrying the comments and its hosting
+  company.
+- Services that carry comments see only:
+  - that something is stored or exchanged;
+  - its size and timing;
+  - network addresses.
+
+  They never see comment text, names, cursors, quoted text or the document. This holds for an
+  organisation's own sharing server too.
+- **Comments cannot be forged or altered** by other people or by any service. A service can at most
+  withhold or drop data, or fill its storage. Pipeup shows that something is missing where it can
+  tell; a shared copy on a free service can't tell.
 - Comment content can **never run as code** or change the page.
-- Pipeup sends data **only** to the relay the author chose. It has **no analytics, tracking or
-  telemetry**.
-- Published builds are **verifiable**: an author can pin the exact version they tested, and the
-  browser will refuse a build that has been tampered with.
-- Access can be removed by **closing the room** (§11). Anyone who already had access can still
-  read what they saw before; Pipeup says so plainly when a room is closed.
+- **Pipeup itself makes no network requests** and has no analytics, tracking or telemetry.
+- Add-ons published by the Pipeup project send only what they declare, only to the services they name,
+  and only encrypted so those services can't read it. **The one exception is dictation through a
+  browser maker's speech service** (Google in Chrome, Apple in Safari): that service hears the
+  reviewer's voice, and dictation uses it only after the reviewer agrees to a sentence saying so.
+- Dictation may make the browser download a speech pack from its maker once; Pipeup says so first.
+- With live review, the other people who are live see your network address. The services that help
+  people find each other see it too.
+- A reviewer's Pipeup identity is the same across documents in one browser.
+- On pages opened from disk, other pages opened from disk in the same browser can read and change what
+  Pipeup and its add-ons keep. Secrets used for sharing are never kept; they come from the file each
+  time. Anything an add-on downloads and keeps is checked again every time before it is used.
+- Add-ons from anyone other than the Pipeup project run with the page's full power; only the checks on
+  arriving comments apply to them.
+- Published builds are **verifiable**, including add-ons and combined files. An author can pin the
+  exact versions they tested, and the browser will refuse a build that has been tampered with.
+- Access to new shared comments can be removed by starting sharing again at a new address, or by
+  closing a relay room. Anyone who already had access can still read what they saw before, and Pipeup
+  says so plainly.
+
+## 14a. Knowing about newer versions
+
+*Built (0.7), except that the check does not exist yet (§15).* The console line, the signing tools and the `updates` add-on are built.
+
+Pipeup itself makes no network requests (§14), so it can't look for updates. The person who needs to know is
+the **author** who put Pipeup on the page, not the reviewers. Authors learn about newer versions in three ways.
+
+**Pipeup itself, with no network**
+
+- Pipeup knows when it was built. When that is **more than a year ago** it writes one line to the browser
+  console, once per page load, saying so and where the changelog is. Reviewers see nothing. An author can switch
+  it off (`data-pipeup-updates="off"`).
+- It says nothing about security, because it can't know.
+
+**The author's tools, with no visitors involved**
+
+- `pipeup check` says whether the version a page uses is the latest, lists published security advisories that
+  affect it, and says exactly what to change, including the new integrity hash when the page pins the script.
+- Every release has notes, and a version with a security problem is marked in the release notes, in the package
+  registry's own deprecation notice and in a published security advisory, so tools that watch dependencies
+  (and people who watch the repository) hear about it.
+
+**An add-on that checks for the author** (`updates`, off unless the author adds it)
+
+- It fetches one small published file listing the latest version, the oldest supported version and security
+  advisories, and compares it with the version on the page.
+- **It runs only when the author is the one looking**: on a page opened from disk, on the author's own computer
+  (localhost), or where the author has asked for it. **A reviewer's browser never makes the request** unless the
+  author chooses to allow that, and says so (`data-pipeup-updates="everyone"`). The add-on says in one sentence
+  what it contacts and what that service can see (§11a).
+- The file can't be forged or replayed: Pipeup checks it was published by the Pipeup project, and has not expired,
+  before showing anything from it.
+  What it shows is plain words, and links go only to the project's own addresses.
+- **What the author sees**:
+
+  | What is found | Where |
+  |---|---|
+  | A patch or minor release | A line in the console |
+  | A major release, or a recommended update | A line in the console and a small marker in the context menu |
+  | A security issue, or a version no longer supported | A notice in the context menu that names the issue, the fixed version, where to read more and how to update |
+
+- A notice can be dismissed for that version or advisory, and the choice is remembered in that browser.
+- **It never changes the page, never installs or updates anything, and never gets in the way of writing a
+  comment.** A notice raised while comments are closed waits and is shown once when Pipeup is next opened (§11a).
+  If the file can't be reached it says nothing.
+- A page that pins an exact version stays on it until the author changes it; no notice ever changes that.
 
 ## 15. Agent support
 
@@ -500,17 +1008,228 @@ any of them off.
     mode, decks with marked slides — and when to use each of Pipeup's options;
   - run the **check** and fix what it reports;
   - **summarise** feedback by theme, section and status;
-  - **reply to and resolve** threads, and **apply** approved changes to the page.
+  - **reply to** threads and mark them addressed (never resolve them), and **apply** approved changes to the page.
 - **Check** loads a page with and without Pipeup and reports pass, warn or fail for:
   - any layout change caused by Pipeup;
   - closed Pipeup UI overlapping page content, at phone, tablet and desktop widths;
   - Pipeup UI overlapping the page's own controls;
   - blocks, charts and slides without stable identifiers;
-  - colour contrast and keyboard reachability of Pipeup's UI.
+  - colour contrast and keyboard reachability of Pipeup's UI;
+  - which add-ons a page has, whether each is on, and what each sends;
+  - Pipeup included twice on one page (a failure);
+  - saved comments that couldn't be read.
+
+  Its overlap checks include add-on surfaces.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy as Markdown); later they will also read and write feedback
-  files and, with an invite, take part in rooms.
+- Agents read comments a reviewer copied (Copy as Markdown), and can read and reply in a page's shared
+  copy. Later they will also read and write feedback files and, with an invite, take part in rooms on
+  a relay.
+- An agent taking part in a shared copy does so under **its own identity and a name that shows it is
+  an agent**, never as the person it works for. Its identity is never put in the page.
+- Agents add an add-on only when the author asks for that feature, and tell the author in plain words
+  what it sends and to whom. They never pick a sharing service without asking.
+- When an agent rewrites or regenerates a page, it keeps the page's document identity and sharing line
+  unchanged. A new document made from an existing page or template gets a new identity and no sharing
+  line, so comments of different documents never mix. Agents never put a stop key in a page.
+
+### 15a. Installing the skills
+
+Today an agent has to be pasted a prompt and fetch each skill. The skills become something a person
+installs once, after which the agent uses them on its own whenever the task calls for it.
+
+- **A Claude Code plugin.** One plugin holds every Pipeup skill. A person adds the project as a plugin
+  source and installs the plugin with two commands, then asks for what they want ("add comments to this
+  page") without pasting anything. Updates arrive the way any plugin's do.
+- **One command for any agent.** A small installer, run with one command, puts the same skills where
+  Claude Code and Codex look for them: for the person (every project) or for the current project only,
+  the person's choice. It says in plain words what it will write and where, asks before replacing a
+  skill the person has changed, and can update and remove what it installed. It never changes anything
+  else on the computer, and it runs with no account and no network call beyond fetching itself.
+- **Codex** reads the same skills through the installer. Anything more specific to Codex is added only
+  after checking what Codex supports at the time.
+- **Same skills everywhere.** The plugin, the installer, the website's copies and the copy-and-paste
+  prompts all carry the same text, so they cannot disagree. Each says which Pipeup version it was
+  written for.
+- **A skill for adding Pipeup.** A new skill, "add Pipeup to this page", does what the prompts do
+  today in one place: it adds Pipeup pinned to an exact version with its integrity hash, asks which
+  add-ons the page wants (none by default), sets the allow-list for them and tells the author about a
+  content security policy. The other skills point to it rather than repeating it.
+- **The prompt stays** as the fallback for an agent with nothing installed, and for a chat that can't
+  install anything. Each page that offers it shows the install commands first.
+- **Out of date wording is removed.** The skills no longer say the command-line steps are "arriving
+  later" when a step works today by copy and paste.
+- The installer and the plugin hold no runtime code for a page: they carry text and nothing that runs
+  on a reviewer's page. Neither sends anything about the person anywhere.
+### 15b. Agents reading and answering comments
+
+Today a person has to copy the comments and paste them to the agent, and an agent's answer can't come
+back into the page. This section closes both gaps without a server. (A live link between the page and
+an agent on the same computer is a later step and is not part of this one.)
+
+**Reading**
+- A page can give its comments to the agent looking at it, with no copy and paste: the same Markdown
+  Copy all gives (every thread with its id, where it is on the page, and its words), and the open
+  threads as plain data. Either can be asked for open threads only, or all of them.
+- It carries nothing a person can't already see in the page, and it works for any agent that can run
+  the page in a browser.
+
+**Answering**
+- An agent answers a thread by writing a reply into a **replies file** kept next to the page, named by
+  the page. A reply names the thread it answers, carries the agent's words, and may say the thread is
+  **addressed**, with a short note of what was done and where (for example "addressed in revision 41").
+- A reply is signed by the agent's own identity, made once and kept on the agent's computer, never in the
+  page or its folder. The identity has a name that shows it is an agent (§10, §15).
+- The page shows the replies it finds in the file, inside the thread, under the agent's name and with
+  the same marking as other AI replies. A reply can't be edited or removed by a later one, only
+  followed by another.
+- A page accepts replies only from agents its author has listed. Replies from anyone else are ignored,
+  and the page says in words how many it ignored.
+- Reading the replies file is done by the **agents add-on** (§15d), which the author adds (or which `pipeup watch` adds
+  for them). With it, the page reads the file when it opens, then again every few seconds while the page is showing
+  and when it comes back into view, so an agent's answer appears in the thread by itself; the person can also ask it to
+  check at once. It makes no network request to do so when opened from a file on the person's computer, and when served
+  from a website it reads only a file on that same site.
+
+**Addressed, and who closes**
+- **Addressed** is not resolved. A thread an agent says is addressed shows that plainly, with the note,
+  and stays open until a person resolves it. A person can reopen it, and say what is still wrong.
+- Agents never resolve, reopen, edit or delete a thread. (This replaces the earlier wording that let an
+  agent resolve threads; §15 and the skills are updated to match.)
+- A reply file can't make a person's comment change in any way.
+
+**Showing that a page is ready for an agent**
+- With the agents add-on, a page whose author has listed an agent says so in plain words in the comment control's menu, in one
+  line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
+  shows nothing, so nothing is added for readers who don't need it.
+- With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
+  instruction that tells an agent where this page's comments are, how to read them and how to answer,
+  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
+- With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
+  comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
+- In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
+  two plain choices, **Resolve** and **Still not right**, the second of which reopens it with a place for
+  the person's words.
+- Nothing here appears, moves or disappears abruptly; a new reply eases into the thread.
+
+**What agents are told**
+- Every agent-facing surface says the same things about comments, in the same words: the skills (apply,
+  summarise, integrate and the install skill of §15a), `llms.txt` and `llms-full.txt`, the Markdown copy
+  of each page, the prompts the site offers, and the prompt the menu copies.
+- An agent that is given a page's comments: reads every open thread in order; for each one makes the
+  change the author approved, or says why it did not; replies in the thread with what changed and where;
+  marks it addressed; and leaves closing to the author. It asks the author before changing anything
+  the author hasn't approved, and answers a question with an answer, not a change.
+- An agent writes its replies in the replies file under its own named identity, and never puts its key
+  in the page or the folder, never answers as a person, and never resolves, reopens, edits or deletes.
+- When a thread is reopened with "Still not right", the agent treats the person's new words as the
+  request, and replies again in the same thread.
+- An agent that can't write the replies file (for example a chat with no files) says what it would have
+  replied, in a form the author can paste, and does not pretend the page was updated.
+- An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
+  and says in words what that lets it do.
+
+**Skills and checking**
+- The apply skill tells the agent to read the comments, make each change the author approved, reply with
+  what changed, mark it addressed, and leave closing to the author.
+- Check reports a replies file that can't be read, and replies for threads that no longer exist.
+- Comments written before this change, and pages with no replies file, behave exactly as they do now.
+
+### 15c. A live link to an agent on this computer
+
+Comments live in the reviewer's own browser, so an agent can only see them if the person pastes them or the agent
+drives that browser. The live link lets an agent on the same computer read comments and answer them without either,
+and only after the person clicks.
+The page's side of the link is part of the agents add-on (§15d); `pipeup watch` adds it to the page it shows.
+
+**Starting it**
+- The author starts a link for a page file with one command on their own computer. The link shows the page from their
+  computer, at an address that works only on that computer, and says in words where it is and how to stop it.
+- Starting the link for a named agent (for example Claude or Codex) lists that agent for this page for as long as
+  the link runs, so the author doesn't also have to edit the page. When the link stops, the page is as it was.
+
+**Sharing is a click**
+- On a page shown through a link, the comment control's menu has a switch, **Share with my agent**. It is off, on
+  every load, until the person turns it on. Nothing is sent before then.
+- Its hint says in plain words what it sends and where: this page's comments, to the program running on this computer,
+  and nothing else. A page not shown through a link has no such switch.
+- Switched on, the comments already on the page and every new comment, edit, resolve and reopen go to the link, and the
+  menu and All comments say the page is sharing with the agent by name. Switching it off stops sending at once.
+
+**What the agent can do**
+- Read the page's comments at any time with one command, as Markdown or as data, open threads or all, each with its
+  id and where it is. It needs no browser, and works while the page is closed (the comments are as the page last
+  shared them).
+- Answer a thread with one command; the reply, signed by the agent's own key, and any addressed note reach the open
+  page within seconds, in the thread, as in section 15b. The same rules hold: an agent only replies and marks a thread
+  addressed, never resolves, reopens, edits or deletes.
+- Read the person's resolves and reopens, so it knows when "Still not right" has reopened a thread.
+
+**Keeping it private and safe**
+- Everything stays on the computer: the link talks only to the page it shows and to programs on the same computer, and
+  nothing is sent to any server.
+- Another web page or program can't read or write through the link: it accepts only the page it serves, and only after
+  the person has turned sharing on.
+- The link keeps the shared comments and replies in files next to the page, named plainly, so the person can see,
+  keep or delete them. Stopping the link leaves them.
+- If the link stops while the page is open, the page says so in words; the comments are safe in the browser and sharing
+  can be turned on again.
+
+**Skills and prompts**
+- When a link is running, the prompt Copy a prompt for my agent tells the agent to read and answer with the link's
+  commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
+- The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
+  when the author is on their own computer.
+
+### 15d. The agents add-on
+
+*Built (0.7).* Reading an agent's replies, the live link and the prompt for an agent are needed only by pages
+that have an agent, so they move out of Pipeup itself into an add-on, `agents`, and every page without an agent no
+longer downloads them. Everything §15b and §15c say about what a person sees and what an agent may do stays as it is.
+
+**What stays in Pipeup itself**
+- The page's comments for an agent that is looking at it (§15b, Reading): as Markdown, and as data, open threads or all.
+- Copy as Markdown and Copy as Text (§7a); the Markdown still ends with the one-line instruction to work through the
+  threads and say what changed.
+- A thread an agent has marked **addressed** shows its note with **Resolve** and **Still not right** (§15b), and an AI
+  reply keeps the AI marking (§10), whichever add-on or file the reply came from.
+
+**What the add-on does**
+- Reads the replies file (§15b), keeps only replies from the agents the author listed, and says how many it ignored.
+- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy a
+  prompt for my agent** to the menu (§15b).
+- Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c).
+- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page. When the page is shown
+  through `pipeup watch`, and only after you switch it on, it sends this page's comments to the program running on
+  this computer. Nothing leaves this computer."
+- Follows the rules for every add-on (§11a): nothing is added to the page while comments are closed except words in the
+  control's label and tooltip, it looks like Pipeup, and it never posts, edits or resolves for anyone.
+
+**Adding it**
+- An author who wants replies from an agent adds the add-on and lists the agent (`data-pipeup-agents`); agents adding
+  Pipeup do both only when the author asks for replies, and say in words what that lets the agent do (§15).
+- **`pipeup watch` adds it for the page it shows**, from the copy that came with the command, so the live link needs no
+  edit to the page. Nothing is changed in the page's file.
+- **`pipeup watch` refuses a page whose Pipeup is too old.** Before it starts, it looks at which Pipeup the page uses.
+  A page on a version before 0.6 can't take an agent at all, so the command doesn't start; it says in words which
+  version the page uses and what to change. A page on 0.6.x already has agent support built in, so the command starts
+  and doesn't add the add-on. A page it can't read a version from starts, and the page says in words if agents aren't
+  available.
+- It can be included on its own, or in a combined file with Pipeup, like any add-on (§4).
+
+**Pages that already use agents (0.6)**
+- A page that uses Pipeup 0.6 or earlier keeps its agent support exactly as it is; nothing in a published version changes.
+- On a version that no longer has it built in, a page that lists an agent but has no agents add-on says so in
+  plain words in the browser console and in the check, and does nothing else; its comments are unaffected.
+- Replies files, signed replies and the command line (`pipeup agent`, `reply`, `comments`, `watch`) are unchanged, and
+  the add-on reads the same files.
+- If the add-on is put on a page whose Pipeup already has agent support, the add-on stays off and says why (§11a).
+
+**Skills and checking**
+- The integrate and add skills, `llms.txt` and the site's Markdown copies say that listing an agent also means adding
+  the agents add-on, with its address and integrity hash like any add-on, and that `pipeup watch` does it itself.
+- Check reports a page that lists an agent without the add-on, a replies file that can't be read, and replies for
+  threads that no longer exist, and lists the add-on among the page's add-ons (§15).
 
 ## 16. Distribution
 
@@ -518,40 +1237,73 @@ any of them off.
   fixed, permanent version.
 - Each release says which version to pin and how to verify it.
 - Pipeup is **as compact as possible**: it adds as little as it can to a page's download, every
-  release states its size, and a release that grows past its size budget is not published.
+  release states the size of Pipeup, of each add-on and of each combined file, and a release where
+  any of them grows past its size budget is not published. Any change to a size budget is stated in
+  the release notes.
 - **Open source under the MIT licence.** The source, issues and releases are public on GitHub, and
   the website (with its Try pages and agent skills) is published alongside it.
-- Versions follow semantic versioning. Until 1.0 the project is in **alpha**: the API and the stored
-  format may change between minor versions, and each release says what changed.
+- Versions follow semantic versioning, and add-ons are released with Pipeup at the same version.
+  Until 1.0 the project is in **alpha**: the API may change between minor versions, and each release
+  says what changed. **Comments written by any released version stay readable by every later
+  version**, including comments already saved in reviewers' browsers.
+- When a page meets comments from a newer version of Pipeup that it can't show, it says how many in
+  words, rather than dropping them silently.
 - **Pre-releases** can be tried before a milestone reaches everyone: installed from npm and the CDNs
   by their exact version or a `next` tag, with their own copy of the website, Try pages and agent
   skills at a separate address, clearly marked as a pre-release and not indexed by search engines.
   A pre-release never changes what a plain install gets, the stable website or the stable CDN
   address.
 
-## 17. Out of scope for the first release
+## 17. Out of scope for now
 
 - Standalone images and PDFs as review targets.
-- Accounts, sign-in, email or push notifications, and @mentions.
+- Accounts, sign-in by Pipeup itself, and email or push notifications sent by Pipeup itself (mentions
+  and notifications through the page, the reviewer or an add-on are §10a).
 - A relay run by the Pipeup project, and hosts other than Cloudflare.
-- Peer-to-peer rooms without a relay.
-- Rich text, attachments or reactions in comments.
+- Rich text or attachments in comments (reactions are §7b).
 - Drag-to-select an area as a comment target.
 - Replies to a reply (every reply answers the original comment).
 - Suggesting edits to the page text (tracked changes).
+- Editing the page's own content together, live.
+- Creating a shared copy from inside the page.
 
 ## 18. Release phases
 
-1. **Comments on this machine** — documents, slides and rich pages; all ways to start a comment
-   (§5); reading, replies, resolve and copy for AI (§7, §7a); anchoring (§8); placement and
-   motion (§9); feedback files; check; agent skills. Private builds only.
-2. **Rooms** — relay, invites, presence, live sync. Planned as sharing add-ons in 0.7 (share, then voice, then live).
-3. **Public release** — npm and CDN publication, verification guidance, open-source licence. The
-   first public release (0.3.0) ships phase 1's comments on this machine, ahead of rooms.
+1. **Comments on this machine** (shipped: 0.3 and 0.4): documents, slides and rich pages; all ways to
+   start a comment (§5); reading, replies, resolve and copy for AI (§7, §7a); anchoring (§8);
+   placement and motion (§9); check; agent skills.
+2. **Public release** (shipped: 0.3.0): npm and CDN publication, verification guidance, open-source
+   licence.
+3. **Add-ons** (shipped together in 0.5, after tests with real services showed they work from a page opened from
+   disk):
+   - shared comments through a free service the author picks;
+   - dictation;
+   - live review and presence.
+4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
+5. **Touch and narrow pages, and agents as an add-on** (0.7): §15d.
+6. **The rest of the command-line tool** (0.8): `init`, `check`, `read`.
+7. **The author's relay** (later):
+   - rooms on a relay the author owns;
+   - invites shared separately;
+   - closing rooms;
+   - detecting missing comments.
 
 ## 19. Open questions
 
 - How long inactive rooms live before expiring by default.
+- How long shared copies last on free services, which services Pipeup suggests, and how much traffic
+  is fair to ask of volunteer-run services.
+- Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
+- Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
+  Pipeup if the size budget allows; whether agents' reactions should be shown at all.
+- Update notices: whether the age line in the console is worth its bytes; what counts as the author's own
+  context besides a file, localhost or the attribute (§14a).
+- Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
+  flooded;
+  whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
+  before the sign-in the page supplies.
+- Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
+  the author's own browser.
 
 ---
 
@@ -647,3 +1399,67 @@ any of them off.
   last clicked, commented on or under the pointer. Esc no longer puts the block cursor away: after a comment
   box and an open thread it leaves comment mode. The block cursor skips what can't be seen or clicked, the
   parts inside links and buttons, words styled inside a line of text, and tiny decorations.
+- 2026-10-07 — Add-ons. Optional features are add-ons, each one more line or one combined file, and
+  they work from disk:
+  - shared comments through a free encrypted service the author picks, set up from the command line;
+  - live review with presence, which each reviewer chooses to join;
+  - dictation.
+
+  Pipeup itself sends nothing. Each add-on says what it sends and to whom, and asks before sending
+  where it needs agreement; while comments are closed, add-ons only change the control's words.
+  Comments from elsewhere are checked like comments from a file, whatever add-on brought them; other
+  promises cover the project's own add-ons, and add-ons from others run with the page's power. Each
+  reviewer sends only their own comments to a shared copy, and comments written before sharing wait
+  for their choice. Comments arriving from others never lose words being written or move the reader,
+  and are announced briefly. Deleted words stay in copies others already received. Live review shows
+  your network address to others who are live, and some networks can't connect directly. Comments
+  from any released version stay readable. Rooms on the author's own relay become a later add-on.
+  Peer to peer is now in scope; editing the page together is not. Phases renumbered to show what has
+  shipped.
+- 2026-10-07 — Roadmap renumbered: each add-on gets its own release, so one add-on waiting on its tests
+  never holds back another: shared comments 0.7, dictation 0.8, live review 0.9; touch and narrow
+  pages stay 0.5 and the command-line tool 0.6.
+- 2026-10-08 — Add-ons built, so the spec now describes what ships on the add-ons branch: a resolved thread
+  stays open, with a sentence saying so, while words are half-written in its reply line (§11); an add-on that
+  can't work on a page (no speech engine, nothing configured) stays off and says why (§11a); an add-on's own
+  spoken words ("Listening") are heard at once, while comments show.
+- 2026-10-08 — Add-ons ship together in 0.5 (not in separate releases); touch and narrow pages move to 0.6 and the command-line tool to 0.7.
+- 2026-10-08 — Comment boxes (popovers) are wider when the window has room (about 400 px on windows 900 px wide or more, 300 px otherwise); All comments keeps its own width. The comment control stays readable on a page whose accent colour is pale (its icon turns dark in comment mode), and Pipeup follows a page that switches between light and dark after it has started.
+- 2026-10-09 — An open thread's popover always shows who wrote each comment, when, and Copy and Resolve, so it no longer grows under the pointer when hovered; and while a thread is open the chosen block's outline and naming bar step aside instead of sitting over it. (In the document column, details still ease open on hover.)
+- 2026-10-09 — All comments is interactive: a row is a preview, and choosing it opens the thread out in the panel (reply, resolve or reopen, copy), scrolls the page to its place and draws a line from the open row to it; one thread open at a time; nothing opens on the page.
+- 2026-10-09 — The name "AI assistant" is kept for AI replies (a person can't choose it), and a reply under it is drawn with a gently glowing ring, so it is plain at a glance that a model wrote it. An add-on can show a reply as it is being written at the end of a thread.
+- 2026-10-09 — Assist reads the whole page, deck and notes a section at a time, keeps a short summary of each on the device, and checks likely sections in full before replying (see docs/design/assist.md).
+- 2026-10-09 — Proposed (not built): a guide and a copy-ready template for making your own add-on, own-name publishing and names, the project's names reserved (section 11a).
+- 2026-10-09 — Built: the guide (docs/ADDONS_GUIDE.md) and the template (libs/ts/addons/template). The project's add-on names are asked for, not enforced: a name can't prove who made an add-on, and refusing them would refuse the project's own.
+- 2026-10-10 — Proposed (not built): a guide section for using add-ons inside a company, and a worked example add-on from "another company" (Send to Git, sending the feedback as Markdown to be filed in Git), not under the Pipeup project's names (section 11a).
+- 2026-10-10 — Proposed (not built): an allow-list the author sets for which add-ons run, pinning and content-security-policy guidance, one bundled file for companies, and every agent-facing surface updated to apply them (section 11a). Said plainly as best effort.
+- 2026-10-10 — Proposed (not built): how a company sets up the GitHub side of Send to Git (a GitHub App and a small service, or a bot token, or a webhook-started workflow), with a GitHub-backed reference service, a contract checker and a setup skill for agents (section 11a).
+- 2026-10-10 — Built: the allow-list attribute, the guide and its page, the template's bundled file, the Send to Git example (stand-in and GitHub reference services, contract checker, try page), the setup skill, and every agent surface updated (section 11a).
+- 2026-10-10 — The setup skill starts with a fast path to try Send to Git against a real GitHub repository on one computer (the person makes and keeps the token and starts the service themselves), and a copy-and-paste prompt starts it from the Add-ons page.
+- 2026-10-10 — Proposed (not built): a second worked example, Save to GitHub (no server, no token: opens GitHub's new-file page filled in), a written guide to the ways of getting a review into Git, and one setup skill that covers both and keeps the person's own steps to one click each (section 11a).
+- 2026-10-10 — Built: the Save to GitHub example (no server, no token), the guide's ways of getting a review into Git, the GitHub App helper (two button presses), and one setup skill for both examples (section 11a).
+- 2026-10-11 — Proposed (not built): the skills are installed once as a Claude Code plugin or with one command for Claude Code and Codex, plus a skill for adding Pipeup that the prompts and other skills point to (section 15a).
+- 2026-10-12 — Proposed (not built): pages hand their comments to an agent without copy and paste, agents answer in a replies file kept next to the page and signed by their own identity, and an agent can only mark a thread addressed, a person resolves it (section 15b). A live link on the same computer is left for later.
+- 2026-10-12 — Loading the replies file is part of Pipeup itself, not an add-on; and a page says plainly when an agent is listed, offers a prompt to copy for the agent, summarises the agent's answers in All comments and offers Resolve or Still not right on an addressed thread (section 15b).
+- 2026-10-12 — Proposed (not built): every agent surface (skills, llms.txt, Markdown copies, site prompts, the copied prompt) tells agents how to read and answer comments the same way: reply, mark addressed, never resolve (section 15b).
+- 2026-10-12 — Approved. The prompt for an agent is offered on every page (section 15b).
+- 2026-10-12 — Built: reading with `Pipeup.comments()`, the replies file and the agents the page lists, addressed notes with Resolve and Still not right, the prompt on every page, and `pipeup agent` / `pipeup reply` for agents; the size budget is 45 KB gzip (section 15b).
+- 2026-10-12 — Replies appear by themselves: a page with a listed agent looks for new replies every few seconds while it is showing (and when it comes back into view), as well as on Check for replies (section 15b).
+- 2026-10-12 — Proposed (not built): a live link between a page shown from the author's computer and an agent on it, started by one command and switched on by a click (Share with my agent), so the agent reads and answers comments without a browser or pasting (section 15c).
+- 2026-10-12 — Built: the live link (`pipeup watch`, `pipeup comments`, the Share with my agent switch, replies reaching the open page), with the size budget at 46 KB gzip (section 15c).
+- 2026-10-12 — The one-command installer (section 15a) can be part of the `pipeup` command line that agents already use (`pipeup agent`, `reply`, `watch`, `comments`), instead of a separate package; the skills it installs include answering comments (15b) and the live link (15c).
+- 2026-10-12 — Built: the Claude Code plugin, `pipeup skills install|remove|list` (for you or one project, Claude Code and Codex, asking before replacing anything you changed), the pipeup-add skill, the version line on every skill, and the stale "arriving later" wording removed (section 15a).
+- 2026-10-12 — Release phases: agents ship in 0.6; touch and narrow pages move to 0.7 and the rest of the command-line tool to 0.8.
+- 2026-10-12 — Proposed (not built): Pipeup looks the same on every site; it has a light look and a dark look that both work, never mixed; the reviewer can choose Automatic, Light or Dark; its own surfaces never depend on the page's colours; and it falls back to its safe look if it can't read itself (section 9).
+- 2026-10-12 — Approved: threads at rest in the column always sit on their own soft backing (section 9).
+- 2026-10-12 — Clarified: Pipeup takes the page's font family and accent colour and nothing else of its styling; the reviewer's choice is the Look row in the menu; the author's setting is `data-pipeup-theme` on `<html>` (section 9).
+- 2026-10-12 — Changed: no fall-back look. Under a faded page both looks lose about the same contrast, so switching can't help; Pipeup reports what the page does to it instead, in the console and in the check (section 9).
+- 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).
+- 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).
+- 2026-10-12 — Proposed (not built): how an author learns of newer versions without Pipeup making any request of its own: an age line in the console, `pipeup check` and release notices, and an opt-in `updates` add-on that runs only in the author's context and shows console lines and, for major releases and security issues, a context-menu notice (section 14a).
+- 2026-10-12 — The update list is signed by the maintainer from their own computer, and goes out of date after a set time, so a forged or old copy is ignored (section 14a).
+- 2026-10-12 — Proposed (not built): agent support moves out of Pipeup itself into an `agents` add-on (reading replies, the live link, the prompt and the menu and All comments lines); comments for an agent, the addressed note and the AI marking stay; `pipeup watch` adds the add-on itself; pages on 0.6 are unchanged (section 15d, in 0.7).
+- 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
+- 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
+- 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.
+- 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.

@@ -1,39 +1,44 @@
 # Pipeup: feedback for any HTML
 
-People comment right on your page: documents, decks or whole sites. No accounts, no servers. Their feedback comes back ready for your AI to act on.
+People comment right on an HTML page, and send their comments back. No accounts, no servers. Their feedback comes back ready for your AI to act on.
 
 - **One file**, about 37 KB, with no dependencies.
 - **Works from disk**: no server needed.
 - **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy as Markdown or Copy as Text) and sends it themselves.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
 
-## Get started
+On the home page, the first screen shows Pipeup on a document, slides, a website and with the keyboard, and two buttons: **1. Add comments to an HTML** and **2. Create comment-enabled HTML**. Each opens its own page: [add-comments.html](https://pipeup-ai.github.io/pipeup/add-comments.html.md) and [create-html.html](https://pipeup-ai.github.io/pipeup/create-html.html.md).
 
-**Copy prompt** gives you a prompt to paste into Claude, Codex or another coding agent with your HTML file open. It asks the agent to:
+## 1. Add comments to an HTML (someone sent you an HTML file)
 
-1. Download `pipeup.min.js` (https://pipeup-ai.github.io/pipeup/pipeup.min.js) and put it next to the HTML file.
-2. Add `data-pipeup-doc="<key>"` to the `<html>` element (a key made with `await Pipeup.newDocumentAttribute()`), and keep it exactly as it is from then on.
-3. Add `<script src="pipeup.min.js"></script>` just before `</body>`.
-4. Mark stable blocks with `data-pipeup-id`, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
-5. Leave the page's layout and styling alone.
+You want to read it and give feedback.
 
-**Install** offers:
+1. Open the file in your browser. If you see a small round comment button at the bottom right, skip to step 3.
+2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0-beta.1/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
+3. Comment: select words and click the comment icon, or press Shift+Option+C (Shift+Alt+C) and click any block. With the keyboard: Tab moves between blocks, Enter comments, Esc finishes.
+4. Send it back: **Copy as Markdown** copies every comment with exactly where it is. Paste it in a message or email to whoever sent the file.
 
-- **Claude Code**: a command that installs the skill into `~/.claude/skills/pipeup-integrate/`.
-- **Codex**: a command that adds the skill to `AGENTS.md`.
-- **Any other agent**: point it at [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt).
-- **Script tag** and a **download** of [pipeup.min.js](https://pipeup-ai.github.io/pipeup/pipeup.min.js) for adding it by hand.
+Comments stay in your browser until you copy and send them.
 
-## How reviewers comment
+## 2. Create comment-enabled HTML (you are making a page to share)
 
-- Select words and click the comment icon, or press Shift+Option+C and click any block. Option-click (Alt-click) drops a pin.
-- With the keyboard: press Shift+Option+C (Shift+Alt+C), then Tab moves between blocks, ↑ and ↓ step out and back in, Enter comments, Shift+Enter opens a block's comments, Pin pins it, and Esc finishes. Screen readers hear each block's name and words.
-- Comments stay attached to what they're about when the page changes.
-- Comments are kept in the reviewer's browser. **Copy as Markdown** copies them as Markdown that says exactly where each one is, ready to send to the author or paste into an AI agent; **Copy as Text** gives just the words.
+You want feedback on it.
+
+1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
+2. Share the file: email, chat, a drive or a website. It works straight from the file.
+3. People comment on the page.
+4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** (with the agents add-on) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
+
+You decide how comments travel. By default they stay in each reviewer's browser until they send them.
+
+[Try it on a page](https://pipeup-ai.github.io/pipeup/try/document.html)
 
 ## For agents
 
 - [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt): a short guide.
 - [llms-full.txt](https://pipeup-ai.github.io/pipeup/llms-full.txt): the guide and all three skills in one file.
-- Skills: [pipeup-integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [pipeup-summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [pipeup-apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+- Skills: [pipeup-integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [pipeup-summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [pipeup-apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md), [pipeup-send-to-git-setup](https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md) (a company saving reviews into its own Git).
+- Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx pipeup skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
+- Making your own add-on: [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html.md). Add one safely: pin it with its integrity hash, list it in `data-pipeup-addons` on `<html>`, and tell the author about a Content-Security-Policy (best effort).
+- Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html).
 - Source: [github.com/pipeup-ai/pipeup](https://github.com/pipeup-ai/pipeup).

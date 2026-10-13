@@ -2,15 +2,19 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import type { Thread } from "../model/types";
-import type { Ctx, Draft, MenuActions, UiState, View } from "./context";
+import type { Identity } from "../crypto/identity";
+import { identityFromCode, makePortable } from "../crypto/portable";
+import { animalName, nameOf } from "../model/animals";
+import type { Mention, Thread } from "../model/types";
+import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
 import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
+import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
-import { narrow, PANEL } from "./layout";
+import { narrow, PANEL, popover } from "./layout";
 import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
@@ -19,7 +23,11 @@ import { createHere } from "./here";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
-import { readTheme } from "./theme";
+import { reveal } from "./notes";
+import { inspect, warning, type Appearance } from "./legible";
+import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
+import { openIdentity } from "./identity";
+import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
@@ -35,10 +43,14 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
+  /** Keeps another identity for this browser (a new portable one, or one restored from a recovery code). */
+  onIdentity(identity: Identity): Promise<void>;
 }
 
 export interface App {
   readonly ctx: Ctx;
+  /** How Pipeup looks and why: its look, who chose it, and what the page's styles do to it. */
+  appearance(): Appearance;
   destroy(): void;
 }
 
@@ -62,7 +74,30 @@ const message = (e: unknown) =>
   e instanceof Error ? e.message.replace(/^pipeup: /, "") : "Something went wrong";
 
 export function startApp(o: AppOptions): App {
-  const theme = readTheme(o.root);
+  // One place decides light or dark: the author's data-pipeup-theme, else what the page shows behind Pipeup.
+  // The reviewer's own choice beats the author's, which beats what the page shows.
+  const LOOK_KEY = "pipeup:look";
+  let choice: LookChoice = "auto";
+  try {
+    const kept = localStorage.getItem(LOOK_KEY);
+    if (kept === "light" || kept === "dark") choice = kept;
+  } catch {
+    /* no storage: Automatic */
+  }
+  let dark = false;
+  let appearance: Appearance;
+  let warned = "";
+  /** The look to show; what the page's own styles do to it is noted, once, in the console. */
+  const lookNow = (): Look => {
+    const chosen = choice !== "auto" ? choice : authorLook(document);
+    const look = chosen ?? (pageIsDark(document, dark) ? "dark" : "light");
+    appearance = inspect(document, look, choice !== "auto" ? "reviewer" : chosen ? "author" : "page");
+    const line = warning(appearance);
+    if (line && line !== warned) console.warn((warned = line));
+    return look;
+  };
+  dark = lookNow() === "dark";
+  const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme);
   const sheet = installPageSheet(document, theme.dark);
   sheet.fade(0);
@@ -75,6 +110,7 @@ export function startApp(o: AppOptions): App {
     active: null,
     hot: null,
     showResolved: false,
+    mine: false,
     // Comments show only in comment mode or while All comments is open: hidden on load.
     hidden: true,
     mode: chooseMode(o.root),
@@ -111,10 +147,26 @@ export function startApp(o: AppOptions): App {
   let sayRaf = 0;
 
   /** `isHint`: comment mode's hint, which goes early; `quiet`: screen readers hear it some other way. */
-  function toast(text: string, ms = TOAST_MS, isHint = false, quiet = false): void {
+  function toast(
+    text: string,
+    ms = TOAST_MS,
+    isHint = false,
+    quiet = false,
+    action?: { label: string; href: string },
+  ): void {
     if (destroyed) return;
     hint = isHint;
     toastEl.textContent = text;
+    toastEl.classList.toggle("act", Boolean(action));
+    if (action)
+      toastEl.append(
+        " ",
+        h(
+          "a",
+          { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
+          action.label,
+        ),
+      );
     if (quiet) toastEl.setAttribute("aria-hidden", "true");
     else toastEl.removeAttribute("aria-hidden");
     toastEl.classList.add("show");
@@ -152,6 +204,10 @@ export function startApp(o: AppOptions): App {
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
   });
 
+  const writingIn = (id: string): boolean =>
+    (host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`)?.value.trim() ??
+      "") !== "";
+
   /** A resolved thread leaves: focus goes to the cursor, else the Comment control. */
   const gone = (id: string): boolean => {
     if (state.active !== id || state.showResolved) return false;
@@ -161,9 +217,21 @@ export function startApp(o: AppOptions): App {
   };
 
   const actions: ThreadActions = {
-    reply: async (parentId, text) => {
+    me: o.doc.me,
+    picker: () => addons.picker,
+    people: () => peopleFor(o.doc.threads(), o.doc.me),
+    react: async (commentId, emoji, on) => {
       try {
-        await o.doc.reply(parentId, text);
+        await (on ? o.doc.react(commentId, emoji) : o.doc.unreact(commentId, emoji));
+      } catch (e) {
+        if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
+        else fail(e);
+      }
+    },
+    reply: async (parentId, text, mentions) => {
+      try {
+        await o.doc.reply(parentId, text, mentions);
+        tell(mentions, text);
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
         else fail(e);
@@ -172,14 +240,11 @@ export function startApp(o: AppOptions): App {
     resolve: async (id) => {
       try {
         await o.doc.resolve(id);
-        if (gone(id)) state.active = null;
         toast("Resolved · Show resolved brings it back");
       } catch (e) {
-        if (e instanceof UnsavedChangeError) {
-          if (gone(id)) state.active = null;
-          toast(`Resolved · ${UNSAVED_NOTE}`);
-        } else toast(message(e));
+        toast(e instanceof UnsavedChangeError ? `Resolved · ${UNSAVED_NOTE}` : message(e));
       }
+      if (gone(id)) state.active = null;
     },
     reopen: async (id) => {
       try {
@@ -188,6 +253,14 @@ export function startApp(o: AppOptions): App {
       } catch (e) {
         toast(e instanceof UnsavedChangeError ? `Reopened · ${UNSAVED_NOTE}` : message(e));
       }
+    },
+    notRight: async (id) => {
+      try {
+        await o.doc.reopen(id);
+      } catch (e) {
+        toast(e instanceof UnsavedChangeError ? `Reopened · ${UNSAVED_NOTE}` : message(e));
+      }
+      focusReply(id);
     },
     close: () => {
       open(null);
@@ -212,6 +285,17 @@ export function startApp(o: AppOptions): App {
   };
 
   const menu: MenuActions = {
+    look: () => choice,
+    setLook(next) {
+      choice = next;
+      try {
+        if (next === "auto") localStorage.removeItem(LOOK_KEY);
+        else localStorage.setItem(LOOK_KEY, next);
+      } catch {
+        /* kept for this page only */
+      }
+      setLook(lookNow());
+    },
     copyAll: async (as) => {
       const items = menu.all();
       const text = copyAll(items, as, {
@@ -231,6 +315,40 @@ export function startApp(o: AppOptions): App {
       state.showResolved = !state.showResolved;
       render();
     },
+    identity: () =>
+      openIdentity(host.layer, {
+        portable: o.doc.portable,
+        code: () => o.doc.identityCode(),
+        make: async () => {
+          const made = await makePortable();
+          await o.onIdentity(made.identity);
+          return made.code;
+        },
+        use: async (code) => {
+          const found = await identityFromCode(code);
+          if ("problem" in found) return found.problem;
+          await o.onIdentity(found.identity);
+          return null;
+        },
+        copy: (text) => copyText(text, host.layer),
+        reload: () => location.reload(),
+        contact: {
+          value: o.doc.contacts().get(o.doc.me) ?? "",
+          share: (value) =>
+            o.doc.contact(value).then(
+              () => true,
+              () => false,
+            ),
+          stop: () => o.doc.uncontact(),
+        },
+        hasComments: o.doc
+          .threads()
+          .some((t) => [t.root, ...t.root.replies].some((c) => c.author === o.doc.me)),
+      }),
+    toggleMine: () => {
+      state.mine = !state.mine;
+      render();
+    },
     rename: async (typed) => {
       // As the document keeps it: one line, single spaces.
       const name = typed.replace(/\s+/g, " ").trim();
@@ -246,7 +364,12 @@ export function startApp(o: AppOptions): App {
     all: () => [...o.doc.threads()].sort(byPage(ctx)).map(exportItem),
   };
 
+  // The surface needs the context, and the context hands it out: a holder breaks the loop.
+  const slot: { surface?: Surface } = {};
   const ctx: Ctx = {
+    get addons() {
+      return slot.surface!;
+    },
     doc: o.doc,
     root: o.root,
     layer: host.layer,
@@ -261,7 +384,9 @@ export function startApp(o: AppOptions): App {
     recheck: () => {
       if (classify()) render();
     },
-    visible: (t) => !state.hidden && (!t.resolved || state.showResolved) && !elsewhere.has(t.id),
+    // A resolved thread stays while words are half-written in its reply line: they are never lost.
+    visible: (t) =>
+      !state.hidden && (!t.resolved || state.showResolved || writingIn(t.id)) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
       for (const t of o.doc.threads()) {
         const r = resolved.get(t.id);
@@ -291,6 +416,8 @@ export function startApp(o: AppOptions): App {
       void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
     },
     postDraft,
+    seen,
+    people: () => peopleFor(o.doc.threads(), o.doc.me),
     cancelDraft,
     setCommenting,
     dismiss,
@@ -305,6 +432,8 @@ export function startApp(o: AppOptions): App {
     render,
     back: stepBack,
   };
+
+  const addons = (slot.surface = new Surface(ctx, host.shadow, sr));
 
   function resolveAll(only?: Set<string>): void {
     const start = performance.now();
@@ -428,6 +557,7 @@ export function startApp(o: AppOptions): App {
     // otherwise the open thread closes.
     state.hidden = !state.commenting && !state.listing && !state.reading && !state.draft;
     if (state.hidden) state.active = null;
+    if (!state.hidden) announceMentions(threads);
     fadeHighlights(state.hidden ? 0 : 1);
     host.layer.classList.toggle("hidden", state.hidden);
     host.layer.classList.toggle("listing", state.listing);
@@ -440,6 +570,7 @@ export function startApp(o: AppOptions): App {
     paint(threads);
     for (const v of views) v.render(threads);
     modeView?.render(threads);
+    if (!state.hidden) addons.flush();
   }
 
   /**
@@ -478,6 +609,44 @@ export function startApp(o: AppOptions): App {
   }
 
   /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
+  /** After words that name people who chose to be reached by email, offers to open the reviewer's own mail to tell them. */
+  function tell(mentions: Mention[] | undefined, text: string): void {
+    const reach = o.doc.contacts();
+    const people = new Map<string, string>();
+    for (const m of mentions ?? []) {
+      const mail = reach.get(m.ref);
+      if (mail?.includes("@")) people.set(mail, text.slice(m.start + 1, m.end));
+    }
+    if (!people.size) return;
+    const who = o.doc.name || animalName(o.doc.me);
+    const subject = `${who} mentioned you on ${document.title}`;
+    const body = `${who} mentioned you in a comment on "${document.title}":\n\n${text}\n\n${location.href}`;
+    const names = [...people.values()];
+    toast(`Let ${names.length === 1 ? names[0] : `${names.length} people`} know?`, 9000, false, false, {
+      label: "Open my email",
+      href: `mailto:${[...people.keys()].join(",")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+    });
+  }
+
+  /** The comments in `t` that name this reviewer are read: mark them seen (once each). */
+  function seen(t: Thread): void {
+    const ids = [t.root, ...t.root.replies]
+      .filter((c) => c.author !== o.doc.me && !c.deleted && names(c, myRefs(o.doc.me)))
+      .map((c) => c.id);
+    if (ids.length) o.doc.seen(ids).catch(() => {});
+  }
+  /** Tells the reviewer, once, who has mentioned them in comments they haven't seen. */
+  const told = new Set<string>();
+  function announceMentions(threads: readonly Thread[]): void {
+    const fresh = unseenMentions(threads, o.doc.me).filter((m) => !told.has(m.comment.id));
+    if (!fresh.length) return;
+    for (const m of fresh) told.add(m.comment.id);
+    const who = [...new Set(fresh.map((m) => nameOf(m.comment)))];
+    toast(
+      `${who.length === 1 ? who[0] : `${who.length} people`} mentioned you in ${fresh.length} comment${fresh.length === 1 ? "" : "s"}`,
+    );
+  }
+
   function open(id: string | null, sent = false): void {
     // Words being written are never dropped: another thread waits (comment mode follows the same rule).
     if (id && held()) return;
@@ -491,6 +660,8 @@ export function startApp(o: AppOptions): App {
     if (id) {
       state.draft = null;
       pulse(id);
+      const t = o.doc.threads().find((x) => x.id === id);
+      if (t) seen(t);
     }
     render();
     if (id) {
@@ -595,11 +766,12 @@ export function startApp(o: AppOptions): App {
     }
   }
 
-  async function postDraft(text: string): Promise<void> {
+  async function postDraft(text: string, mentions?: Mention[]): Promise<void> {
     const d = state.draft;
     if (!d) return;
     try {
-      const id = await o.doc.comment(d.anchor, text);
+      const id = await o.doc.comment(d.anchor, text, mentions);
+      tell(mentions, text);
       state.draft = null;
       resolveAll(new Set([id]));
       open(id, true);
@@ -619,7 +791,10 @@ export function startApp(o: AppOptions): App {
   function pulse(id: string): void {
     const r = resolved.get(id);
     if (!r || r.state === "orphaned") return;
-    const rects = r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : [];
+    swell(r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : []);
+  }
+
+  function swell(rects: readonly DOMRect[]): void {
     for (const q of rects.slice(0, 6)) {
       const p = h("div", { class: "pulse" });
       fit(p, q, 4);
@@ -627,6 +802,18 @@ export function startApp(o: AppOptions): App {
       window.setTimeout(() => p.remove(), 1300);
     }
   }
+
+  /** A reference pill pressed: go to the slide, or scroll to the passage and give it one soft swell. */
+  reveal.go = (to) => {
+    if (to.startsWith("slide:")) return void here.navigate({ slide: to.slice(6) });
+    const want = decodeURIComponent(to.slice(6)).replace(/\s+/g, " ").toLowerCase();
+    const found = [
+      ...o.root.querySelectorAll("p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd"),
+    ].find((e) => (e.textContent ?? "").replace(/\s+/g, " ").toLowerCase().includes(want));
+    if (!found) return;
+    found.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+    window.setTimeout(() => swell([found.getBoundingClientRect()]), reduced ? 0 : 450);
+  };
 
   function buildViews(): void {
     for (const v of views) v.destroy();
@@ -638,6 +825,7 @@ export function startApp(o: AppOptions): App {
     if (destroyed) return;
     for (const v of views) v.frame();
     modeView?.frame();
+    addons.frame();
     raf = requestAnimationFrame(frame);
   };
 
@@ -667,6 +855,7 @@ export function startApp(o: AppOptions): App {
     dismiss();
   };
   const onResize = () => {
+    host.layer.style.setProperty("--pu-pop", `${popover()}px`);
     const mode = chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {
       state.mode = mode;
@@ -694,9 +883,46 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("resize", onResize);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
-  const sizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleReplace);
-  sizeObserver?.observe(o.root);
-  const offChange = o.doc.onChange(() => {
+  // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
+  // Anywhere in the page may carry the switch (a class on a wrapper, say), so any attribute change is a reason to
+  // look again, at most once a moment, and again after a transition has settled.
+  let lookFade = 0;
+  const setLook = (look: Look) => {
+    const next = look === "dark";
+    if (next === dark) return;
+    dark = next;
+    window.clearTimeout(lookFade);
+    // Every part switches together: the whole layer fades out, switches, and fades back in.
+    host.layer.classList.add("sw");
+    lookFade = window.setTimeout(() => {
+      applyTheme(host.layer, readTheme(o.root, look));
+      sheet.dark(next);
+      host.layer.classList.remove("sw");
+    }, 170);
+  };
+  const lookAgain = () => setLook(lookNow());
+  let lookTimer = 0;
+  const scheduleLook = () => {
+    if (lookTimer) return;
+    lookTimer = window.setTimeout(() => {
+      lookAgain();
+      lookTimer = window.setTimeout(() => {
+        lookTimer = 0;
+        lookAgain();
+      }, 450);
+    }, 150);
+  };
+  const themeObserver = new MutationObserver((records) => {
+    if (records.every((r) => r.target === host.element)) return;
+    scheduleLook();
+  });
+  themeObserver.observe(document.documentElement, { attributes: true, subtree: true });
+  const schemeQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
+  schemeQuery?.addEventListener?.("change", scheduleLook);
+  const sizeObserver = new ResizeObserver(scheduleReplace);
+  sizeObserver.observe(o.root);
+  const offChange = o.doc.onChange((_threads, added, source) => {
+    addons.heard(added, source);
     resolveAll();
     render();
   });
@@ -707,6 +933,7 @@ export function startApp(o: AppOptions): App {
 
   return {
     ctx,
+    appearance: () => appearance,
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);
@@ -718,13 +945,19 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(mutationTimer);
       window.clearTimeout(deferredTimer);
       observer.disconnect();
-      sizeObserver?.disconnect();
+      reveal.go = undefined;
+      sizeObserver.disconnect();
+      themeObserver.disconnect();
+      schemeQuery?.removeEventListener?.("change", scheduleLook);
+      window.clearTimeout(lookTimer);
+      window.clearTimeout(lookFade);
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();
+      addons.destroy();
       sheet.remove();
       host.destroy();
     },

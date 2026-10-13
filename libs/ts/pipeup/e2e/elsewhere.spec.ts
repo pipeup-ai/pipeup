@@ -217,7 +217,7 @@ test("selecting words elsewhere while a draft with words is away takes the revie
   await backAtDraft(page, line);
 });
 
-test("a bubble or All comments row clicked while a draft with words is away goes back to the draft", async ({
+test("a bubble clicked while a draft with words is away goes back to the draft; an All comments row leaves it be", async ({
   page,
 }) => {
   await open(page, "deck.html");
@@ -227,11 +227,14 @@ test("a bubble or All comments row clicked while a draft with words is away goes
   await backAtDraft(page, line);
   await page.evaluate(() => (window as any).deck.go(1));
   await expect(page.locator("#count")).toHaveText("2 / 3");
+  // A row chosen in All comments opens out in the panel and leaves the draft where it is.
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await page
     .locator(".all.show")
     .getByRole("menuitem", { name: /Bar on two/ })
     .click();
-  await backAtDraft(page, line);
+  await expect(page.locator(".all.show .xr")).toContainText("Bar on two");
+  await expect(page.locator("#count")).toHaveText("2 / 3");
+  await expect(line).toHaveValue(/./);
 });

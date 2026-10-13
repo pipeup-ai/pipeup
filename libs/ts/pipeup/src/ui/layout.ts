@@ -50,6 +50,8 @@ export function stackColumn(items: StackItem[], activeId: string | null, gap = 1
  */
 export const PANEL = 320;
 export const POPOVER = 300;
+/** A popover's width: roomier where the window has the space (All comments keeps its own width). */
+export const popover = (): number => (window.innerWidth >= 900 ? 400 : POPOVER);
 /** On screens this narrow or less, All comments takes the whole width (it gets .full). */
 export const NARROW = 480;
 export const narrow = (): boolean => window.innerWidth <= NARROW;

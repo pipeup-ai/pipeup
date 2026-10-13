@@ -3,6 +3,13 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  # Re-run a release whose publish stopped part way (an add-on's trusted publisher was wrong, say): already
+  # published packages and an existing GitHub Release are skipped, so only what is missing is done.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The release tag to finish, such as v0.5.0"
+        required: true
 
 permissions:
   contents: write
@@ -20,6 +27,8 @@ jobs:
         working-directory: libs/ts/pipeup
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: actions/setup-node@v5
         with:
           # Node 24 ships npm 11, which trusted publishing needs (11.5.1 or later).
@@ -30,7 +39,7 @@ jobs:
 
       - name: Check the tag matches package.json
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
           version="$(node -p 'require("./package.json").version')"
           if [ "$TAG" != "v$version" ]; then
@@ -42,6 +51,22 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run check
+
+      # The add-ons and the mailbox server are released with the core, at the same version, from the same tag.
+      - name: Check and build the add-ons
+        run: |
+          for pkg in ../addons ../addons/kit ../addons/share ../addons/voice ../addons/live ../addons/assist ../addons/agents ../addons/emoji ../addons/github ../addons/updates ../addons/inbox ../../../services/mailbox; do
+            v="$(node -p "require('$pkg/package.json').version")"
+            if [ "$v" != "$VERSION" ]; then echo "::error::$pkg is at $v, not $VERSION"; exit 1; fi
+          done
+          for id in share voice live assist agents emoji github updates inbox; do
+            p="$(node -p "require('../addons/$id/package.json').peerDependencies.pipeup")"
+            if [ "$p" != "$VERSION" ]; then echo "::error::@pipeup/$id needs pipeup $p, not $VERSION"; exit 1; fi
+          done
+          (cd ../addons && npm ci && npx playwright install --with-deps chromium && npm run check)
+          (cd ../../../services/mailbox && npm test)
+          node ../addons/scripts/sri.mjs > "$RUNNER_TEMP/addons-sri.txt"
+          cat "$RUNNER_TEMP/addons-sri.txt"
 
       - name: Release notes (CHANGELOG section and SRI)
         run: |
@@ -69,6 +94,14 @@ jobs:
             echo '```'
             echo
             echo "SRI for \`dist/pipeup.min.js\`: \`$sri\`"
+            echo
+            echo "## Add-ons"
+            echo
+            echo '```sh'
+            echo "npm i @pipeup/share@$VERSION @pipeup/voice@$VERSION @pipeup/live@$VERSION @pipeup/assist@$VERSION @pipeup/agents@$VERSION @pipeup/emoji@$VERSION @pipeup/github@$VERSION @pipeup/updates@$VERSION @pipeup/inbox@$VERSION"
+            echo '```'
+            echo
+            cat "$RUNNER_TEMP/addons-sri.txt"
           } >> "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
 
@@ -78,13 +111,38 @@ jobs:
         run: |
           tag=latest
           case "$VERSION" in *-*) tag=next ;; esac
-          npm publish --provenance --access public --tag "$tag"
+          name="$(node -p 'require("./package.json").name')"
+          if npm view "$name@$VERSION" version >/dev/null 2>&1; then
+            echo "$name@$VERSION is already published; skipping"
+          else
+            npm publish --provenance --access public --tag "$tag"
+          fi
+
+      - name: Publish the add-ons and the mailbox server
+        run: |
+          tag=latest
+          case "$VERSION" in *-*) tag=next ;; esac
+          for dir in ../addons/share ../addons/voice ../addons/live ../addons/assist ../addons/agents ../addons/emoji ../addons/github ../addons/updates ../addons/inbox ../../../services/mailbox; do
+            (
+              cd "$dir"
+              name="$(node -p 'require("./package.json").name')"
+              if npm view "$name@$VERSION" version >/dev/null 2>&1; then
+                echo "$name@$VERSION is already published; skipping"
+              else
+                npm publish --provenance --access public --tag "$tag"
+              fi
+            )
+          done
 
       - name: Create the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "The GitHub Release $TAG already exists; skipping"
+            exit 0
+          fi
           prerelease=""
           case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
           gh release create "$TAG" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag ${prerelease:+"$prerelease"}

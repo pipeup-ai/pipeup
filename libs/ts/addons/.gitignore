@@ -1,0 +1,8 @@
+node_modules
+dist/
+test-results/
+playwright-report/
+test-results
+playwright-report
+examples/demo/
+examples/phone-test/worker/

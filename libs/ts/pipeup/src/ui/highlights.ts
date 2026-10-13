@@ -41,6 +41,8 @@ export interface PageSheet {
   gutter(px: number | null): void;
   /** How strongly highlights are painted, 0 to 1. */
   fade(k: number): void;
+  /** Paints the highlights for a dark page (true) or a light one. */
+  dark(on: boolean): void;
   /**
    * Makes room for the All comments panel: a right margin of `px` on the page, easing in and out unless
    * `still`; 0 takes it away (the page eases back, then the rule goes). The width is also published as
@@ -59,19 +61,20 @@ export interface PageSheet {
 export function installPageSheet(doc: Document = document, dark = false): PageSheet {
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (!Sheet || !("replaceSync" in Sheet.prototype) || !("adoptedStyleSheets" in doc)) {
-    return { gutter() {}, picking() {}, fade() {}, room() {}, remove: () => clearHighlights() };
+    return { gutter() {}, picking() {}, fade() {}, dark() {}, room() {}, remove: () => clearHighlights() };
   }
   const sheet = new Sheet();
   let current: number | null = null;
   let pick = false;
   let k = 1;
+  let isDark = dark;
   // The panel's room: its margin, and the easing that stays a moment after it closes so the page eases back.
   let margin = 0;
   let ease = "";
   let easing = 0;
   const write = () =>
     sheet.replaceSync(
-      paintRules(dark, k) +
+      paintRules(isDark, k) +
         (current === null ? "" : `:root{--pipeup-gutter:${current}px}`) +
         (pick ? PICKING : "") +
         (margin || ease
@@ -93,6 +96,11 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
     },
     fade(to) {
       k = to;
+      write();
+    },
+    dark(on) {
+      if (on === isDark) return;
+      isDark = on;
       write();
     },
     room(px, still) {
@@ -118,9 +126,7 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
 
 export function paintHighlights(g: { quote: Range[]; on: Range[]; done: Range[] }): void {
   if (!highlightsSupported()) return;
-  CSS.highlights.set("pipeup-quote", new Highlight(...g.quote));
-  CSS.highlights.set("pipeup-on", new Highlight(...g.on));
-  CSS.highlights.set("pipeup-done", new Highlight(...g.done));
+  for (const n of NAMES) CSS.highlights.set(n, new Highlight(...g[n.slice(7) as keyof typeof g]));
 }
 
 export function clearHighlights(): void {

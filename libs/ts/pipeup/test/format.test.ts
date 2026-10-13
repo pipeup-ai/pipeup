@@ -19,6 +19,7 @@ const c = (
   edited: false,
   deleted: false,
   replies,
+  reactions: [],
   ...extra,
 });
 
@@ -186,5 +187,45 @@ describe("copyAll", () => {
     expect(copyThread(item("one\r\ntwo\rthree"), "text", "p", NOW)).toBe(
       copyThread(item("one\ntwo\nthree"), "text", "p", NOW),
     );
+  });
+});
+
+describe("reactions in copied comments", () => {
+  const reacted = c(
+    "Ada",
+    "Ready?",
+    5,
+    [c("Sam", "Yes", 3, [], { reactions: [{ emoji: "🎉", by: [{ author: "Sam", name: "Sam" }] }] })],
+    {
+      reactions: [
+        {
+          emoji: "👍",
+          by: [
+            { author: "Ada", name: "Ada" },
+            { author: "lee", name: "" },
+          ],
+        },
+        { emoji: "❤️", by: [{ author: "Sam", name: "Sam" }] },
+      ],
+    },
+  );
+  const item = {
+    thread: {
+      id: "t".repeat(43),
+      anchor: { path: "", fingerprint: "", snapshot: "" },
+      root: reacted,
+      resolved: false,
+    },
+    location: { where: "Intro" },
+  } as unknown as ExportItem;
+  const meta = { title: "T", url: "u", exportedAt: new Date(NOW) };
+
+  it("add one line to a comment and to a reply, and nothing when nobody reacted", () => {
+    const md = copyAll([item], "ai", meta);
+    expect(md).toMatch(/Reactions: 👍 2 \(Ada, [A-Za-z]+ [A-Za-z]+\) · ❤️ 1 \(Sam\)/);
+    expect(md).toContain("  - Reactions: 🎉 1 (Sam)");
+    expect(copyAll([item], "text", meta)).toContain("Reactions: 👍 2");
+    const quiet = { ...item, thread: { ...item.thread, root: c("Ada", "Ready?", 5) } } as ExportItem;
+    expect(copyAll([quiet], "ai", meta)).not.toContain("Reactions");
   });
 });

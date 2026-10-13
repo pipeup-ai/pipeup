@@ -1,0 +1,34 @@
+{
+  "name": "@pipeup/mailbox",
+  "version": "0.7.0-beta.1",
+  "description": "Reference HTTP mailbox server for Pipeup shared comments (contract pm1), and a checker for any server.",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "author": "Pipeup contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "services/mailbox"
+  },
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "pipeup-mailbox": "./src/cli.mjs"
+  },
+  "main": "./src/server.mjs",
+  "exports": {
+    ".": "./src/server.mjs",
+    "./check": "./src/check.mjs"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE",
+    "Dockerfile"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

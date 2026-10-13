@@ -2,6 +2,12 @@
 
 Status: **built** (2026-10-06). The process is in [RELEASE.md](../RELEASE.md).
 
+
+> **Since 2026-10-07** the project is developed on GitHub only and the sync script is retired: `next`
+> is a normal branch that takes pull requests, betas are tagged on it, and promotion merges it into
+> `main` through a release pull request ([RELEASE.md](../RELEASE.md)). The sections on the sync script
+> below record how it worked before.
+
 ## Why
 
 Pipeup is public (0.3.x on npm, the site on GitHub Pages). Before a milestone such as 0.4 goes to
@@ -42,7 +48,7 @@ here changes for pre-releases.
 
 ### 1. One command sets the version
 
-`tools/set-version.sh <version>` (exposed as `just pipeup-version <version>` in the private repo)
+`tools/set-version.sh <version>`
 writes the version everywhere it is pinned, so a release can't miss one:
 
 - `libs/ts/pipeup/package.json` and `package-lock.json` (via `npm version --no-git-tag-version`);
@@ -106,7 +112,7 @@ A site-only fix between releases is deployed by running the workflow by hand.
 
 ### 4. A smoke test after every release
 
-`tools/smoke-release.sh <version>` (`just pipeup-smoke <version>`) checks, from the outside, that a
+`tools/smoke-release.sh <version>` checks, from the outside, that a
 release landed. It waits for npm (the registry can lag a minute or two) and then checks:
 
 - npm: the version exists, the dist-tag (`latest` or `next`) points at it, and it has a provenance
@@ -149,3 +155,4 @@ pages, `npm i pipeup@next` in a blank page, and confirm `npm i pipeup`, the stab
 - 2026-10-06 — First version: `next` channel (npm `next`, public `next` branch, `/next/` site), one
   version command, Pages deployed after a release, smoke-test script.
 - 2026-10-06 — Built. `apps/site/channel.py` applies the pre-release changes to the built site.
+- 2026-10-07 — GitHub only: the sync script is retired; `next` takes pull requests and betas are tagged on it.

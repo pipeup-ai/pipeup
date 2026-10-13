@@ -3,9 +3,9 @@ name: pipeup-integrate
 description: Use when creating or editing an HTML document, slide deck, report, prototype or web page that people will review or give feedback on, or when asked to "add comments", "make this reviewable" or "add Pipeup". Adds Pipeup so reviewers can comment in place without changing how the page looks or behaves.
 ---
 
-# Add Pipeup to a page (`pipeup init` and `check` arrive in 0.6)
+# Add Pipeup to a page: the full reference
 
-This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.7.0-beta.1. For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place: select text, click any element (including
 buttons and charts) or drop a pin on a slide. Your job is to make the page *reviewable* while it
@@ -71,24 +71,24 @@ Then choose the options (see "Options" below): usually just the defaults.
    - *Deck* (slides): one slide visible at a time.
    - *Site / app* (landing page, prototype, dashboard): dense UI. Comments appear as bubbles.
 
-2. **Load Pipeup and give the document an identity, once.** Until the `pipeup init` command
-   ships (planned for 0.6), do it by hand:
+2. **Load Pipeup and give the document an identity, once.** Edit the HTML file:
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.4.1-beta.1/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0-beta.1/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
      Each version's release notes (https://github.com/pipeup-ai/pipeup/releases) give its
      `integrity` value; copy it exactly, or leave the attribute out if you can't look it up.
-     For a page that must work offline or from disk, download that same file, put it next to the
-     page as `pipeup.min.js`, and use `<script src="pipeup.min.js"></script>` instead.
+     Only edit the HTML file: do not download, fetch or run anything yourself (no `curl`, `wget`
+     or scripts); the reader's browser loads the script. If the page must work offline or from
+     disk, tell the user to save that same file next to the page as `pipeup.min.js` themselves,
+     and use `<script src="pipeup.min.js"></script>` instead.
    - Add `data-pipeup-doc="<key>"` to `<html>`, with a key made in a browser by
      `await Pipeup.newDocumentAttribute()` (the user's prompt may already include one).
 
-   Later, `npx pipeup init page.html` will do all of this. If the page already has
-   `data-pipeup-doc`, **leave it exactly as it is** — changing it orphans every comment people
+   If the page already has `data-pipeup-doc`, **leave it exactly as it is** — changing it orphans every comment people
    have made.
 
 3. **Mark stable blocks with `data-pipeup-id`.** Ids are what keep comments attached when the
@@ -157,10 +157,61 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.4.1-beta.1/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.7.0-beta.1/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
+
+## Add-ons (only when the author asks)
+
+Pipeup itself sends nothing anywhere. Add-ons are extra scripts that do, each for one feature; they work from a
+page opened from disk and in any script order, and they are released with Pipeup at the same version.
+
+| Add-on | Only when the author wants | What it sends |
+|---|---|---|
+| `@pipeup/share` | comments to reach everyone who has the page, without copying and pasting | sealed comments to the sharing service the page names |
+| `@pipeup/voice` | dictating comments | nothing itself; the reviewer's browser may use its maker's speech service, after they agree |
+| `@pipeup/live` | live comments, who is here, live cursors | the reviewer's network address to the others who are live and to the meeting-point relays |
+
+- **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
+  pick a sharing service yourself: the author chooses one.
+- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.7.0-beta.1/dist/share.min.js`
+  with its `integrity` from the release notes), or use the combined file `pipeup+share.min.js` instead of Pipeup's.
+- Sharing is set up by the author with the command line (`npx @pipeup/share create page.html --server …`), which writes
+  `data-pipeup-share` into the file and prints a stop key once. **Never write `data-pipeup-share` yourself and never
+  put a stop key in a page.**
+- **When you rewrite or regenerate a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are.** A
+  new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
+  comments of different documents never mix.
+- **Keep add-ons intentional (best effort).** When you add an add-on: pin its script with its `integrity` hash; add its id to
+  `data-pipeup-addons` on `<html>` (append to an existing list and keep every entry it has, never remove one), so only the
+  add-ons the author chose run on the page; and tell the author, in your reply, about a Content-Security-Policy that
+  allows scripts only from the page and the CDN and connections only to the hosts the add-on names. Don't apply the policy
+  yourself: a strict one can break a page. This stops stray scripts, not a page that is already compromised.
+- **Other people's add-ons** (a company's own) run with the page's full power and Pipeup doesn't vouch for them. Add one only
+  when the author names it and says where it is hosted; pin it and list it the same way. To help a company make one, see
+  the guide https://pipeup-ai.github.io/pipeup/addons-guide.html.md. To set up saving reviews into Git (Save to GitHub, or Send to Git through a company service), use the skill
+  pipeup-send-to-git-setup.
+- **Letting an agent answer comments.** Only when the author asks. Agents read a page's comments with
+  `await Pipeup.comments()` (part of Pipeup itself) and answer in a replies file next to the page (`pipeup-apply` is the
+  skill for that). Showing those answers in the page is the **agents add-on**, so listing an agent means two things:
+  1. The agent runs `npx pipeup agent --name Claude`, which prints its public key; add that key to `<html>` as
+     `data-pipeup-agents="<key>"` (append to an existing list, keep every entry). Never write a key you weren't given,
+     and never put an agent's private key in the page.
+  2. Add the agents add-on after the Pipeup script, pinned with its `integrity` hash like any add-on:
+     `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@<version>/dist/agents.min.js" integrity="…" crossorigin="anonymous"></script>`,
+     and add `agents` to `data-pipeup-addons` if the page has that list. Say in plain words what it does: it reads the
+     replies file next to the page, and when the page is shown with `pipeup watch` and the author switches it on, it
+     sends the page's comments to the program on their computer; nothing leaves the computer. It also lets the agent
+     reply in threads and mark them addressed, never resolve or change anyone's comment. The page ignores replies from
+     keys it doesn't list. Without the add-on the page says so once in the browser console and no replies show.
+  On their own computer the author can instead run `npx pipeup watch page.html --agent Claude`: it shows the page with a
+  **Share with my agent** switch (off until they turn it on), lists the agent while it runs, **adds the agents add-on to
+  the page it shows itself**, and lets the agent read with `npx pipeup comments page.html`. Nothing is written into the
+  page file. (It refuses a page whose Pipeup is older than 0.6 and says what to change; a 0.6.x page already has agent
+  support built in.)
+- `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
+  about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
 
 ## Options
 
@@ -171,6 +222,7 @@ Markup on the page:
 | `data-pipeup-doc` | `<html>` | The document's identity and key. Added by `pipeup init`; never change it. |
 | `data-pipeup-reserve` | `<html>` | The page reserves a 320 px comment gutter on the right and lays itself out with `var(--pipeup-gutter, 0px)` (documents you create). |
 | `--pipeup-panel` (read it, don't set it) | page CSS | While All comments is open, Pipeup moves the page over by the panel's width and publishes that width here. Normal content moves by itself; give fixed or sticky bars `right: var(--pipeup-panel, 0px)` (or offset centred ones by half of it) and size things in `%`, not `vw`, so nothing sits under the panel. |
+| `data-pipeup-addons` | `<html>` | Which add-ons may run, by id (`share,voice`; `none` for none). Without it every add-on runs. Keep every entry; add yours. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |

@@ -21,16 +21,9 @@ export function markedAncestor(node: Node, root: Element): Element | null {
   return null;
 }
 
-/** Drop a dangling surrogate half left by slicing, so the string stays well-formed. */
-function trimSurrogates(s: string): string {
-  let out = s;
-  if (/[\uD800-\uDBFF]$/.test(out)) out = out.slice(0, -1);
-  if (/^[\uDC00-\uDFFF]/.test(out)) out = out.slice(1);
-  return out;
-}
-
+/** Slice, dropping a dangling surrogate half left at either end, so the string stays well-formed. */
 function slice(s: string, from: number, to?: number): string {
-  return trimSurrogates(s.slice(from, to));
+  return s.slice(from, to).replace(/^[\uDC00-\uDFFF]|[\uD800-\uDBFF]$/g, "");
 }
 
 function pathTo(from: Element, to: Element): string {

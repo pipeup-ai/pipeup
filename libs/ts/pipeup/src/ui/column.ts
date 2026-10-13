@@ -4,6 +4,7 @@ import { clip, h, inert, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
+import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { plural, threadView, type ThreadView } from "./thread-view";
 
@@ -51,6 +52,8 @@ interface Item {
   el: HTMLElement;
   thread: Thread;
   lost: boolean;
+  /** The reply an add-on was writing into this thread when it was last drawn. */
+  note?: string;
   view: ThreadView;
   /** Last known line (page y); a thread waiting for its fuzzy match stays there. */
   placed: number | null;
@@ -122,6 +125,7 @@ export function createColumn(ctx: Ctx): View {
 
   function fill(item: Item, t: Thread): void {
     item.thread = t;
+    item.note = notesKey(t.id);
     item.lost = isLost(t);
     item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null });
   }
@@ -146,36 +150,33 @@ export function createColumn(ctx: Ctx): View {
     return { el, thread: t, lost, placed: null, view };
   }
 
+  /** Fades an element out (no longer measured) and removes it. */
+  function leave(el: HTMLElement): void {
+    sizes.unobserve(el);
+    el.classList.add("out");
+    window.setTimeout(() => el.remove(), EXIT_MS);
+  }
+
   function syncDraft(): void {
     const d = ctx.state.draft;
-    if (draft && d && draft.of !== d) {
-      const old = draft.el;
-      sizes.unobserve(old);
-      old.classList.add("out");
-      window.setTimeout(() => old.remove(), EXIT_MS);
+    if (draft && draft.of !== d) {
+      leave(draft.el);
       draft = null;
+      if (!d) ctx.registerDraft(null);
     }
-    if (d && draft) {
-      draft.box.setLabel(d.label);
-      draft.box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
-    }
-    if (d && !draft) {
+    if (!d) return;
+    const made = !draft;
+    if (draft) draft.box.setLabel(d.label);
+    else {
       const box = draftBox(ctx, d);
       const el = h("div", { class: "th on" }, box.element);
       el.style.transition = "none";
       col.append(el);
       sizes.observe(el);
       draft = { el, box, of: d };
-      box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
-      box.focus();
-    } else if (!d && draft) {
-      const el = draft.el;
-      sizes.unobserve(el);
-      el.classList.add("out");
-      window.setTimeout(() => el.remove(), EXIT_MS);
-      draft = null;
-      ctx.registerDraft(null);
     }
+    draft.box.hideLabel(ctx.state.commenting && !d.anchor.quote && !d.anchor.point);
+    if (made) draft.box.focus();
   }
 
   function render(list: readonly Thread[]): void {
@@ -192,7 +193,7 @@ export function createColumn(ctx: Ctx): View {
         item = create(t);
         items.set(t.id, item);
         fresh.push(item.el);
-      } else if (item.thread !== t || item.lost !== isLost(t)) {
+      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== notesKey(t.id)) {
         fill(item, t);
       }
       const el = item.el;
@@ -214,9 +215,7 @@ export function createColumn(ctx: Ctx): View {
     for (const [id, item] of items) {
       if (live.has(id)) continue;
       items.delete(id);
-      sizes.unobserve(item.el);
-      item.el.classList.add("out");
-      window.setTimeout(() => item.el.remove(), EXIT_MS);
+      leave(item.el);
     }
     syncDraft();
     // Tab meets the threads in page order, before the draft; moved ones settle before they glide.

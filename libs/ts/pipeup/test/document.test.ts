@@ -172,6 +172,16 @@ describe("PipeupDocument", () => {
     }).toThrow(/a name/);
   });
 
+  it("keeps the AI assistant's name for AI replies", async () => {
+    const d = await reviewer("Sam", "doc", null);
+    for (const name of ["AI assistant", "AI assistant (on this device)"])
+      expect(() => {
+        d.name = name;
+      }).toThrow(/kept for AI replies/);
+    d.name = "AI assistants union"; // not the reserved name or a suffix of it
+    expect(d.name).toBe("AI assistants union");
+  });
+
   it("comments without a name, and shows the name added later on those comments", async () => {
     const d = await reviewer("", "doc", null);
     expect(d.name).toBe("");
@@ -458,5 +468,42 @@ describe("changes the store could not save", () => {
     expect(err).toBeInstanceOf(Error);
     expect(err).not.toBeInstanceOf(UnsavedChangeError);
     expect(doc.threads()).toHaveLength(0);
+  });
+});
+
+describe("sharing a way to be reached", () => {
+  it("shares an email or a GitHub name, replaces it, and stops sharing", async () => {
+    const sam = await reviewer("Sam", "d", null);
+    expect(sam.contacts().size).toBe(0);
+    await sam.contact("sam@example.test");
+    expect(sam.contacts().get(sam.me)).toBe("sam@example.test");
+    await sam.contact("gh:sam-s");
+    expect(sam.contacts().get(sam.me)).toBe("gh:sam-s");
+    await sam.uncontact();
+    expect(sam.contacts().has(sam.me)).toBe(false);
+  });
+
+  it("refuses anything that is neither", async () => {
+    const sam = await reviewer("Sam", "d", null);
+    for (const bad of [
+      "",
+      "sam",
+      "sam@",
+      "@example.test",
+      "javascript:alert(1)",
+      "sam@example.test<b>",
+      "gh:",
+      "gh:a b",
+    ])
+      await expect(sam.contact(bad)).rejects.toThrow();
+    expect(sam.contacts().size).toBe(0);
+  });
+
+  it("is learned from other people's ops, the latest each shared", async () => {
+    const a = await reviewer("Ada", "d", null);
+    const b = await reviewer("Lee", "d", null);
+    await b.contact("lee@example.test");
+    await a.merge(b.ops(), "test");
+    expect(a.contacts().get(b.me)).toBe("lee@example.test");
   });
 });

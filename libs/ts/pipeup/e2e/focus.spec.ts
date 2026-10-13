@@ -22,9 +22,13 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("ArrowUp");
+  expect((await focusInPipeup(page)).text).toContain("Look");
+  await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Copy as Text");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
+  await page.keyboard.press("ArrowUp");
+  expect((await focusInPipeup(page)).text).toContain("My identity");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Add name");
   await page.keyboard.press("Home");
@@ -44,6 +48,7 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   await page.locator(".launch .mode").focus();
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");

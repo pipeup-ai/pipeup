@@ -1,6 +1,6 @@
 import { describeRange } from "../anchor/describe";
 import type { Ctx, View } from "./context";
-import { clip, h } from "./dom";
+import { clip, h, selected } from "./dom";
 import { icon } from "./icons";
 import { ACTIVATES } from "./comment-mode";
 import { placeBar } from "./layout";
@@ -29,9 +29,8 @@ export function createSelection(ctx: Ctx): View {
 
   function position(): void {
     if (!range) return;
-    const r = range.getBoundingClientRect();
     const { left, top } = placeBar(
-      { left: r.left, top: r.top, width: r.width, height: r.height },
+      range.getBoundingClientRect(),
       { width: bar.offsetWidth || 36, height: bar.offsetHeight || 34 },
       { width: window.innerWidth, height: window.innerHeight },
     );
@@ -47,16 +46,8 @@ export function createSelection(ctx: Ctx): View {
 
   /** `mouse`: the selection was made with the mouse. */
   function check(mouse = false): void {
-    const sel = window.getSelection();
-    if (
-      !ctx.state.commenting ||
-      !sel ||
-      sel.isCollapsed ||
-      sel.rangeCount === 0 ||
-      !sel.toString().trim() ||
-      !allowed(sel.anchorNode) ||
-      !allowed(sel.focusNode)
-    ) {
+    const sel = selected();
+    if (!ctx.state.commenting || !sel || !allowed(sel.anchorNode) || !allowed(sel.focusNode)) {
       hide();
       return;
     }
@@ -99,8 +90,7 @@ export function createSelection(ctx: Ctx): View {
     window.clearTimeout(settle);
     settle = window.setTimeout(() => held || check(), 250);
     if (!range) return;
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) hide();
+    if (!selected()) hide();
   };
   document.addEventListener("selectionchange", onSelectionChange);
 

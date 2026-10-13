@@ -5,7 +5,8 @@ import type { Ctx, Draft, View } from "./context";
 import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
-import { placeDraft, placePopover, POPOVER, room, type AnchorPoint } from "./layout";
+import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
+import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { threadView, type ThreadView } from "./thread-view";
 
@@ -31,6 +32,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   let threads: readonly Thread[] = [];
   let shown: Thread | null = null;
   let shownView: ThreadView | null = null;
+  /** The reply an add-on was writing into the shown thread when it was last drawn. */
+  let shownNote: string | undefined;
   let draft: { box: DraftBox; of: Draft; at: unknown; above: boolean | null } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let gliding = 0;
@@ -144,55 +147,42 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       // A block's box sits below it (above if no room), so it never covers what it is about.
       const { left, top, above } = placeDraft(
         block.getBoundingClientRect(),
-        { width: pop.offsetWidth || POPOVER, height: pop.offsetHeight },
+        { width: pop.offsetWidth || popover(), height: pop.offsetHeight },
         { width: window.innerWidth, height: window.innerHeight },
       );
       const flipped = draft?.above !== null && draft?.above !== above;
       if (draft) draft.above = above;
-      if (flipped && flip()) return;
+      if (flipped && move()) return;
       pop.style.left = `${left}px`;
       pop.style.top = `${top}px`;
       return;
     }
     const where = draft && d ? popoverAnchor(d.anchor, d.resolved) : shown ? at(shown) : null;
-    if (where) put(pop, where, POPOVER);
+    if (where) put(pop, where, popover());
   }
 
-  /** The open draft is now about `label`'s block: the same box glides there (or, with reduced motion, fades). */
   /** The naming bar already names this draft's block, so its box needn't. */
   const named = (d: Draft) => ctx.state.commenting && !d.anchor.quote && !d.anchor.point;
 
-  /** The box changed sides of its block (scrolling): it eases across (opacity only with reduced motion). */
-  function flip(): boolean {
+  /**
+   * The open box moves (to another side of its block, another block, or beside All comments): it glides, or
+   * with reduced motion fades out, changes and moves while unseen, and fades back in. True when it waits to move.
+   */
+  function move(change: () => void = () => {}): boolean {
     window.clearTimeout(gliding);
     if (reduced) {
       pop.classList.remove("show");
       gliding = window.setTimeout(() => {
+        change();
         place();
         pop.classList.add("show");
       }, 220);
       return true;
     }
+    change();
     pop.classList.add("glide");
     gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
     return false;
-  }
-
-  function moveDraftBox(label: string): void {
-    window.clearTimeout(gliding);
-    if (reduced) {
-      // Opacity only: it fades out, changes and moves while unseen, and fades back in.
-      pop.classList.remove("show");
-      gliding = window.setTimeout(() => {
-        draft?.box.setLabel(label);
-        place();
-        pop.classList.add("show");
-      }, 220);
-      return;
-    }
-    draft?.box.setLabel(label);
-    pop.classList.add("glide");
-    gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
   }
 
   /** The element an open element thread (or element draft) is about, outlined while its popover shows. */
@@ -239,11 +229,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     // The preview follows the thread it shows (it hides once that thread opens).
     showTip(hovered);
     // All comments opening or closing changes the room beside it: an open popover glides to its new place.
-    if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) {
-      window.clearTimeout(gliding);
-      pop.classList.add("glide");
-      gliding = window.setTimeout(() => pop.classList.remove("glide"), 450);
-    }
+    if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) move();
     listing = ctx.state.listing;
 
     const d = opts.popovers ? ctx.state.draft : null;
@@ -266,7 +252,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         if (draft.at !== where) {
           draft.at = where;
           draft.above = null;
-          moveDraftBox(d.label);
+          move(() => draft?.box.setLabel(d.label));
         }
         draft.box.hideLabel(named(d));
       }
@@ -302,13 +288,15 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       shownView = threadView(next, ctx.actions, { variant: "popover", quote });
       pop.replaceChildren(shownView.element);
       shown = next;
+      shownNote = notesKey(next.id);
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next) {
+    } else if (shown !== next || shownNote !== notesKey(next.id)) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
       shownView.update(next, { quote });
       shown = next;
+      shownNote = notesKey(next.id);
     }
   }
 

@@ -86,20 +86,16 @@ test("in bubbles, a thread whose content is gone is counted, listed, and opens f
   await expect(item).toContainText("Start free trial");
   await item.click();
   await expect(list(page)).toBeVisible();
-  const pop = page.locator(".pop.show");
-  await expect(pop).toHaveCount(1);
-  await expect(pop).toContainText("Match the nav?");
-  await expect(pop).toContainText("No longer on the page");
-  // Beside the panel, not under it.
-  await settled(pop);
-  await settled(list(page));
-  const p = (await pop.boundingBox())!;
-  const c = (await list(page).boundingBox())!;
-  expect(p.x + p.width).toBeLessThanOrEqual(c.x);
+  // The thread opens out inside the panel, and nothing opens on the page.
+  const thread = list(page).locator(".xr");
+  await expect(thread).toHaveCount(1);
+  await expect(thread).toContainText("Match the nav?");
+  await expect(thread).toContainText("No longer on the page");
+  await expect(page.locator(".pop.show")).toHaveCount(0);
   // The cursor is in the thread's reply line: Escape closes the thread, then the panel.
   expect((await focusInPipeup(page)).tag).toBe("TEXTAREA");
   await page.keyboard.press("Escape");
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(list(page).locator(".xr")).toHaveCount(0);
   await expect(list(page)).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(list(page)).toHaveCount(0);
@@ -126,7 +122,7 @@ test("choosing a thread on content scrolled out of sight brings it into view and
   await list(page)
     .getByRole("menuitem", { name: /Is this price final\?/ })
     .click();
-  await expect(page.locator(".pop.show")).toContainText("Is this price final?");
+  await expect(list(page).locator(".xr")).toContainText("Is this price final?");
   await expect
     .poll(() =>
       page.evaluate(() => {
@@ -169,10 +165,10 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   // The panel stays open and the cursor is in the thread's reply line; Escape closes the thread and gives
   // focus back to the row, ready for the next one.
   await expect(list(page)).toBeVisible();
-  await expect(page.locator(".pop.show")).toContainText("Match the nav?");
+  await expect(list(page).locator(".xr")).toContainText("Match the nav?");
   expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA" });
   await page.keyboard.press("Escape");
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(list(page).locator(".xr")).toHaveCount(0);
   await expect(list(page)).toBeVisible();
   expect((await focusInPipeup(page)).text).toContain("Match the nav?");
 });
@@ -195,24 +191,25 @@ test("closed, the list is out of the keyboard's reach, and resolved threads foll
   await expect(list(page).getByRole("menuitem")).toHaveCount(2);
 });
 
-test("in the column, choosing a thread opens it there", async ({ page }) => {
+test("in the column, choosing a thread opens it in the panel, and the column keeps nothing open", async ({
+  page,
+}) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await openAll(page);
   await list(page)
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })
     .click();
-  // Under the panel it opens beside its content; with the panel closed, the column has it open.
-  await expect(page.locator(".pop.show")).toContainText("Is 20% realistic?");
+  await expect(list(page).locator(".xr")).toContainText("Is 20% realistic?");
   await list(page).getByRole("button", { name: "Close" }).click();
   await expect(list(page)).toHaveCount(0);
-  await expect(page.locator(".th.on")).toContainText("Is 20% realistic?");
+  await expect(page.locator(".th.on")).toHaveCount(0);
   await expect(page.locator(".pop.show")).toHaveCount(0);
 });
 
 test.describe("on a touch screen with no hover", () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 800 } });
-  test("a tap reaches All comments, which takes the whole width, and choosing a thread gets it out of the way", async ({
+  test("a tap reaches All comments, which takes the whole width, and a chosen thread opens out in it", async ({
     page,
   }) => {
     await open(page, "site.html");
@@ -227,12 +224,13 @@ test.describe("on a touch screen with no hover", () => {
     await list(page)
       .getByRole("menuitem", { name: /Love this line\./ })
       .tap();
-    await expect(list(page)).toHaveCount(0);
-    await expect(page.locator(".pop.show")).toContainText("Love this line.");
+    await expect(list(page).locator(".xr")).toContainText("Love this line.");
     await expect(page.locator(".layer.hidden")).toHaveCount(0);
-    // Closing that thread hides the comments again (comment mode is off).
+    // Escape closes the thread, then the panel, which hides the comments again (comment mode is off).
     await page.keyboard.press("Escape");
-    await expect(page.locator(".pop.show")).toHaveCount(0);
+    await expect(list(page).locator(".xr")).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await expect(list(page)).toHaveCount(0);
     await expect(page.locator(".layer.hidden")).toHaveCount(1);
   });
 });
@@ -262,7 +260,9 @@ test("after the last thread is resolved with the list open, Escape gives focus t
   await expect.poll(async () => (await focusInPipeup(page)).cls).toContain("mode");
 });
 
-test("choosing a thread in comment mode opens it and stays in comment mode", async ({ page }) => {
+test("choosing a thread in comment mode opens it in the panel and stays in comment mode", async ({
+  page,
+}) => {
   await open(page, "site.html");
   await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
   await toggleCommenting(page);
@@ -271,16 +271,17 @@ test("choosing a thread in comment mode opens it and stays in comment mode", asy
   await list(page)
     .getByRole("menuitem", { name: /Match the nav\?/ })
     .click();
-  await expect(page.locator(".pop.show:not(.side)")).toContainText("Match the nav?");
-  // Comments only show in comment mode, so reading one never leaves it.
+  await expect(list(page).locator(".xr")).toContainText("Match the nav?");
+  // Reading one never leaves comment mode.
   await commenting(page);
   await leaveReply(page);
   await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
   await expect(list(page)).toHaveCount(0);
-  await expect(page.locator(".pop.show:not(.side)")).toContainText("Match the nav?");
+  await commenting(page);
 });
 
-test("choosing a thread while comments are hidden shows them and opens it in place", async ({ page }) => {
+test("choosing a thread while comments are hidden shows them and opens it in the panel", async ({ page }) => {
   await open(page, "site.html");
   await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
   // Comment mode is off: comments are hidden.
@@ -290,6 +291,6 @@ test("choosing a thread while comments are hidden shows them and opens it in pla
     .getByRole("menuitem", { name: /Match the nav\?/ })
     .click();
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
-  await expect(page.locator(".pop.show:not(.side)")).toContainText("Match the nav?");
-  await expect(page.locator(".pop.side.show")).toHaveCount(0);
+  await expect(list(page).locator(".xr")).toContainText("Match the nav?");
+  await expect(page.locator(".pop.show")).toHaveCount(0);
 });

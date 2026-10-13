@@ -44,8 +44,8 @@
       @font-face { font-family: "Geist"; src: url("fonts/geist.woff2") format("woff2"); font-weight: 400 600; font-display: swap; }
       @font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono.woff2") format("woff2"); font-weight: 400; font-display: swap; }
       :root {
-        --ink: #2f3437; --strong: #111111; --muted: #787774; --faint: #a8a7a2;
-        --line: #eaeaea; --bone: #f7f6f3; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
+        --ink: #2f3437; --strong: #111111; --muted: #55544f; --faint: #7d7c76;
+        --line: #d2d0c8; --bone: #eeede7; --paper: #ffffff; --amber: #fbf3db; --violet: #534ab7;
         --sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
         --mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
         --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -60,7 +60,7 @@
       main { max-width: 1120px; width: 100%; margin: 0 auto; padding: 0 32px; flex: 1; display: flex; flex-direction: column; }
       main > footer { margin-top: auto; }
       header.top { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
-      .mark { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
+      .mark { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--strong); letter-spacing: -0.02em; }
       /* The GitHub link, top right: the mark and its name, in the muted ink until hovered. */
       .gh { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .gh svg { display: block; transition: transform 0.26s var(--ease); }
@@ -68,9 +68,15 @@
       .gh:hover svg { transform: translateY(-1px); }
       .status { font-size: 13px; color: var(--muted); text-decoration: none; }
       .status:hover { color: var(--strong); }
+      .more-links { display: flex; gap: 22px; align-items: baseline; }
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
       .agents-link:hover, .agents:focus-within .agents-link, .agents.open .agents-link { color: var(--strong); }
+      .more-links { align-items: center; }
+      .addons-link { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px 5px 10px; border-radius: 999px; background: #f1effc; color: var(--strong); font-weight: 500; transition: background-color 0.2s var(--ease), color 0.2s var(--ease); }
+      .addons-link:hover, .addons-link:focus-visible { background: #e6e2fa; color: var(--strong); }
+      .addons-link svg { width: 17px; height: 17px; color: var(--violet); transition: transform 0.26s var(--ease); }
+      .addons-link:hover svg, .addons-link:focus-visible svg { transform: rotate(-8deg) scale(1.08); }
       .agents-menu {
         position: absolute; right: 0; bottom: calc(100% + 10px); width: 220px; padding: 6px; background: var(--paper);
         border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
@@ -103,6 +109,8 @@
         transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
       }
       .btn:hover { background: var(--bone); }
+      .btn:not(.primary) { border-color: #b4b2a8; }
+      .btn:not(.primary):hover { border-color: #8f8d84; }
       .btn:active { transform: scale(0.98); }
       .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
       .btn.primary:hover { background: #2a2a2a; }
@@ -163,11 +171,11 @@
       .facts b { font-weight: 500; color: var(--ink); }
 
       /* ---------- The showcase: Document → Slides → Website ---------- */
-      .viewport { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--bone); touch-action: pan-y; }
+      .viewport { overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; touch-action: pan-y; }
       /* The moving demo is never a target itself: pointing anywhere in it picks the whole showcase to comment on. */
       .track { display: flex; transition: transform 0.7s var(--move); pointer-events: none; }
       .scene { flex: 0 0 100%; aspect-ratio: 4 / 3.2; position: relative; }
-      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid #c4c2b9; box-shadow: 0 6px 20px rgba(40, 38, 30, 0.10); border-radius: 10px; overflow: hidden; }
       .bar-dots { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2; }
       .bar-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
       /* The page and its comment share one wide canvas; when the comment opens, the view slides over to it. */
@@ -198,10 +206,16 @@
       .s4 .cbox .txt::after { display: none; }
       .cbox .send { position: absolute; right: 12px; bottom: 15px; opacity: 0; transition: opacity 0.2s var(--ease); }
       .typing .cbox .send { opacity: 1; }
+      .cbox .send { transition: opacity 0.3s var(--ease), transform 0.35s var(--ease); }
+      .press .cbox .send { transform: scale(0.78); }
+      .s4 .cbox .send { opacity: 0; transform: translate(7px, -7px) scale(0.8); }
+      .cbox { transition: opacity 0.3s var(--ease) 0.3s, transform 0.4s var(--ease) 0.3s, box-shadow 0.5s var(--ease); }
+      .s4 .cbox { box-shadow: 0 0 0 4px rgba(83, 74, 183, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04); }
       .cbox .line { position: absolute; left: -1px; top: 10px; bottom: 10px; width: 2px; background: var(--violet); opacity: 0; transition: opacity 0.3s var(--ease); }
       .s4 .cbox .line { opacity: 1; }
       @keyframes blink { 50% { opacity: 0; } }
-      .cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; transition: transform 0.7s var(--move); }
+      .cursor { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; transition: transform 0.7s var(--move), opacity 0.3s var(--ease); }
+      .cursor.hide { opacity: 0; }
       .cursor svg { display: block; transition: transform 0.12s var(--ease); transform-origin: 2px 2px; }
       .cursor.down svg { transform: scale(0.82); }
       .cursor::before { content: ""; position: absolute; left: -9px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: rgba(83, 74, 183, 0.22); transform: scale(0.3); opacity: 0; transition: transform 0.3s var(--ease), opacity 0.4s var(--ease); }
@@ -319,13 +333,20 @@
         .actions { grid-template-columns: 1fr; }
         .choices { width: 100%; }
       }
+      .actions.two { grid-template-columns: 340px; }
+      .actions.two .btn { justify-content: flex-start; gap: 12px; padding-right: 16px; }
+      .actions.two .btn .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 600; background: rgba(255,255,255,.18); }
+      .actions.two .btn:not(.primary) .num { background: var(--bone); color: var(--strong); }
+      .actions.two .btn svg { margin-left: auto; transition: transform 0.26s var(--ease); } .actions.two .btn:hover svg { transform: translateX(3px); }
+      .actions.two a.btn { text-decoration: none; }
+
     </style>
   </head>
   <body>
     <main>
       <header class="top">
         <span class="mark">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" shape-rendering="geometricPrecision" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
           Pipeup
         </span>
         <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
@@ -341,41 +362,10 @@
             People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback
             comes back ready for your AI to act on.
           </p>
-          <div class="actions rise" style="--i: 2">
-            <button class="btn primary" type="button" data-copy="prompt">
-              <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg>
-              <svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
-              <span class="label">Copy prompt</span>
-            </button>
-            <button class="btn more" type="button" aria-haspopup="menu" aria-expanded="false">
-              <span class="label">Install</span>
-              <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
-            </button>
-            <div class="choices" role="menu" aria-label="Install Pipeup" inert>
-              <button class="choice" role="menuitem" type="button" data-copy="claude">
-                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l5 5-5 5" /><path d="M12 17h7" /></svg></span>
-                <span>Claude Code<small>Copy a command that installs the skill</small></span><span class="state">Copied</span>
-              </button>
-              <button class="choice" role="menuitem" type="button" data-copy="codex">
-                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h7l4 4v12H7z" /><path d="M14 4v4h4" /><path d="M10 13h5M10 16h3" /></svg></span>
-                <span>Codex<small>Copy a command that adds it to AGENTS.md</small></span><span class="state">Copied</span>
-              </button>
-              <a class="choice" role="menuitem" href="llms.txt">
-                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8" /><path d="M4 12h16M12 4c2.5 2.6 2.5 13.4 0 16M12 4c-2.5 2.6-2.5 13.4 0 16" /></svg></span>
-                <span>Any other agent<small>Point it at llms.txt</small></span><span></span>
-              </a>
-              <div class="sep" role="separator"></div>
-              <button class="choice" role="menuitem" type="button" data-copy="script">
-                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-4 5 4 5" /><path d="M16 7l4 5-4 5" /></svg></span>
-                <span>Script tag<small>Add it to a page by hand</small></span><span class="state">Copied</span>
-              </button>
-              <a class="choice" role="menuitem" href="pipeup.min.js" download>
-                <span class="glyph"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11" /><path d="M7 10l5 5 5-5" /><path d="M5 20h14" /></svg></span>
-                <span>Download pipeup.min.js<small>One file, about 37 KB</small></span><span></span>
-              </a>
-            </div>
+          <div class="actions two rise" style="--i: 2">
+            <a class="btn primary go" href="add-comments.html"><span class="num">1</span><span class="label">Add comments to an HTML</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn go" href="create-html.html"><span class="num">2</span><span class="label">Create comment-enabled HTML</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           </div>
-          <p class="done" role="status" aria-live="polite"></p>
           <p class="try rise" style="--i: 3"><span class="keys">Press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span></p>
         </div>
 
@@ -512,6 +502,8 @@
               <span class="tip" role="tooltip" id="private-tip"><b>Private by design.</b>Nothing to install: one script in your HTML file. Comments stay in your browser and are never sent anywhere. They leave only when you copy them and share them yourself.</span>
             </li>
           </ul>
+        <div class="more-links">
+        <a class="agents-link addons-link" href="addons.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4a2 2 0 1 1 4 0v1h3a1 1 0 0 1 1 1v3h-1a2 2 0 1 0 0 4h1v3a1 1 0 0 1-1 1h-3v-1a2 2 0 1 0-4 0v1H7a1 1 0 0 1-1-1v-3h1a2 2 0 1 0 0-4H6V6a1 1 0 0 1 1-1h3V4z"/></svg>Add-ons</a>
         <div class="agents">
           <a class="agents-link" href="llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
           <div class="agents-menu" role="menu" aria-label="For agents">
@@ -520,6 +512,7 @@
             <a role="menuitem" href="index.html.md" title="This page as plain Markdown">This page as Markdown</a>
             <a role="menuitem" href="skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
           </div>
+        </div>
         </div>
       </footer>
     </main>
@@ -544,7 +537,7 @@
         const pauseBtn = document.querySelector(".pause");
         // When each step happens, in ms into the scene: chosen, marked, comment opens (the view slides over), posted.
         // `still`: the moment shown with reduced motion (the end, unless a scene says otherwise).
-        const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7300, "s4"]], typeFrom: 4300, typeTo: 6700 };
+        const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7800, "s4"]], typeFrom: 4300, typeTo: 6700 };
         const KEYBOARD = { steps: [[6000, "s3"], [8200, "s4"]], typeFrom: 6500, typeTo: 7900, still: 8700 };
         const TIMES = [POINTER, POINTER, POINTER, KEYBOARD];
         // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: comment mode off)].
@@ -560,12 +553,14 @@
         ];
         const KEYS_END = 9800; // The last caption eases out before the next scene slides in.
         // The cursor: [ms, target, x, y, flags]. It only moves to act, and holds still while the comment is typed.
-        const SEND = [[6800, ".send", 0.5, 0.5, ""], [7150, ".send", 0.5, 0.5, "down"], [7300, ".send", 0.5, 0.5, ""]];
+        const SEND = [[6800, ".send", 0.5, 0.5, ""], [7600, ".send", 0.5, 0.5, "down"], [7800, ".send", 0.5, 0.5, ""], [8800, ".send", 0.5, 0.5, "hide"]];
+        // While the comment is typed the pointer hides where it was left, then shows again from that same spot to move on.
+        const QUIET = (sel, fx, fy) => [[4200, sel, fx, fy, "hide"], [6700, sel, fx, fy, ""]];
         const PATHS = [
           [[0, ".hl", 0.1, 2.4, ""], [400, ".hl", 0.02, 0.6, ""], [900, ".hl", 0.02, 0.6, "down"], [1150, ".hl", 0.98, 0.6, "down drag"],
-           [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...SEND],
-          [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...SEND],
-          [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...SEND],
+           [1350, ".hl", 0.98, 0.6, ""], [1750, ".selicon", 0.5, 0.55, ""], [2250, ".selicon", 0.5, 0.55, "down"], [2400, ".selicon", 0.5, 0.55, ""], ...QUIET(".selicon", 0.5, 0.55), ...SEND],
+          [[0, ".q4", 0.5, 0.75, ""], [500, ".q4", 0.5, 0.18, ""], [2200, ".q4", 0.5, 0.18, "down"], [2400, ".q4", 0.5, 0.18, ""], ...QUIET(".q4", 0.5, 0.18), ...SEND],
+          [[0, ".cta", 0.5, 2.4, ""], [500, ".cta", 0.6, 0.55, ""], [1050, ".cta", 0.6, 0.55, "down"], [1200, ".cta", 0.6, 0.55, ""], ...QUIET(".cta", 0.6, 0.55), ...SEND],
           null, // Keyboard: no pointer at all.
         ];
         const kbScene = scenes[3];
@@ -595,6 +590,7 @@
             c.dataset.at = to;
           }
           c.className = "cursor " + flags;
+          scene.classList.toggle("press", flags.includes("down") && sel === ".send");
         }
         // The keyboard scene's block cursor: the outline wraps the block, the naming bar sits centred above it.
         function moveBlockCursor(scene, t) {
@@ -700,92 +696,9 @@
         requestAnimationFrame(frame);
       })();
 
-      // ---------- The two actions: copy the prompt, or choose how to install ----------
+      // The footer: the privacy tip closes on Esc, and For agents opens on hover or focus (a first tap on touch screens).
       (() => {
-        const http = location.protocol.startsWith("http");
-        const SITE = "https://pipeup-ai.github.io/pipeup/"; // The canonical address.
-        const base = http ? new URL(".", location.href).href : SITE; // Opened from disk: use the published site.
-        const skillUrl = () => `${base}skills/pipeup-integrate/SKILL.md`;
-        let docKey = null; // A fresh document key for the reader's page, made in this browser.
-        const texts = {
-          prompt: () =>
-            [
-              "Add Pipeup to my HTML file so people can comment on it right on the page.",
-              "",
-              `1. Download ${base}pipeup.min.js and put it next to the HTML file.`,
-              `2. On the <html> element, add data-pipeup-doc="${docKey ?? "<a key from Pipeup.newDocumentAttribute()>"}" (keep it exactly as it is from now on).`,
-              '3. Add <script src="pipeup.min.js"><\/script> just before </body>.',
-              "4. Mark stable blocks (sections, figures, cards, key buttons) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation and toolbars with data-pipeup-ignore.",
-              "5. Don't change the page's layout or styling to make room for Pipeup.",
-              "",
-              `The full guide: ${skillUrl()}`,
-            ].join("\n"),
-          claude: () => `mkdir -p ~/.claude/skills/pipeup-integrate && curl -fsSL ${skillUrl()} -o ~/.claude/skills/pipeup-integrate/SKILL.md`,
-          codex: () => `curl -fsSL ${skillUrl()} >> AGENTS.md`,
-          script: () => '<script src="pipeup.min.js"><\/script>',
-        };
-        const NOTE = {
-          prompt: "Copied. Paste it into Claude or Codex with your HTML file open.",
-          claude: "Copied. Run it in a terminal, then ask Claude Code to add Pipeup to a page.",
-          codex: "Copied. Run it in your project folder; Codex reads AGENTS.md.",
-          script: "Copied. Put pipeup.min.js next to your page and add this before </body>.",
-        };
-        const wrap = document.querySelector(".actions");
-        const primary = wrap.querySelector(".primary");
-        const more = wrap.querySelector(".more");
-        const menu = wrap.querySelector(".choices");
-        const items = [...menu.querySelectorAll(".choice")];
-        const done = document.querySelector(".done");
-        let doneTimer;
-
-        async function write(text) {
-          try { await navigator.clipboard.writeText(text); return true; } catch {}
-          const t = document.createElement("textarea");
-          t.value = text; t.style.position = "fixed"; t.style.opacity = "0";
-          document.body.append(t); t.select();
-          let ok = false;
-          try { ok = document.execCommand("copy"); } catch {}
-          t.remove();
-          return ok;
-        }
-        async function copy(name, from) {
-          const ok = await write(texts[name]());
-          done.textContent = ok ? NOTE[name] : "Couldn't copy here. Open llms.txt instead.";
-          done.classList.add("show");
-          clearTimeout(doneTimer);
-          doneTimer = setTimeout(() => done.classList.remove("show"), 4500);
-          if (!ok) return;
-          from.classList.add("copied");
-          const label = from === primary ? from.querySelector(".label") : null;
-          if (label) label.textContent = "Copied";
-          setTimeout(() => {
-            from.classList.remove("copied");
-            if (label) label.textContent = "Copy prompt";
-          }, 1800);
-          if (from !== primary) setTimeout(() => setOpen(false, true), 700);
-        }
-        function setOpen(open, refocus) {
-          menu.classList.toggle("open", open);
-          menu.inert = !open;
-          more.setAttribute("aria-expanded", String(open));
-          if (open) items[0].focus({ preventScroll: true });
-          else if (refocus) more.focus({ preventScroll: true });
-        }
-        primary.addEventListener("click", () => copy("prompt", primary));
-        more.addEventListener("click", () => setOpen(!menu.classList.contains("open"), false));
-        items.forEach((b) => b.dataset.copy && b.addEventListener("click", () => copy(b.dataset.copy, b)));
-        menu.addEventListener("keydown", (e) => {
-          const i = items.indexOf(document.activeElement);
-          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-            e.preventDefault();
-            items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus();
-          }
-          if (e.key === "Escape") setOpen(false, true);
-        });
-        document.addEventListener("click", (e) => { if (menu.classList.contains("open") && !wrap.contains(e.target)) setOpen(false, false); });
-
         document.querySelector(".private button").addEventListener("keydown", (e) => { if (e.key === "Escape") e.currentTarget.blur(); });
-        // For agents: hover or focus shows the menu; on touch screens (no hover) the first tap opens it.
         const agents = document.querySelector(".agents");
         const agentsLink = agents.querySelector(".agents-link");
         const setAgents = (on) => { agents.classList.toggle("open", on); agentsLink.setAttribute("aria-expanded", String(on)); };
@@ -796,10 +709,6 @@
         agents.addEventListener("mouseleave", () => setAgents(false));
         agents.addEventListener("keydown", (e) => { if (e.key === "Escape") { setAgents(false); agentsLink.blur(); } });
         document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
-
-        async function freshKey() { try { docKey = await window.Pipeup.newDocumentAttribute(); } catch {} }
-        if (window.Pipeup) freshKey();
-        else addEventListener("load", freshKey);
       })();
     </script>
     <script src="pipeup.min.js"></script>

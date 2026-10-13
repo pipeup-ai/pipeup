@@ -13,12 +13,15 @@ export interface ExportMeta {
   title: string;
   url: string;
   exportedAt: Date;
+  /** Also the resolved threads (default: open ones only). */
+  all?: boolean;
 }
 
 const INSTRUCTION =
   "Each thread says where it is: the slide or section, the element (its data-pipeup-id attribute in the HTML), " +
   "and the exact quoted text or pin position. Work through the open threads in order, and for each one say what " +
-  "you changed or why you did not.";
+  "you changed or why you did not. Answer in the thread (the Pipeup skill says how) and mark it addressed; " +
+  "never resolve it, the author does.";
 
 export function formatAgo(at: number, now: number): string {
   const seconds = Math.max(0, Math.round((now - at) / 1000));
@@ -37,15 +40,15 @@ export function copyThread(item: ExportItem, as: CopyAs, page: string, now: numb
 
 /** Copy every open thread, in the order given (page or slide order). */
 export function copyAll(items: ExportItem[], as: CopyAs, meta: ExportMeta): string {
-  const open = items.filter((i) => !i.thread.resolved);
+  const open = meta.all ? items : items.filter((i) => !i.thread.resolved);
   if (as === "text") return open.map(threadText).join("\n");
-  const left = items.length - open.length;
+  const left = meta.all ? 0 : items.length - open.length;
   const head = [
     `# Review comments: ${one(meta.title)}`,
     "",
     `- **Page:** ${one(meta.url)}`,
     `- **Exported:** ${meta.exportedAt.toISOString()}`,
-    `- **Open threads:** ${open.length}${left ? ` (${left} resolved, not included)` : ""}`,
+    `- **Open threads:** ${items.length - items.filter((i) => i.thread.resolved).length}${left ? ` (${left} resolved, not included)` : meta.all ? " (resolved ones included)" : ""}`,
     "",
     INSTRUCTION,
     "",
@@ -53,6 +56,13 @@ export function copyAll(items: ExportItem[], as: CopyAs, meta: ExportMeta): stri
   ].join("\n");
   const now = meta.exportedAt.getTime();
   return head + open.map((it, i) => threadMarkdown(it, `## Thread ${i + 1}`, now)).join("\n");
+}
+
+/** A comment's reactions as one line: "👍 2 (Sam, Red Fox) · ❤️ 1 (Lee)"; empty when nobody reacted. */
+export function reactionsLine(c: Comment): string {
+  return c.reactions
+    .map((r) => `${r.emoji} ${r.by.length} (${r.by.map((b) => one(nameOf(b))).join(", ")})`)
+    .join(" · ");
 }
 
 /** Text from other people or the page, on one line: newlines would break the metadata structure. */
@@ -63,7 +73,7 @@ function one(s: string): string {
 function threadMarkdown(item: ExportItem, heading: string, now: number, page?: string): string {
   const { thread: t, location: l } = item;
   const n = t.root.replies.length;
-  const lines = [`${heading} · ${t.resolved ? "resolved" : "open"}`];
+  const lines = [`${heading} · ${t.resolved ? "resolved" : t.addressed ? "open, addressed" : "open"}`];
   lines.push(`- **Thread:** ${t.id}`);
   if (page) lines.push(`- **Page:** ${one(page)}`);
   lines.push(`- **Where:** ${one(l.where)}`);
@@ -73,15 +83,22 @@ function threadMarkdown(item: ExportItem, heading: string, now: number, page?: s
   }
   if (l.quote) lines.push(`- **Quoted text:** "${one(l.quote)}"`);
   if (l.pin) lines.push(`- **Pin:** ${one(l.pin)}`);
+  if (t.addressed && !t.resolved)
+    lines.push(
+      `- **Addressed:** ${one(t.addressed.text)} (${one(nameOf(t.addressed))}, ${formatAgo(t.addressed.at, now)})`,
+    );
   lines.push(
     `- **Started by:** ${one(nameOf(t.root))}, ${formatAgo(t.root.at, now)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`,
     "",
     `**${one(nameOf(t.root))}** (${formatAgo(t.root.at, now)}): ${words(t.root, "  ")}`,
   );
-  for (const r of t.root.replies)
+  if (t.root.reactions.length) lines.push(`Reactions: ${reactionsLine(t.root)}`);
+  for (const r of t.root.replies) {
     lines.push(
       `- **${one(nameOf(r))}** (${formatAgo(r.at, now)}): ${words(r, "  ")} <!-- comment:${r.id} -->`,
     );
+    if (r.reactions.length) lines.push(`  - Reactions: ${reactionsLine(r)}`);
+  }
   return lines.join("\n") + "\n";
 }
 
@@ -91,7 +108,11 @@ function threadText(item: ExportItem): string {
     one(l.where) + (l.quote ? `, on the text "${one(l.quote)}"` : ""),
     `${one(nameOf(t.root))}: ${words(t.root, "  ")}`,
   ];
-  for (const r of t.root.replies) lines.push(`  ${one(nameOf(r))}: ${words(r, "    ")}`);
+  if (t.root.reactions.length) lines.push(`  Reactions: ${reactionsLine(t.root)}`);
+  for (const r of t.root.replies) {
+    lines.push(`  ${one(nameOf(r))}: ${words(r, "    ")}`);
+    if (r.reactions.length) lines.push(`    Reactions: ${reactionsLine(r)}`);
+  }
   return lines.join("\n") + "\n";
 }
 

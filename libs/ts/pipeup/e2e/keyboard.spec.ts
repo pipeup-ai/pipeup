@@ -1254,3 +1254,16 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     expect(seen.filter((b) => ["kbd", "span", "code", "svg", "rect"].includes(b))).toEqual([]);
   });
 });
+
+test("Tab from the block cursor closes the empty comment box left open, as a click elsewhere does", async ({
+  page,
+}) => {
+  await open(page, "controls.html");
+  await shortcut(page);
+  await page.keyboard.press("Enter");
+  await expect(draftLine(page)).toBeFocused();
+  await expect(page.locator(".pop.show")).toHaveCount(1);
+  await leaveReply(page);
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+});

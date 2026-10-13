@@ -5,6 +5,7 @@ import { ANIMAL_ICONS, avatar, initial } from "../../src/ui/animals";
 import { composer } from "../../src/ui/composer";
 import { renderDraft } from "../../src/ui/draft-view";
 import { threadView, type ThreadActions } from "../../src/ui/thread-view";
+import { threadMarks, threadNotes } from "../../src/ui/notes";
 import type { Comment, Thread } from "../../src/model/types";
 
 const NOW = 1_000_000_000_000;
@@ -24,6 +25,7 @@ const c = (
   edited: false,
   deleted: false,
   replies,
+  reactions: [],
   ...extra,
 });
 const thread = (over: Partial<Thread> = {}): Thread => ({
@@ -41,9 +43,16 @@ const actions = (): ThreadActions & { calls: string[] } => {
   const calls: string[] = [];
   return {
     calls,
+    me: "me",
+    picker: () => null,
+    people: () => [],
+    react: vi.fn(
+      async (id: string, e: string, on: boolean) => void calls.push(`${on ? "react" : "unreact"} ${id} ${e}`),
+    ),
     reply: vi.fn(async (p: string, t: string) => void calls.push(`reply ${p} ${t}`)),
     resolve: vi.fn(async (id: string) => void calls.push(`resolve ${id}`)),
     reopen: vi.fn(async (id: string) => void calls.push(`reopen ${id}`)),
+    notRight: vi.fn(async (id: string) => void calls.push(`notRight ${id}`)),
     copy: vi.fn((id: string) => void calls.push(`copy ${id}`)),
     close: vi.fn(),
   };
@@ -65,7 +74,7 @@ describe("composer", () => {
     key(comp.input, "Enter", true);
     expect(onSend).not.toHaveBeenCalled();
     key(comp.input, "Enter");
-    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("hello"));
+    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("hello", []));
     await vi.waitFor(() => expect(comp.input.value).toBe(""));
     comp.input.value = "draft";
     key(comp.input, "Escape");
@@ -108,7 +117,7 @@ describe("threadView", () => {
     expect(el.querySelectorAll(".rbox.always")).toHaveLength(1);
     expect(el.querySelector('.ib[aria-label="Reply"]')).toBeNull();
     const labels = [...el.querySelectorAll(".root .acts .ib")].map((b) => b.getAttribute("aria-label"));
-    expect(labels).toEqual(["Copy thread", "Resolve"]);
+    expect(labels).toEqual(["React", "Copy thread", "Resolve"]);
   });
 
   it("renders text as text, never HTML", () => {
@@ -207,10 +216,19 @@ describe("threadView", () => {
     ]);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
     expect(line.value).toBe("half typed");
+    // Resolved by someone meanwhile: the half-typed words keep their line, and a sentence says why.
+    view.update({ ...newer, resolved: true });
+    expect(view.element.classList.contains("resolved")).toBe(true);
+    expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
+    expect(line.value).toBe("half typed");
+    expect((view.element.querySelector(".rbox .note") as HTMLElement).hidden).toBe(false);
+    // Once the words are gone, a resolved thread has no reply line.
+    line.value = "";
     view.update({ ...newer, resolved: true });
     expect(view.element.querySelector(".rbox.always")).toBeNull();
-    expect(view.element.classList.contains("resolved")).toBe(true);
+    line.value = "half typed";
     view.update(newer);
+    expect((view.element.querySelector(".rbox .note") as HTMLElement).hidden).toBe(true);
     expect(view.element.querySelector(".rbox.always textarea")).toBe(line);
   });
 });
@@ -248,7 +266,7 @@ describe("renderDraft", () => {
     expect(d.isEmpty()).toBe(true);
     text.value = "Needs a baseline";
     key(text, "Enter");
-    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("Needs a baseline"));
+    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("Needs a baseline", []));
   });
 
   it("shows your avatar and who you are, with an invitation to add a name", () => {
@@ -375,5 +393,104 @@ describe("threadView avatars", () => {
     view.update(thread({ root: { ...anon, name: "Sam", text: "again" } }));
     expect([...view.element.querySelectorAll(".root > .av")].at(-1)).toBe(named);
     expect(view.element.querySelector(".root .who")!.textContent).toBe("Sam · 5m ago");
+  });
+});
+
+describe("an AI's replies", () => {
+  it("are drawn with the AI ring, and a reply being written shows at the end of the thread", () => {
+    const t = thread({
+      root: c("t1", "Jamie", "Sure?", [c("r1", "AI assistant (on this device)", "Risks says no.")]),
+    });
+    const view = threadView(t, actions(), { variant: "popover", now: () => NOW });
+    expect(view.element.querySelector(".it .av.ai")?.textContent).toBe("AI");
+    expect(view.element.querySelector(".ghost")).toBeNull();
+    threadNotes.set("t1", "Writing so far");
+    view.update(t);
+    const ghost = view.element.querySelector(".ghost")!;
+    expect(ghost.textContent).toContain("Writing so far");
+    expect(ghost.querySelector(".av.ai")).not.toBeNull();
+    // The hooks an add-on styles it by, so it never needs core's class names.
+    expect(ghost.getAttribute("data-pipeup-writing")).toBe("row");
+    expect(ghost.querySelector("[data-pipeup-writing=words]")?.textContent).toContain("Writing so far");
+    expect(ghost.querySelector("[data-pipeup-ai]")).not.toBeNull();
+    expect(ghost.textContent).toContain("AI assistant · writing now");
+    threadNotes.delete("t1");
+    view.update(t);
+    expect(view.element.querySelector(".ghost")).toBeNull();
+  });
+});
+
+describe("a mark from an add-on", () => {
+  it("is a quiet line at the end of the thread, before the reply line, and goes when removed", () => {
+    const t = thread();
+    const view = threadView(t, actions(), { variant: "popover", now: () => NOW });
+    threadMarks.set("t1", "Reviewed by AI · nothing to add");
+    view.update(t);
+    const seen = view.element.querySelector(".seen")!;
+    expect(seen.textContent).toBe("Reviewed by AI · nothing to add");
+    expect(seen.nextElementSibling?.classList.contains("rbox")).toBe(true);
+    threadMarks.delete("t1");
+    view.update(t);
+    expect(view.element.querySelector(".seen")).toBeNull();
+  });
+});
+
+describe("reactions in a thread", () => {
+  const withReactions = (resolved = false) =>
+    thread({
+      resolved,
+      root: c("t1", "Ada", "Is it ready?", [], {
+        reactions: [
+          {
+            emoji: "👍",
+            by: [
+              { author: "me", name: "" },
+              { author: "sam", name: "Sam" },
+            ],
+          },
+          { emoji: "🎉", by: [{ author: "lee", name: "Lee" }] },
+        ],
+      }),
+    });
+
+  it("shows each emoji with its count, marks yours, says who on hover, and nothing when nobody reacted", () => {
+    const quiet = threadView(thread(), actions(), { variant: "popover", now: () => NOW }).element;
+    expect(quiet.querySelector(".rxs")).toBeNull();
+    const el = threadView(withReactions(), actions(), { variant: "popover", now: () => NOW }).element;
+    const chips = [...el.querySelectorAll<HTMLButtonElement>(".rx")];
+    expect(chips.map((b) => b.textContent)).toEqual([
+      "👍2Sam, You".replace("Sam, You", "You, Sam"),
+      "🎉1Lee",
+    ]);
+    expect(chips[0]!.getAttribute("aria-pressed")).toBe("true");
+    expect(chips[0]!.getAttribute("aria-label")).toBe("Thumbs up, 2 people, including you");
+    expect(chips[1]!.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("takes your reaction back, or gives one, with a click", async () => {
+    const a = actions();
+    const el = threadView(withReactions(), a, { variant: "popover", now: () => NOW }).element;
+    el.querySelectorAll<HTMLButtonElement>(".rx")[0]!.click();
+    el.querySelectorAll<HTMLButtonElement>(".rx")[1]!.click();
+    expect(a.calls).toEqual(["unreact t1 👍", "react t1 🎉"]);
+  });
+
+  it("opens a quick row from React, and a choice gives the reaction and closes it", () => {
+    const a = actions();
+    const el = threadView(thread(), a, { variant: "popover", now: () => NOW }).element;
+    expect(el.querySelector(".rxq")).toBeNull();
+    el.querySelector<HTMLButtonElement>("button[aria-label=React]")!.click();
+    const quick = [...el.querySelectorAll<HTMLButtonElement>(".rxo")];
+    expect(quick.map((b) => b.textContent)).toEqual(["👍", "❤️", "😂", "🎉", "😮", "🙏"]);
+    quick[3]!.click();
+    expect(a.calls).toEqual(["react t1 🎉"]);
+    expect(el.querySelector(".rxq")).toBeNull();
+  });
+
+  it("still shows reactions on a resolved thread, but can't change them", () => {
+    const el = threadView(withReactions(true), actions(), { variant: "popover", now: () => NOW }).element;
+    expect(el.querySelectorAll(".rx")).toHaveLength(2);
+    expect([...el.querySelectorAll<HTMLButtonElement>(".rx")].every((b) => b.disabled)).toBe(true);
+    expect(el.querySelector("button[aria-label=React]")).toBeNull();
   });
 });

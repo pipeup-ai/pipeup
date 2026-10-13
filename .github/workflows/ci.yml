@@ -36,3 +36,39 @@ jobs:
             libs/ts/pipeup/playwright-report
             libs/ts/pipeup/test-results
           if-no-files-found: ignore
+
+  addons:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            libs/ts/pipeup/package-lock.json
+            libs/ts/addons/package-lock.json
+      # The add-ons are written against the core's types and built into combined files with its classic build.
+      - run: npm ci && npm run build
+        working-directory: libs/ts/pipeup
+      - run: npm ci
+        working-directory: libs/ts/addons
+      - run: npx playwright install --with-deps chromium
+        working-directory: libs/ts/addons
+      - run: npm run check
+        working-directory: libs/ts/addons
+      - name: Mailbox reference server
+        working-directory: services/mailbox
+        run: |
+          npm test
+          ../../libs/ts/addons/node_modules/.bin/eslint .
+          ../../libs/ts/addons/node_modules/.bin/prettier --check .
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report-addons
+          path: |
+            libs/ts/addons/playwright-report
+            libs/ts/addons/test-results
+          if-no-files-found: ignore

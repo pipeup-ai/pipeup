@@ -1,16 +1,24 @@
-export function levenshtein(a: string, b: string): number {
+/**
+ * The last column of the edit-distance table of `a` against `b`, one entry per prefix of `a` (entry 0 is the empty
+ * prefix). With `free`, a match may start anywhere in `a` (Sellers' algorithm).
+ */
+function column(a: string, b: string, free: boolean): number[] {
   let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  let cur = new Array<number>(b.length + 1).fill(0);
+  let cur = [...prev];
+  const out = [b.length];
   for (let i = 1; i <= a.length; i++) {
-    cur[0] = i;
+    cur[0] = free ? 0 : i;
     for (let j = 1; j <= b.length; j++) {
       const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
-      cur[j] = Math.min((prev[j] ?? 0) + 1, (cur[j - 1] ?? 0) + 1, (prev[j - 1] ?? 0) + cost);
+      cur[j] = Math.min(prev[j]! + 1, cur[j - 1]! + 1, prev[j - 1]! + cost);
     }
+    out.push(cur[b.length]!);
     [prev, cur] = [cur, prev];
   }
-  return prev[b.length] ?? 0;
+  return out;
 }
+
+export const levenshtein = (a: string, b: string): number => column(a, b, false).pop()!;
 
 /**
  * Best approximate occurrence of `pattern` in `text` (Sellers' algorithm), or null if every
@@ -23,24 +31,14 @@ export function approxFind(
 ): { start: number; end: number; distance: number } | null {
   const m = pattern.length;
   if (m === 0) return null;
-  let prev = Array.from({ length: m + 1 }, (_, i) => i);
-  let cur = new Array<number>(m + 1).fill(0);
   let bestEnd = -1;
   let bestDistance = Infinity;
-  for (let j = 1; j <= text.length; j++) {
-    cur[0] = 0;
-    const c = text.charCodeAt(j - 1);
-    for (let i = 1; i <= m; i++) {
-      const cost = pattern.charCodeAt(i - 1) === c ? 0 : 1;
-      cur[i] = Math.min((prev[i] ?? 0) + 1, (cur[i - 1] ?? 0) + 1, (prev[i - 1] ?? 0) + cost);
-    }
-    const d = cur[m] ?? Infinity;
-    if (d < bestDistance) {
+  column(text, pattern, true).forEach((d, j) => {
+    if (j && d < bestDistance) {
       bestDistance = d;
       bestEnd = j;
     }
-    [prev, cur] = [cur, prev];
-  }
+  });
   if (bestDistance > maxDistance) return null;
 
   // Recover the start: the window ending at bestEnd that is closest to the pattern.

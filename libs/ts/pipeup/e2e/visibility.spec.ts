@@ -95,9 +95,10 @@ test("All comments shows comments while it is open; closing it hides them again"
   await panel(page)
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })
     .click();
-  await expect(page.locator(".pop.show")).toContainText("Is 20% realistic?");
+  await expect(panel(page).locator(".xr")).toContainText("Is 20% realistic?");
   await expect.poll(() => highlightAlpha(page)).toBeGreaterThan(0.5);
   await leaveReply(page);
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(panel(page)).toHaveCount(0);
   await commenting(page, false);
@@ -184,18 +185,12 @@ test("the open panel makes room: the page moves over by its width, and back when
   await panel(page)
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })
     .click();
-  const pop = page.locator(".pop.show");
-  await settled(pop);
-  const words = await page.evaluate(() => {
-    const r = (
-      [...CSS.highlights.get("pipeup-quote")!, ...CSS.highlights.get("pipeup-on")!][0] as Range
-    ).getClientRects()[0]!;
-    return { left: r.left, bottom: r.bottom };
-  });
-  const o = (await pop.boundingBox())!;
-  expect(Math.abs(o.y - words.bottom)).toBeLessThan(40);
+  // Its place on the page is marked, and the line from the panel points at it.
+  await expect(page.locator(".cx.show")).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => CSS.highlights.get("pipeup-on")?.size ?? 0)).toBeGreaterThan(0);
 
   await leaveReply(page);
+  await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
   await expect(panel(page)).toHaveCount(0);
   await expect.poll(edge).toBeCloseTo(e0, 0);

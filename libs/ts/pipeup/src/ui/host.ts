@@ -1,4 +1,4 @@
-import { PANEL, POPOVER } from "./layout";
+import { PANEL, popover } from "./layout";
 import { STYLES } from "./styles";
 import { applyTheme, type Theme } from "./theme";
 
@@ -33,7 +33,7 @@ export function createHost(theme: Theme, doc: Document = document): Host {
   layer.className = "layer";
   // Sizes the code also places things by, so the stylesheet and the code can never disagree.
   layer.style.setProperty("--pu-panel", `${PANEL}px`);
-  layer.style.setProperty("--pu-pop", `${POPOVER}px`);
+  layer.style.setProperty("--pu-pop", `${popover()}px`);
   applyTheme(layer, theme);
   shadow.append(layer);
   doc.documentElement.append(element);

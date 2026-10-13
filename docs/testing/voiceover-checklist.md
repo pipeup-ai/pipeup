@@ -44,7 +44,7 @@ stable release. About 10 minutes. Record ✅ / ❌ and a note for each step.
 
 ## Result
 
-- 0.4.1-beta.1: steps 12–14 changed (Esc leaves comment mode; Tab after a click or a mouse start). Result:
+- 0.4.1: steps 12–15 changed (Esc leaves comment mode; Tab after a click or a mouse start). Released without a fresh VoiceOver run (maintainer's call); run it in 0.4.x.
 - 2026-10-07, 0.4.0-beta.3: **pass** (VoiceOver on macOS, run by the maintainer). NVDA and JAWS checks follow in 0.4.x.
 - Date, macOS and Safari versions:
 - Overall: pass / pass with notes / fail

@@ -62,19 +62,17 @@ export class IndexedDbStore implements OpStore {
   }
 
   async saveProfileIfAbsent(profile: Profile): Promise<Profile> {
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction("meta", "readwrite");
-      const store = tx.objectStore("meta");
-      let stored = profile;
-      tx.oncomplete = () => resolve(stored);
-      tx.onerror = () => reject(tx.error ?? new Error("pipeup: local storage write failed"));
-      tx.onabort = () => reject(tx.error ?? new Error("pipeup: local storage write aborted"));
-      const get = store.get("profile");
-      get.onsuccess = () => {
-        if (get.result) stored = get.result as Profile;
-        else store.put(profile, "profile");
-      };
-    });
+    const tx = this.db.transaction("meta", "readwrite");
+    const store = tx.objectStore("meta");
+    const finished = done(tx);
+    let stored = profile;
+    const get = store.get("profile");
+    get.onsuccess = () => {
+      if (get.result) stored = get.result as Profile;
+      else store.put(profile, "profile");
+    };
+    await finished;
+    return stored;
   }
 
   private request<T>(

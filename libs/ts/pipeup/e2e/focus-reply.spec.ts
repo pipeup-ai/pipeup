@@ -58,14 +58,14 @@ test("choosing from All comments focuses the reply line; arrowing through rows d
   await expect.poll(async () => (await focusInPipeup(page)).cls).toContain("mi");
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowUp");
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(page.locator(".all .xr")).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mi");
   await page.keyboard.press("Enter");
-  await expect(page.locator(".pop.show")).toBeVisible();
+  await expect(page.locator(".all .xr")).toBeVisible();
   expect(await focusInPipeup(page)).toMatchObject({ tag: "TEXTAREA" });
   // Esc closes the thread and hands focus back to the row it came from.
   await page.keyboard.press("Escape");
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(page.locator(".all .xr")).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mi");
 });
 

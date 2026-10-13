@@ -37,6 +37,7 @@ jobs:
       - name: Build the stable site
         run: |
           (cd stable/libs/ts/pipeup && npm ci && npm run build)
+          if [ -f stable/libs/ts/addons/package.json ]; then (cd stable/libs/ts/addons && npm ci && npm run build); fi
           stable/apps/site/build.sh --no-lib-build
           cp -R stable/apps/site/_site site
 
@@ -60,6 +61,7 @@ jobs:
         if: steps.next.outputs.build == 'true'
         run: |
           (cd next/libs/ts/pipeup && npm ci && npm run build)
+          if [ -f next/libs/ts/addons/package.json ]; then (cd next/libs/ts/addons && npm ci && npm run build); fi
           next/apps/site/build.sh --no-lib-build --channel next
           cp -R next/apps/site/_site site/next
 

@@ -1,4 +1,4 @@
-import { ANIMALS, animalName, animalOf, colourOf, type Animal } from "../model/animals";
+import { ANIMALS, animalName, animalOf, colourOf, isAiName, type Animal } from "../model/animals";
 import { h } from "./dom";
 import { draw } from "./icons";
 
@@ -38,6 +38,8 @@ export const faceOf = (author: string, name: string): string => initial(name) ||
  * name. Decorative: the name is always written beside it, so screen readers skip it.
  */
 export function avatar(author: string, name: string): HTMLElement {
+  // An AI's replies: a plain disc with a violet ring, so it is plain at a glance that a model wrote them.
+  if (isAiName(name)) return h("span", { class: "av ai", "data-pipeup-ai": "", "aria-hidden": "true" }, "AI");
   return h(
     "span",
     { class: `av c${colourOf(author)}`, "aria-hidden": "true", "data-animal": animalName(author) },

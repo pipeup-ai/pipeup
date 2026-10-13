@@ -1,7 +1,7 @@
 // Renders og/og.html to og.png (1200×630), the site's link-preview image, with the Playwright the
 // library already has as a dev dependency. The PNG is committed; build.sh only copies it.
 //
-//   node apps/site/og/render.mjs        (from projects/pipeup; needs `npm install` in libs/ts/pipeup)
+//   node apps/site/og/render.mjs        (from the repository root; needs `npm install` in libs/ts/pipeup)
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
