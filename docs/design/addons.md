@@ -935,8 +935,9 @@ server it runs, by implementing four endpoints or deploying the reference server
 envelope, send policy or consent changes: the mailbox is one more `Transport` (§6.3) inside
 `share.min.js`, and the server stores opaque batches it can't read.
 
-> **Proposed, not built:** a person's inbox for mentions (`pm2`, `/i/<inbox>` endpoints, sealed notes) is designed
-> in [mentions.md](mentions.md) ("Inbox"). `pm1` is unchanged.
+> **Built (0.7):** a person's inbox for mentions (`pm2`, `/i/<inbox>` endpoints, sealed notes) is in the reference
+> server (`services/mailbox/src/inbox.mjs`) and the `@pipeup/inbox` add-on; see [mentions.md](mentions.md) ("Inbox").
+> `pm1` is unchanged.
 
 **Contract version 1** (`pm1`). Frozen from 0.7; later changes are additive (new optional fields, new
 error codes treated as "try later"). An incompatible change is `pm2`, a new fragment prefix, and

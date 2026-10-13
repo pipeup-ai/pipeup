@@ -19,10 +19,10 @@ semver='[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?'
 # set` edits package.json only: `npm version` inside a workspace resolves the whole tree and fails on peer ranges
 # that don't yet match.
 addons="$root/libs/ts/addons"
-for dir in "$addons" "$addons/kit" "$addons/test" "$addons/share" "$addons/voice" "$addons/live" "$addons/assist" "$addons/agents" "$addons/emoji" "$addons/github" "$addons/updates" "$root/services/mailbox"; do
+for dir in "$addons" "$addons/kit" "$addons/test" "$addons/share" "$addons/voice" "$addons/live" "$addons/assist" "$addons/agents" "$addons/emoji" "$addons/github" "$addons/updates" "$addons/inbox" "$root/services/mailbox"; do
   (cd "$dir" && npm pkg set "version=$version" >/dev/null)
 done
-for id in share voice live assist agents emoji github updates; do (cd "$addons/$id" && npm pkg set "peerDependencies.pipeup=$version" >/dev/null); done
+for id in share voice live assist agents emoji github updates inbox; do (cd "$addons/$id" && npm pkg set "peerDependencies.pipeup=$version" >/dev/null); done
 (cd "$addons" && npm install --package-lock-only --ignore-scripts --no-audit --no-fund >/dev/null)
 
 sed -i.bak -E "s/^export const VERSION = \"$semver\";/export const VERSION = \"$version\";/" "$lib/src/core.ts"

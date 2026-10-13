@@ -510,7 +510,7 @@ any of them off.
 
 ## 10a. Mentions and notifications
 
-*Built (0.7), except the inbox (see below).* Names, mentions, the `@` list, *Mentions of me*, the seen marks, short tags for the same name, the recovery code and file, and contacts with the by-hand email offer are built; the GitHub add-on is `github`.
+*Built (0.7).* Names, mentions, the `@` list, *Mentions of me*, the seen marks, short tags for the same name, the recovery code and file, and contacts with the by-hand email offer are built; the GitHub add-on is `github`, and the inbox is the `inbox` add-on with the reference mailbox server.
 
 Pipeup has no accounts and no server of its own, so a mention works in layers: it always works inside
 the page, and reaches people outside the page only in ways the reviewer or the author chooses.
@@ -582,7 +582,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - A comment, reply, reaction or mention is saved wherever the page's comments are saved, so **any copy of
   the page** (another browser, another device, an agent) that can open the comments **sees what was left**
   and marks it seen. When a person reads a mention on one device, it shows as read on their others.
-- *Proposed, later:* a person has an **inbox**, so a mention in a document they haven't opened still reaches
+- A person has an **inbox**, so a mention in a document they haven't opened still reaches
   them. The person who mentions leaves a small note for them ("Sam mentioned you", with a link), sealed so
   only they can read it. They collect their notes from any browser or device that holds their identity.
   The service keeping the notes sees only that something arrived, its size and its timing, and never
@@ -1462,3 +1462,4 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Approved: the agents add-on ships in 0.7; `pipeup watch` refuses a page whose Pipeup is before 0.6, doesn't add the add-on to a 0.6.x page, and adds it to a newer one (section 15d).
 - 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
 - 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.
+- 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.

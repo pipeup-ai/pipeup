@@ -453,3 +453,119 @@ describe("expiry and storage", () => {
     }
   });
 });
+
+describe("a person's inbox (pm2)", async () => {
+  const { generateKeyPairSync, sign } = await import("node:crypto");
+  const { inboxId, work } = await import("../src/inbox.mjs");
+  const person = () => {
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+    const ed = publicKey.export({ format: "jwk" }).x;
+    return { ed, id: inboxId(ed), sign: (purpose, data) => sign(null, Buffer.from(`pipeup:${purpose}\n${data}`), privateKey).toString("base64url") };
+  };
+  /** A note for `id` with its small proof of work found. */
+  const note = (id, text, bits = 8) => {
+    const ct = `pi1.${Buffer.from(text).toString("base64url")}`;
+    let n = 0;
+    while (!work(id, ct, String(n), bits)) n++;
+    return { ct, work: String(n) };
+  };
+  let t;
+  before(async () => (t = await start({ inboxWork: 8, inboxNotes: 3 })));
+  after(() => t.s.close());
+
+  test("an address is the hash of a public key, so it can be worked out but not reversed", () => {
+    const a = person();
+    expectInbox(a.id);
+    assert.equal(inboxId(a.ed), a.id);
+    assert.notEqual(person().id, a.id);
+  });
+  const expectInbox = (id) => assert.match(id, /^[0-9A-Z]{26}$/);
+
+  test("a person publishes their encryption key, proved by their own signature, and senders read it", async () => {
+    const a = person();
+    const pub = "P".repeat(43);
+    assert.equal((await t.j("GET", `/i/${a.id}/key`)).status, 404);
+    const body = { ed: a.ed, pub, sig: a.sign("inbox/key", `${a.id}:${pub}`) };
+    assert.equal((await t.j("PUT", `/i/${a.id}/key`, body)).status, 200);
+    assert.deepEqual((await t.j("GET", `/i/${a.id}/key`)).body, { v: 2, ...body });
+    // Someone else can't set it, nor can a key that isn't this inbox's.
+    const eve = person();
+    assert.equal((await t.j("PUT", `/i/${a.id}/key`, { ed: eve.ed, pub, sig: eve.sign("inbox/key", `${a.id}:${pub}`) })).status, 400);
+    assert.equal((await t.j("PUT", `/i/${a.id}/key`, { ...body, sig: eve.sign("inbox/key", "x") })).status, 403);
+  });
+
+  test("anyone can leave a note with its proof of work; the owner reads what is new", async () => {
+    const a = person();
+    const n1 = note(a.id, "one");
+    assert.equal((await t.j("POST", `/i/${a.id}`, n1)).status, 201);
+    assert.equal((await t.j("POST", `/i/${a.id}`, n1)).status, 200);
+    assert.equal((await t.j("POST", `/i/${a.id}`, note(a.id, "two"))).status, 201);
+    const all = await t.j("GET", `/i/${a.id}`);
+    assert.equal(all.body.notes.length, 2);
+    assert.equal(all.body.more, false);
+    const after1 = await t.j("GET", `/i/${a.id}?since=1`);
+    assert.deepEqual(after1.body.notes.map((n) => n.ct), [note(a.id, "two").ct]);
+    assert.equal((await t.j("GET", `/i/${a.id}?since=x`)).status, 409);
+  });
+
+  test("a note without its proof of work, or that is malformed, is refused", async () => {
+    const a = person();
+    const ok = note(a.id, "x");
+    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: ok.ct, work: "nope" })).status, 403);
+    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: "pu1.abc", work: "1" })).status, 400);
+    assert.equal((await t.j("POST", `/i/${a.id}`, "not json")).status, 400);
+    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: `pi1.${"A".repeat(9000)}`, work: "1" })).status, 400);
+    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: ok.ct, work: ok.work })).status, 201);
+  });
+
+  test("an inbox holds so many notes, and says when it is full", async () => {
+    const a = person();
+    for (const s of ["a", "b", "c"]) assert.equal((await t.j("POST", `/i/${a.id}`, note(a.id, s))).status, 201);
+    const full = await t.j("POST", `/i/${a.id}`, note(a.id, "d"));
+    assert.equal(full.status, 507);
+  });
+
+  test("only the owner can take a note away, by signing it", async () => {
+    const a = person();
+    const n = note(a.id, "mine");
+    await t.j("POST", `/i/${a.id}`, n);
+    const noteId = (await t.j("GET", `/i/${a.id}`)).body.notes[0].id;
+    const eve = person();
+    const headers = (p, data) => ({ "x-pipeup-key": p.ed, "x-pipeup-sig": p.sign("inbox/delete", data) });
+    const text = `${a.id}:${noteId}`;
+    assert.equal((await t.j("DELETE", `/i/${a.id}/${noteId}`, undefined, headers(eve, text))).status, 403);
+    assert.equal((await t.j("DELETE", `/i/${a.id}/${noteId}`, undefined, headers(a, "wrong"))).status, 403);
+    assert.equal((await t.j("DELETE", `/i/${a.id}/${noteId}`, undefined, headers(a, text))).status, 204);
+    assert.equal((await t.j("GET", `/i/${a.id}`)).body.notes.length, 0);
+    assert.equal((await t.j("DELETE", `/i/${a.id}/${noteId}`, undefined, headers(a, text))).status, 404);
+  });
+
+  test("a write token, when the operator sets one, is needed for a note", async () => {
+    const s = await start({ inboxWork: 4, inboxToken: "secret" });
+    const a = person();
+    const n = note(a.id, "x", 4);
+    assert.equal((await s.j("POST", `/i/${a.id}`, n)).status, 403);
+    assert.equal((await s.j("POST", `/i/${a.id}`, n, { Authorization: "Bearer secret" })).status, 201);
+    await s.s.close();
+  });
+
+  test("the mailbox contract is untouched: /m still answers, and /i is never a mailbox", async () => {
+    const c = await t.create();
+    assert.equal(c.status, 201);
+    assert.equal((await t.j("GET", `/i/${"0".repeat(26)}`)).status, 404);
+  });
+});
+
+describe("cors for an inbox", () => {
+  test("a preflight to /i names PUT and the two signature headers; /m is as it was", async () => {
+    const t = await start();
+    try {
+      const r = await fetch(`${t.base}/i/${"0".repeat(26)}/key`, { method: "OPTIONS" });
+      assert.equal(r.status, 204);
+      assert.equal(r.headers.get("access-control-allow-methods"), "GET, POST, PUT, DELETE");
+      assert.match(r.headers.get("access-control-allow-headers"), /X-Pipeup-Key, X-Pipeup-Sig/);
+    } finally {
+      await t.s.close();
+    }
+  });
+});

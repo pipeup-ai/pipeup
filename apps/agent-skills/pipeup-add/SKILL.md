@@ -28,7 +28,9 @@ Pipeup lets people comment on an HTML page in place. **When the page already exi
    charts, images and icons with `data-pipeup-label`. Slides get `data-pipeup-slide="1"`, `"2"`, … Chrome such as slide
    buttons gets `data-pipeup-ignore`. The integrate skill has the detail for documents, decks, sites and tabs.
 4. **Add-ons: none unless the author asks.** Pipeup itself sends nothing anywhere. If they want sharing, voice, live
-   comments or the assistant, ask first, say in plain words what it sends and to whom, and pin it like the core script.
+   comments, the assistant, the full emoji set for reactions (`@pipeup/emoji`), notes for mentioned people (`@pipeup/inbox`,
+   which needs an inbox service address the author gives you), GitHub issues for mentions (`@pipeup/github`, which needs
+   `data-pipeup-github-repo`) or update notices (`@pipeup/updates`), ask first, say in plain words what it sends and to whom, and pin it like the core script.
    Then list its id in `data-pipeup-addons` on `<html>` (append, never remove an entry) so only chosen add-ons run, and
    tell the author about a Content-Security-Policy that allows scripts only from the page and the CDN. Don't apply the
    policy yourself: a strict one can break a page.

@@ -368,6 +368,19 @@
         </div>
       </section>
 
+      <section class="addon plain" id="inbox-addon" data-pipeup-id="inbox-addon">
+        <div class="text">
+          <h2>Inbox</h2>
+          <p class="one">Tells people they were mentioned, even on pages they haven't opened: a note, sealed so only they can read it, left at an inbox service you name.</p>
+          <p class="fact"><b>Sends</b> Only after each reviewer switches Mentions by inbox on: a sealed note for each person they mention, and a check of their own inbox, at your inbox service. The service sees that a note arrived, its size and when, and a network address, never who it is from or what it says.</p>
+          <p class="fact"><b>Needs</b> <code>data-pipeup-inbox="https://…"</code> on the page, and an inbox service: the reference mailbox server, <code>npx @pipeup/mailbox</code>.</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-copy="inbox-prompt"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy prompt</span></button>
+            <button class="btn" type="button" data-copy="inbox-tag"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><span class="label">Copy script tag</span></button>
+          </div>
+        </div>
+      </section>
+
       <section class="addon plain" id="github-addon" data-pipeup-id="github-addon">
         <div class="text">
           <h2>GitHub</h2>
@@ -486,7 +499,7 @@
       const CDN = "https://cdn.jsdelivr.net/npm/";
       const ADDONS_VERSION = "0.7.0-beta.1"; // tools/set-version.sh keeps this in step with the release
       // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
-      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}" };
+      const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}" };
       const tag = (pkg, file) => {
         const sri = SRI[pkg.split("/")[1]];
         return `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"${sri.startsWith("sha384-") ? ` integrity="${sri}" crossorigin="anonymous"` : ""}><\/script>`;
@@ -576,6 +589,19 @@
           ...SAFE("emoji", "to nowhere new (the emoji are part of the script)"),
           "",
           "Nothing is sent anywhere. Leave everything else on the page as it is.",
+        ].join("\n"),
+        inbox: () => [
+          "My HTML page already uses Pipeup for comments. Please add the Pipeup Inbox add-on, so people I mention are told in a note that only they can read.",
+          "",
+          OPEN,
+          "",
+          `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/inbox", "inbox.min.js")}`,
+          "",
+          "Ask me for the address of the inbox service and put it on the <html> element as data-pipeup-inbox=\"<address>\", exactly as I give it. Do not guess one or pick a service. If I have none, tell me I can run the reference one with npx @pipeup/mailbox.",
+          "",
+          ...SAFE("inbox", "only to the inbox service address I gave you"),
+          "",
+          "Nothing is sent until each reviewer switches Mentions by inbox on. Leave everything else on the page as it is.",
         ].join("\n"),
         github: () => [
           "My HTML page already uses Pipeup for comments. Please add the Pipeup GitHub add-on, so that when a comment mentions someone on GitHub, I can open a new issue with their @name filled in.",

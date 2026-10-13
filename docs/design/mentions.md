@@ -1,6 +1,6 @@
 # Mentions, identity and notifications
 
-Status: **phase 1 built** (the `@` list, mention refs, seen, same-name tags, portable identities with a recovery code or file, contacts and the by-hand email offer, the `github` add-on); the inbox (`pm2`) is not built.
+Status: **built** (the `@` list, mention refs, seen, same-name tags, portable identities with a recovery code or file, contacts and the by-hand email offer, the `github` add-on, and the inbox: `pm2` in the mailbox server and `@pipeup/inbox`).
 Targets the next milestone. Includes research still to be done (marked *research*).
 
 Code paths are relative to `libs/ts/pipeup/`.
@@ -200,3 +200,4 @@ the inbox sits in `@pipeup/mailbox` or in its own service.
 - 2026-10-12 — Durable identity (ID is the key, short ID for same names, persistence, backup and restore, lost keys, two devices, the `seen` op), picking up what was left behind, and the inbox as mailbox contract `pm2` with its sealing, spam options and phases.
 - 2026-10-12 — Decided: GitHub first; recovery code and file both.
 - 2026-10-13 — Built as above.
+- 2026-10-13 — Built the inbox with these changes from the sketch: the person's encryption key is made from a deterministic signature their identity gives on a fixed text (no new op kind, no stored key, the same on every browser that holds the identity); the key is published to the service (`PUT /i/<inbox>/key`, proved by their signature) instead of in an op; the sealed note carries the sender's signature inside; the service checks a proof of work (14 bits by default) and an optional write token, and a note is taken away only by the owner's signature on the same framing the page's `sign()` uses.

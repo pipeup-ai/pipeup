@@ -12,6 +12,7 @@ const BUDGETS = {
   emoji: 32 * 1024,
   github: 3 * 1024,
   updates: 4 * 1024,
+  inbox: 8 * 1024,
 };
 const CORE = 56 * 1024;
 let over = false;

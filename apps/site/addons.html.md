@@ -58,6 +58,14 @@ The full set of emoji for reactions: search, the groups phones use, recently use
 - **Asks first**: nothing to ask; it only adds a More button to the reaction row.
 - **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/emoji@0.7.0-beta.1/dist/emoji.min.js" integrity="{{SRI:emoji}}" crossorigin="anonymous"></script>`.
 
+## Inbox
+
+Tells people they were mentioned, even on pages they haven't opened: a note, sealed so only they can read it, left at an inbox service you name.
+
+- **Sends**: only after each reviewer switches **Mentions by inbox** on: a sealed note for each person they mention, and a check of their own inbox, at your inbox service. The service sees that a note arrived, its size and when, and a network address, never who it is from or what it says.
+- **Needs**: `data-pipeup-inbox="https://…"` on the page, and an inbox service: the reference mailbox server, `npx @pipeup/mailbox`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/inbox@0.6.0/dist/inbox.min.js" integrity="{{SRI:inbox}}" crossorigin="anonymous"></script>`.
+
 ## GitHub
 
 Offers to tell people on GitHub when a comment mentions them: a menu row opens a new issue on your repository with their @name and the words filled in.
