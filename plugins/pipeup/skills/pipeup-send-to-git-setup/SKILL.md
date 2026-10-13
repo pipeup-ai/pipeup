@@ -5,7 +5,7 @@ description: Use when someone wants Pipeup reviews saved as Markdown files in th
 
 # Set up "Save to GitHub" or "Send to Git"
 
-Written for Pipeup 0.7.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md.
+Written for Pipeup 0.8.0-beta.1 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md.
 
 Two example add-ons (written the way a company writes its own; **not** from the Pipeup project) get a review into Git as a
 Markdown file, the same Markdown that Copy as Markdown makes (each comment says where it is, ready for an AI to act on):
