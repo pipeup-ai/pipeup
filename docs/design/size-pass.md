@@ -7,18 +7,18 @@ Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: draft, for review with the spec.
 Core gzip: **52.3 KB** (`pipeup.min.js`), 51.5 KB (`esm`), 10.1 KB (`core`, the no-UI build). Minified bytes by module, from an esbuild
 metafile of `src/index.ts` (161.9 KB minified before terser; gzip ratio is roughly 0.3):
 
-| Module | Minified | Notes |
-|---|---:|---|
-| `ui/styles.ts` | 26.4 KB | Both looks; the largest single item |
-| `ui/launcher.ts` | 14.5 KB | The button and menu |
-| `ui/app.ts` | 13.7 KB | Wiring |
-| `ui/comment-mode.ts` | 11.0 KB | Cursor, picking, keyboard |
-| `ui/addons.ts` | 9.3 KB | The add-on host and its slots |
-| `ui/bubbles.ts` | 6.1 KB | |
-| `document.ts` | 5.2 KB | |
-| `ui/identity.ts` + `crypto/portable.ts` | 6.2 KB | **Portable identities**: dialog, recovery code, file, contacts |
-| `ui/reactions.ts` + `ui/mentions.ts` | 4.4 KB | |
-| the rest | ~65 KB | |
+| Module                                  | Minified | Notes                                                          |
+| --------------------------------------- | -------: | -------------------------------------------------------------- |
+| `ui/styles.ts`                          |  26.4 KB | Both looks; the largest single item                            |
+| `ui/launcher.ts`                        |  14.5 KB | The button and menu                                            |
+| `ui/app.ts`                             |  13.7 KB | Wiring                                                         |
+| `ui/comment-mode.ts`                    |  11.0 KB | Cursor, picking, keyboard                                      |
+| `ui/addons.ts`                          |   9.3 KB | The add-on host and its slots                                  |
+| `ui/bubbles.ts`                         |   6.1 KB |                                                                |
+| `document.ts`                           |   5.2 KB |                                                                |
+| `ui/identity.ts` + `crypto/portable.ts` |   6.2 KB | **Portable identities**: dialog, recovery code, file, contacts |
+| `ui/reactions.ts` + `ui/mentions.ts`    |   4.4 KB |                                                                |
+| the rest                                |   ~65 KB |                                                                |
 
 ## History: what was already done
 
