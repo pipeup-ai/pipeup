@@ -73,3 +73,69 @@ describe("copy for AI with addressed threads", () => {
     expect(copyAll([done], "ai", { ...meta, all: true })).toContain("· resolved");
   });
 });
+
+describe("reactions", () => {
+  const C = "C".repeat(43);
+  const react = (kind: "react" | "unreact", author: string, text = "👍", name = "") =>
+    op(kind, { author, name, text, target: id("t1") });
+
+  it("are counted once per person and emoji, in the order they first appeared", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", A, "👍", "Amy"),
+      react("react", B, "❤️"),
+      react("react", B, "👍"),
+      react("react", B, "👍"),
+    ]);
+    expect(t!.root.reactions).toEqual([
+      {
+        emoji: "👍",
+        by: [
+          { author: A, name: "Amy" },
+          { author: B, name: "" },
+        ],
+      },
+      { emoji: "❤️", by: [{ author: B, name: "" }] },
+    ]);
+  });
+
+  it("can be taken back, by their own giver only, and the emoji goes when nobody has it", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", A),
+      react("react", B),
+      react("unreact", C),
+      react("unreact", A),
+    ]);
+    expect(t!.root.reactions).toEqual([{ emoji: "👍", by: [{ author: B, name: "" }] }]);
+    expect(foldThreads([create(), react("react", A), react("unreact", A)])[0]!.root.reactions).toEqual([]);
+  });
+
+  it("fill in a name the person gave later, like comments do", () => {
+    const [t] = foldThreads([
+      create(),
+      react("react", B),
+      op("reply", { author: B, name: "Bo", text: "hi" }),
+    ]);
+    expect(t!.root.reactions[0]!.by[0]!.name).toBe("Bo");
+  });
+
+  it("stop at 12 different emoji on one comment", () => {
+    const many = ["😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😋", "😎", "😍", "😘"];
+    const [t] = foldThreads([create(), ...many.map((e) => react("react", A, e))]);
+    expect(t!.root.reactions.map((r) => r.emoji)).toEqual(many.slice(0, 12));
+  });
+
+  it("go when the comment is deleted, and are ignored on a comment that isn't there", () => {
+    const [t] = foldThreads([create(), react("react", B), op("delete", { author: A, target: id("t1") })]);
+    expect(t!.root.reactions).toEqual([]);
+    expect(
+      foldThreads([create(), op("react", { author: B, text: "👍", target: id("nope") })])[0]!.root.reactions,
+    ).toEqual([]);
+  });
+
+  it("are the same whatever order the ops arrive in", () => {
+    const ops = [create(), react("react", A), react("react", B), react("unreact", A), react("react", A)];
+    expect(foldThreads([...ops].reverse())).toEqual(foldThreads(ops));
+  });
+});

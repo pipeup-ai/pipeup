@@ -98,6 +98,7 @@ describe("the replies the page takes", () => {
           op("reply", A, "AI assistant · Claude"),
           op("addressed", A, "AI assistant · Claude"),
           op("reply", B, "AI assistant · Sneaky"),
+          op("react", A, "AI assistant · Claude"),
           op("resolve", A, "AI assistant · Claude"),
         ],
       },
@@ -107,7 +108,7 @@ describe("the replies the page takes", () => {
     const replies = startReplies(fakeHost(merged));
     // A listed agent is looked for at once; the queue is drained by the first look.
     await vi.waitFor(() => expect(merged.length).toBe(1));
-    expect(merged[0]!.map((o) => o.body.kind)).toEqual(["reply", "addressed"]);
+    expect(merged[0]!.map((o) => o.body.kind)).toEqual(["reply", "addressed", "react"]);
     expect(replies.ignored()).toBe(2);
     expect(replies.who()).toBe("Claude");
     replies.destroy();

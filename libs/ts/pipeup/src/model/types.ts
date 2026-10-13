@@ -22,7 +22,8 @@ export interface Anchor {
   snapshot: string;
 }
 
-export type OpKind = "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed";
+export type OpKind =
+  "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed" | "react" | "unreact";
 
 export interface OpBody {
   v: 1;
@@ -31,8 +32,9 @@ export interface OpBody {
   doc: string;
   /** Thread id: the id of the thread's create op. */
   thread: string;
-  /** reply: the comment answered. edit/delete: the comment changed. */
+  /** reply: the comment answered. edit/delete: the comment changed. react/unreact: the comment reacted to. */
   target?: string;
+  /** The words; for react and unreact, the one emoji. */
   text?: string;
   /** create only. */
   anchor?: Anchor;
@@ -63,6 +65,14 @@ export interface Comment {
   edited: boolean;
   deleted: boolean;
   replies: Comment[];
+  /** Emoji people reacted with, in the order they first appeared; none for a comment nobody reacted to. */
+  reactions: Reaction[];
+}
+
+export interface Reaction {
+  emoji: string;
+  /** Who gave it, in the order they did; the name is "" for someone who hasn't added one. */
+  by: { author: string; name: string }[];
 }
 
 export interface Thread {

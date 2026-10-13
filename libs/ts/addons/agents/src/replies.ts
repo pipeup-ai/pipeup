@@ -58,7 +58,7 @@ export function startReplies(host: AddonHost): Replies {
   let name = "";
   let live: HTMLScriptElement | null = null;
 
-  /** Takes what a replies file left behind, keeping only signed replies and addressed notes from listed agents. */
+  /** Takes what a replies file left behind, keeping only signed replies, addressed notes and reactions from listed agents. */
   async function take(): Promise<number> {
     const queue = (globalThis as unknown as Record<string, unknown>)[QUEUE];
     if (!Array.isArray(queue)) return 0;
@@ -69,7 +69,11 @@ export function startReplies(host: AddonHost): Replies {
       if (f?.format !== "pipeup-replies" || f.doc !== host.document.id || !Array.isArray(f.ops)) continue;
       for (const op of f.ops as SignedOp[]) {
         const b = op?.body;
-        if (b && agents.includes(b.author) && (b.kind === "reply" || b.kind === "addressed")) {
+        if (
+          b &&
+          agents.includes(b.author) &&
+          (b.kind === "reply" || b.kind === "addressed" || b.kind === "react" || b.kind === "unreact")
+        ) {
           keep.push(op);
           if (b.name === "AI assistant" || b.name.startsWith("AI assistant ")) name = b.name.replace(AI, "");
         } else ignored++;

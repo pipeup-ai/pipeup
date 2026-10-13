@@ -175,3 +175,46 @@ describe("ops", () => {
     ]);
   });
 });
+
+describe("reactions", () => {
+  const body = (over: Record<string, unknown> = {}) => ({
+    sig: "",
+    body: {
+      v: 1,
+      id: "x".repeat(43),
+      kind: "react",
+      doc: "d",
+      thread: "t".repeat(43),
+      target: "c".repeat(43),
+      text: "👍",
+      author: "A".repeat(43),
+      name: "",
+      clock: 1,
+      at: 1,
+      ...over,
+    },
+  });
+
+  it("carry one emoji and name a comment", () => {
+    for (const e of ["👍", "❤️", "👍🏽", "🇳🇿", "1️⃣", "👨‍👩‍👧‍👦", "🏳️‍🌈"])
+      expect(isWellFormed(body({ text: e }))).toBe(true);
+    expect(isWellFormed(body({ kind: "unreact" }))).toBe(true);
+  });
+
+  it("are refused when they carry anything else", () => {
+    for (const bad of [
+      "",
+      "a",
+      "👍👍",
+      "👍 ",
+      "hi 👍",
+      "<b>",
+      "👍\n",
+      "x".repeat(40),
+      ["👨‍👩‍👧‍👦", "👨‍👩‍👧‍👦", "👨‍👩‍👧‍👦"].join("\u200D"),
+    ])
+      expect(isWellFormed(body({ text: bad }))).toBe(false);
+    expect(isWellFormed(body({ text: undefined }))).toBe(false);
+    expect(isWellFormed(body({ target: undefined }))).toBe(false);
+  });
+});

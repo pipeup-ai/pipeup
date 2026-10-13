@@ -283,7 +283,14 @@ export function createLauncher(ctx: Ctx): View {
           "span",
           {},
           h("span", { class: "clamp" }, t.root.deleted ? "Deleted" : t.root.text),
-          h("small", {}, lost(t) ? `“${clip(t.anchor.snapshot, 80)}”` : i.location.where),
+          h(
+            "small",
+            {},
+            (lost(t) ? `“${clip(t.anchor.snapshot, 80)}”` : i.location.where) +
+              (t.root.reactions.length
+                ? ` · ${t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`).join(" ")}`
+                : ""),
+          ),
         ),
       );
       b.addEventListener("click", (e) => {

@@ -167,6 +167,15 @@ export function startApp(o: AppOptions): App {
   };
 
   const actions: ThreadActions = {
+    me: o.doc.me,
+    react: async (commentId, emoji, on) => {
+      try {
+        await (on ? o.doc.react(commentId, emoji) : o.doc.unreact(commentId, emoji));
+      } catch (e) {
+        if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
+        else fail(e);
+      }
+    },
     reply: async (parentId, text) => {
       try {
         await o.doc.reply(parentId, text);
