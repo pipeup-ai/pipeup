@@ -45,6 +45,7 @@ const actions = (): ThreadActions & { calls: string[] } => {
     calls,
     me: "me",
     picker: () => null,
+    people: () => [],
     react: vi.fn(
       async (id: string, e: string, on: boolean) => void calls.push(`${on ? "react" : "unreact"} ${id} ${e}`),
     ),
@@ -73,7 +74,7 @@ describe("composer", () => {
     key(comp.input, "Enter", true);
     expect(onSend).not.toHaveBeenCalled();
     key(comp.input, "Enter");
-    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("hello"));
+    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("hello", []));
     await vi.waitFor(() => expect(comp.input.value).toBe(""));
     comp.input.value = "draft";
     key(comp.input, "Escape");
@@ -265,7 +266,7 @@ describe("renderDraft", () => {
     expect(d.isEmpty()).toBe(true);
     text.value = "Needs a baseline";
     key(text, "Enter");
-    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("Needs a baseline"));
+    await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("Needs a baseline", []));
   });
 
   it("shows your avatar and who you are, with an invitation to add a name", () => {

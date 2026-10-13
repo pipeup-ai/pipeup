@@ -1,5 +1,6 @@
+import { nameOf } from "./animals";
 import { compareOps } from "./ops";
-import type { Comment, SignedOp, Thread } from "./types";
+import type { Comment, Mention, SignedOp, Thread } from "./types";
 
 /** At most this many different emoji on one comment, so a comment can't be flooded; later ones are ignored. */
 export const MAX_REACTIONS = 12;
@@ -23,7 +24,7 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     if (o.name) names.set(o.author, o.name);
     if (o.kind === "create") {
       if (threads.has(o.id) || !o.anchor || o.text === undefined) continue;
-      const root = newComment(o.id, o.author, o.name, o.text, o.at);
+      const root = newComment(o.id, o.author, o.name, o.text, o.at, o.mentions);
       threads.set(o.id, { id: o.id, anchor: o.anchor, root, resolved: false });
       entries.set(o.id, { comment: root, thread: o.id });
       continue;
@@ -46,10 +47,16 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
 
     if (o.kind === "reply") {
       if (entries.has(o.id) || o.text === undefined) continue;
-      const comment = newComment(o.id, o.author, o.name, o.text, o.at);
+      const comment = newComment(o.id, o.author, o.name, o.text, o.at, o.mentions);
       // One level: every reply joins the comment's list, in order, whichever comment it answered.
       thread.root.replies.push(comment);
       entries.set(o.id, { comment, thread: o.thread });
+      continue;
+    }
+
+    if (o.kind === "seen") {
+      const seen = (target.comment.seenBy ??= []);
+      if (!seen.includes(o.author)) seen.push(o.author);
       continue;
     }
 
@@ -73,11 +80,14 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     if (o.kind === "edit" && o.text !== undefined) {
       target.comment.text = o.text;
       target.comment.edited = true;
+      if (o.mentions) target.comment.mentions = o.mentions;
+      else delete target.comment.mentions;
     }
     if (o.kind === "delete") {
       target.comment.text = "";
       target.comment.deleted = true;
       target.comment.reactions = [];
+      delete target.comment.mentions;
     }
   }
 
@@ -88,9 +98,44 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     }
     for (const r of c.reactions) for (const b of r.by) b.name ||= names.get(b.author) ?? "";
   }
+  // Two people with one name: each shows with a short tag, so they can be told apart.
+  const writers = new Map<string, Set<string>>();
+  const note = (author: string, name: string) => {
+    const shown = nameOf({ author, name }).toLowerCase();
+    (writers.get(shown) ?? writers.set(shown, new Set()).get(shown)!).add(author);
+  };
+  for (const { comment: c } of entries.values()) {
+    note(c.author, c.name);
+    for (const r of c.reactions) for (const b of r.by) note(b.author, b.name);
+  }
+  const alike = (author: string, name: string) =>
+    (writers.get(nameOf({ author, name }).toLowerCase())?.size ?? 0) > 1;
+  for (const { comment: c } of entries.values()) {
+    if (alike(c.author, c.name)) c.alike = true;
+    for (const r of c.reactions) for (const b of r.by) if (alike(b.author, b.name)) b.alike = true;
+  }
   return [...threads.values()];
 }
 
-function newComment(id: string, author: string, name: string, text: string, at: number): Comment {
-  return { id, author, name, text, at, edited: false, deleted: false, replies: [], reactions: [] };
+function newComment(
+  id: string,
+  author: string,
+  name: string,
+  text: string,
+  at: number,
+  mentions?: Mention[],
+): Comment {
+  const c: Comment = {
+    id,
+    author,
+    name,
+    text,
+    at,
+    edited: false,
+    deleted: false,
+    replies: [],
+    reactions: [],
+  };
+  if (mentions?.length) c.mentions = mentions;
+  return c;
 }

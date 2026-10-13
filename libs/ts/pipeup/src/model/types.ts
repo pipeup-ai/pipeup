@@ -23,7 +23,14 @@ export interface Anchor {
 }
 
 export type OpKind =
-  "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed" | "react" | "unreact";
+  "create" | "reply" | "edit" | "delete" | "resolve" | "reopen" | "addressed" | "react" | "unreact" | "seen";
+
+/** A person named in a comment's words: `text.slice(start, end)` is the "@Name"; `ref` says who (a key, or a supplied person). */
+export interface Mention {
+  start: number;
+  end: number;
+  ref: string;
+}
 
 export interface OpBody {
   v: 1;
@@ -36,6 +43,8 @@ export interface OpBody {
   target?: string;
   /** The words; for react and unreact, the one emoji. */
   text?: string;
+  /** create, reply and edit: the people named in the words. Signed with them, so it can't be altered. */
+  mentions?: Mention[];
   /** create only. */
   anchor?: Anchor;
   /** Author's public key. */
@@ -67,12 +76,18 @@ export interface Comment {
   replies: Comment[];
   /** Emoji people reacted with, in the order they first appeared; none for a comment nobody reacted to. */
   reactions: Reaction[];
+  /** Another person in the document has the same name: show this writer's short tag too. */
+  alike?: true;
+  /** The people named in the words; absent when none. */
+  mentions?: Mention[];
+  /** The writers who have marked this comment seen (their `seen` ops); absent when none. */
+  seenBy?: string[];
 }
 
 export interface Reaction {
   emoji: string;
   /** Who gave it, in the order they did; the name is "" for someone who hasn't added one. */
-  by: { author: string; name: string }[];
+  by: { author: string; name: string; alike?: true }[];
 }
 
 export interface Thread {

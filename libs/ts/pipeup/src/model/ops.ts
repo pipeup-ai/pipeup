@@ -20,9 +20,12 @@ export const LIMITS = {
   viewEntries: 16,
   viewKey: 64,
   viewValue: 200,
+  mentions: 20,
 } as const;
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
+/** Who a mention names: a writer's key, or a person the page or an add-on supplied (`host:<id>`, `gh:<name>`). */
+const PERSON = /^(?:[A-Za-z0-9_-]{43}|(?:host|gh):[A-Za-z0-9._@-]{1,64})$/;
 const KEY = /^[A-Za-z0-9_-]{43}$/;
 const KINDS = new Set<unknown>([
   "create",
@@ -34,6 +37,7 @@ const KINDS = new Set<unknown>([
   "addressed",
   "react",
   "unreact",
+  "seen",
 ]);
 /** One emoji: a flag, a keycap, or a pictograph with its modifiers, optionally joined with others (a family, a person with a job). */
 const EMOJI =
@@ -97,6 +101,20 @@ export function isWellFormed(op: unknown): op is SignedOp {
   const needsText = b.kind === "create" || b.kind === "reply" || b.kind === "edit" || b.kind === "addressed";
   if (needsText && !b.text) return false;
   if ((b.kind === "reply" || b.kind === "edit" || b.kind === "delete") && !b.target) return false;
+  // Mentions point into the words, and only the ops that carry words may have them.
+  if (b.mentions !== undefined) {
+    const carries = b.kind === "create" || b.kind === "reply" || b.kind === "edit";
+    if (!carries || !Array.isArray(b.mentions) || b.mentions.length > LIMITS.mentions) return false;
+    const length = b.text?.length ?? 0;
+    for (const m of b.mentions as unknown[]) {
+      if (!isObj(m) || !Number.isSafeInteger(m.start) || !Number.isSafeInteger(m.end)) return false;
+      const { start, end, ref } = m as { start: number; end: number; ref: unknown };
+      if (start < 0 || end <= start || end > length || typeof ref !== "string" || !PERSON.test(ref))
+        return false;
+    }
+  }
+  // Seen names the comment that was read.
+  if (b.kind === "seen" && !b.target) return false;
   // A reaction names the comment and carries exactly one emoji.
   if ((b.kind === "react" || b.kind === "unreact") && (!b.target || !isEmoji(b.text))) return false;
   if (b.kind === "create") {

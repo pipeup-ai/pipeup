@@ -16,6 +16,7 @@ test("the menu, top down: who you are, copying, Look, All comments, then Start c
   );
   expect(shape).toEqual([
     me,
+    "My identity",
     "|",
     "Copy as Markdown",
     "Copy as Text",
@@ -41,7 +42,7 @@ test("every row is one line; its explanation is a tooltip on hover and on keyboa
   await openMenu(page);
   await settled(menu(page));
   const rows = menu(page).locator(".mi");
-  await expect(rows).toHaveCount(6);
+  await expect(rows).toHaveCount(7);
   for (const r of await rows.all()) {
     await expect(r.locator("small")).toHaveCount(0);
     expect((await r.boundingBox())!.height).toBeLessThanOrEqual(36);
@@ -191,7 +192,7 @@ test("the identity row edits your name, and then shows it with an edit mark", as
   await expect(input).toBeFocused();
   await expect(id).toHaveCount(0);
   await expect(menu(page).locator(".ed .av")).toHaveCount(1);
-  await expect(menu(page).locator(".mi")).toHaveCount(5);
+  await expect(menu(page).locator(".mi")).toHaveCount(6);
   await input.fill("Red Panda");
   await input.press("Enter");
   await expect(id.locator(".lb")).toHaveText("Red Panda");

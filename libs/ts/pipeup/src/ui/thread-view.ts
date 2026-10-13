@@ -1,17 +1,20 @@
 import { formatAgo } from "../export/format";
 import { AI_NAME, isAiName, nameOf } from "../model/animals";
-import type { Comment, Thread } from "../model/types";
+import type { Comment, Mention, Thread } from "../model/types";
 import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
 import { markAgain, threadMarks, threadNotes } from "./notes";
+import { names, type Person } from "./mentions";
 import { reactionRow, type ReactionPicker } from "./reactions";
 
 export interface ThreadActions {
   /** This reviewer's key, to mark their own reactions. */
   readonly me: string;
-  reply(parentId: string, text: string): Promise<void>;
+  reply(parentId: string, text: string, mentions?: Mention[]): Promise<void>;
+  /** Who can be mentioned with `@` in a reply. */
+  people(): Person[];
   /** Gives (`on`) or takes back this reviewer's reaction to a comment. */
   react(commentId: string, emoji: string, on: boolean): Promise<void>;
   /** The full emoji picker, when an add-on provides one. */
@@ -61,7 +64,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         label: "Reply",
         kind: "reply",
         thread: () => id,
-        onSend: (text) => actions.reply(id, text),
+        people: () => actions.people(),
+        onSend: (text, mentions) => actions.reply(id, text, mentions),
         onCancel: actions.close,
       }).element,
     ),
@@ -129,13 +133,31 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     const now = (o.now ?? Date.now)();
     const n = t.root.replies.length;
     const who = (c: Comment) => h("span", { class: "who" }, `${nameOf(c)} · ${formatAgo(c.at, now)}`);
+    /** A comment's words with the people it names marked (yours stronger); links and references as usual. */
+    const body = (c: Comment): (string | Node)[] => {
+      const plain = (t: string) => (isAiName(c.name) ? referenced(t) : linkify(t));
+      if (!c.mentions?.length) return plain(c.text);
+      const out: (string | Node)[] = [];
+      let at = 0;
+      for (const m of c.mentions) {
+        if (m.start < at) continue;
+        out.push(...plain(c.text.slice(at, m.start)));
+        out.push(
+          h(
+            "span",
+            { class: names(c, [actions.me]) && m.ref === actions.me ? "mn me" : "mn" },
+            c.text.slice(m.start, m.end),
+          ),
+        );
+        at = m.end;
+      }
+      return [...out, ...plain(c.text.slice(at))];
+    };
     const words = (c: Comment) =>
       h(
         "div",
         { class: c.deleted ? "tx del" : "tx" },
-        ...(c.deleted
-          ? ["Deleted"]
-          : [...(isAiName(c.name) ? referenced(c.text) : linkify(c.text)), c.edited ? " (edited)" : ""]),
+        ...(c.deleted ? ["Deleted"] : [...body(c), c.edited ? " (edited)" : ""]),
       );
     const reactions = (c: Comment) =>
       reactionRow(c, {

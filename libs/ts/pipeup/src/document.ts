@@ -1,8 +1,9 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
+import { codeOf } from "./crypto/portable";
 import { OpLog, type NewOp } from "./model/log";
 import { isAiName } from "./model/animals";
 import { isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
-import type { Anchor, Comment, SignedOp, Thread } from "./model/types";
+import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
 import { utf8 } from "./util/encoding";
@@ -100,25 +101,39 @@ export class PipeupDocument {
     return () => this.listeners.delete(fn);
   }
 
-  comment(anchor: Anchor, text: string): Promise<string> {
-    return this.enqueue(() => this.write({ kind: "create", anchor, text: checkText(text) }));
+  comment(anchor: Anchor, text: string, mentions?: Mention[]): Promise<string> {
+    return this.enqueue(() =>
+      this.write({
+        kind: "create",
+        anchor,
+        text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
+      }),
+    );
   }
 
-  reply(parentId: string, text: string): Promise<string> {
+  reply(parentId: string, text: string, mentions?: Mention[]): Promise<string> {
     return this.enqueue(() =>
       this.write({
         kind: "reply",
         thread: this.find(parentId).thread,
         target: parentId,
         text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
       }),
     );
   }
 
-  edit(commentId: string, text: string): Promise<void> {
+  edit(commentId: string, text: string, mentions?: Mention[]): Promise<void> {
     return this.enqueue(async () => {
       const { thread } = this.mine(commentId);
-      await this.write({ kind: "edit", thread, target: commentId, text: checkText(text) });
+      await this.write({
+        kind: "edit",
+        thread,
+        target: commentId,
+        text: checkText(text),
+        ...(mentions?.length ? { mentions } : {}),
+      });
     });
   }
 
@@ -126,6 +141,27 @@ export class PipeupDocument {
     return this.enqueue(async () => {
       const { thread } = this.mine(commentId);
       await this.write({ kind: "delete", thread, target: commentId });
+    });
+  }
+
+  /** This reviewer's identity was made portable, so it has a recovery code (an ordinary one can't leave the browser). */
+  get portable(): boolean {
+    return this.options.identity.privateKey.extractable;
+  }
+
+  /** The recovery code of a portable identity; null for an ordinary one. */
+  identityCode(): Promise<string | null> {
+    return codeOf(this.options.identity);
+  }
+
+  /** Marks comments read by this reviewer (one `seen` op each, for those not already marked), so every device knows. */
+  seen(commentIds: readonly string[]): Promise<void> {
+    return this.enqueue(async () => {
+      for (const id of commentIds) {
+        const found = this.comments.get(id);
+        if (found && !found.comment.seenBy?.includes(this.me))
+          await this.write({ kind: "seen", thread: found.thread, target: id });
+      }
     });
   }
 

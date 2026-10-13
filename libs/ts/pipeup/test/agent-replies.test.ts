@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { copyAll, type ExportItem } from "../src/export/format";
 import { foldThreads } from "../src/model/fold";
+import { nameOf, shortId } from "../src/model/animals";
 import { isWellFormed } from "../src/model/ops";
 import type { OpBody, SignedOp } from "../src/model/types";
 
@@ -137,5 +138,57 @@ describe("reactions", () => {
   it("are the same whatever order the ops arrive in", () => {
     const ops = [create(), react("react", A), react("react", B), react("unreact", A), react("react", A)];
     expect(foldThreads([...ops].reverse())).toEqual(foldThreads(ops));
+  });
+});
+
+describe("mentions and seen in the fold", () => {
+  const key = "M".repeat(43);
+  it("keep a comment's mentions, replace them on edit, and drop them with the comment", () => {
+    const withMention = op("create", {
+      id: id("t1"),
+      thread: id("t1"),
+      text: "hi @Bo",
+      anchor: ANCHOR,
+      mentions: [{ start: 3, end: 6, ref: key }],
+    });
+    expect(foldThreads([withMention])[0]!.root.mentions).toEqual([{ start: 3, end: 6, ref: key }]);
+    const edited = op("edit", { target: id("t1"), text: "no one" });
+    expect(foldThreads([withMention, edited])[0]!.root.mentions).toBeUndefined();
+    const del = op("delete", { target: id("t1") });
+    expect(foldThreads([withMention, del])[0]!.root.mentions).toBeUndefined();
+    expect(foldThreads([create()])[0]!.root.mentions).toBeUndefined();
+  });
+
+  it("record who has seen a comment, once each, whatever the order", () => {
+    const seen = (author: string) => op("seen", { author, target: id("t1"), text: undefined });
+    const ops = [create(), seen(A), seen(B), seen(A)];
+    expect(foldThreads(ops)[0]!.root.seenBy).toEqual([A, B]);
+    expect(foldThreads([...ops].reverse())[0]!.root.seenBy).toEqual([A, B]);
+  });
+});
+
+describe("two people with one name", () => {
+  const reply = (author: string, name: string) => op("reply", { author, name, target: id("t1"), text: "x" });
+
+  it("show with a short tag each, and only then", () => {
+    const [t] = foldThreads([create(), reply(A, "Sam"), reply(B, "Sam"), reply("C".repeat(43), "Lee")]);
+    const [a, b, lee] = t!.root.replies;
+    expect(a!.alike && b!.alike).toBe(true);
+    expect(lee!.alike).toBeUndefined();
+    expect(nameOf(a!)).toMatch(/^Sam · [0-9A-Z]{4}$/);
+    expect(nameOf(a!)).not.toBe(nameOf(b!));
+    expect(nameOf(lee!)).toBe("Lee");
+  });
+
+  it("is stable: the same key always has the same tag", () => {
+    expect(shortId(A)).toBe(shortId(A));
+    expect(shortId(A)).toMatch(/^[0-9A-Z]{4}$/);
+  });
+
+  it("covers reactions too", () => {
+    const reactAs = (author: string, name: string) =>
+      op("react", { author, name, text: "👍", target: id("t1") });
+    const [t] = foldThreads([create(), reactAs(A, "Sam"), reactAs(B, "Sam")]);
+    expect(t!.root.reactions[0]!.by.every((b) => b.alike)).toBe(true);
   });
 });

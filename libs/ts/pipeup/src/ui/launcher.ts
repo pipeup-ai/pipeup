@@ -11,6 +11,7 @@ import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
 import { narrow, PANEL } from "./layout";
+import { mentionsMe } from "./mentions";
 import { threadView, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
@@ -63,6 +64,18 @@ export function createLauncher(ctx: Ctx): View {
   showResolved.addEventListener("click", (e) => {
     e.stopPropagation();
     ctx.menu.toggleResolved();
+  });
+  // Mentions of me: shown once a comment names this reviewer; keeps only the threads that do.
+  const mine = h(
+    "button",
+    { class: "hs", type: "button", role: "switch", "aria-checked": "false" },
+    "Mentions of me",
+    h("span", { class: "sw", "aria-hidden": "true" }),
+  );
+  mine.hidden = true;
+  mine.addEventListener("click", (e) => {
+    e.stopPropagation();
+    ctx.menu.toggleMine();
   });
   // What add-ons say under the header ("Claude has answered 3 of 5"), each with an optional button. A line eases in
   // when an add-on sets it and out when it takes it away, and stays put while its words change.
@@ -123,7 +136,7 @@ export function createLauncher(ctx: Ctx): View {
   const all = h(
     "div",
     { class: "all", role: "dialog", "aria-label": "All comments" },
-    h("div", { class: "hd" }, h("span", {}, "All comments"), total, showResolved, close),
+    h("div", { class: "hd" }, h("span", {}, "All comments"), total, mine, showResolved, close),
     notesBox,
     list,
   );
@@ -263,9 +276,11 @@ export function createLauncher(ctx: Ctx): View {
     const at = focused() as HTMLElement | null;
     const before = at?.dataset.thread;
     const inReply = railView !== null && railView.element.contains(at);
-    const shownItems = ctx.menu
-      .all()
-      .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId);
+    const everyone = ctx.menu.all();
+    const named = everyone.some((i) => mentionsMe(i.thread, ctx.doc.me));
+    const shownItems = everyone
+      .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId)
+      .filter((i) => !(ctx.state.mine && named) || mentionsMe(i.thread, ctx.doc.me));
     const row = (i: ExportItem) => {
       const t = i.thread;
       const open = t.id === openId;
@@ -310,6 +325,8 @@ export function createLauncher(ctx: Ctx): View {
     const gone = shownItems.filter((i) => lost(i.thread));
     total.textContent = String(allOpen());
     showResolved.setAttribute("aria-checked", String(ctx.state.showResolved));
+    mine.hidden = !named;
+    mine.setAttribute("aria-checked", String(ctx.state.mine && named));
     list.replaceChildren(
       shownItems.length ? "" : h("div", { class: "sec", role: "presentation" }, "No open comments"),
       ...groups(
@@ -344,6 +361,7 @@ export function createLauncher(ctx: Ctx): View {
     if (!t) return;
     openId = going = id;
     railView = threadView(t, { ...ctx.actions, close: () => closeRow(true) }, threadOptions(t));
+    ctx.seen(t);
     buildAll();
     railView.element.querySelector("textarea")?.focus({ preventScroll: true });
     if (!ctx.elsewhere(t)) return reveal(t);
@@ -497,6 +515,10 @@ export function createLauncher(ctx: Ctx): View {
   let faceKey = "";
   const idRow = row(face, editName, false, nameEnd);
   idRow.dataset.item = "name";
+  const identityRow = row(icon("edit"), () => {
+    closeToControl();
+    ctx.menu.identity();
+  });
   const copyRow = row(icon("copy"), () => {
     closeToControl();
     void ctx.menu.copyAll("ai");
@@ -571,6 +593,7 @@ export function createLauncher(ctx: Ctx): View {
   /** The menu rises above the button, so it is built top down: who you are first, Start commenting last. */
   const rows = (): Node[] => [
     idRow,
+    identityRow,
     sepA,
     copyRow,
     textRow,
@@ -605,6 +628,7 @@ export function createLauncher(ctx: Ctx): View {
       av.classList.add("in");
       face.replaceChildren(av);
     }
+    set(identityRow, "My identity", "Back it up, or use one you backed up");
     set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
     set(textRow, "Copy as Text", "Just the words");
     const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;

@@ -2,7 +2,10 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import type { Thread } from "../model/types";
+import type { Identity } from "../crypto/identity";
+import { identityFromCode, makePortable } from "../crypto/portable";
+import { nameOf } from "../model/animals";
+import type { Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
@@ -23,6 +26,8 @@ import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
+import { openIdentity } from "./identity";
+import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
@@ -38,6 +43,8 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
+  /** Keeps another identity for this browser (a new portable one, or one restored from a recovery code). */
+  onIdentity(identity: Identity): Promise<void>;
 }
 
 export interface App {
@@ -103,6 +110,7 @@ export function startApp(o: AppOptions): App {
     active: null,
     hot: null,
     showResolved: false,
+    mine: false,
     // Comments show only in comment mode or while All comments is open: hidden on load.
     hidden: true,
     mode: chooseMode(o.root),
@@ -195,6 +203,7 @@ export function startApp(o: AppOptions): App {
   const actions: ThreadActions = {
     me: o.doc.me,
     picker: () => addons.picker,
+    people: () => peopleFor(o.doc.threads(), o.doc.me),
     react: async (commentId, emoji, on) => {
       try {
         await (on ? o.doc.react(commentId, emoji) : o.doc.unreact(commentId, emoji));
@@ -203,9 +212,9 @@ export function startApp(o: AppOptions): App {
         else fail(e);
       }
     },
-    reply: async (parentId, text) => {
+    reply: async (parentId, text, mentions) => {
       try {
-        await o.doc.reply(parentId, text);
+        await o.doc.reply(parentId, text, mentions);
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
         else fail(e);
@@ -289,6 +298,31 @@ export function startApp(o: AppOptions): App {
       state.showResolved = !state.showResolved;
       render();
     },
+    identity: () =>
+      openIdentity(host.layer, {
+        portable: o.doc.portable,
+        code: () => o.doc.identityCode(),
+        make: async () => {
+          const made = await makePortable();
+          await o.onIdentity(made.identity);
+          return made.code;
+        },
+        use: async (code) => {
+          const found = await identityFromCode(code);
+          if ("problem" in found) return found.problem;
+          await o.onIdentity(found.identity);
+          return null;
+        },
+        copy: (text) => copyText(text, host.layer),
+        reload: () => location.reload(),
+        hasComments: o.doc
+          .threads()
+          .some((t) => [t.root, ...t.root.replies].some((c) => c.author === o.doc.me)),
+      }),
+    toggleMine: () => {
+      state.mine = !state.mine;
+      render();
+    },
     rename: async (typed) => {
       // As the document keeps it: one line, single spaces.
       const name = typed.replace(/\s+/g, " ").trim();
@@ -356,6 +390,8 @@ export function startApp(o: AppOptions): App {
       void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
     },
     postDraft,
+    seen,
+    people: () => peopleFor(o.doc.threads(), o.doc.me),
     cancelDraft,
     setCommenting,
     dismiss,
@@ -495,6 +531,7 @@ export function startApp(o: AppOptions): App {
     // otherwise the open thread closes.
     state.hidden = !state.commenting && !state.listing && !state.reading && !state.draft;
     if (state.hidden) state.active = null;
+    if (!state.hidden) announceMentions(threads);
     fadeHighlights(state.hidden ? 0 : 1);
     host.layer.classList.toggle("hidden", state.hidden);
     host.layer.classList.toggle("listing", state.listing);
@@ -546,6 +583,25 @@ export function startApp(o: AppOptions): App {
   }
 
   /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
+  /** The comments in `t` that name this reviewer are read: mark them seen (once each). */
+  function seen(t: Thread): void {
+    const ids = [t.root, ...t.root.replies]
+      .filter((c) => c.author !== o.doc.me && !c.deleted && names(c, myRefs(o.doc.me)))
+      .map((c) => c.id);
+    if (ids.length) o.doc.seen(ids).catch(() => {});
+  }
+  /** Tells the reviewer, once, who has mentioned them in comments they haven't seen. */
+  const told = new Set<string>();
+  function announceMentions(threads: readonly Thread[]): void {
+    const fresh = unseenMentions(threads, o.doc.me).filter((m) => !told.has(m.comment.id));
+    if (!fresh.length) return;
+    for (const m of fresh) told.add(m.comment.id);
+    const who = [...new Set(fresh.map((m) => nameOf(m.comment)))];
+    toast(
+      `${who.length === 1 ? who[0] : `${who.length} people`} mentioned you in ${fresh.length} comment${fresh.length === 1 ? "" : "s"}`,
+    );
+  }
+
   function open(id: string | null, sent = false): void {
     // Words being written are never dropped: another thread waits (comment mode follows the same rule).
     if (id && held()) return;
@@ -559,6 +615,8 @@ export function startApp(o: AppOptions): App {
     if (id) {
       state.draft = null;
       pulse(id);
+      const t = o.doc.threads().find((x) => x.id === id);
+      if (t) seen(t);
     }
     render();
     if (id) {
@@ -663,11 +721,11 @@ export function startApp(o: AppOptions): App {
     }
   }
 
-  async function postDraft(text: string): Promise<void> {
+  async function postDraft(text: string, mentions?: Mention[]): Promise<void> {
     const d = state.draft;
     if (!d) return;
     try {
-      const id = await o.doc.comment(d.anchor, text);
+      const id = await o.doc.comment(d.anchor, text, mentions);
       state.draft = null;
       resolveAll(new Set([id]));
       open(id, true);

@@ -111,6 +111,10 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
         profile = { ...profile, name };
         await kept.saveProfile(profile);
       },
+      onIdentity: async (identity) => {
+        profile = { ...profile, identity };
+        await kept.saveProfile(profile);
+      },
     });
   } catch (e) {
     setSlideHook(null);

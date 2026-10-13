@@ -1,4 +1,6 @@
 import { h } from "./dom";
+import { filterPeople, locate, mentionToken, type Person } from "./mentions";
+import type { Mention } from "../model/types";
 import { draw, icon } from "./icons";
 
 export interface ComposerOptions {
@@ -8,8 +10,11 @@ export interface ComposerOptions {
   thread?: () => string;
   /** Something to show before the line instead, such as the writer's avatar. */
   before?: Node;
-  onSend(text: string): Promise<void> | void;
+  /** `mentions`: the people named in the words, found after trimming. */
+  onSend(text: string, mentions: Mention[]): Promise<void> | void;
   onCancel?(): void;
+  /** Who can be mentioned with `@`; without it, `@` is just a character. */
+  people?(): Person[];
 }
 
 export interface Composer {
@@ -163,14 +168,85 @@ export function composer(o: ComposerOptions): Composer {
   };
   syncTools();
   element.addEventListener(SOURCE_CHANGED, syncTools);
+  // Typing `@` offers the people who can be mentioned; the choice is remembered, and found again in the final words.
+  const chosen: { label: string; ref: string }[] = [];
+  const list = h("ul", { class: "mnl", role: "listbox", "aria-label": "People" });
+  const live = h("span", { class: "sr", "aria-live": "polite" });
+  const listId = `mn-${Math.random().toString(36).slice(2, 8)}`;
+  list.id = listId;
+  let options: Person[] = [];
+  let active = 0;
+  let token: { start: number; query: string } | null = null;
+  if (o.people) {
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-controls", listId);
+    element.append(list, live);
+  }
+  const closeList = () => {
+    options = [];
+    list.classList.remove("show");
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    window.setTimeout(() => !options.length && list.replaceChildren(), 220);
+  };
+  const paintList = () => {
+    for (const [i, li] of [...list.children].entries()) {
+      const on = i === active;
+      li.setAttribute("aria-selected", String(on));
+      li.classList.toggle("on", on);
+      if (on) input.setAttribute("aria-activedescendant", (li as HTMLElement).id);
+    }
+  };
+  const openList = () => {
+    token =
+      input.selectionStart === input.selectionEnd
+        ? mentionToken(input.value.slice(0, input.selectionStart))
+        : null;
+    options = token && o.people ? filterPeople(o.people(), token.query) : [];
+    if (!options.length) return closeList();
+    active = Math.min(active, options.length - 1);
+    list.replaceChildren(
+      ...options.map((p, i) => {
+        const li = h(
+          "li",
+          { role: "option", id: `${listId}-${i}`, class: p.agent ? "agent" : "" },
+          h("span", {}, p.name),
+          p.agent ? h("small", {}, "AI agent") : null,
+        );
+        // The line keeps its caret: choosing with the pointer takes no focus.
+        li.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          choose(i);
+        });
+        return li;
+      }),
+    );
+    list.classList.add("show");
+    input.setAttribute("aria-expanded", "true");
+    live.textContent = `${options.length} ${options.length === 1 ? "person" : "people"}`;
+    paintList();
+  };
+  const choose = (i: number) => {
+    const p = options[i];
+    if (!p || !token) return;
+    const at = input.selectionStart;
+    input.setRangeText(`@${p.name} `, token.start, at, "end");
+    chosen.push({ label: p.name, ref: p.ref });
+    closeList();
+    sync();
+  };
   const submit = async () => {
     const text = input.value.trim();
     if (!text || busy) return;
     busy = true;
     try {
-      await o.onSend(text);
+      await o.onSend(text, chosen.length ? locate(text, chosen) : []);
       if (send.matches(":focus")) input.focus();
       input.value = "";
+      chosen.length = 0;
+      closeList();
       sync();
       ended();
     } catch {
@@ -186,9 +262,29 @@ export function composer(o: ComposerOptions): Composer {
     input.focus({ preventScroll: true });
     input.setSelectionRange(input.value.length, input.value.length);
   });
-  input.addEventListener("input", sync);
+  input.addEventListener("input", () => {
+    sync();
+    if (o.people) openList();
+  });
+  input.addEventListener("blur", () => options.length && closeList());
   input.addEventListener("keydown", (e) => {
     e.stopPropagation();
+    if (options.length && !e.isComposing) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        active = (active + (e.key === "ArrowDown" ? 1 : options.length - 1)) % options.length;
+        return paintList();
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        return choose(active);
+      }
+      // Escape closes the list and nothing else: the words and the line stay.
+      if (e.key === "Escape") {
+        e.preventDefault();
+        return closeList();
+      }
+    }
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       void submit();

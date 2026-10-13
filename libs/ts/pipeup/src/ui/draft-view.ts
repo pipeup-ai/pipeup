@@ -1,8 +1,10 @@
 import { animalName } from "../model/animals";
+import type { Mention } from "../model/types";
 import { avatar, easeIn, retire } from "./animals";
 import { composer, composerNote, SOURCE_CHANGED } from "./composer";
 import type { Ctx, Draft } from "./context";
 import { h, inert } from "./dom";
+import type { Person } from "./mentions";
 
 export interface DraftOptions {
   /** What the comment is on: a quote or an element label. */
@@ -13,8 +15,10 @@ export interface DraftOptions {
   name(): string;
   /** Saves a new name (the same path as the menu's Your name). */
   rename(name: string): Promise<void>;
-  onSend(text: string): Promise<void>;
+  onSend(text: string, mentions: Mention[]): Promise<void>;
   onCancel(): void;
+  /** Who can be mentioned with `@`. */
+  people?(): Person[];
 }
 
 export interface DraftBox {
@@ -44,6 +48,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
     before: me,
     onSend: o.onSend,
     onCancel: o.onCancel,
+    people: o.people,
   });
   // One quiet line from add-ons above the box, such as "Comments here are shared with everyone who has this page".
   const note = h("div", { class: "note" });
@@ -161,7 +166,8 @@ export function draftBox(ctx: Ctx, d: Draft): DraftBox {
     me: ctx.doc.me,
     name: () => ctx.menu.name(),
     rename: (name) => ctx.menu.rename(name),
-    onSend: (text) => ctx.postDraft(text),
+    onSend: (text, mentions) => ctx.postDraft(text, mentions),
+    people: () => ctx.people(),
     onCancel: () => ctx.cancelDraft(),
   });
   ctx.registerDraft(box);

@@ -108,6 +108,7 @@ describe("linkify", () => {
     const actions = {
       me: "me",
       picker: () => null,
+      people: () => [],
       react: vi.fn(),
       reply: vi.fn(),
       resolve: vi.fn(),

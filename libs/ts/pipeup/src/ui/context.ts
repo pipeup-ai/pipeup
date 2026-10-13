@@ -1,10 +1,11 @@
 import type { Resolved } from "../anchor/resolve";
 import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
-import type { Anchor, Thread } from "../model/types";
+import type { Anchor, Mention, Thread } from "../model/types";
 import type { Surface } from "./addons";
 import type { DraftBox } from "./draft-view";
 import type { Here } from "./here";
+import type { Person } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 
 /** A comment being written: what it's on, and where that is now. */
@@ -21,6 +22,8 @@ export interface UiState {
   active: string | null;
   hot: string | null;
   showResolved: boolean;
+  /** All comments shows only the threads that name this reviewer. */
+  mine: boolean;
   /** Comments are out of sight: comment mode is off and All comments is closed. */
   hidden: boolean;
   mode: "column" | "bubbles";
@@ -45,6 +48,9 @@ export interface View {
 export interface MenuActions {
   copyAll(as: CopyAs): Promise<void>;
   toggleResolved(): void;
+  toggleMine(): void;
+  /** Opens the dialog for making the identity portable, backing it up, or using one that was backed up. */
+  identity(): void;
   rename(name: string): Promise<void>;
   /** The reviewer's name; "" until they add one. */
   name(): string;
@@ -104,7 +110,11 @@ export interface Ctx {
   keepCaret(fn: () => void): void;
   /** Goes back to the open draft: to its slide or view if that has gone, then focus and the caret into it. */
   backToDraft(): void;
-  postDraft(text: string): Promise<void>;
+  postDraft(text: string, mentions?: Mention[]): Promise<void>;
+  /** This reviewer has read the comments in `t` that name them: marks them seen, so every device knows. */
+  seen(t: Thread): void;
+  /** Who can be mentioned with `@`: people in this document, agents the page lists, and people supplied. */
+  people(): Person[];
   cancelDraft(): void;
   /** Turns comment mode on or off; comments show while it is on. `keys`: from the keyboard (the block cursor starts). */
   setCommenting(on: boolean, keys?: boolean): void;

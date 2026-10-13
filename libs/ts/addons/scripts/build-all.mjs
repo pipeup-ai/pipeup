@@ -11,7 +11,7 @@ const BUDGETS = {
   agents: 5 * 1024,
   emoji: 32 * 1024,
 };
-const CORE = 46 * 1024;
+const CORE = 56 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.
