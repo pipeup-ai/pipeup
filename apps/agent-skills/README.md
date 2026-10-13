@@ -34,7 +34,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |
 | `data-pipeup-label="Q4 revenue bar"` | Human name for things without text (charts, images, canvases) | Used by core `labelOf` |
 | `data-pipeup-slide="3"` | Marks a slide; 1-based | **Done in 0.4** — followed by itself (the marked slide showing, or reveal.js); only its comments show; navigation through `onReveal` or `mount({ slides })` |
-| `data-pipeup-agents="<key> <key>"` | Public keys of the agents whose replies the page shows; the page then reads `<page>.replies.js` (or `data-pipeup-replies`) next to it | **Done** (0.6) |
+| `data-pipeup-agents="<key> <key>"` | Public keys of the agents whose replies the page shows; the agents add-on then reads `<page>.replies.js` (or `data-pipeup-replies`) next to it | **Done** (0.6 in core; 0.7 in the `@pipeup/agents` add-on) |
 | `Pipeup.comments({ all? })` | The page's comments for an agent: `{ markdown, threads }` | **Done** (0.6) |
 | `data-pipeup-ignore` | Chrome that is never a comment target and keeps working in comment mode | **Done** — never a comment target; keeps working in comment mode (0.3.0) |
 | `<html data-pipeup-layout="column\|bubbles">` | Authors set it to force the column or bubbles; Pipeup reads it and never sets it | **Done in 0.3.0** |
@@ -59,7 +59,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | `pipeup init <page.html>` | Adds `data-pipeup-doc` (once) and the pinned script tag; refuses to change an existing doc key |
 | `pipeup check <page.html>` | Layout, overlap, id and accessibility checks; `--json`; non-zero exit on fail |
 | `pipeup read <page.html> <feedback…> [--as ai\|text] [--all]` | Merges feedback files (opening sealed ones with the page's key) and prints Copy-for-AI output |
-| `pipeup watch <page.html> [--agent <name>]` | **Done.** Shows the page from this computer with a **Share with my agent** switch (off until switched on); lists the agent while it runs |
+| `pipeup watch <page.html> [--agent <name>]` | **Done.** Shows the page from this computer with a **Share with my agent** switch (off until switched on); lists the agent while it runs and adds the agents add-on to the page it shows (refuses a page before 0.6) |
 | `pipeup comments <page.html> [--all] [--json]` | **Done.** Prints the comments the page has shared with the link, as Markdown or data |
 | `pipeup agent [--name <name>]` | **Done.** Makes the agent's key (once, kept in `~/.pipeup/agent.json`) and prints the public key to list as `data-pipeup-agents` |
 | `pipeup reply --page <file.html> --thread <id> "words" [--addressed "note"]` | **Done.** Writes a signed reply (and an addressed note) to `<file>.replies.js` next to the page; never resolves |
