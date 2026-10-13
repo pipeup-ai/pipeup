@@ -1,6 +1,6 @@
 # Design: the 0.8 size pass
 
-Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: approved 2026-10-13, portable identities move to an add-on.
+Spec: [§16a](../FUNCTIONAL_SPEC.md). Status: step 1 built (portable identities are `@pipeup/identity`); steps 2 to 4 below.
 
 ## Where the bytes are (0.7.0, `origin/next`)
 
@@ -50,3 +50,4 @@ pass this cycle can't be a polish: reaching 50 KB from 52.3 KB means removing ab
 
 - 2026-10-13 — First draft, from measurements of 0.7.0.
 - 2026-10-13 — Approved by the maintainer, including the identity add-on.
+- 2026-10-13 — Built step 1: `@pipeup/identity` (3.39 KB gzip, budget 4 KB) with two new slots, `dialog` and `identity`; the dialog's inner styles moved with it. Core 52.3 → 49.9 KB gzip (`min`), 51.5 → 49.2 KB (`esm`); budget lowered to 50 KB. The _My identity_ row moved from under the name to the add-ons' place in the menu. The website's Add-ons section waits for the release, so its script tag points at a published version.

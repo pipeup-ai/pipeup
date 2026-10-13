@@ -564,7 +564,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
   that stays the same across their comments in a document and across documents. A short form of the ID
   (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
   their names match.
-- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
+- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu (from the identity add-on, §16a) lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
 - **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. For a portable identity, **My identity**
   has **Back up my identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
   themselves, and **Use my identity**, which
@@ -1267,7 +1267,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   where a feature moves into one (below).
 - **Features that few pages or people use may move into an add-on**, as agent support did in 0.7, but only with the maintainer's
   agreement and only if the move is invisible to anyone who doesn't use the feature:
-  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on (approved)
+  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on (approved; built)
     that the author includes when they want it. Without it the menu has no such row, the ordinary identity works exactly as today,
     and comments written under a portable identity are still shown and verified by Pipeup itself.
   - Reactions, mentions and the appearance work stay in Pipeup: most reviewers use them, and they shape what every page looks like.
@@ -1487,3 +1487,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.
 - 2026-10-13 — Draft for review: a size pass for 0.8 (section 16a): Pipeup alone down to 50 KB gzip, behaviour unchanged, portable identities possibly moving to an add-on. 0.8 also lists `check` as shipped in 0.7.
 - 2026-10-13 — Approved: the 0.8 size pass (section 16a), with portable identities moving to an add-on.
+- 2026-10-13 — Built (0.8): portable identities moved into the identity add-on (sections 10a and 16a); Pipeup alone is 49.9 KB gzip and its budget is 50 KB. The My identity row now sits with the add-ons' rows in the menu.

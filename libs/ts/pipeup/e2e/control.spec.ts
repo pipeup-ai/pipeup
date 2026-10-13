@@ -93,7 +93,6 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   expect(m.y + m.height).toBeLessThanOrEqual(b.y);
   const names = await menu.locator(".mi .lb").allTextContents();
   expect(names.slice(1)).toEqual([
-    "My identity",
     "Copy as Markdown",
     "Copy as Text",
     "Look",

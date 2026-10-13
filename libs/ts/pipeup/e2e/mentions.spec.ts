@@ -168,21 +168,3 @@ test("a person who shared an email can be told: the offer opens the reviewer's o
   expect(body).toContain("Thanks @Sam");
   expect(body).toContain("Q3 plan");
 });
-
-test("sharing your own email is a choice in My identity, and can be taken back", async ({ page }) => {
-  await open(page, "doc.html");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /My identity/ }).click();
-  const dialog = page.getByRole("dialog", { name: "Your identity" });
-  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("not an address");
-  await dialog.getByRole("button", { name: "Share", exact: true }).click();
-  await expect(dialog).toContainText("isn't an email address or a GitHub name");
-  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("ada@example.test");
-  await dialog.getByRole("button", { name: "Share", exact: true }).click();
-  await expect(dialog).toContainText("Shared with everyone");
-  expect(await page.evaluate(() => [...(window as any).pu.document.contacts().values()])).toEqual([
-    "ada@example.test",
-  ]);
-  await dialog.getByRole("button", { name: "Stop sharing" }).click();
-  expect(await page.evaluate(() => (window as any).pu.document.contacts().size)).toBe(0);
-});

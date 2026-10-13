@@ -7,6 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less: Pipeup is 49.9 KB gzip (52.3 KB in 0.7.0) and its budget drops from 56 to 50 KB. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
+
+### Added
+
+- Two add-on slots: `host.openDialog(content, label)` (capability `dialog`) and `host.identity` (capability `identity`).
+
 ## [0.7.0] - 2026-10-13
 
 This release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site, works with a finger, and a check for pages. It folds the two betas, 0.7.0-beta.1 and 0.7.0-beta.2.

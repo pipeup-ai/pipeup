@@ -2,8 +2,6 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import type { Identity } from "../crypto/identity";
-import { identityFromCode, makePortable } from "../crypto/portable";
 import { animalName, nameOf } from "../model/animals";
 import type { Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
@@ -26,7 +24,6 @@ import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
-import { openIdentity } from "./identity";
 import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 
@@ -43,8 +40,6 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
-  /** Keeps another identity for this browser (a new portable one, or one restored from a recovery code). */
-  onIdentity(identity: Identity): Promise<void>;
 }
 
 export interface App {
@@ -315,36 +310,6 @@ export function startApp(o: AppOptions): App {
       state.showResolved = !state.showResolved;
       render();
     },
-    identity: () =>
-      openIdentity(host.layer, {
-        portable: o.doc.portable,
-        code: () => o.doc.identityCode(),
-        make: async () => {
-          const made = await makePortable();
-          await o.onIdentity(made.identity);
-          return made.code;
-        },
-        use: async (code) => {
-          const found = await identityFromCode(code);
-          if ("problem" in found) return found.problem;
-          await o.onIdentity(found.identity);
-          return null;
-        },
-        copy: (text) => copyText(text, host.layer),
-        reload: () => location.reload(),
-        contact: {
-          value: o.doc.contacts().get(o.doc.me) ?? "",
-          share: (value) =>
-            o.doc.contact(value).then(
-              () => true,
-              () => false,
-            ),
-          stop: () => o.doc.uncontact(),
-        },
-        hasComments: o.doc
-          .threads()
-          .some((t) => [t.root, ...t.root.replies].some((c) => c.author === o.doc.me)),
-      }),
     toggleMine: () => {
       state.mine = !state.mine;
       render();

@@ -1,12 +1,11 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
-import { codeOf } from "./crypto/portable";
 import { OpLog, type NewOp } from "./model/log";
 import { isAiName } from "./model/animals";
 import { compareOps, CONTACT, isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
 import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
-import { utf8 } from "./util/encoding";
+import { fromB64u, utf8 } from "./util/encoding";
 
 export interface OpenOptions {
   doc: string;
@@ -172,9 +171,12 @@ export class PipeupDocument {
     return this.options.identity.privateKey.extractable;
   }
 
-  /** The recovery code of a portable identity; null for an ordinary one. */
-  identityCode(): Promise<string | null> {
-    return codeOf(this.options.identity);
+  /** The 32-byte seed of a portable identity, for backing it up; null for an ordinary one. */
+  async seed(): Promise<Uint8Array | null> {
+    const key = this.options.identity.privateKey;
+    if (!key.extractable) return null;
+    const { d } = await crypto.subtle.exportKey("jwk", key);
+    return d ? fromB64u(d) : null;
   }
 
   /** Marks comments read by this reviewer (one `seen` op each, for those not already marked), so every device knows. */

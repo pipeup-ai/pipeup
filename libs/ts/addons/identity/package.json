@@ -1,0 +1,47 @@
+{
+  "name": "@pipeup/identity",
+  "version": "0.7.0",
+  "description": "Makes a reviewer's identity portable: a recovery code or file to back it up, and using it on another browser or computer; and sharing a way to be reached.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/identity"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/identity.esm.js",
+  "module": "./dist/identity.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/identity.min.js",
+  "unpkg": "dist/identity.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.7.0"
+  },
+  "pipeup": {
+    "network": {
+      "when": "never",
+      "to": [],
+      "says": "Nothing. Your recovery code stays on this device unless you copy it or save it as a file yourself."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/identity.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}
