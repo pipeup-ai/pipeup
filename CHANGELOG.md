@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- The update list is now signed, with the first signing key published in `tools/updates-keys.json`; Pipeup add-ons built from here on can verify it.
+
 ## [0.7.0-beta.1] - 2026-10-13
 
 This pre-release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site. It is a beta: try it from the `next` channel and tell us what breaks.
