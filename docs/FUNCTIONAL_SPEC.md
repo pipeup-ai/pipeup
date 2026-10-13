@@ -353,6 +353,43 @@ any of them off.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
+## 7b. Reactions
+
+*Proposed, not built.*
+
+- A reviewer can **react to any comment or reply with a standard emoji**, the same ones as on a phone.
+  A reaction is a quick answer that needs no words ("seen", "agree", "thanks").
+- **A reviewer has at most one reaction of each emoji on a comment.** Choosing it again takes it back.
+  They can give several different emoji to the same comment.
+- **Choosing an emoji:** a short row of common reactions (👍 ❤️ 😂 🎉 😮 🙏) is always offered. A "more"
+  button opens the full standard set, in the groups phones use, with search, recently used and the
+  skin-tone variants; the tone a reviewer picks is remembered. Only emoji the device can draw are offered.
+- **What you see at rest.** Reactions are quiet, like the rest of a thread: a comment with reactions
+  shows each emoji with a small count beneath its words; a comment with none shows nothing. The
+  control to add one appears with the other details when the pointer is over the comment or focus is on
+  it, and beside the reply and resolve controls inside an open thread.
+- Your own reactions are marked. **Pointing at or focusing a reaction shows who gave it**, by name as
+  shown elsewhere, with "You" first.
+- Adding, changing and removing a reaction **ease**; counts roll, as other counts do. Reduced motion
+  turns them into soft fades.
+- **Everywhere comments show:** the column, bubbles, the open thread and All comments (as counts,
+  without the control). Copying for AI (§7a) and `Pipeup.comments()` (§15b) include reactions, as a
+  line such as "👍 2 (Sam, Red Fox)" under the comment.
+- **No forging.** A reaction comes from the reviewer who gave it and can't appear to come from
+  someone else or be removed by anyone else. A thread's reactions are kept when comments travel
+  through sharing, live review or an agent's replies file, and are checked as strictly as comments.
+- **Limits.** A single comment keeps to a small number of different emoji so it can't be flooded.
+- **Deleted and resolved.** Deleting a comment removes its reactions. A resolved thread still shows its
+  reactions; they can be added or taken back again after it is reopened.
+- **Agents** can react and are shown as AI assistants, as their replies are (§15b); they react to
+  acknowledge, never to resolve.
+- Older copies of Pipeup (and add-ons) that don't know reactions **ignore them and keep showing the
+  comments**; they never reject a comment because of one.
+- The **full emoji picker is an add-on** (`emoji`) so the core stays small; without it a page has the
+  quick row and still shows every reaction anyone gave. See §19.
+- Fully usable by keyboard and screen reader: each reaction is a button that says the emoji's name,
+  how many people gave it and whether you did ("Thumbs up, 3 people, including you").
+
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
@@ -470,6 +507,93 @@ any of them off.
   document. Nobody can appear in live presence as someone else.
 - When two people in a shared or live document use the same name, Pipeup shows a way to tell them
   apart.
+
+## 10a. Mentions and notifications
+
+*Proposed, not built.*
+
+Pipeup has no accounts and no server of its own, so a mention works in layers: it always works inside
+the page, and reaches people outside the page only in ways the reviewer or the author chooses.
+
+**Mentioning someone**
+
+- Typing `@` in a comment or reply offers **people to mention**, narrowing as the reviewer types, chosen
+  by keyboard or pointer:
+  - everyone who has commented or replied in this document;
+  - the agents the page lists (§15b);
+  - people the page's author supplies (below);
+  - people from an add-on's directory, when the page has one.
+- A mention **points at a person**, not only a name: it keeps working if they rename themselves, and two
+  people called Sam stay apart. It reads as the name, softly tinted, in the comment; copying keeps
+  `@Name`. An `@` that matches nobody stays plain words.
+- Comment words are still text only; a mention is never a link, markup or a way to run anything.
+
+**Being mentioned**
+
+- When someone opens a page where they are mentioned, Pipeup **says so once** ("Sam mentioned you in 2
+  comments") and All comments can show **only comments that mention me**. "Me" means this reviewer in
+  this browser, or the signed-in person the page's author supplies.
+- Mentioning an agent marks the comment as one that agent should answer first (§15b).
+
+**Reaching people outside the page**
+
+Pipeup itself sends nothing (§14). A mention can reach a person only through:
+
+1. **The reviewer, by hand.** After sending, Pipeup offers "Let Sam know", which opens the reviewer's own
+   mail or chat app with the words and a link to the comment filled in, when the reviewer knows how to
+   reach them. The reviewer sends it; Pipeup never sends for them. This works on any page.
+2. **An add-on**, chosen by the author and following §11a: first, a note in a GitHub issue or
+   pull request; later, for example a message to a chat channel through the author's own webhook, or email through the
+   author's own service. Each says in one sentence what it sends and to whom, and sends nothing before
+   the reviewer agrees.
+3. **The page's own system.** The author can give Pipeup the signed-in person and the people who can be
+   mentioned, and a place to hand mentions to (the page's own notifications). Pipeup then shows those
+   people as supplied by the page and sends nothing itself.
+
+**Who someone is**
+
+- By default a reviewer is still an animal in a colour with an optional name (§10): names are not
+  proof. A mention of "Sam" does not show that the person who replies as "Sam" is the same Sam.
+- A person can be **shown as verified** when the page's author supplies who they are (single sign-on
+  stays the page's business; Pipeup does not talk to sign-in providers), or an add-on proves a handle
+  (for example a GitHub name). Verified people are marked, and say who vouches.
+- A reviewer may **add an email or handle** to their profile so others can reach them. It stays in their
+  browser; it is shown to other people in the document only if the reviewer chooses, and it is never put
+  into a comment, a copy for AI or any service without their agreement.
+- **Everyone who comments is known by the name they gave**, and each person has a **durable ID** behind it
+  that stays the same across their comments in a document and across documents. A short form of the ID
+  (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
+  their names match.
+- **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. The menu has **Back up my
+  identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
+  themselves, and **Use my identity**, which
+  restores it from either in another browser or device so earlier comments and mentions still count as theirs. Pipeup
+  never keeps the recovery code anywhere else and never sends it.
+- **Without a backup,** a cleared browser starts a new person. Comments made earlier stay under the old
+  ID, mentions of it reach no one, and others see the old name marked "(earlier)". Pipeup says this
+  plainly before the person can lose it, and never merges by name to hide it.
+- **Two devices are two people until linked** with the recovery code.
+- Pipeup never matches people across documents, and never builds a list of people beyond what one
+  document shows.
+
+**Picking up what was left behind**
+
+- A comment, reply, reaction or mention is saved wherever the page's comments are saved, so **any copy of
+  the page** (another browser, another device, an agent) that can open the comments **sees what was left**
+  and marks it seen. When a person reads a mention on one device, it shows as read on their others.
+- *Proposed, later:* a person has an **inbox**, so a mention in a document they haven't opened still reaches
+  them. The person who mentions leaves a small note for them ("Sam mentioned you", with a link), sealed so
+  only they can read it. They collect their notes from any browser or device that holds their identity.
+  The service keeping the notes sees only that something arrived, its size and its timing, and never
+  who sent it, who it is for, or what it says. It is a choice the author makes (a page says whose inbox
+  service it uses), and a reviewer agrees before anything is left. It is limited so it can't be used to
+  flood someone.
+
+**Everyone**
+
+- Fully usable by keyboard and screen reader: the list of people is announced as it narrows, and the
+  chosen person is read out.
+- The list and the mention eases in and out like everything else, in light appearance.
 
 ## 11. Saving and sharing feedback
 
@@ -827,6 +951,53 @@ permission, a registration, or a place in its npm scope.
   closing a relay room. Anyone who already had access can still read what they saw before, and Pipeup
   says so plainly.
 
+## 14a. Knowing about newer versions
+
+*Proposed, not built.*
+
+Pipeup itself makes no network requests (§14), so it can't look for updates. The person who needs to know is
+the **author** who put Pipeup on the page, not the reviewers. Authors learn about newer versions in three ways.
+
+**Pipeup itself, with no network**
+
+- Pipeup knows when it was built. When that is **more than a year ago** it writes one line to the browser
+  console, once per page load, saying so and where the changelog is. Reviewers see nothing. An author can switch
+  it off (`data-pipeup-updates="off"`).
+- It says nothing about security, because it can't know.
+
+**The author's tools, with no visitors involved**
+
+- `pipeup check` says whether the version a page uses is the latest, lists published security advisories that
+  affect it, and says exactly what to change, including the new integrity hash when the page pins the script.
+- Every release has notes, and a version with a security problem is marked in the release notes, in the package
+  registry's own deprecation notice and in a published security advisory, so tools that watch dependencies
+  (and people who watch the repository) hear about it.
+
+**An add-on that checks for the author** (`updates`, off unless the author adds it)
+
+- It fetches one small published file listing the latest version, the oldest supported version and security
+  advisories, and compares it with the version on the page.
+- **It runs only when the author is the one looking**: on a page opened from disk, on the author's own computer
+  (localhost), or where the author has asked for it. **A reviewer's browser never makes the request** unless the
+  author chooses to allow that, and says so (`data-pipeup-updates="everyone"`). The add-on says in one sentence
+  what it contacts and what that service can see (§11a).
+- The file can't be forged or replayed: Pipeup checks it was published by the Pipeup project, and has not expired,
+  before showing anything from it.
+  What it shows is plain words, and links go only to the project's own addresses.
+- **What the author sees**:
+
+  | What is found | Where |
+  |---|---|
+  | A patch or minor release | A line in the console |
+  | A major release, or a recommended update | A line in the console and a small marker in the context menu |
+  | A security issue, or a version no longer supported | A notice in the context menu that names the issue, the fixed version, where to read more and how to update |
+
+- A notice can be dismissed for that version or advisory, and the choice is remembered in that browser.
+- **It never changes the page, never installs or updates anything, and never gets in the way of writing a
+  comment.** A notice raised while comments are closed waits and is shown once when Pipeup is next opened (§11a).
+  If the file can't be reached it says nothing.
+- A page that pins an exact version stays on it until the author changes it; no notice ever changes that.
+
 ## 15. Agent support
 
 - **Agent skills** ship with Pipeup and teach agents to:
@@ -1032,9 +1203,10 @@ and only after the person clicks.
 ## 17. Out of scope for now
 
 - Standalone images and PDFs as review targets.
-- Accounts, sign-in, email or push notifications, and @mentions.
+- Accounts, sign-in by Pipeup itself, and email or push notifications sent by Pipeup itself (mentions
+  and notifications through the page, the reviewer or an add-on are §10a).
 - A relay run by the Pipeup project, and hosts other than Cloudflare.
-- Rich text, attachments or reactions in comments.
+- Rich text or attachments in comments (reactions are §7b).
 - Drag-to-select an area as a comment target.
 - Replies to a reply (every reply answers the original comment).
 - Suggesting edits to the page text (tracked changes).
@@ -1068,6 +1240,14 @@ and only after the person clicks.
 - How long shared copies last on free services, which services Pipeup suggests, and how much traffic
   is fair to ask of volunteer-run services.
 - Whether dictation may ever use a browser maker's speech service, with the reviewer's agreement.
+- Reactions: whether the quick row of six is right; whether the full picker should be an add-on or part of
+  Pipeup if the size budget allows; whether agents' reactions should be shown at all.
+- Update notices: whether the age line in the console is worth its bytes; what counts as the author's own
+  context besides a file, localhost or the attribute (§14a).
+- Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
+  flooded;
+  whether any decentralised identity (a signed key, a handle on an open network) is worth supporting
+  before the sign-in the page supplies.
 
 ---
 
@@ -1218,3 +1398,7 @@ and only after the person clicks.
 - 2026-10-12 — Approved: threads at rest in the column always sit on their own soft backing (section 9).
 - 2026-10-12 — Clarified: Pipeup takes the page's font family and accent colour and nothing else of its styling; the reviewer's choice is the Look row in the menu; the author's setting is `data-pipeup-theme` on `<html>` (section 9).
 - 2026-10-12 — Changed: no fall-back look. Under a faded page both looks lose about the same contrast, so switching can't help; Pipeup reports what the page does to it instead, in the console and in the check (section 9).
+- 2026-10-12 — Proposed (not built): everyone is known by their name with a durable ID that can be backed up and restored, a cleared browser is a new person (marked "earlier"), two devices are linked only by the recovery code; a copy of the page picks up what was left behind and marks it seen; a person's inbox for mentions in documents they haven't opened (section 10a).
+- 2026-10-12 — Approved: the GitHub add-on comes first for notifications, and an identity is backed up and restored with either a recovery code or a file (section 10a).
+- 2026-10-12 — Proposed (not built): how an author learns of newer versions without Pipeup making any request of its own: an age line in the console, `pipeup check` and release notices, and an opt-in `updates` add-on that runs only in the author's context and shows console lines and, for major releases and security issues, a context-menu notice (section 14a).
+- 2026-10-12 — The update list is signed by the maintainer from their own computer, and goes out of date after a set time, so a forged or old copy is ignored (section 14a).
