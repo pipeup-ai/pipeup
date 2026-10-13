@@ -17,7 +17,9 @@ const b64u = (b) => Buffer.from(b).toString("base64url");
 
 /** The inbox address of a person: the hash of their public key, so a sender can compute it and the server can't reverse it. */
 export function inboxId(edPublicKey) {
-  const digest = createHash("sha256").update(Buffer.concat([Buffer.from("pipeup-inbox/1"), Buffer.from(edPublicKey, "base64url")])).digest();
+  const digest = createHash("sha256")
+    .update(Buffer.concat([Buffer.from("pipeup-inbox/1"), Buffer.from(edPublicKey, "base64url")]))
+    .digest();
   let bits = 0;
   let acc = 0;
   let out = "";
@@ -47,7 +49,12 @@ export function work(inbox, ct, nonce, bits) {
   return n >= bits;
 }
 
-const spki = (ed) => createPublicKey({ key: Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), Buffer.from(ed, "base64url")]), format: "der", type: "spki" });
+const spki = (ed) =>
+  createPublicKey({
+    key: Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), Buffer.from(ed, "base64url")]),
+    format: "der",
+    type: "spki",
+  });
 const signedBy = (ed, text, sig) => {
   try {
     return ED.test(ed) && verify(null, Buffer.from(text), spki(ed), Buffer.from(sig, "base64url"));
@@ -76,7 +83,10 @@ export function createInbox(o, h) {
     if (!b && o.dir && existsSync(file(id, "json"))) {
       b = JSON.parse(readFileSync(file(id, "json"), "utf8"));
       b.notes = existsSync(file(id, "jsonl"))
-        ? readFileSync(file(id, "jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l))
+        ? readFileSync(file(id, "jsonl"), "utf8")
+            .split("\n")
+            .filter(Boolean)
+            .map((l) => JSON.parse(l))
         : [];
       b.ids = new Set(b.notes.map((n) => n.id));
       boxes.set(id, b);
@@ -94,7 +104,8 @@ export function createInbox(o, h) {
   }
   const meta = (b) => ({ id: b.id, key: b.key, seq: b.seq, last: b.last });
   const save = (b) => o.dir && writeFileSync(file(b.id, "json"), JSON.stringify(meta(b)));
-  const rewrite = (b) => o.dir && writeFileSync(file(b.id, "jsonl"), b.notes.map((n) => JSON.stringify(n) + "\n").join(""));
+  const rewrite = (b) =>
+    o.dir && writeFileSync(file(b.id, "jsonl"), b.notes.map((n) => JSON.stringify(n) + "\n").join(""));
 
   /** Handles a request to /i/<inbox>[/key|/<note>]; returns false when the path is not an inbox's. */
   async function handle(req, res, path, method, url) {
@@ -123,11 +134,12 @@ export function createInbox(o, h) {
       }
       const text = await h.readBody(req);
       const body = text === null ? undefined : h.json(text);
-      if (!body) return h.fail(res, 400, "bad-request", "Body is not a JSON object."), true;
+      if (!body) return (h.fail(res, 400, "bad-request", "Body is not a JSON object."), true);
       const { ed, pub, sig } = body;
       if (typeof ed !== "string" || inboxId(ed) !== id || !ED.test(String(pub)) || typeof sig !== "string")
-        return h.fail(res, 400, "bad-request", "That key does not belong to this inbox."), true;
-      if (!signedBy(ed, frame("inbox/key", `${id}:${pub}`), sig)) return h.fail(res, 403, "signature", "Signature wrong."), true;
+        return (h.fail(res, 400, "bad-request", "That key does not belong to this inbox."), true);
+      if (!signedBy(ed, frame("inbox/key", `${id}:${pub}`), sig))
+        return (h.fail(res, 403, "signature", "Signature wrong."), true);
       const b = box(id, true);
       b.key = { ed, pub, sig };
       b.last = o.now();
@@ -138,11 +150,11 @@ export function createInbox(o, h) {
     if (method === "DELETE") {
       const b = box(id);
       const note = b?.notes.find((n) => n.id === tail);
-      if (!b || !note) return h.fail(res, 404, "gone", "No such note."), true;
+      if (!b || !note) return (h.fail(res, 404, "gone", "No such note."), true);
       const ed = String(req.headers["x-pipeup-key"] ?? "");
       const sig = String(req.headers["x-pipeup-sig"] ?? "");
       if (inboxId(ed) !== id || !signedBy(ed, frame("inbox/delete", `${id}:${tail}`), sig))
-        return h.fail(res, 403, "signature", "Only the inbox's owner can take a note away."), true;
+        return (h.fail(res, 403, "signature", "Only the inbox's owner can take a note away."), true);
       b.notes = b.notes.filter((n) => n.id !== tail);
       b.ids.delete(tail);
       rewrite(b);
@@ -151,31 +163,41 @@ export function createInbox(o, h) {
     }
     if (method === "GET") {
       const b = box(id);
-      if (!b) return h.fail(res, 404, "gone", "No such inbox."), true;
+      if (!b) return (h.fail(res, 404, "gone", "No such inbox."), true);
       const since = url.searchParams.get("since") ?? "";
-      if (since !== "" && !/^\d{1,15}$/.test(since)) return h.fail(res, 409, "cursor", "Unknown cursor."), true;
+      if (since !== "" && !/^\d{1,15}$/.test(since))
+        return (h.fail(res, 409, "cursor", "Unknown cursor."), true);
       const fresh = b.notes.filter((n) => n.n > Number(since || 0));
       const page = fresh.slice(0, 200);
-      h.send(res, 200, { v: 2, notes: page.map(({ id: noteId, ct }) => ({ id: noteId, ct })), next: String(page.length ? page[page.length - 1].n : Number(since || 0)), more: fresh.length > page.length });
+      h.send(res, 200, {
+        v: 2,
+        notes: page.map(({ id: noteId, ct }) => ({ id: noteId, ct })),
+        next: String(page.length ? page[page.length - 1].n : Number(since || 0)),
+        more: fresh.length > page.length,
+      });
       return true;
     }
     // POST: leave a note.
     const text = await h.readBody(req, MAX_BODY);
-    if (text === null) return h.fail(res, 413, "too-large", "Note too large."), true;
+    if (text === null) return (h.fail(res, 413, "too-large", "Note too large."), true);
     const body = h.json(text);
-    if (!body) return h.fail(res, 400, "bad-request", "Body is not a JSON object."), true;
+    if (!body) return (h.fail(res, 400, "bad-request", "Body is not a JSON object."), true);
     if (o.token) {
       const bearer = (/^Bearer (.+)$/.exec(req.headers.authorization ?? "") ?? [])[1] ?? "";
-      if (!h.same(bearer, o.token)) return h.fail(res, 403, "token", "Note token wrong or missing."), true;
+      if (!h.same(bearer, o.token)) return (h.fail(res, 403, "token", "Note token wrong or missing."), true);
     }
     const { ct, work: nonce } = body;
-    if (typeof ct !== "string" || !CT.test(ct) || ct.length > MAX_CT) return h.fail(res, 400, "bad-request", "Bad ct."), true;
+    if (typeof ct !== "string" || !CT.test(ct) || ct.length > MAX_CT)
+      return (h.fail(res, 400, "bad-request", "Bad ct."), true);
     if (typeof nonce !== "string" || nonce.length > 64 || !work(id, ct, nonce, o.work))
-      return h.fail(res, 403, "work", `A note needs a proof of work of ${o.work} bits.`, { bits: o.work }), true;
+      return (
+        h.fail(res, 403, "work", `A note needs a proof of work of ${o.work} bits.`, { bits: o.work }),
+        true
+      );
     const b = box(id, true);
     const noteId = b64u(sha(ct)).slice(0, 22);
-    if (b.ids.has(noteId)) return h.send(res, 200, { v: 2 }), true;
-    if (b.notes.length >= o.maxNotes) return h.fail(res, 507, "full", "This inbox is full."), true;
+    if (b.ids.has(noteId)) return (h.send(res, 200, { v: 2 }), true);
+    if (b.notes.length >= o.maxNotes) return (h.fail(res, 507, "full", "This inbox is full."), true);
     const note = { id: noteId, ct, n: ++b.seq };
     b.notes.push(note);
     b.ids.add(noteId);
