@@ -347,7 +347,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       onQuote = null;
       return;
     }
-    // Comments only show in comment mode, so highlights preview there too, unless a comment is being written.
+    // Highlights preview wherever comments show, unless a comment is being written.
     const id = ctx.readsAt(e.clientX, e.clientY)?.id ?? null;
     if (id === onQuote) return;
     onQuote = id;
@@ -358,8 +358,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (ctx.owns(e)) return;
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed) return;
-    // In comment mode the page's controls are quiet, so a highlight on one still opens; Option-click pins.
-    if (ctx.state.commenting ? e.altKey : e.target instanceof Element && e.target.closest(INTERACTIVE))
+    // In comment mode the page's controls are quiet, so a highlight on one still opens; Option-click pins. Outside
+    // it, and while it is paused, a highlight on a link or control leaves the click to the page.
+    if (
+      ctx.state.commenting && !ctx.state.paused
+        ? e.altKey
+        : e.target instanceof Element && e.target.closest(INTERACTIVE)
+    )
       return;
     // A draft with words in it keeps them (the same rule as hovering). Comment mode leaves a click on a
     // highlight to this listener, whichever was added first, so it reads the thread instead of picking a block.

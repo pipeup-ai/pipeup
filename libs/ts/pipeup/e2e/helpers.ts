@@ -144,6 +144,27 @@ export async function showComments(page: Page): Promise<void> {
   await commenting(page);
 }
 
+/** Turns Hide comments on (or off) from the menu's switch, then closes the menu with Esc. */
+export async function hideComments(page: Page, on = true): Promise<void> {
+  await openMenu(page);
+  const sw = page.getByRole("menuitemcheckbox", { name: "Hide comments" });
+  if ((await sw.getAttribute("aria-checked")) !== String(on)) await sw.click();
+  await expect(sw).toHaveAttribute("aria-checked", String(on));
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+}
+
+/** The middle of the first highlighted words on the page (a text comment's highlight). */
+export const quoteSpot = (page: Page): Promise<{ x: number; y: number }> =>
+  page.evaluate(() => {
+    const q = ([...CSS.highlights.get("pipeup-quote")!][0] as Range).getClientRects()[0]!;
+    return { x: q.left + q.width / 2, y: q.top + q.height / 2 };
+  });
+
+/** The key held to pause comment mode where the test runs: Command on a Mac, Ctrl elsewhere. */
+export const holdKey = (page: Page): Promise<string> =>
+  page.evaluate(() => (/Mac|iP(hone|ad|od)/.test(navigator.platform) ? "Meta" : "Control"));
+
 /** Comment mode is on (or off): the control shows it. */
 export async function commenting(page: Page, on = true): Promise<void> {
   if (on) await expect(control(page)).toHaveClass(/\bon\b/);

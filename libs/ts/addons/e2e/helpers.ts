@@ -29,6 +29,15 @@ export async function openMenu(page: Page): Promise<void> {
   await page.locator(".menu.show").waitFor();
 }
 
+/** Turns Hide comments on from the menu's switch, so comments are closed; the menu closes again. */
+export async function hideComments(page: Page): Promise<void> {
+  await openMenu(page);
+  await page.locator(".menu.show").getByRole("menuitemcheckbox", { name: "Hide comments" }).click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(page.locator(".layer.hidden")).toHaveCount(1);
+}
+
 /** Pretends the clipboard works and keeps what was copied in `window.__copied`. */
 export async function stubClipboard(page: Page): Promise<void> {
   await page.addInitScript(() => {

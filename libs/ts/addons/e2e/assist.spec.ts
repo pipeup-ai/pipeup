@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { addon, blank, CORE, load, mount, openMenu } from "./helpers";
+import { addon, blank, CORE, hideComments, load, mount, openMenu } from "./helpers";
 
 /** A scripted stand-in for a model: it decides by the comment's words and writes one short reply, piece by piece. */
 const FAKE = () => {
@@ -169,8 +169,13 @@ test("the AI ring sits at the reply's top right, like any avatar, not over its w
   expect(box.x + box.width).toBeGreaterThan(reply.x + reply.width - 12);
 });
 
-test("the Assistant replies row is in the menu only while commenting is on", async ({ page }) => {
+test("the Assistant replies row is in the menu only while comments show", async ({ page }) => {
   await start(page);
+  // Comments show at rest, and so does the row; hidden, it goes.
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).toContainText("Assistant replies");
+  await page.keyboard.press("Escape");
+  await hideComments(page);
   await openMenu(page);
   await expect(page.locator(".menu.show")).not.toContainText("Assistant replies");
   await page.keyboard.press("Escape");

@@ -7,6 +7,7 @@ import { icon, type IconName } from "./icons";
 import { placeBar } from "./layout";
 import { byPage, nodeOf } from "./order";
 import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
+import { HOLD, holding } from "./shortcut";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -338,8 +339,21 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     }
   }
 
+  /** Pauses comment mode while ⌘ (Ctrl) is held, or brings it back: the outline goes, and the page hears everything. */
+  function pause(on: boolean): void {
+    if (ctx.state.paused === on) return;
+    ctx.state.paused = on;
+    if (on && !chosen) show(null);
+    ctx.render();
+  }
+  /** Paused now: a pointer event says whether the key is held, which also ends a pause whose key-up was missed. */
+  const paused = (e: Event): boolean => {
+    if (e instanceof MouseEvent && holding(e) !== ctx.state.paused) pause(holding(e));
+    return ctx.state.paused;
+  };
+
   const onMove = (e: PointerEvent) => {
-    if (ctx.owns(e)) return;
+    if (ctx.owns(e) || paused(e)) return;
     if (!onPage(e)) {
       if (!chosen) show(null);
       return;
@@ -368,7 +382,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
 
   const mute = (e: Event) => {
-    if (!onPage(e)) return;
+    if (!onPage(e) || paused(e)) return;
     e.stopPropagation();
     // Pressing a control would focus, open or toggle it. Pressing text starts a selection, which still works.
     if (
@@ -380,7 +394,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
 
   const swallow = (e: Event) => {
-    if (!onPage(e)) return;
+    if (!onPage(e) || paused(e)) return;
     // The click a key made on a page control while the cursor isn't in use is the page's, and so is the submit;
     // Enter in a form's field clicks its submit button.
     const t = e.target as HTMLButtonElement;
@@ -400,6 +414,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
   // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
+    if (e.key === HOLD) pause(true);
     passed = null;
     // A keyup lost on the way (focus left the window) never swallows a later one.
     taken = "";
@@ -680,12 +695,16 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let ended = false;
   const onKeyUp = (e: KeyboardEvent) => {
     if (ended) window.removeEventListener("keyup", onKeyUp, true);
+    if (e.key === HOLD) pause(false);
     if (e.key !== taken) return;
     taken = "";
     e.preventDefault();
     e.stopPropagation();
   };
+  // Leaving the window (⌘-Tab, say) loses the key-up: the pause ends with it.
+  const onBlur = () => pause(false);
   window.addEventListener("keyup", onKeyUp, true);
+  window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
@@ -739,6 +758,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       stopBar();
       ended = true;
       if (!taken) window.removeEventListener("keyup", onKeyUp, true);
+      window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);

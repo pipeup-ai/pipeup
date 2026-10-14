@@ -531,8 +531,8 @@ export function createAddon(): PipeupAddon {
             .then((c0) => (c0 === engine.info.name && avail === "ready" ? turnOn() : ask()));
         },
       };
-      // The row shows only while comments do (comment mode, All comments, or a comment being written): the
-      // assistant belongs to reviewing, so it stays out of the menu otherwise. It keeps working either way.
+      // The row shows only while comments do (not while the reviewer has hidden them): the assistant belongs to
+      // reviewing, so it stays out of the menu otherwise. It keeps working either way.
       const offUi = host.onUi((ui) => {
         if (ui.shown && !row) row = host.addMenuItem(item);
         else if (!ui.shown && row) {

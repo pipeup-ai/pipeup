@@ -20,6 +20,8 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   // Focus starts on Start commenting, the item nearest the button, at the bottom of the menu.
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("ArrowUp");
+  expect((await focusInPipeup(page)).text).toContain("Hide comments");
+  await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Look");
@@ -46,6 +48,7 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   await page.locator(".launch .mode").focus();
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
