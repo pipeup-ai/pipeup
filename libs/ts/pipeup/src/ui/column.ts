@@ -13,6 +13,8 @@ export const COLUMN_MIN = 300;
 const GAP_FROM_CONTENT = 32;
 /** The exit motion (0.20 s) plus a frame, before a faded-out element is removed. */
 const EXIT_MS = 220;
+/** The round button's corner: 20 px in from the window's edges, 46 px across. */
+const CORNER = 66;
 
 /** Width of the gutter that pages with data-pipeup-reserve keep for comments. */
 export const GUTTER = 320;
@@ -101,7 +103,15 @@ export function createColumn(ctx: Ctx): View {
     const top = d ? anchorTop(d.anchor, d.resolved) : null;
     if (draft && top !== null)
       finite.push({ id: "draft", want: top + window.scrollY - 4, height: draft.el.offsetHeight });
-    const pos = stackColumn(finite, draft ? "draft" : ctx.state.active);
+    // The open thread or draft lines up with its words, nudged up if the round button would cover it.
+    const lead = draft ? "draft" : ctx.state.active;
+    const f = finite.find((x) => x.id === lead);
+    if (f && col.getBoundingClientRect().right > window.innerWidth - CORNER)
+      f.want = Math.max(
+        window.scrollY + 8,
+        Math.min(f.want, window.scrollY + window.innerHeight - CORNER - 10 - f.height),
+      );
+    const pos = stackColumn(finite, lead);
     let y = Math.max(0, ...finite.map((f) => (pos.get(f.id) ?? 0) + f.height)) + 24;
     for (const l of lost) {
       pos.set(l.id, y);

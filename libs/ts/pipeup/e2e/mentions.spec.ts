@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { open, openMenu, seedText, showComments } from "./helpers";
+import { control, open, openMenu, seedText, settled, showComments } from "./helpers";
 
 /** Someone else replies, naming this reviewer: a second identity signs a reply op, merged as if it came from elsewhere. */
 const sayAs = (page: Page, name: string, words: string, mention: "me" | "none" = "me") =>
@@ -167,4 +167,49 @@ test("a person who shared an email can be told: the offer opens the reviewer's o
   const body = decodeURIComponent(href.split("&body=")[1]!);
   expect(body).toContain("Thanks @Sam");
   expect(body).toContain("Q3 plan");
+});
+
+test("a mention of you reads inline in its sentence, only bolder", async ({ page }) => {
+  await start(page);
+  await showComments(page);
+  await sayAs(page, "Sam", "Thanks, over to you @Me", "me");
+  await page.locator(".th .tx").first().click();
+  const mention = page.locator(".th .mn.me").first();
+  await expect(mention).toBeVisible();
+  const shape = await mention.evaluate((el) => {
+    const words = el.previousSibling!;
+    const r = document.createRange();
+    r.selectNodeContents(words);
+    return {
+      display: getComputedStyle(el).display,
+      lines: el.getClientRects().length,
+      sameLine: Math.abs(el.getBoundingClientRect().top - r.getBoundingClientRect().top) < 4,
+    };
+  });
+  expect(shape).toEqual({ display: "inline", lines: 1, sameLine: true });
+});
+
+test("messages sit beside the round button, and beside All comments while it is open", async ({ page }) => {
+  await start(page);
+  await showComments(page);
+  await sayAs(page, "Sam", "Over to you @Me", "me");
+  const toast = page.locator(".toast.show");
+  await expect(toast).toBeVisible();
+  await settled(toast);
+  const t = (await toast.boundingBox())!;
+  const b = (await control(page).boundingBox())!;
+  // Level with the button and to its left: nowhere near the middle of the page's bottom edge.
+  expect(t.x + t.width).toBeLessThanOrEqual(b.x);
+  expect(t.x).toBeGreaterThan(page.viewportSize()!.width / 2);
+  expect(Math.abs(t.y + t.height / 2 - (b.y + b.height / 2))).toBeLessThan(6);
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await page.locator(".all.show .mi").first().click();
+  await page.locator(".all.show").getByRole("button", { name: "Resolve", exact: true }).first().click();
+  await expect(toast).toContainText("Resolved");
+  await settled(toast);
+  const panel = (await page.locator(".all.show").boundingBox())!;
+  const u = (await toast.boundingBox())!;
+  expect(u.x + u.width).toBeLessThanOrEqual(panel.x);
+  expect(u.x).toBeGreaterThan(0);
 });

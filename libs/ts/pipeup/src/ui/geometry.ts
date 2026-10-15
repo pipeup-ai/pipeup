@@ -33,9 +33,11 @@ export function anchorTop(a: Anchor, r: Resolved): number | null {
 /** Where a preview or popover attaches: below the last quoted line, or beside the bubble or pin. */
 export function popoverAnchor(a: Anchor, r: Resolved): AnchorPoint | null {
   const last = quoteRects(r).at(-1);
-  if (last) return { x: last.left, y: last.bottom, below: true };
+  if (last) return { x: last.left, y: last.bottom, below: true, box: last };
   const p = bubblePoint(a, r);
-  return p ? { ...p, below: false } : null;
+  if (!p) return null;
+  const box = a.point ? new DOMRect(p.x - 12, p.y - 12, 24, 24) : r.element!.getBoundingClientRect();
+  return { ...p, below: false, box };
 }
 
 export function hit(

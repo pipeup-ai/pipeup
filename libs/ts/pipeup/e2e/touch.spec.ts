@@ -1,5 +1,5 @@
 import { devices, expect, test } from "@playwright/test";
-import { fixture, seedText } from "./helpers";
+import { fixture, seedElement, seedText, settled } from "./helpers";
 
 /** Taps the highlighted words of the first text comment, as a reader's finger would. */
 const tapHighlight = async (page: import("@playwright/test").Page) => {
@@ -96,4 +96,20 @@ test("on a phone, a thread's buttons and the reaction row are finger-sized", asy
   );
   expect(sizes.length).toBeGreaterThan(5);
   for (const s of sizes) expect(s).toBeGreaterThanOrEqual(36);
+});
+
+test("on a phone, a comment opened from its bubble sits below or above what it's about, never over it", async ({
+  page,
+}) => {
+  await start(page);
+  await seedElement(page, "#p2", "Is this the plan?");
+  await page.locator(".bub").first().tap();
+  const pop = page.locator(".pop.show");
+  await expect(pop).toContainText("Is this the plan?");
+  await settled(pop);
+  const p = (await pop.boundingBox())!;
+  const el = (await page.locator("#p2").boundingBox())!;
+  expect(p.y >= el.y + el.height || p.y + p.height <= el.y).toBe(true);
+  expect(p.x).toBeGreaterThanOrEqual(0);
+  expect(p.x + p.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 });

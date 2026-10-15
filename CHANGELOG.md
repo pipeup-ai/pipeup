@@ -12,7 +12,7 @@ change the API and the stored comment format.
 - **All comments is the hub while it is open.** The round button becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title: **@** (mentions of me) and **✓** (show resolved) are icon toggles, bold when on, with tooltips. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
 - **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
 - **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
-- **Pipeup is 50.8 KB gzip** with these, and its budget rises from 50 to 51 KB.
+- **Pipeup is 51.1 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
 
 ### Added
@@ -23,6 +23,11 @@ change the API and the stored comment format.
 
 ### Fixed
 
+- **A mention of you stays inline in its sentence.** It showed as a band on its own line, with the rest of the sentence pushed below.
+- **Pipeup's messages appear beside the round button.** They were at the bottom centre, over a deck's slide controls and a phone's last lines of text. While All comments is open they sit beside it.
+- **A new comment beside the page is never under the round button.** Near the bottom of the window, an open card or new comment in the column moves up just enough to clear it.
+- **On a phone, a comment opened from its bubble no longer covers what it's about.** With no room beside the bubble, the comment sits below the element, or above it.
+- **The selection's comment icon no longer covers the line above.** It sits just past the end of the paragraph's text, level with the selection's last line.
 - **All comments no longer closes when you click a comment on the page.** Clicking a comment's highlighted words, bubble or column thread while the panel is open now opens that thread in the panel. Before, the panel closed: depending on the case, the thread opened on the page instead, or nothing opened at all.
 
 ## [0.8.0-beta.1] - 2026-10-13

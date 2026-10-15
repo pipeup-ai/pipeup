@@ -1,13 +1,13 @@
-import { describeRange } from "../anchor/describe";
+import { blockOf, describeRange } from "../anchor/describe";
 import type { Ctx, View } from "./context";
 import { clip, h, selected } from "./dom";
 import { icon } from "./icons";
 import { ACTIVATES } from "./comment-mode";
-import { placeBar } from "./layout";
+import { placeIcon } from "./layout";
 
 const NOT_HERE = "[data-pipeup-ignore],input,textarea,select,[contenteditable]:not([contenteditable=false])";
 
-/** In comment mode, selecting text offers commenting: one comment icon, centred above the selection, never over it. */
+/** In comment mode, selecting text offers commenting: one comment icon beside the selection's block, never over its words. */
 export function createSelection(ctx: Ctx): View {
   const button = h(
     "button",
@@ -29,8 +29,14 @@ export function createSelection(ctx: Ctx): View {
 
   function position(): void {
     if (!range) return;
-    const { left, top } = placeBar(
-      range.getBoundingClientRect(),
+    // Past the right of the block's text, level with the selection's last line.
+    const text = range.cloneRange();
+    text.selectNodeContents(blockOf(range.commonAncestorContainer, ctx.root));
+    const sel = range.getBoundingClientRect();
+    const { left, top } = placeIcon(
+      sel,
+      [...range.getClientRects()].filter((r) => r.width).at(-1) ?? sel,
+      text.getBoundingClientRect().right,
       { width: bar.offsetWidth || 36, height: bar.offsetHeight || 34 },
       { width: window.innerWidth, height: window.innerHeight },
     );
