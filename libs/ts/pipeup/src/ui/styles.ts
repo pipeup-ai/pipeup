@@ -99,7 +99,7 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .dlg.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast.act{pointer-events:auto}
 .ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
-.rx .n{font-size:11px}
+.rx .n{font-size:11px;font-variant-numeric:tabular-nums}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
 .rx:disabled{cursor:default;opacity:.7}
 .rx.new,.rxq.new{animation:pu-in var(--mv) var(--eo) both}
@@ -211,7 +211,7 @@ transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-
 .mode>*{display:grid;place-items:center;transition:opacity var(--in) var(--eo)}
 .cnt,.has>.plus{opacity:0}
 .has>.cnt{opacity:1}
-.n{font-size:11px;font-weight:500;line-height:1;margin:-1.2px 0 0 1.2px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity var(--in) var(--eo)}
+.cnt>.n{font-size:11px;font-weight:500;line-height:1;margin:-1.2px 0 0 1.2px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity var(--in) var(--eo)}
 .n.s{font-size:8.5px;letter-spacing:-.04em}
 .n.on{opacity:1}
 .launch .mode:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
