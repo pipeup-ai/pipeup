@@ -95,7 +95,8 @@
       h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
 
       /* ---------- Hero: words and actions left, the showcase right, tops aligned ---------- */
-      .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 48px; align-items: start; padding: 32px 0 48px; }
+      /* Beside the words the showcase never narrows below 440 px, so its scenes keep the room they're drawn for. */
+      .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; padding: 32px 0 48px; }
       .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 27em; }
       .lede b { font-weight: 500; color: var(--ink); }
 
@@ -153,11 +154,13 @@
       /* "Stays on your device": a lock and a short note on hover, focus or tap. */
 
       /* ---------- The showcase: Document → Slides → Website ---------- */
-      .viewport { overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; touch-action: pan-y; }
+      /* The showcase has a smallest size: on a screen narrower than that it scrolls sideways rather than squeeze or cut its scenes. */
+      .ad { min-width: 0; overflow-x: auto; }
+      .viewport { min-width: 320px; overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; touch-action: pan-y; }
       /* The moving demo is never a target itself: pointing anywhere in it picks the whole showcase to comment on. */
       .track { display: flex; transition: transform 0.7s var(--move); pointer-events: none; }
-      .scene { flex: 0 0 100%; aspect-ratio: 4 / 3.2; position: relative; }
-      .win { position: absolute; inset: 22px; background: var(--paper); border: 1px solid #c4c2b9; box-shadow: 0 6px 20px rgba(40, 38, 30, 0.10); border-radius: 10px; overflow: hidden; }
+      .scene { flex: 0 0 100%; min-width: 0; aspect-ratio: 4 / 3.2; min-height: 400px; position: relative; }
+      .win { position: absolute; inset: 12px; background: var(--paper); border: 1px solid #c4c2b9; box-shadow: 0 6px 20px rgba(40, 38, 30, 0.10); border-radius: 10px; overflow: hidden; }
       .bar-dots { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 2; }
       .bar-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
       /* The page and its comment share one wide canvas; when the comment opens, the view slides over to it. */
@@ -259,7 +262,7 @@
 
       /* Keyboard: no pointer. Pipeup's block cursor (outline and naming bar) moves as each key is pressed, and the key shows as a caption. */
       .kb .page { position: absolute; left: 40px; right: 40px; top: 70px; }
-      .kb .kh { display: inline-block; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: var(--strong); margin: 0 0 12px; }
+      .kb .kh { display: inline-block; font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: var(--strong); margin: 0 0 40px; }
       .kb .kp { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0 0 16px; }
       .kb .sec { border: 1px solid var(--line); border-radius: 8px; background: var(--bone); padding: 12px 14px 2px; margin: 0 0 18px; }
       .kb .sec .kp { color: var(--ink); margin-bottom: 12px; }
@@ -324,7 +327,7 @@
         main { padding: 0 20px; }
         :root { --pan: 0px; }
         .scene { aspect-ratio: 4 / 5; }
-        .win { inset: 14px; }
+        .win { inset: 10px; }
         .cbox { left: 14px; right: 14px; width: auto; top: auto !important; bottom: 14px; }
         .slides .bars { height: 34%; bottom: 46%; }
         .site .cards { display: none; }
