@@ -217,9 +217,13 @@ export function createLauncher(ctx: Ctx): View {
   /** Opens or closes All comments; focus moves in on open, and back to the button when asked. */
   const setList = (on: boolean, back = false) => {
     if (ctx.state.listing === on) return;
+    // A thread open on the page moves into the panel: nothing is open in two places at once.
+    const was = on ? ctx.state.active : null;
+    if (was) ctx.state.active = null;
     ctx.state.listing = on;
     ctx.render();
-    if (on) (items(list)[0] ?? close).focus({ preventScroll: true });
+    if (was && latest.some((t) => t.id === was)) toggle(was, true);
+    else if (on) (items(list)[0] ?? close).focus({ preventScroll: true });
     else if (back) btn.focus({ preventScroll: true });
   };
 

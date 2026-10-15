@@ -293,3 +293,22 @@ test("an open card's reply box stays steady while the panel updates (it never fl
   expect(Math.min(...op)).toBeGreaterThan(0.95);
   await expect(box.locator("textarea")).toBeFocused();
 });
+
+test("a thread open on the page moves into the panel when it opens: it is never open twice", async ({
+  page,
+}) => {
+  await open(page, "site.html", { name: "Sam" });
+  await page.evaluate(() => {
+    const w = window as any;
+    return w.pu.document.comment(
+      w.Pipeup.describeElement(document.querySelector("[data-pipeup-id=cta-trial]"), document.body),
+      "Match the nav?",
+    );
+  });
+  await page.locator(".bub").first().click();
+  await expect(page.locator(".pop.show")).toContainText("Match the nav?");
+  await openAll(page);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(panel(page).locator(".cd.open")).toContainText("Match the nav?");
+  await expect(panel(page).locator(".cd.open textarea")).toBeFocused();
+});

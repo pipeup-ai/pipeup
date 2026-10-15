@@ -362,6 +362,8 @@ any of them off.
   - Each thread is a **card** (§7, *compact cards*), with the words it is about. Choosing a card **opens it
     out in place**: its top line, the words it is about (once), its comments and replies, its actions and its
     reply box, all usable there. Clicking its top line closes it again. Nothing opens on the page.
+  - **A thread is never open in two places.** One open on the page when the panel opens moves into the panel,
+    open there with the cursor in its reply box; while the panel is open, nothing opens beside the page.
   - **New comments are written in the panel while it is open.** Turning comment mode on leaves the panel
     open; choosing something on the page then adds a new card to the list where it falls in page order,
     joined to its place by the same line as an open thread. Sending turns it into a thread there.
@@ -1581,3 +1583,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-14 — All comments becomes the hub: the round button becomes the panel's footer while it is open, new comments are written in the panel, and comment mode leaves it open. Every thread is the same compact card (avatar, name, how long ago, words; actions at its top right, with ⋯ for Copy thread, Edit and Delete), in the column, beside a bubble, in the panel and in the drawer. The comment and reply boxes say "Comment (Reply) or add others with @" and have Cancel and Comment (Reply) buttons. The panel's header has no title: @ and ✓ are icon toggles (sections 5 and 7).
 - 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.6 KB to Pipeup (50.8 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
 - 2026-10-14 — From review of the build: the panel stays open until it is closed (× or Esc), and a click on the page never closes it. @ and ✓ always show, with tooltips. An open card shows its quote once. A deleted comment goes away, and deleting a thread's first comment removes the thread. The pulse follows its content while the page scrolls (sections 5 and 7).
+- 2026-10-14 — A thread open on the page moves into All comments when it opens, so the same thread is never shown twice (section 7).

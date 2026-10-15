@@ -276,7 +276,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       ctx.registerDraft(null);
     }
 
-    const next = pops() && ctx.state.active ? byId(ctx.state.active) : null;
+    // While All comments is open, threads open in it, never also beside the page.
+    const next = pops() && !ctx.state.listing && ctx.state.active ? byId(ctx.state.active) : null;
     if (!next || !ctx.visible(next)) {
       shown = null;
       shownView = null;
