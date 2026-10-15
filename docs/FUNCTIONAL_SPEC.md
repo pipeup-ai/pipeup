@@ -143,11 +143,16 @@ any of them off.
   doesn't scroll or turn a slide. Space keeps its usual job where it has one: typing in a field, and a link,
   button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
   keep it). On the block cursor, Enter comments and Space pauses.
+- **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
+  tab) and never counts it as a click elsewhere, and a click that started while paused finishes paused even if
+  Space is let go first. Enter in a page's field after such a click submits the form, as the page expects.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
   the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
   readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
   both keeping anything already typed, and **Pin** turns it into a pin at the block's centre (on touch
-  screens, at the next spot tapped). The bar uses icons, not words.
+  screens, at the next spot tapped). The bar uses icons, not words. It never covers the block it names; where
+  it has to sit over the page's words next to it, it fades while the pointer is over them.
+- Clicking another block while the comment box is empty moves the box there, with the cursor in it.
 - Pipeup skips invisible wrappers and very large containers when choosing the obvious block, and
   prefers anything the author marked with a stable identifier.
 - Besides paragraphs, headings, images, tables and controls, the obvious blocks include page
@@ -158,21 +163,36 @@ any of them off.
   is still the page, not a block.
 - **While text is selected in comment mode**, no block is outlined or named on hover, wherever the
   pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
-  selection is cleared or its comment is started or cancelled.
+  selection is cleared or its comment is started or cancelled. Double- or triple-clicking words selects them
+  without choosing the block they are in, and Esc with words selected clears the selection first.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
   with @"**. **Cancel** and **Comment** buttons sit beneath it while you write. **Enter** also sends,
   **Shift+Enter** starts a new line and **Esc** cancels. Comment stays grey until there are words.
+- **Typed words are never lost unless the reviewer chooses it.** Clicking or tapping elsewhere, moving to
+  another block, opening All comments, resizing the window and the slide changing all keep what is typed in a
+  comment or reply box. Only **Cancel**, or **Esc** in the box itself, throws words away, and then a message
+  offers **Undo** for a few seconds, which brings the box back where it was with the words in it.
 - **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
   their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
 - The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
   words back in a box with **Cancel** and **Save**; edits are marked as edited. Delete asks once more
-  before it deletes. **A deleted comment goes away**: nothing is left in its place, and deleting a thread's
+  before it deletes, and that second question can't be answered by the same double-click or double tap that
+  asked it. **A deleted comment goes away**: nothing is left in its place, and deleting a thread's
   first comment removes the whole thread, replies and all.
-- On touch screens: tap chooses a block, long-press selects text, and the naming bar's Pin drops a pin.
+- On touch screens: tap chooses a block, long-press selects text, and the naming bar's **Pin** waits for the
+  next tap and drops the pin there. A tap on the page's blank space closes an empty comment box, as a click
+  does. The selection's comment icon sits below the selection, clear of the phone's own selection menu.
+- **On a touch screen everything Pipeup puts on the page is at least 44 px across**, for a finger: bubbles, the
+  naming bar's icons, the selection's icon, a card's actions, menu rows, switches and close buttons. Bubbles,
+  the naming bar, comment boxes and threads always fit the screen: the naming bar's words shorten before its
+  icons go, and nothing sits under the comment control.
+- **Comment mode on a touch screen says how to use it by touch** ("Tap what you want to comment on"), not the
+  keyboard and mouse hints. Its hint stays beside the comment control while comment mode is on, with
+  **Done**, which leaves comment mode in one tap.
 
 **From the keyboard and with a screen reader**
 
@@ -189,7 +209,12 @@ any of them off.
   a mouse move took over), the first Tab starts it after the block last clicked, commented on or
   outlined under the pointer, and Shift+Tab before it; with none of those, both start on the first block
   in view. This holds from the page and from the Comment control and its menu (the menu closes). Inside
-  a comment box, a thread, the name field and All comments, Tab moves through their own buttons as usual.
+  a thread, the name field and All comments, Tab moves through their own buttons as usual.
+- **From a comment box, Tab moves on.** From an empty box, Tab and Shift+Tab close it and move the block
+  cursor to the next or previous block in one press: Enter sends and Esc cancels, so its buttons need no stop.
+  From a box with words, Tab and Shift+Tab go through the box's own controls (add your name, Cancel,
+  Comment) and then on to the next or previous block. The naming bar, bubbles and the comment control are not
+  stops on the way, and Tab never leaves a comment box for the page.
   Tab never reaches the page's own links and fields in comment mode; turning comment mode off gives them
   back. The mouse hint says Tab moves between blocks.
 - Moving the mouse onto another block while the block cursor is out hands the outline to the mouse; the
@@ -209,18 +234,29 @@ any of them off.
   comment on block after block. Moving it closes an open thread, as a click elsewhere does.
 - **Esc** steps back as with the mouse (a comment being written, then an open thread), then leaves
   comment mode, with focus back where it was before the block cursor started (the Comment control when
-  that was nowhere on the page). Esc always gets a keyboard user out. After a click, a selection or a
+  that was nowhere on the page). Esc always gets a keyboard user out. Esc only steps back from what has focus:
+  on the block cursor, a bubble or the naming bar it never throws away a waiting comment's words. After a click, a selection or a
   mouse move took the block cursor's place, the comment mode shortcut brings it back; otherwise the
-  shortcut leaves comment mode. How to move and how to leave are said when it starts.
+  shortcut leaves comment mode. How to move, how to pause (holding Space) and how to leave are said when it
+  starts.
 - Words can be selected with the browser's caret browsing (F7) or a screen reader's own selection. The
   comment icon appears once the selection stops changing, and **Enter** comments on it. A mouse drag that is still going is not a settled selection, and selecting words
   while the block cursor is out puts it away.
 - With the block cursor not in use, Enter on a focused page control does what the page expects, even when
   words are selected, and Enter in a page's form field submits the form. Moving the block cursor off the
-  block a comment box is on leaves the box waiting there with its words; the cursor's keys move the cursor,
-  and Enter returns to the box. Modifier+↑/↓ are left to the page.
-- Resolving a thread returns focus to the block cursor, or to the Comment control when there is none; Send
-  keeps focus in the reply line.
+  block a comment box is on leaves the box **waiting** there with its words: it stays beside its block,
+  dimmed, and the block keeps a faint outline, so it is always clear where the comment will go. The cursor's
+  keys move the cursor. Enter on another block, a click on another block, or Enter on a bubble takes the
+  reviewer back to the waiting box: its block is outlined and named again, the page scrolls to it when it is
+  out of view, focus is in the box, and Pipeup says "Finish or cancel this comment first". Modifier+↑/↓ are
+  left to the page.
+- **Keys Pipeup acts on stay with Pipeup.** Keys used in its menus, its panel, a card, a box or the block
+  cursor never also reach the page, pressed or let go, so a deck never turns a slide because of them; keys
+  Pipeup doesn't use always reach the page. The Esc that leaves comment mode is Pipeup's too.
+- **Focus never drops to the page.** Resolving or deleting a thread returns focus to the block cursor when it is
+  out; otherwise to the next thread where it was (the next card in the column or in All comments), or the
+  Comment control when there is none. After React, choosing an emoji, Edit (saved or cancelled) and deleting
+  a reply, focus stays on the same card. Send keeps focus in the reply line.
 - Pins are dropped with the naming bar's Pin, at the centre of the block.
 
 ## 6. Commenting on slides
@@ -235,6 +271,15 @@ any of them off.
   while the keyboard's block cursor is in use, ↑ and ↓ choose the block around it and a block inside it,
   so decks that use ↑ and ↓ for vertical slides wait while it is out (a click hands them back). ← and →
   always reach the deck.
+- **A deck's own controls keep working in comment mode** (its arrows, progress bar and slide number) without
+  the author marking them, as areas marked to ignore do.
+- **Any slide that is showing can be commented on**, including slides scrolled into view on a deck that
+  scrolls; the block cursor starts on what is in view.
+- A comment being written on a slide that goes away leaves nothing drawn over the next slide: it steps aside
+  with its words (§8), and comment mode carries on.
+- **On a deck that fits itself to the window**, opening All comments makes the deck refit into the space
+  beside the panel, and closing it gives the space back. Where a deck keeps its own controls in the
+  bottom-right corner (a slide number, arrows), the comment control sits just above them.
 - The comment control's number counts the open threads **here** (on this slide); a small mark on the
   control shows when other slides have open threads, and its label says how many ("2 here · 5 on
   other slides").
@@ -268,13 +313,16 @@ any of them off.
 - Each thread is a **compact card**: the writer's avatar and name, **how long ago** it was written (just
   now, 5m ago, 2h ago, with the exact time on hover), the comment's words, and its reply count. Cards are
   close to the comment cards people know from other editors, with less padding.
+- **A long comment shows its first few lines at rest**, ending with **more**; the open thread shows all of it,
+  so one long comment never pushes the others out of reach.
 - **The same card is used everywhere a thread shows**: in the column, beside a bubble, in All comments
   and in the drawer. In All comments the card also shows the words it is about; beside the page it sits
   level with them instead.
 - On slides and rich pages without a free column, element and pin comments show as **small
   bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it. Where there's
   no room beside it (on a phone, or near the window's edge), the preview and the thread sit **below what
-  they're about, or above it, never over it**, and always on screen.
+  they're about, or above it, never over it**, and always on screen. Bubbles themselves are always wholly on
+  screen, and threads on the same element each have their own bubble, never one on top of another.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
   click; its thread opens just below the line so the words stay visible.
 - A hover preview **waits for you**: it stays open while the pointer moves from the highlight or
@@ -293,12 +341,17 @@ any of them off.
 
 - Clicking a highlight, bubble, preview or card opens it: the card lifts slightly with a soft shadow,
   lines up with its content, and other threads dim and step aside.
-- An open card or a new comment in the column is **never under the comment control**: when it would reach
-  the control's corner, it moves up just enough to clear it, so its buttons can always be pressed.
+- An open card, a new comment or a thread beside a bubble is **never under the comment control**, in the
+  column or on a phone: when it would reach the control's corner, it moves up just enough to clear it, so its
+  buttons can always be pressed. A new comment's box and buttons are always in the window, even on a page's
+  last lines.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
-  elsewhere on the page, or by opening another thread.
+  elsewhere on the page, or by opening another thread. **A reply being written is kept** when its thread
+  closes, however it closes, and is back in its reply box when the thread opens again, until it is sent,
+  cancelled or thrown away with Esc (§5). Esc in a reply box with words throws them away first (with Undo);
+  the next Esc closes the thread.
 - An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
-  **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. A new comment
+  **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
   opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
   is in use, with focus back on the block cursor.
 - Every thread can be opened from the keyboard: bubbles and threads at rest in the column are buttons,
@@ -318,6 +371,11 @@ any of them off.
 - **React**, **✓ Resolve** (or **Reopen**) and **⋯**, which holds **Copy thread** and, on your own
   comments, **Edit** and **Delete**. Replies have React and ⋯. Copy takes the **whole thread** (see §7a);
   resolving fades the thread and its highlight away.
+- A card's actions can only be pressed while they show: on touch screens, the first tap on a closed card opens
+  it. After Resolve, the card that moves into its place shows its actions only once the pointer moves, so a
+  second click never resolves a different thread. React's quick row closes when its thread does.
+- The **⋯** menu works from the keyboard like the comment control's menu (arrows move, Enter chooses), and Esc
+  closes it before the thread.
 - The thread is answered from its reply box, which lines up with the indented replies. Clicking
   anywhere on it puts the caret at the end of what is there.
 
@@ -340,7 +398,8 @@ any of them off.
 - **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
   appear **beside the comment control**, never at the bottom centre where decks keep their slide controls and
   phones show the page's last lines. While All comments is open they sit beside the panel, and above its
-  footer when the panel fills a phone's screen.
+  footer when the panel fills a phone's screen. Nothing of Pipeup's covers a message: comment mode's hint waits
+  until the menu has closed, then shows for its usual time.
 - **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
   **⋯** for the rest of the menu.
 - **Otherwise, clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
@@ -352,7 +411,7 @@ any of them off.
     and leaves the menu open; the row then shows the name and avatar again. The menu never closes
     while the name is being edited;
   - **Copy comments**, one row that opens to its two choices beneath it (a second click, or → from the
-    keyboard; ← or a second click folds them away). **As Markdown** copies every open thread as Markdown for
+    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown for
     AI, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
     then just the names and words (§7a). Each has a one-line tooltip, and the choices are folded each time the
     menu opens. There is no copy-format setting;
@@ -367,8 +426,9 @@ any of them off.
     switch moves and puts the block cursor on the page (§5).
   - The comment control's name tells screen readers whether comment mode is on.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
-  switch; Esc closes the menu) and by touch
-  with no hover needed. Switches ease between their states.
+  switch; Esc closes the menu), however it was opened, and by touch
+  with no hover needed. Switches ease between their states. The menu always fits in the window; where it
+  can't (a phone on its side, a page zoomed far in), it scrolls.
 - Choosing a copy choice or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
   click or tap anywhere outside the menu and the button, or once the pointer has been away from
   both for **3 seconds** (coming back sooner keeps it open). On touch screens, where there is no
@@ -417,7 +477,10 @@ any of them off.
     otherwise the page handles it.
     A click on a comment on the page (its highlighted words, bubble, pin or column thread) doesn't count as
     a click on the page: it opens that thread in the panel, as choosing its row does, and the panel stays open.
-  - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
+  - On narrow screens the panel takes the full width and opens threads out the same way, with no line. There,
+    an open card keeps the words it is about and where it is, since the page can't be seen beside it.
+  - From the keyboard, the panel's filters and close button come first, then its cards, then its footer.
+    Screen readers hear the panel as a list of comments under a heading.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
@@ -431,6 +494,7 @@ any of them off.
   (noting resolved ones are left out) and a one-line instruction to work through them and say what
   changed.
 - **Copy comments › As text** gives **plain text** — where it is, then just the names and words.
+- Where a thread is and the words it quotes are copied the same whether or not its slide or view is showing.
 - There is no copy-format setting.
 - Resolved threads are left out of both copy choices.
 
@@ -480,7 +544,9 @@ any of them off.
   - **Orphaned** — its content is gone; the comment remains in the panel with a **snapshot** of
     what the reviewer was looking at.
 - Every comment remembers the view it was made in: the slide, and whatever the page reports about
-  itself (such as the open tab or route), with a readable name when the page gives one.
+  itself (such as the open tab or route), with a readable name when the page gives one. A comment belongs
+  to a view only when what it is about is inside that view; content outside a tab panel or accordion shows
+  its comments whatever is open.
 - Comments made in a view that is currently hidden (another tab, accordion, route or slide) show
   nothing on the page, are counted as elsewhere on the comment control, and are listed in All
   comments under where they live. Choosing one **reopens that view** when the page tells Pipeup how
@@ -511,7 +577,8 @@ any of them off.
   for the column, the gutter closes and the content eases back to the true centre.
   This happens only on pages that reserve the gutter (§4); Pipeup never shifts a page that doesn't.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
-  as part of the page.
+  as part of the page. It takes the page's accent colour (or the author's) only when words in it are readable
+  on Pipeup's surfaces, at least 4.5 to 1; otherwise it uses its own.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
 - **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
@@ -535,7 +602,10 @@ any of them off.
   Words that sit directly on the page (a thread at rest in the column) keep their soft, boxless look but
   always sit on their own soft backing, so they stay readable whatever the page behind them is. The only
   parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
-  readable under them in both looks.
+  readable under them in both looks, whatever colour is behind the words (a dark footer or button on a light
+  page, or the reverse) and whichever look the reviewer chose.
+- **Each comment is shown in its own text direction**, so Arabic and Hebrew read right to left whatever the
+  page's direction; so is the box it is written in.
 - **Pipeup says what the page does to it.** Styles on the page's top-level element that fade, filter, blend,
   transform or zoom everything under it reach Pipeup too, and can't be undone from inside it. Pipeup
   notes them once in the browser console, says when its words may be hard to read under them, and reports the same
@@ -546,8 +616,10 @@ any of them off.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
   every thread, the menu and All comments can be reached and used without a pointer; focus is never
   lost after sending, cancelling or closing; and screen readers are told which block a comment is
-  being written on, when it changes, and when comment mode ends. Pipeup's focus marks stay visible in
-  high-contrast (forced colours) modes.
+  being written on, when it changes, when a comment or reply is sent, and when comment mode ends. Keyboard
+  focus is always plainly visible on every part of Pipeup (at least 3 to 1). In high-contrast (forced
+  colours) modes, focus marks, switches, the filters' on and off states, your own reactions and whether
+  comment mode is on all stay visible.
 
 **Motion — nothing switches on or off abruptly**
 
@@ -555,7 +627,8 @@ any of them off.
 - Outlines and bars **glide between targets** rather than vanishing and reappearing.
 - Entrances ease out, movement eases in and out, with short durations and no overshoot or bounce.
 - Pins settle into place; threads open smoothly and the ones around them shift to make room;
-  counts roll; "typing" indicators breathe.
+  counts roll; "typing" indicators breathe. Lists ease too: cards a filter takes away or brings back, a card
+  opening out in All comments, and a new thread taking its comment box's place.
 - Other people's cursors glide between updates instead of jumping.
 - The one exception: anything the reviewer **drags** follows the pointer exactly.
 - With **reduced motion** on, movement becomes soft cross-fades — still eased, never instant.
@@ -1628,3 +1701,15 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-15 — The menu gets shorter and plainer: **Copy comments** is one row that opens to its two choices (As Markdown, As text), a second click instead of two rows, and **Look** is renamed **Theme** (section 7). Comment mode's pause moves from holding ⌘ (Ctrl elsewhere) to holding **Space** (section 5): ⌘-click opens a link in a new tab, Option-click pins (and downloads a link in some browsers), and Space is the one key that leaves a click alone. On the block cursor Space now pauses; Enter comments.
 - 2026-10-15 — The comment control becomes a small square of frosted glass tucked into the bottom-right corner (flush with the edges, its top left rounded, no border), with the count inside a larger bubble; pointed at, it reaches left to show its shortcut instead of a tooltip above it (section 7). It covers much less of the page than the round button did.
 - 2026-10-15 — In comment mode the comment control opens All comments (its footer has the switch and ⋯ for the menu); outside it, the menu as before. In All comments' filters, the @ and ✓ icons stand the same height, and each sits on the middle line of its word.
+- 2026-10-15 — From the click-path review of 0.8.0-beta.2 (six testers: keyboard, mouse, slides, websites, touch,
+  looks and assistive settings). **Tab from a comment box moves on**: an empty box closes on Tab or Shift+Tab and
+  the block cursor moves in one press; a box with words goes through its own controls, then waits beside its
+  block, dimmed, with a faint outline, and Enter or a click elsewhere takes you back to it. **Typed words are
+  never lost** unless Cancel or Esc in the box throws them away, with Undo; replies being written are kept
+  when their thread closes. Keys Pipeup acts on never reach the page; focus never drops to the page after an
+  action; Delete can't be confirmed by a double-click; a card's hidden actions can't be pressed. On touch: 44 px
+  targets, things fit the screen, Pin waits for the next tap, a touch hint with **Done**, and threads open
+  without the keyboard. Decks: their own controls keep working in comment mode, any showing slide can be
+  commented on, and decks that fit the window refit beside All comments. Long comments show a few lines at
+  rest. Highlights stay readable over any colour, a page's accent is used only when readable, comments keep
+  their text direction, and high-contrast modes keep every state visible (sections 5, 6, 7, 7a, 8 and 9).
