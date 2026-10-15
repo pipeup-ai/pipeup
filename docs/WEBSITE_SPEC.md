@@ -109,7 +109,7 @@ use. The page:
   reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
   maker; Assist says nothing is sent (the model runs on the reviewer's device, and the browser may download it once) and that each reviewer is asked first.
 - Ends with a plain card, "Your own mailbox" (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's card links to it.
-- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, the assistant reading, then a reply that is only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
+- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, then inside its card, under the comment as Pipeup shows replies: the assistant's quiet reading line, then its reply, only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
 - Says, in one line near the top, that people can make and publish their own add-ons, and links the guide (docs/ADDONS_GUIDE.md); Pipeup's own list is unchanged.
 - Has a **Try it** link on each add-on card, leading to a try page for that add-on (see "Add-on try pages" below).
 - Flows the full width of the window like the home page, text beside its demo.
@@ -219,6 +219,11 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 - The page never claims what isn't true yet: no install command or CDN address until Pipeup is
   published, and later features (shared rooms, live presence) are not promised.
+- **The animations show Pipeup as the version the site carries draws it.** In the home showcase and the add-on demos,
+  the comment box, the card a sent comment becomes, the selection's comment icon, the block outline and its naming bar
+  look and sit where Pipeup puts them: today the box with its rounded line and Cancel and Comment, the compact card
+  (who, how long ago, its actions at the top right, the words, and a line to reply), the icon just past the end of the
+  paragraph's text, and the naming bar with Around it and Pin. When Pipeup's look changes, the animations change with it.
 
 ## 6. Running it
 
@@ -286,3 +291,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-11 — Proposed (not built): the install commands (plugin and one-command installer) come first wherever the site offers the copy-and-paste prompt, which stays as the fallback; llms.txt and the Markdown copies lead with the install line too (FUNCTIONAL_SPEC 15a).
 - 2026-10-12 — Proposed (not built): llms.txt, llms-full.txt, the Markdown copies and the site prompts carry the same instructions for answering comments (FUNCTIONAL_SPEC 15b).
 - 2026-10-12 — Built: the install commands in the README, llms.txt and the Markdown copies lead with the prompt as the fallback; on the "create HTML" walkthrough the one-command install sits as a quiet line under the steps, below the Copy prompt step, so the page still fits one screen.
+- 2026-10-15 — The home showcase and the add-on demos draw Pipeup as the current version does: the comment box with its rounded line and Cancel and Comment, settling into the compact card once sent (how long ago, actions at the top right, a line to reply); the selection's icon just past the end of the paragraph's text; the naming bar with Around it and Pin. In the Assist demo the reading line and the reply sit inside the comment's card, not in boxes of their own. A new rule keeps the animations in step with Pipeup's look (section 5).
