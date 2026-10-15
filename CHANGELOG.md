@@ -7,8 +7,20 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- **Tab from a comment box moves on.** In comment mode, Tab (or Shift+Tab) from an empty comment box closes it and moves the block cursor to the next (or previous) block in one press, instead of walking through Cancel, the naming bar, the bubbles and the comment control first. From a box with words, Tab goes through its own buttons (Cancel, Comment) and then moves on; the box waits beside its block, dimmed, with a faint outline on the block, and Enter or a click on another block takes you back to it ("Finish or cancel this comment first").
+- **Typed words are never lost without asking.** Esc in a comment box with words, or Cancel, throws them away with an **Undo** for a few seconds; Esc anywhere else (a bubble, the naming bar, the block cursor) never does. A reply being written is kept when its thread closes (a click or tap elsewhere, Esc, another thread, or the window crossing between the column and pop-ups) and is back when it opens; Esc in a reply with words clears them first, with Undo, and the next Esc closes the thread.
+- **Focus never drops to the page.** After Resolve or deleting a thread, focus goes to the next thread (or the block cursor, or the comment control); React, choosing an emoji, Edit and deleting a reply keep it on the card. A comment's ⋯ menu works with the arrow keys, and Esc closes it before the thread.
+- Pipeup is 53.8 KB gzip, and its budget rises from 53 to 54 KB.
+
 ### Fixed
 
+- **Keys used in Pipeup no longer reach the page.** Arrows, Home and End in the menu and All comments, Enter and Space on Pipeup's buttons, and what is typed in a box (going down or coming up) stay with Pipeup, so a deck no longer turns its slide; ← and → on the comment control still do. The Esc that steps back or ends comment mode is Pipeup's, so a reveal.js deck no longer opens its overview.
+- **A double-click on Delete deletes nothing**: its "Delete for everyone" question ignores the click that asked it.
+- **A card's hidden actions can't be pressed**: on a touch tablet a tap on a closed card opens it instead of resolving it, and after Resolve the next card's actions wait for the pointer to move.
+- Enter in a page's form field in comment mode submits the form, instead of opening a comment on its submit button.
+- The line to a new comment in All comments goes when the panel closes. Letting go of Space brings the block cursor's outline back. Double- or triple-clicking words in comment mode selects them without opening a box on the paragraph, and Esc with words selected clears the selection first. Clicking a second block moves an empty box there with the caret in it. The menu opened with the mouse takes the arrow keys, and Esc on Copy comments' choices folds them first. Screen readers hear "Reply sent" and "Comment added", and the edit box is named "Edit comment".
 - **Reaction counts show on cards and threads.** Since reactions arrived in 0.7.0, a chip showed its emoji with a blank where the number belongs: the comment control's rule for hiding its own count also hid the chips' numbers. All comments' summary line was unaffected.
 
 ## [0.8.0-beta.2] - 2026-10-15

@@ -16,7 +16,8 @@ export interface DraftOptions {
   /** Saves a new name (the same path as the menu's Your name). */
   rename(name: string): Promise<void>;
   onSend(text: string, mentions: Mention[]): Promise<void>;
-  onCancel(): void;
+  /** `words`: what Cancel or Esc threw away ("" for an empty box). */
+  onCancel(words: string): void;
   /** Who can be mentioned with `@`. */
   people?(): Person[];
 }
@@ -30,6 +31,8 @@ export interface DraftBox {
   /** Remembers the caret; the returned function focuses the box and puts it back. */
   caret(): () => void;
   isEmpty(): boolean;
+  /** Puts words back in the box (Undo), with the caret after them. */
+  fill(words: string): void;
 }
 
 /**
@@ -158,6 +161,12 @@ export function renderDraft(o: DraftOptions): DraftBox {
     },
     focus: () => comp.focus(),
     isEmpty: () => comp.input.value.trim() === "",
+    fill: (words) => {
+      comp.input.value = words;
+      comp.input.dispatchEvent(new Event("input"));
+      comp.focus();
+      comp.input.setSelectionRange(words.length, words.length);
+    },
   };
 }
 
@@ -179,7 +188,7 @@ export function draftBox(ctx: Ctx, d: Draft): DraftBox {
       rename: (name) => ctx.menu.rename(name),
       onSend: (text, mentions) => ctx.postDraft(text, mentions),
       people: () => ctx.people(),
-      onCancel: () => ctx.cancelDraft(),
+      onCancel: (words) => ctx.cancelDraft(words),
     });
   boxes.set(d, box);
   ctx.registerDraft(box);

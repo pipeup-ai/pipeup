@@ -4,8 +4,10 @@ import type { Mention } from "../model/types";
 import { draw } from "./icons";
 
 export interface ComposerOptions {
-  /** The line's name for screen readers, and the send button's word ("Comment", "Reply", "Save"). */
+  /** The send button's word ("Comment", "Reply", "Save"), and the line's name for screen readers unless `name`. */
   label: string;
+  /** The line's name for screen readers, when it isn't the button's word ("Edit comment"). */
+  name?: string;
   /** What the empty line says ("Comment or add others with @"). */
   placeholder?: string;
   /** Words already in the line (editing a comment). */
@@ -15,7 +17,8 @@ export interface ComposerOptions {
   thread?: () => string;
   /** `mentions`: the people named in the words, found after trimming. */
   onSend(text: string, mentions: Mention[]): Promise<void> | void;
-  onCancel?(): void;
+  /** Cancel or Esc: `words` are what was thrown away ("" when the line was empty). */
+  onCancel?(words: string): void;
   /** Who can be mentioned with `@`; without it, `@` is just a character. */
   people?(): Person[];
 }
@@ -83,7 +86,7 @@ export function composer(o: ComposerOptions): Composer {
   const input = h("textarea", {
     class: "input",
     rows: "1",
-    "aria-label": o.label,
+    "aria-label": o.name ?? o.label,
     placeholder: o.placeholder ?? "",
   });
   const send = h("button", { class: "send", type: "button", inert: true }, o.label);
@@ -273,6 +276,8 @@ export function composer(o: ComposerOptions): Composer {
     if (o.people) openList();
   });
   input.addEventListener("blur", () => options.length && closeList());
+  // What is typed here is never the page's: not the key going down, nor coming up (a deck may turn on either).
+  for (const t of ["keyup", "keypress"]) input.addEventListener(t, (e) => e.stopPropagation());
   input.addEventListener("keydown", (e) => {
     e.stopPropagation();
     if (options.length && !e.isComposing) {
@@ -299,12 +304,14 @@ export function composer(o: ComposerOptions): Composer {
       stop();
     }
   });
+  /** Cancel and Esc: the words go (the caller may offer them back); a reply line that had words keeps focus. */
   const stop = () => {
+    const words = input.value.trim() ? input.value : "";
     input.value = "";
     sync();
-    input.blur();
+    if (!words || kind !== "reply") input.blur();
     ended();
-    o.onCancel?.();
+    o.onCancel?.(words);
   };
   // A press on a button keeps the caret where it is (the line doesn't lose focus first).
   for (const b of [send, cancel]) b.addEventListener("mousedown", (e) => e.preventDefault());
