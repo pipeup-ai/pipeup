@@ -30,6 +30,43 @@ describe("labelOf", () => {
   });
 });
 
+describe("labelOf for controls and structures", () => {
+  it("names a control by what it is and its own words: its label, its chosen option", () => {
+    document.body.innerHTML = `
+      <label><input type="checkbox" id="c"> Email me updates</label>
+      <button role="switch" id="s">Dark mode</button>
+      <button role="tab" id="t">Overview</button>
+      <details><summary id="d">Shipping and returns</summary></details>
+      <select id="p"><option>Monthly</option><option selected>Yearly</option></select>
+      <input id="e" placeholder="you@example.test">
+      <ul id="l"><li>One</li></ul>
+      <div role="constructor" id="x">Odd role</div>`;
+    const at = (s: string) => labelOf(document.querySelector(s)!);
+    expect(at("#c")).toBe("Checkbox · Email me updates");
+    expect(at("#s")).toBe("Switch · Dark mode");
+    expect(at("#t")).toBe("Tab · Overview");
+    expect(at("#d")).toBe("Disclosure · Shipping and returns");
+    expect(at("#p")).toBe("Dropdown · Yearly");
+    expect(at("#e")).toBe("Field · you@example.test");
+    expect(at("#l")).toBe("List · One");
+    // Only the roles Pipeup knows count, never a name every object has.
+    expect(at("#x")).toBe("Block · Odd role");
+  });
+
+  it("names a wordless block by its shape", () => {
+    document.body.innerHTML = `<div id="b"></div>`;
+    const b = document.querySelector("#b")!;
+    const box = (width: number, height: number) =>
+      (b.getBoundingClientRect = () => ({ width, height }) as DOMRect);
+    box(40, 120);
+    expect(labelOf(b)).toBe("Bar");
+    box(200, 60);
+    expect(labelOf(b)).toBe("Bar");
+    box(50, 50);
+    expect(labelOf(b)).toBe("Shape");
+  });
+});
+
 describe("locate", () => {
   it("describes a text comment by section and block", () => {
     const p = document.querySelector("p")!;
@@ -67,6 +104,36 @@ describe("locate", () => {
     expect(locate(plain, resolveAnchor(plain, document.body), document.body).where).toBe(
       'pricing · pro › Section "Pricing" › Link · Start free trial',
     );
+  });
+
+  it("takes a section's heading from before it, never from another card or a hidden panel", () => {
+    document.body.innerHTML = `
+      <h2>Features</h2>
+      <div class="cards">
+        <div class="card"><h3>Offline first</h3><p>On the plane.</p></div>
+        <div class="card" id="listen"><h3>Listen</h3> <p>Natural voices.</p></div>
+      </div>
+      <div class="wrap"><h2>Pricing</h2></div>
+      <p id="price">Pro is $12.</p>
+      <div role="tabpanel" hidden><h2>FAQ</h2><p id="refunds">Refunds within 30 days.</p></div>
+      <p id="fine">Fine print.</p>`;
+    const where = (s: string) => {
+      const a = describeElement(document.querySelector(s)!, document.body);
+      return locate(a, resolveAnchor(a, document.body), document.body).where;
+    };
+    expect(where("#listen")).toBe('Section "Features" › Block · Listen Natural voices.');
+    // A wrapper holding only its heading is the heading.
+    expect(where("#price")).toBe('Section "Pricing" › Paragraph · Pro is $12.');
+    // Content hidden with its heading keeps it.
+    expect(where("#refunds")).toBe('Section "FAQ" › Paragraph · Refunds within 30 days.');
+    expect(where("#fine")).toBe('Section "Pricing" › Paragraph · Fine print.');
+  });
+
+  it("says when the id is a marked element around the one commented on", () => {
+    const own = describeElement(document.querySelector(".bar")!, document.body);
+    expect(locate(own, resolveAnchor(own, document.body), document.body).within).toBe(true);
+    const cta = describeElement(document.querySelector("a")!, document.body);
+    expect(locate(cta, resolveAnchor(cta, document.body), document.body).within).toBe(false);
   });
 
   it("explains orphaned comments with their snapshot", () => {

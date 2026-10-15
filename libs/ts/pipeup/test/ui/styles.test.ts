@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { STYLES } from "../../src/ui/styles";
 
-/** The custom properties Pipeup's host writes onto its layer from script (theme.ts, host.ts). */
-const SET_BY_SCRIPT = ["--pu-accent", "--pu-font", "--pu-on", "--pu-panel", "--pu-pop"];
+/** The custom properties Pipeup's host writes onto its layer from script (theme.ts, host.ts, app.ts). */
+const SET_BY_SCRIPT = ["--pu-accent", "--pu-font", "--pu-lift", "--pu-on", "--pu-panel", "--pu-pop"];
 /** And on its own elements: a column comment's full height, for easing it open (column.ts). */
 const SET_ON_ELEMENTS = ["--full"];
 /** The public tokens add-ons may use: aliases of the short internal ones (add-ons design §3.4). */
@@ -27,7 +27,7 @@ describe("the stylesheet", () => {
     ).toEqual([]);
   });
 
-  it("keeps its own tokens short: only the host's five and the public set carry the --pu- prefix", () => {
+  it("keeps its own tokens short: only the host's six and the public set carry the --pu- prefix", () => {
     expect([...new Set(STYLES.match(/--pu-[\w-]+/g))].sort()).toEqual([...SET_BY_SCRIPT, ...PUBLIC].sort());
   });
 

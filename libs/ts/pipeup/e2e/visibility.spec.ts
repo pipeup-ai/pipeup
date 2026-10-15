@@ -123,7 +123,7 @@ test("with comments hidden, All comments shows them while it is open; closing it
   await expect(panel(page)).toHaveCount(1);
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
   await panel(page)
-    .getByRole("menuitem", { name: /Is 20% realistic\?/ })
+    .getByRole("button", { name: /Is 20% realistic\?/ })
     .click();
   await expect(panel(page).locator(".xr")).toContainText("Is 20% realistic?");
   await expect.poll(() => highlightAlpha(page)).toBeGreaterThan(0.5);
@@ -161,13 +161,13 @@ test("✓ Resolved is a filter in the All comments panel, not the menu", async (
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   const sw = panel(page).locator(".hd").getByRole("button", { name: "Resolved", exact: true });
   await expect(sw).toHaveAttribute("aria-pressed", "false");
-  await expect(panel(page).locator(".list").getByRole("menuitem")).toHaveCount(0);
+  await expect(panel(page).locator(".cd")).toHaveCount(0);
   await sw.click();
   await expect(sw).toHaveAttribute("aria-pressed", "true");
   await expect(
     panel(page)
       .locator(".list")
-      .getByRole("menuitem", { name: /Is 20% realistic\?/ }),
+      .getByRole("button", { name: /Is 20% realistic\?/ }),
   ).toHaveCount(1);
   await expect(panel(page)).toHaveCount(1);
   // Space toggles it back from the keyboard.
@@ -208,7 +208,7 @@ test("the open panel makes room: the page moves over by its width, and back when
   );
   // The thread opened from the panel sits on its content after the reflow.
   await panel(page)
-    .getByRole("menuitem", { name: /Is 20% realistic\?/ })
+    .getByRole("button", { name: /Is 20% realistic\?/ })
     .click();
   // Its place on the page is marked, and the line from the panel points at it.
   await expect(page.locator(".cx.show")).toHaveCount(1);

@@ -2,12 +2,17 @@ import type { Resolved } from "../anchor/resolve";
 import type { Anchor } from "../model/types";
 import type { AnchorPoint } from "./layout";
 
+/** Page controls a click works: a bubble on one sits just outside it, so all of it stays the page's. */
+export const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
+
 /** Where an element or pin comment's bubble sits (viewport coordinates). Text comments have no bubble. */
 export function bubblePoint(a: Anchor, r: Resolved): { x: number; y: number } | null {
   if (r.state === "orphaned" || !r.element || a.quote) return null;
   const box = r.element.getBoundingClientRect();
   if (!box.width && !box.height) return null;
   if (a.point) return { x: box.left + a.point.x * box.width, y: box.top + a.point.y * box.height };
+  // The bubble's tail is its bottom left: at the control's right edge, level with its top, the bubble is beside it.
+  if (r.element.matches(INTERACTIVE)) return { x: box.right + 4, y: box.top + 14 };
   const range = r.element.ownerDocument.createRange();
   range.selectNodeContents(r.element);
   const content = range.getBoundingClientRect();

@@ -199,12 +199,14 @@ border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) va
 markers that hold focus are invisible. */
 .pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}
 .km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
-.sr,.mn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.sr,.mn-sr,.hh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;max-width:calc(100% - 16px);padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
 white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform .3s var(--eo)}
 .namebar.show.glide{transition-property:all;transition-duration:var(--mv);transition-timing-function:var(--eio)}
+/* It sits over the page's words beside its block: pointed at anywhere but its icons, it fades so they can be read. */
+.namebar:hover:not(:has(.nb:hover)){opacity:.15}
 .namebar .lbl{margin-right:6px;max-width:260px;overflow:hidden;text-overflow:ellipsis}
 .namebar .nb{padding:4px;display:grid;place-items:center;border-radius:7px;transition:background-color .2s var(--eo),color .2s var(--eo)}
 .namebar .nb:hover,.namebar .nb:focus-visible{background:var(--ho);color:var(--k)}
@@ -214,9 +216,9 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 /* The comment control: a small square of frosted glass tucked into the page's corner (flush right and bottom, its
 top left rounded), with the open count inside a comment bubble. Pointed at, it reaches left just far enough to show
 its shortcut (and anything add-ons say). Its layers and numbers cross-fade in place. */
-.launch{position:fixed;right:0;bottom:0;display:flex;flex-direction:row-reverse;align-items:center;border-top-left-radius:10px;pointer-events:auto;transform-origin:100% 100%;
+.launch{position:fixed;right:0;bottom:var(--pu-lift);display:flex;flex-direction:row-reverse;align-items:center;border-top-left-radius:10px;pointer-events:auto;transform-origin:100% 100%;
 background:color-mix(in srgb,var(--su) 62%,transparent);-webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5);
-transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-color .3s var(--eo),color .3s var(--eo)}
+transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-color .3s var(--eo),color .3s var(--eo),bottom var(--mv) var(--eio)}
 .launch:has(.mode.on){background:color-mix(in srgb,var(--pu-accent) 90%,transparent);color:var(--pu-on,#fff)}
 /* While All comments is open, the control is the panel's footer: it draws in, and the footer takes its place. */
 .layer.listing .launch{opacity:0;transform:scale(.6);pointer-events:none}
@@ -248,7 +250,7 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
 .launch .mode[aria-expanded=true]+.ttip{grid-template-columns:minmax(0,0fr);opacity:0}
 @media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
-.menu{--b:40px;position:fixed;right:8px;bottom:var(--b);width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
+.menu{--b:calc(40px + var(--pu-lift));position:fixed;right:8px;bottom:var(--b);width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .menu.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
 @media (max-height:600px){.menu{max-height:calc(100% - var(--b) - 8px);overflow-y:auto;overscroll-behavior:contain}}
@@ -310,7 +312,7 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 /* Threads in the panel are the same cards; opened, a card shows the thread beneath the words it's about. */
 .cd{position:relative;margin-top:6px;border:1px solid var(--ln);border-radius:10px}
 /* What filters take away or bring back folds out or in, and a card opening or closing eases to its new height. */
-.list :is(.cd,[role=group],.sec){transition:all var(--mv) var(--eio)}
+.list :is(.cd,[role=listitem],.sec){transition:all var(--mv) var(--eio)}
 .list .out{opacity:0!important;margin-top:0;padding-block:0;border-width:0;overflow:hidden}
 .cd.open{border-color:transparent;box-shadow:var(--sh)}
 .cd.done{--o:.6}
@@ -349,9 +351,12 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}
 /* Messages sit beside the comment control, never over the page's own bottom bar; beside the panel while it is open,
 and above its footer when it fills the screen. */
-.toast{--r:40px;position:fixed;right:var(--r);bottom:4px;max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
+.toast{--r:40px;position:fixed;right:var(--r);bottom:calc(4px + var(--pu-lift));max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
 .toast.show{opacity:1;transform:none}
 .layer:is(.listing,:has(.xp.show)) .toast{--r:calc(var(--pu-panel) + 16px)}
+/* While the menu is open, beside it (above it on a narrow screen), never under it. */
+.layer:not(.listing):has(.menu.show) .toast{--r:314px}
+@media (max-width:640px){.layer:not(.listing):has(.menu.show) .toast{--r:12px;bottom:auto;top:12px}}
 @media (max-width:480px){.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px}}
 
 /* Touch: everything a finger presses is at least 44 px across. A bubble keeps its small look round a larger hit area.
@@ -365,7 +370,7 @@ The control is 44 px, so the menu and messages sit further from it. Shortcuts ar
 .toast{--r:52px;display:flex;align-items:center;min-height:44px;padding:4px 14px;line-height:1.25}
 .ta{display:grid;place-items:center;margin:-5px -10px -5px 6px;padding:0 10px}
 .launch .mode{width:44px;height:44px}
-.menu{--b:52px}
+.menu{--b:calc(52px + var(--pu-lift))}
 }
 @media (pointer:coarse) and (hover:none){.ks{display:none}}
 
@@ -397,7 +402,7 @@ The control is 44 px, so the menu and messages sit further from it. Shortcuts ar
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}
-.th,.th.long .root>.tx,.mr,.list :is(.cd,[role=group],.sec){transition-property:opacity,box-shadow}
+.th,.th.long .root>.tx,.mr,.list :is(.cd,[role=listitem],.sec){transition-property:opacity,box-shadow}
 .tip.show,.toast{transition-property:opacity}
 .pick,.pick.show{transition:opacity .16s ease-in-out}
 .all,.all.show,.xp,.xp.show{transition-property:opacity}

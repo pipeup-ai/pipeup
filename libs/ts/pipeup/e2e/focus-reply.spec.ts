@@ -150,7 +150,7 @@ test("choosing from All comments does not drop a draft with words", async ({ pag
   await openAll(page);
   await page
     .locator(".all.show")
-    .getByRole("menuitem", { name: /Is 20% realistic\?/ })
+    .getByRole("button", { name: /Is 20% realistic\?/ })
     .click();
   await kept(page, box);
 });

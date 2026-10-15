@@ -6,7 +6,7 @@ import { fit, h, inert, selected } from "./dom";
 import { icon, type IconName } from "./icons";
 import { placeBar, touch } from "./layout";
 import { byPage, nodeOf } from "./order";
-import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
+import { blockTree, childBlocks, IGNORED, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
 import { HOLD } from "./shortcut";
 
 /** Page controls Enter or Space would activate. */
@@ -31,11 +31,13 @@ const MUTED = [
   "touchend",
   "touchcancel",
 ];
+/** A press ends: its click (if any) follows. */
+const LIFTS = ["pointerup", "pointercancel"];
 /** How long a move counts as a glide: must cover `--mv` (0.34 s), the glide's duration in the stylesheet. */
 const GLIDE_MS = 400;
 /** The keyboard's hint: shown as a toast, and read with the block cursor's first landing. */
 export const KEYS_HINT =
-  "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Esc to finish · F7 selects text";
+  "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Hold Space to use the page · Esc to finish · F7 selects text";
 /** Pointer movement, in px, the cursor ignores before the mouse takes the outline from it. */
 const NUDGE = 4;
 /** A block with at most this many characters is read whole as the cursor's name; a longer one as its description. */
@@ -168,8 +170,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let pinning = false;
 
   /** The event is the page's, outside the areas the author asked Pipeup to leave alone. */
-  const onPage = (e: Event) =>
-    !ctx.owns(e) && !(e.target instanceof Element && e.target.closest("[data-pipeup-ignore]"));
+  const onPage = (e: Event) => !ctx.owns(e) && !(e.target instanceof Element && e.target.closest(IGNORED));
 
   /** Keeps the outline on its block: gliding just after it moved there, tracking scroll otherwise. */
   function place(): void {
@@ -406,7 +407,18 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
   /** The reviewer's last move was a key other than Space (so focus was likely moved with the keyboard), not a press. */
   let byKeys = false;
-  const pressed = () => (byKeys = false);
+  /**
+   * A press under way began paused (true) or not (false); null between presses. The click it makes finishes as it
+   * began, whenever Space is let go: the page gets a whole click, or Pipeup does, never half of one each.
+   */
+  let press: boolean | null = null;
+  const quiet = () => press ?? ctx.state.paused;
+  const pressed = () => {
+    byKeys = false;
+    press = ctx.state.paused;
+  };
+  // The click comes just after the button is let go, in the same task.
+  const lifted = () => setTimeout(() => (press = null));
 
   const onMove = (e: PointerEvent) => {
     if (ctx.owns(e) || ctx.state.paused) return;
@@ -438,7 +450,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
 
   const mute = (e: Event) => {
-    if (!onPage(e) || ctx.state.paused) return;
+    if (!onPage(e) || quiet()) return;
     e.stopPropagation();
     // Pressing a control would focus, open or toggle it. Pressing text starts a selection, which still works.
     if (
@@ -450,7 +462,10 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
 
   const swallow = (e: Event) => {
-    if (!onPage(e) || ctx.state.paused) return;
+    if (!onPage(e)) return;
+    // A click made while paused is the page's alone: Pipeup never takes it as a click elsewhere (which could undo
+    // what the page did, such as switching a tab, to go back to a waiting comment).
+    if (quiet()) return ctx.claim(e);
     // The click a key made on a page control while the cursor isn't in use is the page's, and so is the submit;
     // Enter in a form's field clicks its submit button.
     const t = e.target as HTMLButtonElement;
@@ -531,8 +546,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const t = e.composedPath()[0];
     if (!(t instanceof Element) || markers.some((m) => m === t)) return false;
     // Ignored areas, also from inside a web component's own shadow root.
-    if (!ctx.owns(e))
-      return !e.composedPath().some((n) => n instanceof Element && n.hasAttribute("data-pipeup-ignore"));
+    if (!ctx.owns(e)) return !e.composedPath().some((n) => n instanceof Element && n.matches(IGNORED));
     return !!t.closest(".launch,.menu") && !t.closest("input,textarea,select,[contenteditable]");
   };
 
@@ -659,7 +673,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const back = blockOf(was);
     const b =
       back ??
-      (page && page !== document.body && ctx.root.contains(page) && !page.closest("[data-pipeup-ignore]")
+      (page && page !== document.body && ctx.root.contains(page) && !page.closest(IGNORED)
         ? blocks()
             .filter((x) => x.el.contains(page))
             .pop()
@@ -842,6 +856,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
   window.addEventListener("pointerdown", pressed, true);
+  for (const type of LIFTS) window.addEventListener(type, lifted, true);
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
@@ -926,6 +941,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
       window.removeEventListener("pointerdown", pressed, true);
+      for (const type of LIFTS) window.removeEventListener(type, lifted, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);

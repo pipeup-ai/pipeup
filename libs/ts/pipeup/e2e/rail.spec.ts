@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { open, openAll, seedElement, seedText } from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
-const row = (page: Page, words: RegExp) => panel(page).getByRole("menuitem", { name: words });
+const row = (page: Page, words: RegExp) => panel(page).getByRole("button", { name: words });
 
 test("a row is a preview; clicking it opens the thread out in the panel, with a line to its place", async ({
   page,
@@ -48,7 +48,7 @@ test("a thread can be replied to and resolved in the panel, and it stays until i
   await expect(thread.getByRole("button", { name: "Reopen" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(panel(page).locator(".xr")).toHaveCount(0);
-  await expect(panel(page).getByRole("menuitem")).toHaveCount(0);
+  await expect(panel(page).locator(".cd")).toHaveCount(0);
 });
 
 test("the line from an open row ends at the comment's bubble when the page shows one", async ({ page }) => {

@@ -10,13 +10,15 @@ export interface Host {
 
 /**
  * Pipeup's only element in the page: a fixed, click-through <pipeup-root> under <html> with an open shadow
- * root (open so tools like `pipeup check` can measure it). It never changes the page's layout.
+ * root (open so tools like `pipeup check` can measure it). It never changes the page's layout. It has the highest
+ * z-index there is and comes after <body>, so a page's own bar at that z-index (a consent banner, say) still sits under
+ * it: of two equals, the later one is drawn on top.
  */
 export function createHost(theme: Theme, styles: string, doc: Document = document): Host {
   const element = doc.createElement("pipeup-root");
   element.setAttribute("data-pipeup-ignore", "");
   element.style.cssText =
-    "position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483000!important;display:block!important;margin:0!important;visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important;";
+    "position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;display:block!important;margin:0!important;visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important;";
   const shadow = element.attachShadow({ mode: "open" });
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in shadow) {

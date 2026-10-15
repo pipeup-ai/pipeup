@@ -3,7 +3,7 @@ import { formatAgo, type ExportItem } from "../export/format";
 import { animalName, nameOf } from "../model/animals";
 import type { Thread } from "../model/types";
 import { avatar, faceOf } from "./animals";
-import { lost as lostIn } from "./column";
+import { lost as lostIn, moved as movedIn } from "./column";
 import type { Ctx, Draft, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
@@ -59,7 +59,8 @@ export function createLauncher(ctx: Ctx): View {
   );
   const launch = h("div", { class: "launch" }, btn, tip);
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
-  const list = h("div", { class: "list", role: "menu", "aria-label": "All comments" });
+  // Screen readers hear All comments as a list of comments under a heading; the arrow keys still move through it.
+  const list = h("div", { class: "list", role: "list", "aria-label": "Comments" });
   const close = h("button", { class: "ib", type: "button", "aria-label": "Close" }, icon("close"));
   /** A filter: an icon and a word in a pill, grey when off and filled with a soft tint of the accent when on. */
   const filter = (word: string, tip: string, face: Node, run: () => void) => {
@@ -177,6 +178,7 @@ export function createLauncher(ctx: Ctx): View {
   const all = h(
     "div",
     { class: "all", role: "dialog", "aria-label": "All comments" },
+    h("div", { class: "hh", role: "heading", "aria-level": "2" }, "All comments"),
     h("div", { class: "hd" }, mine, showResolved, h("span", { class: "sp" }), close),
     notesBox,
     list,
@@ -271,6 +273,7 @@ export function createLauncher(ctx: Ctx): View {
   });
 
   const lost = (t: Thread) => lostIn(ctx, t);
+  const moved = (t: Thread) => movedIn(ctx, t);
   /** Open threads: here (the control's number), elsewhere (its dot), and all of them (All comments). */
   const tally = (where?: boolean) =>
     latest.filter((t) => !t.resolved && (where === undefined || ctx.elsewhere(t) === where)).length;
@@ -358,23 +361,25 @@ export function createLauncher(ctx: Ctx): View {
     s[p] = `${to > from ? to + 40 : to}px`;
     setTimeout(() => (s[p] = s.overflow = ""), 360);
   };
-  /** Group boxes and their titles, kept by key between updates for the same reason (and so they never fold for nothing). */
+  /** Group boxes, their titles and their lists, kept by key between updates (so they never fold for nothing). */
   const groupBoxes = new Map<string, HTMLElement[]>();
-  /** A titled group of rows; `mark` ("This slide") follows the title. */
+  /** A titled group of rows, one item of the list holding its own list; `mark` ("This slide") follows the title. */
   const group = (title: string, rows: Node[], mark = "", key = title) => {
-    let [g, sec] = groupBoxes.get(key) ?? [];
-    if (!g || !sec)
+    let [g, sec, l] = groupBoxes.get(key) ?? [];
+    if (!g || !sec || !l)
       groupBoxes.set(key, [
-        (g = h("div", { role: "group" })),
+        (g = h("div", { role: "listitem" })),
         (sec = h("div", { class: "sec", "aria-hidden": "true" })),
+        (l = h("div", { role: "list" })),
       ]);
-    g.setAttribute("aria-label", mark ? `${title} · ${mark}` : title);
+    l.setAttribute("aria-label", mark ? `${title} · ${mark}` : title);
     sec.replaceChildren(title, mark && h("b", {}, mark));
-    place(g, [sec, ...rows], true);
+    place(g, [sec, l]);
+    place(l, rows, true);
     return g;
   };
   /** What the list says when nothing is in it. */
-  const empty = h("div", { class: "sec", role: "presentation" });
+  const empty = h("div", { class: "sec", role: "listitem" });
 
   /**
    * On a deck, threads by slide in deck order ("Slide 3 · 2 open"), this slide's group marked; threads with no
@@ -481,7 +486,7 @@ export function createLauncher(ctx: Ctx): View {
     if (d && !draft) {
       openId = railView = null;
       const box = draftBox(ctx, d);
-      draft = { of: d, box, card: h("div", { class: "cd open new" }, box.element) };
+      draft = { of: d, box, card: h("div", { class: "cd open new", role: "listitem" }, box.element) };
     }
     if (draft) {
       draft.box.setLabel(d!.label);
@@ -515,11 +520,11 @@ export function createLauncher(ctx: Ctx): View {
       // unseen, for screen readers.
       const b = h(
         "button",
-        { class: "mi", type: "button", role: "menuitem", "aria-expanded": String(open), "data-thread": t.id },
+        { class: "mi", type: "button", "aria-expanded": String(open), "data-thread": t.id },
         h(
           "span",
           { class: "sr" },
-          [nameOf(t.root), formatAgo(t.root.at, Date.now()), about, t.root.text, rest]
+          [nameOf(t.root), formatAgo(t.root.at, Date.now()), moved(t) && "Moved", about, t.root.text, rest]
             .filter(Boolean)
             .join(", "),
         ),
@@ -541,16 +546,26 @@ export function createLauncher(ctx: Ctx): View {
             const at = e.target as Element;
             if (at.closest(".root>.hdr") && !at.closest("button")) closeRow(true);
           });
-          openCard = { id: t.id, card: h("div", {}), xr };
+          openCard = { id: t.id, card: h("div", { role: "listitem" }), xr };
         }
         card = openCard.card;
         card.className = `cd open${t.resolved ? " done" : ""}`;
         place(card, [b, openCard.xr]);
       } else {
-        const o = { variant: "card" as const, note: about, rest };
+        const o = {
+          variant: "card" as const,
+          note: about,
+          rest,
+          quote: t.anchor.quote?.exact,
+          moved: moved(t),
+        };
         let c = closed.get(t.id);
         if (c) c.view.update(t, o);
-        else closed.set(t.id, (c = { card: h("div", {}), view: threadView(t, cardActions, o) }));
+        else
+          closed.set(
+            t.id,
+            (c = { card: h("div", { role: "listitem" }), view: threadView(t, cardActions, o) }),
+          );
         card = c.card;
         card.className = `cd${t.resolved ? " done" : ""}${leaving.has(t.id) ? " out" : ""}`;
         place(card, [b, c.view.element]);
@@ -604,6 +619,7 @@ export function createLauncher(ctx: Ctx): View {
       quote: t.anchor.quote?.exact ?? null,
       lost: lost(t) || away ? t.anchor.snapshot : null,
       place: away ? placeOf(t) : null,
+      moved: moved(t),
       note: narrow() && !lost(t) && !away && !t.anchor.quote ? about : null,
     };
   }

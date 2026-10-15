@@ -145,9 +145,11 @@ any of them off.
   keep it). On the block cursor, Enter comments and Space pauses.
 - **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
   tab) and never counts it as a click elsewhere, and a click that started while paused finishes paused even if
-  Space is let go first. Enter in a page's field after such a click submits the form, as the page expects.
+  Space is let go first (one that started unpaused stays Pipeup's). Enter in a page's field after such a click
+  submits the form, as the page expects.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
-  the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
+  the block by what it is and its own words ("Button · Start free trial", "Checkbox · Email me updates",
+  "Dropdown · Monthly"; a block with no words is a "Bar" or a "Shape") and offers three icons, each named on hover and to screen
   readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
   both keeping anything already typed, and **Pin** turns it into a pin at the block's centre (on touch
   screens, at the next spot tapped). The bar uses icons, not words. It never covers the block it names; where
@@ -1718,6 +1720,14 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   commented on, and decks that fit the window refit beside All comments. Long comments show a few lines at
   rest. Highlights stay readable over any colour, a page's accent is used only when readable, comments keep
   their text direction, and high-contrast modes keep every state visible (sections 5, 6, 7, 7a, 8 and 9).
+- 2026-10-15 — Built from the click-path review's deck and website findings: a deck's own controls (reveal.js's arrows,
+  progress bar and slide number) keep working in comment mode, any showing slide of a deck that scrolls can be
+  commented on, decks refit beside All comments, the comment control sits above a deck's bottom-right controls, and
+  copying reads the same whether or not a slide shows. On websites a click made while Space is held is the page's
+  alone, Moved is shown, comment mode's hint waits for the menu and says how to pause, a new comment's box stays in
+  the window, a comment outside a tab panel shows whichever tab is open, where-labels take the right section, and the
+  naming bar names controls plainly (section 5); each thread has its own bubble, and All comments is a list under a
+  heading (sections 5, 6, 7, 7a and 8).
 - 2026-10-15 — Touch details found while building the phone fixes: only Done takes a tap on comment mode's touch
   hint, a screen with only touch shows no keyboard shortcuts, turning a phone brings an open thread or new comment
   back into view, and a long press on a reaction shows who gave it (sections 5, 7 and 7b).

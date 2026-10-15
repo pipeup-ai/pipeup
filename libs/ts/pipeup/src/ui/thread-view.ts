@@ -42,6 +42,8 @@ export interface ThreadViewOptions {
   lost?: string | null;
   /** Where that content is, when it isn't gone ("On slide 3"); default "No longer on the page". */
   place?: string | null;
+  /** Its content was found changed or nearby: flagged Moved, with what it was about, for someone to confirm. */
+  moved?: boolean;
   /** A card's line about what it's on, as written (in place of the quote). */
   note?: string | null;
   /** A card's quiet last line (its replies and reactions), as written. */
@@ -400,13 +402,15 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     };
     /** The comment's words, or a box to change them while it is being edited. */
     const text = (c: Comment) => (editing?.id === c.id ? editing.el : words(c));
-    const about = o.note
-      ? o.note
-      : o.lost
-        ? `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`
-        : o.quote
-          ? `“${clip(o.quote, 80)}”`
-          : "";
+    const quote = o.quote ? `“${clip(o.quote, 80)}”` : "";
+    const about =
+      o.note && !o.moved
+        ? o.note
+        : o.lost
+          ? `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`
+          : o.moved
+            ? `Moved · ${quote || `it read “${clip(t.anchor.snapshot, 80)}”`}`
+            : quote;
     const last = card ? o.rest : o.variant === "column" && restText;
     nextFaces = new Map();
     // Each comment keeps room for its avatar at the top right, so the words never move or narrow for it.
