@@ -1,0 +1,171 @@
+<!doctype html>
+<!-- A reveal.js-shaped deck with no Pipeup markup: 960x700 slides scaled to fit the deck's own box (reveal.js
+     measures its wrapper, on window resize or Reveal.layout()), its arrows and slide number in the bottom-right
+     corner, a progress bar along the bottom, and reveal.js's key handling. Pipeup follows window.Reveal. -->
+<html
+  lang="en"
+  data-pipeup-doc="rEvEaLdEcK000001:VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Reveal-shaped deck</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #fff;
+        font:
+          40px/1.3 system-ui,
+          sans-serif;
+        color: #222;
+      }
+      .reveal {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+      .reveal .slides {
+        position: absolute;
+        width: 960px;
+        height: 700px;
+        left: 50%;
+        top: 50%;
+        text-align: center;
+      }
+      .reveal .slides > section {
+        position: absolute;
+        inset: 0;
+        padding: 20px;
+        box-sizing: border-box;
+        visibility: hidden;
+      }
+      .reveal .slides > section.present {
+        visibility: visible;
+      }
+      h2 {
+        font-size: 72px;
+        margin: 40px 0 30px;
+      }
+      p {
+        margin: 0 0 20px;
+      }
+      .controls {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        width: 96px;
+        height: 96px;
+        z-index: 11;
+      }
+      .controls button {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        background: #2a76dd;
+        color: #fff;
+        font-size: 18px;
+      }
+      .controls .navigate-left {
+        left: 0;
+        top: 32px;
+      }
+      .controls .navigate-right {
+        right: 0;
+        top: 32px;
+      }
+      .slide-number {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        z-index: 31;
+        font-size: 12px;
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff;
+        padding: 5px;
+      }
+      .progress {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 3px;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 10;
+      }
+      .progress span {
+        display: block;
+        height: 100%;
+        background: #2a76dd;
+        width: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section class="present">
+          <h2>Quarterly review</h2>
+          <p id="p1">Growth, retention and what we change next.</p>
+        </section>
+        <section>
+          <h2>Revenue grew 42%</h2>
+          <p id="p2">Most of it came from the annual plan.</p>
+        </section>
+        <section>
+          <h2>Next quarter</h2>
+          <p id="p3">Hire a second designer and hold churn under 3%.</p>
+        </section>
+      </div>
+      <aside class="controls">
+        <button class="navigate-left" aria-label="previous slide">&lsaquo;</button>
+        <button class="navigate-right" aria-label="next slide">&rsaquo;</button>
+      </aside>
+      <div class="progress"><span></span></div>
+      <div class="slide-number">1/3</div>
+    </div>
+    <script src="../../dist/pipeup.min.js"></script>
+    <script>
+      const sections = [...document.querySelectorAll(".slides > section")];
+      const wrapper = document.querySelector(".reveal");
+      const slidesEl = document.querySelector(".slides");
+      let h = 0;
+      window.layouts = 0;
+      function layout() {
+        window.layouts++;
+        const scale = Math.min(wrapper.offsetWidth / (960 * 1.04), wrapper.offsetHeight / (700 * 1.04));
+        slidesEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+      function update() {
+        sections.forEach((s, k) => s.classList.toggle("present", k === h));
+        document.querySelector(".slide-number").textContent = `${h + 1}/${sections.length}`;
+        document.querySelector(".progress span").style.width = `${(h / (sections.length - 1)) * 100}%`;
+      }
+      window.Reveal = {
+        getIndices: () => ({ h, v: 0 }),
+        slide(i) {
+          h = Math.max(0, Math.min(sections.length - 1, i));
+          update();
+          wrapper.dispatchEvent(new CustomEvent("slidechanged", { bubbles: true }));
+        },
+        next() {
+          this.slide(h + 1);
+        },
+        prev() {
+          this.slide(h - 1);
+        },
+        layout,
+      };
+      document.querySelector(".navigate-left").onclick = () => Reveal.prev();
+      document.querySelector(".navigate-right").onclick = () => Reveal.next();
+      document.querySelector(".progress").onclick = () => Reveal.slide(sections.length - 1);
+      addEventListener("resize", layout);
+      layout();
+      update();
+    </script>
+  </body>
+</html>

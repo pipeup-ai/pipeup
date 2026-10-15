@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- Common controls and structures, none of them marked for Pipeup: what the naming bar calls each one. -->
+<html
+  lang="en"
+  data-pipeup-doc="nAmEdFiXtUrE0001:NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Named</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+      }
+      main > * {
+        margin: 0 0 28px;
+      }
+      .chart {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        width: 120px;
+        height: 120px;
+      }
+      .chart div {
+        flex: 1;
+        background: #d3d1c7;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <label id="opt"><input type="checkbox" id="check" /> Email me updates</label>
+      <button type="button" role="switch" aria-checked="false" id="dark">Dark mode</button>
+      <div role="tablist">
+        <button type="button" role="tab" id="tab" aria-selected="true">Overview</button>
+        <button type="button" role="tab" aria-selected="false">Specs</button>
+      </div>
+      <details>
+        <summary id="sum">Shipping and returns</summary>
+        <p>Free returns for 30 days.</p>
+      </details>
+      <select id="plan">
+        <option>Monthly</option>
+        <option>Yearly</option>
+      </select>
+      <div class="chart">
+        <div style="height: 40%"></div>
+        <div id="bar" style="height: 70%"></div>
+      </div>
+      <ul id="list">
+        <li id="first">Ship onboarding in July</li>
+        <li>Price change in August</li>
+      </ul>
+    </main>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

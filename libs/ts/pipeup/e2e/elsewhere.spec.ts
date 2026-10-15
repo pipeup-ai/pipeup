@@ -231,7 +231,7 @@ test("a bubble clicked while a draft with words is away goes back to the draft; 
   await openAll(page);
   await page
     .locator(".all.show")
-    .getByRole("menuitem", { name: /Bar on two/ })
+    .getByRole("button", { name: /Bar on two/ })
     .click();
   await expect(page.locator(".all.show .xr")).toContainText("Bar on two");
   await expect(page.locator("#count")).toHaveText("2 / 3");

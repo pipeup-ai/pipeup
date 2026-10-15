@@ -2,6 +2,7 @@
 import { isAnchor } from "../../src/model/ops";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  besides,
   createHere,
   isHere,
   onReveal,
@@ -81,12 +82,35 @@ describe("pickSlide", () => {
   });
 });
 
+describe("besides", () => {
+  it("on a deck that scrolls, other slides partly in the window show too", () => {
+    const s = deck(`
+      <section data-pipeup-slide="1" data-box="0,-300,1000,800"></section>
+      <section data-pipeup-slide="2" data-box="0,500,1000,800"></section>
+      <section data-pipeup-slide="3" data-box="0,1300,1000,800"></section>`);
+    expect(besides(s, look, s[0]!).map(id)).toEqual(["2"]);
+    s[1]!.setAttribute("data-hidden", "");
+    expect(besides(s, look, s[0]!)).toEqual([]);
+  });
+
+  it("a deck that stacks its slides in one place has none, even mid cross-fade", () => {
+    const s = deck(`
+      <section data-pipeup-slide="1" data-opacity="0.4" data-box="100,100,800,450"></section>
+      <section data-pipeup-slide="2" data-opacity="0.6" data-box="100,100,800,450"></section>`);
+    expect(besides(s, look, s[1]!)).toEqual([]);
+    expect(besides(s, look, null)).toEqual([]);
+  });
+});
+
 describe("isHere", () => {
   it("on a deck, only the slide counts; threads with no slide are here", () => {
     expect(isHere({ slide: "2" }, "2", null)).toBe(true);
     expect(isHere({ slide: "3" }, "2", { tab: "a" })).toBe(false);
     expect(isHere(undefined, "2", null)).toBe(true);
     expect(isHere({ tab: "b" }, "2", { tab: "a" })).toBe(true);
+    // Another slide showing on a deck that scrolls.
+    expect(isHere({ slide: "3" }, "2", null, ["3"])).toBe(true);
+    expect(isHere({ slide: "4" }, "2", null, ["3"])).toBe(false);
   });
 
   it("elsewhere, every saved key but label must match the page's state", () => {

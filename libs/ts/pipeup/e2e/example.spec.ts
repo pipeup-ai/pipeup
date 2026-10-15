@@ -62,7 +62,10 @@ test("the example deck shows each slide's comments and goes to another slide's",
   await seedView(page, '[data-pipeup-id="s3-next"] li', "Name the designer", { slide: "3" });
   await expect(control(page)).toHaveAttribute("aria-label", "Comment, 0 here · 1 on other slides");
   await openAll(page);
-  await page.getByRole("menuitem", { name: /Name the designer/ }).click();
+  await page
+    .locator(".all.show")
+    .getByRole("button", { name: /Name the designer/ })
+    .click();
   await expect(page.locator("#count")).toHaveText("3 / 3");
   await expect(page.locator(".all .xr")).toContainText("Name the designer");
 });

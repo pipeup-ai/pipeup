@@ -78,8 +78,11 @@ function threadMarkdown(item: ExportItem, heading: string, now: number, page?: s
   if (page) lines.push(`- **Page:** ${one(page)}`);
   lines.push(`- **Where:** ${one(l.where)}`);
   if (l.id) {
-    const id = one(l.id.replace(/`/g, ""));
-    lines.push(`- **Element:** \`[data-pipeup-id="${id}"]\`${l.element ? ` (${one(l.element)})` : ""}`);
+    const id = `\`[data-pipeup-id="${one(l.id.replace(/`/g, ""))}"]\``;
+    // A slide's or section's id names where the element is, not the element itself.
+    lines.push(
+      `- **Element:** ${l.within && l.element ? `${one(l.element)} in ${id}` : `${id}${l.element ? ` (${one(l.element)})` : ""}`}`,
+    );
   }
   if (l.quote) lines.push(`- **Quoted text:** "${one(l.quote)}"`);
   if (l.pin) lines.push(`- **Pin:** ${one(l.pin)}`);

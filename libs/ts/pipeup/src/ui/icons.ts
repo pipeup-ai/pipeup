@@ -18,8 +18,12 @@ const PATHS = {
     "M5.5 10h7a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 4 18.5v-7A1.5 1.5 0 0 1 5.5 10z",
     "M14 10l6-6M15 4h5v5",
   ],
-  // A pin as the page shows one: round, its point at the bottom left; as tall as the arrows beside it.
-  pin: ["M4 20v-8a8 8 0 1 1 8 8z"],
+  // A map pin: a drop with its point at the bottom middle and a hole in its head, so it never reads as a comment
+  // bubble; as tall as the arrows beside it.
+  pin: [
+    "M12 21c-4-4-7-7.5-7-11a7 7 0 0 1 14 0c0 3.5-3 7-7 11z",
+    "M12 7.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z",
+  ],
   // For you: an @ drawn as small as the resolve tick, so the two filters' icons stand the same height.
   at: [
     "M9.1 12a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0",

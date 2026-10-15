@@ -1,3 +1,5 @@
+import { IGNORED } from "./pick";
+
 const NAMES = ["pipeup-quote", "pipeup-on", "pipeup-done"] as const;
 /** Each highlight's colour (r, g, b, alpha), light pages then dark: on dark pages the text is light, so the
  * highlight must stay dark enough to read it. */
@@ -32,7 +34,7 @@ export function highlightsSupported(): boolean {
  */
 const PICK_SVG =
   "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><rect x='7' y='7' width='23' height='23' rx='4' fill='none' stroke='#534AB7' stroke-width='2' stroke-dasharray='4 3'/><path d='M3 2v15l4-3.5 3 6.5 2.5-1.2-3-6.3H15z' fill='#fff' stroke='#2C2C2A' stroke-width='1.2' stroke-linejoin='round'/></svg>";
-const PICKING = `:not([data-pipeup-ignore],[data-pipeup-ignore] *){cursor:url("data:image/svg+xml,${encodeURIComponent(PICK_SVG)}") 3 2,crosshair!important}`;
+const PICKING = `:not(${IGNORED},:is(${IGNORED}) *){cursor:url("data:image/svg+xml,${encodeURIComponent(PICK_SVG)}") 3 2,crosshair!important}`;
 
 export interface PageSheet {
   /** Shows the picking cursor over the page while comment mode is on. */

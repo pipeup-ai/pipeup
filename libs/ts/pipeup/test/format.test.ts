@@ -110,6 +110,16 @@ describe("copyThread", () => {
     expect(copyThread(messy, "text", "p", NOW).split("\n")[0]).toBe("Slide 3 - **Pin:** fake › Q4 bar");
   });
 
+  it("names an element inside a marked one (a slide's paragraph) as in it, not as it", () => {
+    const inSlide: ExportItem = {
+      ...pin,
+      location: { ...pin.location, id: "s3", within: true, element: "Paragraph · Growth" },
+    };
+    expect(copyThread(inSlide, "ai", "p", NOW)).toContain(
+      '- **Element:** Paragraph · Growth in `[data-pipeup-id="s3"]`',
+    );
+  });
+
   it("strips backticks from the id so the code span stays clean", () => {
     const messy: ExportItem = { ...pin, location: { ...pin.location, id: "a`b\nc" } };
     expect(copyThread(messy, "ai", "p", NOW)).toContain('- **Element:** `[data-pipeup-id="ab c"]` (Q4 bar)');

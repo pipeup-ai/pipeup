@@ -337,7 +337,7 @@ test("an open card shows the words it's about once, and its top line closes it",
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await openAll(page);
   await panel(page)
-    .getByRole("menuitem", { name: /Is 20% realistic/ })
+    .getByRole("button", { name: /Is 20% realistic/ })
     .click();
   const card = panel(page).locator(".cd.open");
   await expect(card.locator(".ctx:visible")).toHaveCount(1);
@@ -378,7 +378,7 @@ test("the pulse on a thread's content follows it while opening it from the panel
   await seedText(page, "#p3", "pricing work", "Too tight?");
   await openAll(page);
   await panel(page)
-    .getByRole("menuitem", { name: /Too tight/ })
+    .getByRole("button", { name: /Too tight/ })
     .click();
   await page.waitForTimeout(700);
   const pulse = page.locator(".pulse").first();
@@ -403,7 +403,7 @@ test("an open card's reply box stays steady while the panel updates (it never fl
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await openAll(page);
   await panel(page)
-    .getByRole("menuitem", { name: /Is 20% realistic/ })
+    .getByRole("button", { name: /Is 20% realistic/ })
     .click();
   const box = panel(page).locator(".xr .rbox .line");
   await expect(box.locator("textarea")).toBeFocused();

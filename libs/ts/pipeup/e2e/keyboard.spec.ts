@@ -37,7 +37,7 @@ test("the shortcut puts the block cursor on the first block in view, with the ke
   await expect.poll(() => cursorOn(page)).toEqual({ label: "Heading, 1 of 8", block: "h1" });
   await expect(page.locator(".pick.show.kf")).toHaveCount(1);
   await expect(page.locator(".toast.show")).toHaveText(
-    "Tab moves between blocks · ↑ ↓ change level · Enter comments · Esc to finish · F7 selects text",
+    "Tab moves between blocks · ↑ ↓ change level · Enter comments · Hold Space to use the page · Esc to finish · F7 selects text",
   );
   await expect(page.locator(".toast")).toHaveAttribute("aria-hidden", "true");
   await page.keyboard.press("Enter");
@@ -103,6 +103,9 @@ test("Start commenting chosen with the mouse leaves the menu open and starts no 
   await commenting(page);
   await expect(page.locator(".menu.show")).toHaveCount(1);
   expect(await cursorOn(page)).toBeNull();
+  // Its hint waits until the menu has closed, so nothing covers it.
+  await expect(page.locator(".toast.show")).toHaveCount(0);
+  await page.keyboard.press("Escape");
   await expect(page.locator(".toast.show")).toContainText("Click anything to comment");
 });
 
@@ -378,20 +381,20 @@ test("↑ goes to the block around it and Tab walks that level; ↓ comes back t
   await open(page, "doc.html");
   await shortcut(page);
   for (let i = 0; i < 4; i++) await page.keyboard.press("Tab");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 5 of 8" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 5 of 8" });
   await page.keyboard.press("ArrowUp");
   await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Revenue chart, 4 of 6" });
   await page.keyboard.press("Tab");
   await expect.poll(() => cursorOn(page)).toEqual({ label: "Heading, 5 of 6", block: "h2" });
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("ArrowUp");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 1 of 1" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Article, 1 of 1" });
   await page.keyboard.press("ArrowUp");
   await expect(said(page)).toHaveText("Nothing around it");
   await page.keyboard.press("ArrowDown");
   await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Revenue chart, 4 of 6" });
   await page.keyboard.press("ArrowDown");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 5 of 8" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 5 of 8" });
   await page.keyboard.press("ArrowDown");
   await expect(said(page)).toHaveText("Nothing inside it");
 });
@@ -418,7 +421,7 @@ test("the naming bar is a group after the cursor and before the control; Around 
   await expect(bar.getByRole("button", { name: "Inside it" })).toBeHidden();
   await bar.getByRole("button", { name: "Around it" }).focus();
   await page.keyboard.press("Enter");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 1 of 1" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Article, 1 of 1" });
   await bar.getByRole("button", { name: "Inside it" }).focus();
   await page.keyboard.press("Enter");
   await expect.poll(() => cursorOn(page)).toEqual({ label: "Paragraph, 2 of 8", block: "p1" });
@@ -505,7 +508,7 @@ test("with a box open, Around it then Inside it comes back to the block it was o
   await open(page, "doc.html");
   await shortcut(page);
   for (let i = 0; i < 4; i++) await page.keyboard.press("Tab");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 5 of 8" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 5 of 8" });
   await page.keyboard.press("Enter");
   const lbl = page.locator(".namebar .lbl");
   const bar = page.getByRole("group", { name: "Chosen block" });
@@ -692,7 +695,7 @@ test("a fresh landing starts at the landing block's level, not the one the curso
   for (let i = 0; i < 4; i++) await page.keyboard.press("Tab");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
-  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 1 of 1" });
+  await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Article, 1 of 1" });
   await page.keyboard.press("Escape");
   await page.evaluate(() => {
     document.querySelector("article")!.remove();
@@ -1038,7 +1041,7 @@ test("screen readers hear the cursor's place and the block's own words: short bl
     role: "button",
     name: "Heading, 1 of 9 Q3 plan",
     description:
-      "Tab moves between blocks · ↑ ↓ change level · Enter comments · Esc to finish · F7 selects text",
+      "Tab moves between blocks · ↑ ↓ change level · Enter comments · Hold Space to use the page · Esc to finish · F7 selects text",
   });
   await page.keyboard.press("Tab");
   await page.keyboard.press("Tab");
@@ -1051,7 +1054,7 @@ test("screen readers hear the cursor's place and the block's own words: short bl
   expect((await axCursor(page)).name).toBe("Image, 4 of 9 Revenue by month");
   await page.keyboard.press("ArrowUp");
   const article = await axCursor(page);
-  expect(article.name).toBe("Block, 1 of 1 Q3 plan We will launch the new onboardi…");
+  expect(article.name).toBe("Article, 1 of 1 Q3 plan We will launch the new onboardi…");
   expect(article.description).toContain("Hiring a second designer moves to Q4.");
 });
 
@@ -1175,7 +1178,7 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     await page.keyboard.press("Escape");
     await commenting(page);
     await page.keyboard.press("Tab");
-    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 4 of 8" });
+    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 4 of 8" });
     await page.locator("#p2").click();
     await page.keyboard.press("Escape");
     await page.keyboard.press("Shift+Tab");
@@ -1208,7 +1211,7 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     await page.mouse.move(p2.x + 40, p2.y + 8);
     await expect.poll(() => cursorOn(page)).toBeNull();
     await page.keyboard.press("Tab");
-    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Block, 4 of 8" });
+    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 4 of 8" });
   });
 
   test("blocks below the fold of a scrolling pane and inside inline component tags are still stops", async ({

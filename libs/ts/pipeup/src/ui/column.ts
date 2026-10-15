@@ -54,6 +54,7 @@ interface Item {
   el: HTMLElement;
   thread: Thread;
   lost: boolean;
+  moved: boolean;
   /** The reply an add-on was writing into this thread when it was last drawn. */
   note?: string;
   view: ThreadView;
@@ -66,6 +67,9 @@ export function lost(ctx: Ctx, t: Thread): boolean {
   const r = ctx.resolved.get(t.id);
   return !r || (r.state === "orphaned" && !ctx.pending.has(t.id));
 }
+
+/** The thread's content was found changed, or nearby: it is flagged Moved, for someone to confirm. */
+export const moved = (ctx: Ctx, t: Thread): boolean => ctx.resolved.get(t.id)?.state === "moved";
 
 /** Threads beside the document, level with what they're about; the open one aligns exactly. */
 export function createColumn(ctx: Ctx): View {
@@ -103,13 +107,15 @@ export function createColumn(ctx: Ctx): View {
     const top = d ? anchorTop(d.anchor, d.resolved) : null;
     if (draft && top !== null)
       finite.push({ id: "draft", want: top + window.scrollY - 4, height: draft.el.offsetHeight });
-    // The open thread or draft lines up with its words, nudged up if the comment control would cover it.
+    // The open thread or draft lines up with its words, nudged up if the comment control would cover it. A new
+    // comment's box and buttons are always in the window, even on the page's last lines.
     const lead = draft ? "draft" : ctx.state.active;
     const f = finite.find((x) => x.id === lead);
-    if (f && col.getBoundingClientRect().right > window.innerWidth - CORNER)
+    const corner = col.getBoundingClientRect().right > window.innerWidth - CORNER ? CORNER : 0;
+    if (f && (corner || draft))
       f.want = Math.max(
         window.scrollY + 8,
-        Math.min(f.want, window.scrollY + window.innerHeight - CORNER - 10 - f.height),
+        Math.min(f.want, window.scrollY + window.innerHeight - corner - 10 - f.height),
       );
     const pos = stackColumn(finite, lead);
     let y = Math.max(0, ...finite.map((f) => (pos.get(f.id) ?? 0) + f.height)) + 24;
@@ -137,12 +143,17 @@ export function createColumn(ctx: Ctx): View {
     item.thread = t;
     item.note = notesKey(t.id);
     item.lost = isLost(t);
-    item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null });
+    item.moved = moved(ctx, t);
+    item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null, moved: item.moved });
   }
 
   function create(t: Thread): Item {
     const lost = isLost(t);
-    const view = threadView(t, ctx.actions, { variant: "column", lost: lost ? t.anchor.snapshot : null });
+    const view = threadView(t, ctx.actions, {
+      variant: "column",
+      lost: lost ? t.anchor.snapshot : null,
+      moved: moved(ctx, t),
+    });
     // A closed thread opens from the keyboard with its button, which has no box of its own (the thread shows its
     // focus); `data-thread`: Esc in the open thread comes back to it.
     const el = h(
@@ -157,7 +168,7 @@ export function createColumn(ctx: Ctx): View {
     el.addEventListener("click", () => ctx.open(t.id));
     col.append(el);
     sizes.observe(el);
-    return { el, thread: t, lost, placed: null, view };
+    return { el, thread: t, lost, moved: moved(ctx, t), placed: null, view };
   }
 
   /** Fades an element out (no longer measured) and removes it. */
@@ -204,7 +215,12 @@ export function createColumn(ctx: Ctx): View {
         item = create(t);
         items.set(t.id, item);
         fresh.push(item.el);
-      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== notesKey(t.id)) {
+      } else if (
+        item.thread !== t ||
+        item.lost !== isLost(t) ||
+        item.moved !== moved(ctx, t) ||
+        item.note !== notesKey(t.id)
+      ) {
         fill(item, t);
       }
       const el = item.el;

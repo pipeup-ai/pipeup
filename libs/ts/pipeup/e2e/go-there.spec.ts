@@ -14,7 +14,7 @@ import {
 const list = (page: Page) => page.locator(".all.show");
 const choose = (page: Page, words: string) =>
   list(page)
-    .getByRole("menuitem", { name: new RegExp(words) })
+    .getByRole("button", { name: new RegExp(words) })
     .click();
 /** The thread opens out in the panel; nothing opens on the page. */
 const openedInPlace = (page: Page) => page.locator(".all .xr");
@@ -36,7 +36,7 @@ test("All comments groups a deck's threads by slide, in deck order, this slide m
     "Slide 2 · 1 openThis slide",
     "Slide 3 · 2 open",
   ]);
-  await expect(list(page).getByRole("group", { name: "Slide 2 · 1 open · This slide" })).toContainText(
+  await expect(list(page).getByRole("list", { name: "Slide 2 · 1 open · This slide" })).toContainText(
     "Bar on two",
   );
   await expect(list(page).locator(".cd")).toHaveCount(4);

@@ -47,6 +47,9 @@ pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 Pages designed for review can reserve a comment gutter: add `data-pipeup-reserve` to `<html>` and lay the
 page out with `var(--pipeup-gutter, 0px)`. While All comments is open the page is moved over for it and its
 width is published as `--pipeup-panel`, so fixed bars can use `right: var(--pipeup-panel, 0px)` — see [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html).
+A deck refits into the room beside the panel: Pipeup sends resize events while the room opens and closes (reveal.js
+lays itself out again on them), and a deck sized in CSS should take its width from the page (`%`), not the window
+(`vw`), as [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) does.
 
 Comments belong to where they were made. On a deck (slides marked `data-pipeup-slide`, or reveal.js) only the
 current slide's comments show; the control counts those and a small dot marks comments on other slides, and All

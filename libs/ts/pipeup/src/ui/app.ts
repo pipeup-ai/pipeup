@@ -18,6 +18,7 @@ import { createSelection } from "./select";
 import { copyText } from "./files";
 import { createLauncher } from "./launcher";
 import { createHere } from "./here";
+import { IGNORED } from "./pick";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, paintHighlights } from "./highlights";
 import { createHost } from "./host";
@@ -157,6 +158,8 @@ export function startApp(o: AppOptions): App {
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS. */
   let hint = false;
+  /** Comment mode's hint, waiting for the menu to close (it would sit under it). */
+  let waiting: (() => void) | null = null;
   let sayRaf = 0;
 
   /** `isHint`: comment mode's hint, which goes early; `quiet`: screen readers hear it some other way. */
@@ -168,6 +171,7 @@ export function startApp(o: AppOptions): App {
     action?: { label: string; href?: string; run?: () => void },
   ): void {
     if (destroyed) return;
+    if (isHint && state.menu) return void (waiting = () => toast(text, ms, true, quiet));
     hint = isHint;
     toastEl.textContent = text;
     toastEl.classList.toggle("act", Boolean(action));
@@ -200,6 +204,7 @@ export function startApp(o: AppOptions): App {
     toast(text, UNDO_MS, false, false, { label: "Undo", run: undo });
 
   function hideHint(): void {
+    waiting = null;
     if (!hint) return;
     hint = false;
     window.clearTimeout(toastTimer);
@@ -556,10 +561,15 @@ export function startApp(o: AppOptions): App {
     const ids = new Set<string>();
     for (const t of o.doc.threads()) {
       ids.add(t.id);
-      const el = resolved.get(t.id)?.element;
+      const r = resolved.get(t.id);
+      const el = r?.element;
+      // On a page, a comment belongs to the view it was made in only when what it is about is inside that view:
+      // content found as it was, showing, and outside every tab panel shows its comments whatever is open.
       if (
-        !here.holds(t.anchor.view) ||
-        (!deck && el?.checkVisibility?.({ visibilityProperty: true }) === false)
+        deck
+          ? !here.holds(t.anchor.view)
+          : el?.checkVisibility?.({ visibilityProperty: true }) === false ||
+            (!here.holds(t.anchor.view) && !(r?.state === "attached" && !el?.closest("[role=tabpanel]")))
       )
         next.add(t.id);
     }
@@ -612,10 +622,14 @@ export function startApp(o: AppOptions): App {
   /** The panel's room on the page; once the page has reflowed, threads are placed on their content again. */
   let pushed = 0;
   let reflowTimer = 0;
+  /** Until when a deck refits each frame (0: not now); `fitting`: the resize that asks it is Pipeup's own. */
+  let refit = 0;
+  let fitting = false;
   function makeRoom(px: number): void {
     if (px === pushed) return;
     pushed = px;
     sheet.room(px, reduced);
+    if (here.slide() !== null) refit = performance.now() + 450;
     window.clearTimeout(reflowTimer);
     reflowTimer = window.setTimeout(
       () => {
@@ -655,6 +669,16 @@ export function startApp(o: AppOptions): App {
     // Pages that reserve a gutter lay themselves out around it; it closes with the column, when comments are
     // hidden, and while the panel's own room takes its place.
     sheet.gutter(reserve ? (state.mode === "column" && !state.hidden && !push ? GUTTER : 0) : null);
+    // A deck's own controls in the bottom-right corner of its room (a slide number, arrows): the comment control and
+    // its messages sit just above them.
+    let lift = 0;
+    if (here.slide() !== null)
+      for (const el of o.root.querySelectorAll(IGNORED)) {
+        const r = el.getBoundingClientRect();
+        if (r.right > innerWidth - pushed - 48 && r.bottom > innerHeight - 48)
+          lift = Math.max(lift, innerHeight - r.top + 4);
+      }
+    host.layer.style.setProperty("--pu-lift", `${lift}px`);
     paint(threads);
     for (const v of views) v.render(threads);
     modeView?.render(threads);
@@ -897,7 +921,10 @@ export function startApp(o: AppOptions): App {
   function pulse(id: string): void {
     const r = resolved.get(id);
     if (!r || r.state === "orphaned") return;
-    swell(() => (r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : []));
+    // Content the page hides has no box to swell around: inside a closed details, its summary swells instead.
+    const hid = r.element?.checkVisibility?.() === false;
+    const el = hid ? r.element!.closest("details:not([open])")?.querySelector("summary") : r.element;
+    swell(() => (r.range && !hid ? quoteRects(r) : el ? [el.getBoundingClientRect()] : []));
   }
 
   /** Swells that are showing, and where their content is now: they follow it while the page scrolls under them. */
@@ -943,6 +970,20 @@ export function startApp(o: AppOptions): App {
 
   const frame = () => {
     if (destroyed) return;
+    // Comment mode's hint once the menu has closed, for its full time.
+    if (waiting && !state.menu) {
+      const show = waiting;
+      waiting = null;
+      show();
+    }
+    // A deck that fits the window (reveal.js, say) refits on a resize: one each frame while the panel's room opens
+    // or closes, so it follows the room as it eases.
+    if (refit) {
+      if (performance.now() > refit) refit = 0;
+      fitting = true;
+      dispatchEvent(new Event("resize"));
+      fitting = false;
+    }
     for (const v of views) v.frame();
     for (const s of swells) follow(s);
     modeView?.frame();
@@ -976,6 +1017,7 @@ export function startApp(o: AppOptions): App {
     dismiss();
   };
   const onResize = () => {
+    if (fitting) return;
     host.layer.style.setProperty("--pu-pop", `${popover()}px`);
     const mode = chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {

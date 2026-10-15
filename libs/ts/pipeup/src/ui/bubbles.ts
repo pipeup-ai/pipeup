@@ -4,13 +4,15 @@ import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
 import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
-import { bubblePoint, popoverAnchor } from "./geometry";
+import { bubblePoint, INTERACTIVE, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
+import { moved } from "./column";
 import { replies, threadView, type ThreadView } from "./thread-view";
 
-const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
+/** How far apart bubbles' points must be (a bubble is 20 px): closer, the later one steps right of the earlier. */
+const APART = 22;
 /** How long a preview waits after the pointer leaves, so the pointer can reach it and click. */
 export const PREVIEW_GRACE_MS = 400;
 
@@ -32,8 +34,9 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   let threads: readonly Thread[] = [];
   let shown: Thread | null = null;
   let shownView: ThreadView | null = null;
-  /** The reply an add-on was writing into the shown thread when it was last drawn. */
+  /** The reply an add-on was writing into the shown thread when it was last drawn, and whether it was flagged Moved. */
   let shownNote: string | undefined;
+  let shownMoved = false;
   let draft: { box: DraftBox; of: Draft; at: unknown; above: boolean | null } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let gliding = 0;
@@ -285,24 +288,32 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       inert(pop, true);
       return;
     }
-    const quote = next.anchor.quote?.exact ?? null;
+    const o = {
+      variant: "popover" as const,
+      quote: next.anchor.quote?.exact ?? null,
+      moved: moved(ctx, next),
+    };
     if (!shown || !shownView || shown.id !== next.id) {
-      shownView = threadView(next, ctx.actions, { variant: "popover", quote });
+      shownView = threadView(next, ctx.actions, o);
       pop.replaceChildren(shownView.element);
       shown = next;
       shownNote = notesKey(next.id);
+      shownMoved = o.moved;
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next || shownNote !== notesKey(next.id)) {
+    } else if (shown !== next || shownNote !== notesKey(next.id) || shownMoved !== o.moved) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
-      shownView.update(next, { quote });
+      shownView.update(next, o);
       shown = next;
       shownNote = notesKey(next.id);
+      shownMoved = o.moved;
     }
   }
 
   function frame(): void {
+    // Threads on the same element (or spots close together) each keep a bubble of their own, side by side.
+    const taken: { x: number; y: number }[] = [];
     for (const [id, b] of bubbles) {
       const t = byId(id);
       const r = ctx.resolved.get(id);
@@ -311,6 +322,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         b.style.visibility = "hidden";
         continue;
       }
+      while (taken.some((q) => Math.abs(q.x - p.x) < APART && Math.abs(q.y - p.y) < APART)) p.x += APART;
+      taken.push(p);
       b.style.visibility = "";
       b.style.left = `${p.x}px`;
       b.style.top = `${p.y}px`;

@@ -187,7 +187,7 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");
 
   await panel(page)
-    .getByRole("menuitem", { name: /Is this far enough\?/ })
+    .getByRole("button", { name: /Is this far enough\?/ })
     .click();
   await expect(panel(page).locator(".xr")).toContainText("Is this far enough?");
   await expect(panel(page)).toBeVisible();
@@ -201,7 +201,7 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
     .toBe(true);
   // Step on to the next one: the first closes and the panel is still there.
   await panel(page)
-    .getByRole("menuitem", { name: /Love this line\./ })
+    .getByRole("button", { name: /Love this line\./ })
     .click();
   await expect(panel(page).locator(".xr")).toHaveCount(1);
   await expect(panel(page).locator(".xr")).toContainText("Love this line.");
@@ -258,7 +258,7 @@ test("in the column, the panel takes the column's place: a chosen thread opens o
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await openAll(page);
   await panel(page)
-    .getByRole("menuitem", { name: /Is 20% realistic\?/ })
+    .getByRole("button", { name: /Is 20% realistic\?/ })
     .click();
   await expect(panel(page).locator(".xr")).toContainText("Is 20% realistic?");
   // The column behind the panel is out of sight and out of reach.

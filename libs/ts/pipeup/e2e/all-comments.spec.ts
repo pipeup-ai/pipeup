@@ -78,7 +78,7 @@ test("in bubbles, a thread whose content is gone is counted, listed, and opens f
 
   await openAll(page);
   await expect(list(page).locator(".sec")).toHaveText("No longer on the page");
-  const item = list(page).getByRole("menuitem", { name: /Match the nav\?/ });
+  const item = list(page).getByRole("button", { name: /Match the nav\?/ });
   await expect(item).toContainText("Start free trial");
   await item.click();
   await expect(list(page)).toBeVisible();
@@ -116,7 +116,7 @@ test("choosing a thread on content scrolled out of sight brings it into view and
   await seedElement(page, "#s2", "Is this price final?");
   await openAll(page);
   await list(page)
-    .getByRole("menuitem", { name: /Is this price final\?/ })
+    .getByRole("button", { name: /Is this price final\?/ })
     .click();
   await expect(list(page).locator(".xr")).toContainText("Is this price final?");
   await expect
@@ -180,13 +180,13 @@ test("closed, the list is out of the keyboard's reach, and resolved threads foll
   expect(await page.locator(".all").evaluate((el) => (el as HTMLElement).inert)).toBe(true);
   await page.evaluate((id) => (window as any).pu.document.resolve(id), a);
   await openAll(page);
-  await expect(list(page).getByRole("menuitem")).toHaveCount(1);
+  await expect(list(page).locator(".cd")).toHaveCount(1);
   await list(page).getByRole("button", { name: "Resolved", exact: true }).click();
-  await expect(list(page).getByRole("menuitem")).toHaveCount(2);
+  await expect(list(page).locator(".cd")).toHaveCount(2);
   // The choice stays when the panel closes and opens again.
   await page.keyboard.press("Escape");
   await openAll(page);
-  await expect(list(page).getByRole("menuitem")).toHaveCount(2);
+  await expect(list(page).locator(".cd")).toHaveCount(2);
 });
 
 test("in the column, choosing a thread opens it in the panel, and the column keeps nothing open", async ({
@@ -196,7 +196,7 @@ test("in the column, choosing a thread opens it in the panel, and the column kee
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await openAll(page);
   await list(page)
-    .getByRole("menuitem", { name: /Is 20% realistic\?/ })
+    .getByRole("button", { name: /Is 20% realistic\?/ })
     .click();
   await expect(list(page).locator(".xr")).toContainText("Is 20% realistic?");
   await list(page).getByRole("button", { name: "Close" }).click();
@@ -220,7 +220,7 @@ test.describe("on a touch screen with no hover", () => {
     await settled(list(page));
     expect(Math.round((await list(page).boundingBox())!.width)).toBe(390);
     await list(page)
-      .getByRole("menuitem", { name: /Love this line\./ })
+      .getByRole("button", { name: /Love this line\./ })
       .tap();
     await expect(list(page).locator(".xr")).toContainText("Love this line.");
     await expect(page.locator(".layer.hidden")).toHaveCount(0);
@@ -266,7 +266,7 @@ test("choosing a thread in comment mode opens it in the panel and stays in comme
   await commenting(page);
   await openAll(page);
   await list(page)
-    .getByRole("menuitem", { name: /Match the nav\?/ })
+    .getByRole("button", { name: /Match the nav\?/ })
     .click();
   await expect(list(page).locator(".xr")).toContainText("Match the nav?");
   // Reading one never leaves comment mode.
@@ -285,7 +285,7 @@ test("choosing a thread while comments are hidden shows them and opens it in the
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await openAll(page);
   await list(page)
-    .getByRole("menuitem", { name: /Match the nav\?/ })
+    .getByRole("button", { name: /Match the nav\?/ })
     .click();
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
   await expect(list(page).locator(".xr")).toContainText("Match the nav?");

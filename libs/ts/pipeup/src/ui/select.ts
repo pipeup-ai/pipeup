@@ -4,8 +4,9 @@ import { clip, h, selected } from "./dom";
 import { icon } from "./icons";
 import { ACTIVATES } from "./comment-mode";
 import { placeIcon } from "./layout";
+import { IGNORED } from "./pick";
 
-const NOT_HERE = "[data-pipeup-ignore],input,textarea,select,[contenteditable]:not([contenteditable=false])";
+const NOT_HERE = `${IGNORED},input,textarea,select,[contenteditable]:not([contenteditable=false])`;
 
 /** In comment mode, selecting text offers commenting: one comment icon beside the selection's block, never over its words. */
 export function createSelection(ctx: Ctx): View {
