@@ -50,6 +50,8 @@ test("a quick-row reaction shows under the words with a count, is marked as your
   await expect(chip).toHaveCount(1);
   await expect(chip).toContainText("🎉");
   await expect(chip).toContainText("1");
+  // The count is seen, not only there: the corner's own count rule once hid it.
+  await expect(chip.locator(".n")).toHaveCSS("opacity", "1");
   await expect(chip).toHaveAttribute("aria-pressed", "true");
   await expect(chip).toHaveAttribute("aria-label", "Party popper, 1 person, including you");
   // The quick row closed itself.
