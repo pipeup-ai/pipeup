@@ -219,6 +219,11 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 - The page never claims what isn't true yet: no install command or CDN address until Pipeup is
   published, and later features (shared rooms, live presence) are not promised.
+- **The animations show Pipeup as the version the site carries draws it.** In the home showcase and the add-on demos,
+  the comment box, the card a sent comment becomes, the selection's comment icon, the block outline and its naming bar
+  look and sit where Pipeup puts them: today the box with its rounded line and Cancel and Comment, the compact card
+  (who, how long ago, its actions at the top right, the words, and a line to reply), the icon just past the end of the
+  paragraph's text, and the naming bar with Around it and Pin. When Pipeup's look changes, the animations change with it.
 
 ## 6. Running it
 
@@ -286,3 +291,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-11 — Proposed (not built): the install commands (plugin and one-command installer) come first wherever the site offers the copy-and-paste prompt, which stays as the fallback; llms.txt and the Markdown copies lead with the install line too (FUNCTIONAL_SPEC 15a).
 - 2026-10-12 — Proposed (not built): llms.txt, llms-full.txt, the Markdown copies and the site prompts carry the same instructions for answering comments (FUNCTIONAL_SPEC 15b).
 - 2026-10-12 — Built: the install commands in the README, llms.txt and the Markdown copies lead with the prompt as the fallback; on the "create HTML" walkthrough the one-command install sits as a quiet line under the steps, below the Copy prompt step, so the page still fits one screen.
+- 2026-10-15 — The home showcase and the add-on demos draw Pipeup as the current version does: the comment box with its rounded line and Cancel and Comment, settling into the compact card once sent (how long ago, actions at the top right, a line to reply); the selection's icon just past the end of the paragraph's text; the naming bar with Around it and Pin. A new rule keeps the animations in step with Pipeup's look (section 5).
