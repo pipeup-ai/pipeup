@@ -6,6 +6,7 @@ import {
   hideComments,
   leaveReply,
   open,
+  openAll,
   openMenu,
   seedText,
   selectWords,
@@ -118,8 +119,7 @@ test("with comments hidden, All comments shows them while it is open; closing it
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await hideComments(page);
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
   await panel(page)
@@ -190,8 +190,7 @@ test("the open panel makes room: the page moves over by its width, and back when
   const edge = () => page.evaluate(() => document.body.getBoundingClientRect().right);
   const r0 = await right();
   const e0 = await edge();
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await settled(panel(page));
   await expect.poll(edge).toBeCloseTo(e0 - 320, 0);
   // Its width is published for the page's fixed elements (and is gone once the panel closes, below).
@@ -231,8 +230,7 @@ test("with reduced motion the page makes room without a transition", async ({ pa
   await page.setViewportSize({ width: 1280, height: 800 });
   await open(page, "doc.html");
   const e0 = await page.evaluate(() => document.body.getBoundingClientRect().right);
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   expect(await page.evaluate(() => document.body.getBoundingClientRect().right)).toBeCloseTo(e0 - 320, 0);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).transitionDuration)).toBe("0s");

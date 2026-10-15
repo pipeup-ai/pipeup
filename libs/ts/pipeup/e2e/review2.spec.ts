@@ -28,7 +28,7 @@ test("the comment control shows only its icon at rest; hovering it eases in its 
   await expect(tip(page)).toHaveCSS("opacity", "0");
 });
 
-test("the tooltip also shows on keyboard focus, and the shortcut is named for assistive tech", async ({
+test("from the keyboard the shortcut is named for assistive tech and shown in the menu; the slide-out is the pointer's", async ({
   page,
 }) => {
   await open(page, "controls.html");
@@ -37,7 +37,12 @@ test("the tooltip also shows on keyboard focus, and the shortcut is named for as
   await mode(page).focus();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
-  await expect(tip(page)).toHaveCSS("opacity", "1");
+  // Keyboard focus doesn't hold the slide-out open: it is only for a pointer resting on the control.
+  await expect(tip(page)).toHaveCSS("opacity", "0");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toContainText(
+    /⇧⌥C|Shift\+Alt\+C/,
+  );
 });
 
 for (const combo of [`Shift+Alt+${SHORTCUT.code}`]) {

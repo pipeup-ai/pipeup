@@ -1,6 +1,6 @@
 import { type BrowserContext, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
-import { addon, blank, CORE, load, mount } from "./helpers";
+import { addon, blank, CORE, load, mount, openMenu } from "./helpers";
 import { createPrivateBinMock } from "../share/test/privatebin-mock";
 // @ts-expect-error: the reference server is plain JavaScript
 import { createMailboxServer } from "../../../../services/mailbox/src/server.mjs";
@@ -97,10 +97,8 @@ export const shareInfo = (page: Page) =>
   page.evaluate(() => (window as any).Pipeup.addons().find((a: any) => a.id === "share"));
 
 export async function menu(page: Page) {
-  await page.locator(".launch .mode").click();
-  const m = page.locator(".menu.show");
-  await m.waitFor();
-  return m;
+  await openMenu(page);
+  return page.locator(".menu.show");
 }
 
 export interface Service {

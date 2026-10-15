@@ -74,7 +74,8 @@ font:inherit;font-size:14px;line-height:1.5;padding:1px 0;color:var(--k);backgro
 .av{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:32%;
 font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
 .av.in{opacity:1;transform:none}
-.av svg{width:80%;height:80%}
+/* The animal nearly fills its tint (its drawing has room round it in its 24 grid), in a lighter line so it stays thin. */
+.av svg{width:122%;height:122%;stroke-width:1.3}
 /* Ten colours (.c0 Red to .c9 Grey, as COLOURS): a soft tint and a dark drawing, swapped round on dark pages. */
 .av{--av-l:92%;--av-d:30%;--s:60%;background:hsl(var(--h) var(--s) var(--av-l));color:hsl(var(--h) var(--s) var(--av-d))}
 .dark .av{--av-l:20%;--av-d:78%}
@@ -217,13 +218,15 @@ transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-
 /* Open threads on other slides or views: a small dot at the bubble's top right, easing in and out. */
 .mode>.dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--pu-accent);opacity:0}
 .mode.else>.dot{opacity:1}
-/* What it reaches out to show: the shortcut, after anything add-ons say. It eases out after a moment. */
-.ttip{display:flex;align-items:center;max-width:0;overflow:hidden;white-space:nowrap;font-size:12px;color:var(--mu);pointer-events:none;opacity:0;transition:var(--out) var(--ei)}
+/* What it reaches out to show when pointed at: the shortcut, after anything add-ons say. Its width eases to exactly what
+the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds at once when the pointer leaves. */
+.ttip{display:grid;grid-template-columns:minmax(0,0fr);overflow:hidden;font-size:12px;color:var(--mu);pointer-events:none;opacity:0;transition:grid-template-columns var(--out) var(--ei),opacity var(--out) var(--ei)}
+.ttip>span{min-width:0;white-space:nowrap;padding-left:10px}
 .ttip small{font-size:12px}
 .ttip small,.mi .kc{color:var(--fa)}
 .launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
-.launch:hover .ttip,.launch:has(.mode:focus-visible) .ttip{max-width:240px;padding-left:10px;opacity:1;transition:var(--mv) var(--eo) .3s}
-.launch .mode[aria-expanded=true]+.ttip{max-width:0;padding-left:0;opacity:0}
+.launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
+.launch .mode[aria-expanded=true]+.ttip{grid-template-columns:minmax(0,0fr);opacity:0}
 @media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
 .menu{position:fixed;right:8px;bottom:40px;width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
@@ -274,8 +277,7 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 /* The header: no title, two filters (an icon and a word in a pill: grey off, a soft accent fill on) and Close. */
 .hd{display:flex;align-items:center;gap:4px;padding:8px 8px 6px}
 .sp{flex:1}
-.tg{position:relative;display:flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 9px;border-radius:99px;white-space:nowrap;color:var(--mu);transition:background-color .2s var(--eo),color .2s var(--eo)}
-.tg b{font-size:15px;font-weight:500;line-height:1}
+.tg{position:relative;display:flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 9px;border-radius:99px;white-space:nowrap;line-height:1;color:var(--mu);transition:background-color .2s var(--eo),color .2s var(--eo)}
 .tg:hover{background:var(--ho);color:var(--k)}
 .tg[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
 .tg[aria-pressed=true]:hover{background:color-mix(in srgb,var(--pu-accent) 20%,transparent)}

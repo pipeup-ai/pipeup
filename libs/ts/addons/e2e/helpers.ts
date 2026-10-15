@@ -25,8 +25,21 @@ export async function mount(page: Page, options: Record<string, unknown> = {}): 
 }
 
 export async function openMenu(page: Page): Promise<void> {
-  await page.locator(".launch .mode").click();
+  // In comment mode the control opens All comments, and the menu is its footer's ⋯.
+  const panelOpen = (await page.locator(".all.show").count()) > 0;
+  const commenting = await page.locator(".launch .mode").evaluate((b) => b.classList.contains("on"));
+  if (panelOpen || commenting) {
+    if (!panelOpen) await page.locator(".launch .mode").click();
+    await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
+  } else await page.locator(".launch .mode").click();
   await page.locator(".menu.show").waitFor();
+}
+
+/** Closes All comments if it is open (in comment mode, reaching the menu opens it). */
+export async function closePanel(page: Page): Promise<void> {
+  const panel = page.locator(".all.show");
+  if (await panel.count()) await panel.getByRole("button", { name: "Close" }).click();
+  await expect(page.locator(".all.show")).toHaveCount(0);
 }
 
 /** Turns Hide comments on from the menu's switch, so comments are closed; the menu closes again. */

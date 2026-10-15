@@ -3,6 +3,7 @@ import {
   copyAs,
   fixture,
   open,
+  openAll,
   openMenu,
   seedView,
   selectWords,
@@ -11,11 +12,6 @@ import {
 } from "./helpers";
 
 const list = (page: Page) => page.locator(".all.show");
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(list(page)).toBeVisible();
-}
 const choose = (page: Page, words: string) =>
   list(page)
     .getByRole("menuitem", { name: new RegExp(words) })

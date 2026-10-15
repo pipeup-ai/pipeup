@@ -50,7 +50,11 @@ export function createLauncher(ctx: Ctx): View {
     h("span", { class: "dot" }),
   );
   const tipWords = document.createTextNode("");
-  const tip = h("span", { class: "ttip", "aria-hidden": "true" }, tipWords, h("small", {}, SHORTCUT_LABEL));
+  const tip = h(
+    "span",
+    { class: "ttip", "aria-hidden": "true" },
+    h("span", {}, tipWords, h("small", {}, SHORTCUT_LABEL)),
+  );
   const launch = h("div", { class: "launch" }, btn, tip);
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
   const list = h("div", { class: "list", role: "menu", "aria-label": "All comments" });
@@ -80,13 +84,10 @@ export function createLauncher(ctx: Ctx): View {
   };
   // For you (@): keeps only the threads that name this reviewer. Resolved (✓): brings resolved ones back.
   // Both always show, whether or not there are any yet.
-  const mine = filter(
-    "For you",
-    "Only comments that mention you",
-    h("b", { "aria-hidden": "true" }, "@"),
-    () => ctx.menu.toggleMine(),
+  const mine = filter("For you", "Only comments that mention you", icon("at", 16, 1.8), () =>
+    ctx.menu.toggleMine(),
   );
-  const showResolved = filter("Resolved", "Show resolved comments too", icon("resolve", 14, 2.4), () =>
+  const showResolved = filter("Resolved", "Show resolved comments too", icon("resolve", 22, 1.7), () =>
     ctx.menu.toggleResolved(),
   );
   // What add-ons say under the header ("Claude has answered 3 of 5"), each with an optional button. A line eases in
@@ -940,6 +941,8 @@ export function createLauncher(ctx: Ctx): View {
       setMenu(false);
       return;
     }
+    // In comment mode it opens All comments, whose footer holds comment mode's switch and ⋯ for the menu.
+    if (ctx.state.commenting) return setList(true);
     build();
     setMenu(true);
     // Opened from the keyboard (no pointer, so detail is 0): focus moves to Start commenting, nearest the button.
@@ -981,6 +984,7 @@ export function createLauncher(ctx: Ctx): View {
     const status = ctx.addons.statusText();
     const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
     if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
+    btn.setAttribute("aria-haspopup", ctx.state.commenting ? "dialog" : "menu");
     // Only words worth reaching out for; the shortcut is always there.
     const tipText = [label, status].filter(Boolean).join(" · ") + (label || status ? " · " : "");
     if (tipWords.data !== tipText) tipWords.data = tipText;

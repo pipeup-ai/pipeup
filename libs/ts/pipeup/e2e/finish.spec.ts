@@ -223,7 +223,6 @@ test("Escape closes an open thread even while the pointer is still on it", async
 
 test("Escape closes the comment menu and returns focus to its button", async ({ page }) => {
   await open(page, "doc.html");
-  await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.locator(".th .tx").first().click();
   await expect(page.locator(".th.on")).toHaveCount(1);

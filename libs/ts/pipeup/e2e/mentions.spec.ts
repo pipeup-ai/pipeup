@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { control, open, openMenu, seedText, settled, showComments } from "./helpers";
+import { control, open, openAll, seedText, settled, showComments } from "./helpers";
 
 /** Someone else replies, naming this reviewer: a second identity signs a reply op, merged as if it came from elsewhere. */
 const sayAs = (page: Page, name: string, words: string, mention: "me" | "none" = "me") =>
@@ -88,8 +88,7 @@ test("someone mentioning you is said once, filters All comments, and opening the
   await sayAs(page, "Sam", "Over to you @Me", "me");
   // Said once, in words.
   await expect(page.locator(".toast.show")).toHaveText("Sam mentioned you in 1 comment");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   const filter = page.getByRole("button", { name: "For you" });
   await expect(filter).toBeVisible();
   // A second thread that names nobody is hidden by the filter.
@@ -204,8 +203,7 @@ test("messages sit beside the comment control, and beside All comments while it 
   expect(t.x + t.width).toBeLessThanOrEqual(b.x);
   expect(t.x).toBeGreaterThan(page.viewportSize()!.width / 2);
   expect(Math.abs(t.y + t.height / 2 - (b.y + b.height / 2))).toBeLessThan(8);
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await page.locator(".all.show .mi").first().click();
   await page.locator(".all.show").getByRole("button", { name: "Resolve", exact: true }).first().click();
   await expect(toast).toContainText("Resolved");
