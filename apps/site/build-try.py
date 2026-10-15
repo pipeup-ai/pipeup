@@ -65,7 +65,7 @@ BAR = """
     </script>
 """
 
-# The add-on try pages: Pipeup with one add-on each. Their bar goes back to the Add-ons page and lists the others.
+# The add-on try pages: Pipeup with one add-on each. Their bar goes back to that add-on's page and lists the others.
 ADDON_PAGES = [("voice", "Voice"), ("live", "Live"), ("assist", "Assist"), ("assist-deck", "Assist (slides)"), ("save-to-github", "Save to GitHub (example)"), ("send-to-git", "Send to Git (example)")]
 for extra in ("assist-practice.js",):
     (out / extra).write_text((site / "try" / extra).read_text())
@@ -75,7 +75,8 @@ for slug, _ in ADDON_PAGES:
     current = ' aria-current="page"'
     links = "\n          ".join(f'<a href="{s}.html"{current if s == slug else ""}>{l}</a>' for s, l in ADDON_PAGES)
     assert "<body>" in html and "../pipeup.min.js" in html and "../addons/" in html, slug
-    bar = BAR.replace("{links}", links).replace('href="../index.html">← Pipeup', 'href="../addons.html">← Add-ons').replace(
+    home, name = ("assist", "Assist") if slug == "assist-deck" else (slug, _.replace(" (example)", ""))
+    bar = BAR.replace("{links}", links).replace('href="../index.html">← Pipeup', f'href="../addons/{home}.html">← {name}').replace(
         'aria-label="Pipeup examples"', 'aria-label="Pipeup add-on examples"').replace(
         'aria-label="Try another example">Try', 'aria-label="Try another add-on">Add-ons')
     (out / f"{slug}.html").write_text(html.replace("<body>", "<body>" + bar, 1))

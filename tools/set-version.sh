@@ -30,7 +30,9 @@ sed -i.bak -E "s/^export const BUILT = \"[0-9-]+\";/export const BUILT = \"$(dat
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
   apps/agent-skills/pipeup-integrate/SKILL.md apps/agent-skills/pipeup-add/SKILL.md apps/agent-skills/pipeup-apply/SKILL.md
-  apps/agent-skills/pipeup-summarise/SKILL.md apps/agent-skills/pipeup-send-to-git-setup/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.html apps/site/addons.html.md apps/site/walk.js apps/site/add-comments.html.md apps/site/create-html.html.md docs/ADDONS_GUIDE.md)
+  apps/agent-skills/pipeup-summarise/SKILL.md apps/agent-skills/pipeup-send-to-git-setup/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.js apps/site/addons.html.md apps/site/walk.js apps/site/add-comments.html.md apps/site/create-html.html.md docs/ADDONS_GUIDE.md)
+# Each add-on page's Markdown copy pins its add-on too.
+for f in "$root"/apps/site/addons/*.md; do pinned+=("${f#"$root"/}"); done
 for f in "${pinned[@]}"; do
   sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g; s#(ADDONS_VERSION = \")$semver\"#\1$version\"#g; s#(Written for Pipeup )$semver#\1$version#g" "$root/$f"
 done

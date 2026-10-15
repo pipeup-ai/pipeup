@@ -1,0 +1,35 @@
+{
+  "_": "The Add-ons page's cards, in order, and each add-on's own page. Built by build-addons.py. Each card: its title, one sentence, a visual (viz/<id>.svg), what its Copy button offers, and where a click on the card goes. `anchor` keeps the old links into the one long page (addons.html#<anchor>) landing on the card. `page` is false when the card goes somewhere that already exists.",
+  "groups": [
+    {
+      "title": "From Pipeup",
+      "cards": [
+        { "id": "share", "anchor": "share", "title": "Share", "sentence": "Comments reach everyone who has the page, sealed on the way.", "copy": [["share-prompt", "Copy prompt"], ["share-tag", "Copy script tag"], ["share-cmd", "Copy command to try it here"]] },
+        { "id": "voice", "anchor": "voice", "title": "Voice", "sentence": "Dictate a comment instead of typing it.", "copy": [["voice-prompt", "Copy prompt"], ["voice-tag", "Copy script tag"]] },
+        { "id": "live", "anchor": "live", "title": "Live", "sentence": "See who else is on the page, and where.", "copy": [["live-prompt", "Copy prompt"], ["live-tag", "Copy script tag"]] },
+        { "id": "assist", "anchor": "assist", "title": "Assist", "sentence": "An AI model on the reviewer's device points to related parts of the page.", "copy": [["assist-prompt", "Copy prompt"], ["assist-tag", "Copy script tag"]] },
+        { "id": "agents", "anchor": "agents-addon", "title": "Agents", "sentence": "Lets an AI agent answer comments right in the page.", "copy": [["agents-prompt", "Copy prompt"], ["agents-tag", "Copy script tag"]] },
+        { "id": "emoji", "anchor": "emoji-addon", "title": "Emoji", "sentence": "Every emoji for reactions, with search and a skin tone.", "copy": [["emoji-prompt", "Copy prompt"], ["emoji-tag", "Copy script tag"]] },
+        { "id": "inbox", "anchor": "inbox-addon", "title": "Inbox", "sentence": "Tells people they were mentioned, even on pages they haven't opened.", "copy": [["inbox-prompt", "Copy prompt"], ["inbox-tag", "Copy script tag"]] },
+        { "id": "github", "anchor": "github-addon", "title": "GitHub", "sentence": "Offers to tell people on GitHub when a comment mentions them.", "copy": [["github-prompt", "Copy prompt"], ["github-tag", "Copy script tag"]] },
+        { "id": "identity", "anchor": "identity-addon", "title": "Identity", "sentence": "Reviewers keep who they are across browsers and computers.", "copy": [["identity-prompt", "Copy prompt"], ["identity-tag", "Copy script tag"]] },
+        { "id": "updates", "anchor": "updates-addon", "title": "Updates", "sentence": "Tells you, on your own computer, when a newer Pipeup or a security fix is out.", "copy": [["updates-prompt", "Copy prompt"], ["updates-tag", "Copy script tag"]] }
+      ]
+    },
+    {
+      "title": "Run your own",
+      "cards": [
+        { "id": "mailbox", "anchor": "mailbox", "title": "Your own mailbox", "sentence": "A small server you run for Share, so even sealed comments stay inside your organisation.", "copy": [["mailbox-cmd", "Copy command"]] },
+        { "id": "make", "anchor": "make", "title": "Make your own", "sentence": "Write an add-on for your team or company, and host it yourself.", "copy": [["make-cmd", "Copy command"]], "page": false, "href": "addons-guide.html" }
+      ]
+    },
+    {
+      "title": "Examples from another company",
+      "note": "Example: not from Pipeup",
+      "cards": [
+        { "id": "save-to-github", "anchor": "save-to-github", "title": "Save to GitHub", "sentence": "Saves a review to a GitHub repository. No server, no token.", "copy": [["sgh-prompt", "Copy prompt"]] },
+        { "id": "send-to-git", "anchor": "send-to-git", "title": "Send to Git", "sentence": "Sends a review to a service your company runs, which files it in Git.", "copy": [["stg-prompt", "Copy prompt"]] }
+      ]
+    }
+  ]
+}
