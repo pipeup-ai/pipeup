@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Builds the website into apps/site/_site: the page, fonts, favicon, link-preview image (og.png), skills, llms.txt,
-# llms-full.txt, robots.txt, the Markdown page, the Try pages and the current pipeup.min.js.
+# llms-full.txt, robots.txt, the Markdown page, the Try pages, the Add-ons page with a page for each add-on, and the
+# current pipeup.min.js.
 #
 # Works from any directory: paths are relative to the repository root (two levels up from here).
 #
@@ -40,7 +41,7 @@ done
 
 rm -rf "$out"
 mkdir -p "$out/skills"
-cp -R "$site/index.html" "$site/addons.html" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/fonts" "$out/"
+cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
 for id in voice live assist agents emoji github updates inbox identity; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
@@ -50,6 +51,7 @@ cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 python3 "$site/build-guide.py" "$out"
+python3 "$site/build-addons.py" "$out"
 python3 "$site/inject-sri.py" "$out"
 
 # llms-full.txt: the short guide followed by every skill.

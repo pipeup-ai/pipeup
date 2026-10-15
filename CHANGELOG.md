@@ -32,6 +32,11 @@ change the API and the stored comment format.
 - **The selection's comment icon no longer covers the line above.** It sits just past the end of the paragraph's text, level with the selection's last line.
 - **All comments no longer closes when you click a comment on the page.** Clicking a comment's highlighted words, bubble or column thread while the panel is open now opens that thread in the panel. Before, the panel closed: depending on the case, the thread opened on the page instead, or nothing opened at all.
 
+### Changed (the website)
+
+- **The Add-ons page is a page of small cards**, in three groups (From Pipeup, Run your own, Examples from another company). Each card has a title, one sentence and a picture; its Copy button copies the prompt, script tag or command (a menu when there is more than one), and a click anywhere else opens the add-on's own page, with what it sends, what it asks, its buttons and its demo. Each add-on page has a Markdown copy for agents, and `llms.txt` points to them.
+- The site's animations show Pipeup as this version draws it: the comment box with Cancel and Comment and the compact card it becomes, the selection's icon beside the text, the naming bar with Around it and Pin, and on the Add-ons page Assist's reading line and reply inside the comment's card.
+
 ## [0.8.0-beta.1] - 2026-10-13
 
 This pre-release is about a smaller Pipeup and the rest of the command line: Pipeup alone is 48.8 KB gzip (52.3 KB in 0.7.0), portable identities are an add-on, and `pipeup init` and `pipeup read` join `check`. It is a beta: try it from the `next` channel and tell us what breaks.
