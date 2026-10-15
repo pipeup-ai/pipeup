@@ -20,7 +20,7 @@ import { createLauncher } from "./launcher";
 import { createHere } from "./here";
 import { IGNORED } from "./pick";
 import { hit, quoteRects } from "./geometry";
-import { installPageSheet, paintHighlights } from "./highlights";
+import { installPageSheet, lightWords, paintHighlights } from "./highlights";
 import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
@@ -87,12 +87,15 @@ export function startApp(o: AppOptions): App {
     /* no storage: Automatic */
   }
   let dark = false;
+  /** The page's own look, whatever Pipeup shows. */
+  let pageDark = false;
   let appearance: Appearance;
   let warned = "";
   /** The look to show; what the page's own styles do to it is noted, once, in the console. */
   const lookNow = (): Look => {
     const chosen = choice !== "auto" ? choice : authorLook(document);
-    const look = chosen ?? (pageIsDark(document, dark) ? "dark" : "light");
+    pageDark = pageIsDark(document, pageDark);
+    const look = chosen ?? (pageDark ? "dark" : "light");
     appearance = inspect(document, look, choice !== "auto" ? "reviewer" : chosen ? "author" : "page");
     const line = warning(appearance);
     if (line && line !== warned) console.warn((warned = line));
@@ -101,7 +104,9 @@ export function startApp(o: AppOptions): App {
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme, o.styles);
-  const sheet = installPageSheet(document, theme.dark);
+  // A look that differs from the page's keeps its see-through parts solid, so each look reads as itself.
+  host.layer.classList.toggle("flip", dark !== pageDark);
+  const sheet = installPageSheet(document);
   sheet.fade(0);
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   const reserve = document.documentElement.hasAttribute("data-pipeup-reserve");
@@ -340,7 +345,7 @@ export function startApp(o: AppOptions): App {
       still();
       try {
         await o.doc.resolve(id);
-        toast("Resolved · Show resolved brings it back");
+        toast("Resolved · ✓ Resolved in All comments shows it again");
       } catch (e) {
         toast(e instanceof UnsavedChangeError ? `Resolved · ${UNSAVED_NOTE}` : message(e));
       }
@@ -594,8 +599,14 @@ export function startApp(o: AppOptions): App {
       else quote.push(r.range);
     }
     if (state.draft && here.holds(state.draft.anchor.view)) on.push(...state.draft.ranges);
-    paintHighlights({ quote, on, done });
+    paintHighlights({ quote, on, done }, (r) => {
+      let light = ink.get(r);
+      if (light === undefined) ink.set(r, (light = lightWords(r)));
+      return light;
+    });
   }
+  /** Whether each range's words are light on a dark ground; read again when the page's colours may have changed. */
+  let ink = new WeakMap<Range, boolean>();
 
   /** Eases the highlights to strength `to` (enter or exit timing); reduced motion still fades (opacity only). */
   let strength = 0;
@@ -899,6 +910,7 @@ export function startApp(o: AppOptions): App {
     const d = state.draft;
     if (!d) return;
     try {
+      d.sending = true;
       const id = await o.doc.comment(d.anchor, text, mentions);
       say("Comment added");
       tell(mentions, text);
@@ -913,6 +925,7 @@ export function startApp(o: AppOptions): App {
         toast(UNSAVED_NOTE);
         return;
       }
+      d.sending = false;
       fail(e);
     }
   }
@@ -1067,6 +1080,7 @@ export function startApp(o: AppOptions): App {
   let lookFade = 0;
   const setLook = (look: Look) => {
     const next = look === "dark";
+    host.layer.classList.toggle("flip", next !== pageDark);
     if (next === dark) return;
     dark = next;
     window.clearTimeout(lookFade);
@@ -1074,11 +1088,15 @@ export function startApp(o: AppOptions): App {
     host.layer.classList.add("sw");
     lookFade = window.setTimeout(() => {
       applyTheme(host.layer, readTheme(o.root, look));
-      sheet.dark(next);
       host.layer.classList.remove("sw");
     }, 170);
   };
-  const lookAgain = () => setLook(lookNow());
+  // The page's colours may have changed: highlights look again at the words under them.
+  const lookAgain = () => {
+    setLook(lookNow());
+    ink = new WeakMap();
+    paint(threadsNow());
+  };
   let lookTimer = 0;
   const scheduleLook = () => {
     if (lookTimer) return;

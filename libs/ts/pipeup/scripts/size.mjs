@@ -15,13 +15,16 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // control that opens All comments in comment mode (+1.0 KB of Pipeup's own UI; docs/design/corner-control.md); then
 // 54 KB for the click-path review's words and focus: Tab moving on from a comment box, a waiting box beside its
 // block, Undo for thrown-away words, kept replies, keys kept from the page, and focus after every action (+1.7 KB;
-// docs/design/words-and-focus.md); then 55 KB for the click-path review's decks and websites: a deck's own controls
-// left to it, any showing slide commented on, decks refitting beside All comments, Moved flagged, a click made while
-// Space is held left to the page, plain names for controls, where-labels from the right section, one bubble per thread,
-// and All comments as a list (+1.2 KB; docs/design/decks-and-sites.md).
+// docs/design/words-and-focus.md); then 55.5 KB for the looks review's fixes (+1.3 KB): highlights that follow the
+// colour behind their words, readable accents, forced-colour states, focus rings, long comments at rest, the wider
+// count bubble, and lists, cards and menus that ease (docs/design/looks-readable.md); then BUDGET KB for the
+// click-path review's decks and websites: a deck's own controls left to it, any showing slide commented on, decks
+// refitting beside All comments, Moved flagged, a click made while Space is held left to the page, plain names for
+// controls, where-labels from the right section, one bubble per thread, and All comments as a list (+1.2 KB;
+// docs/design/decks-and-sites.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 55 * 1024,
-  "dist/pipeup.esm.js": 55 * 1024,
+  "dist/pipeup.min.js": BUDGET * 1024,
+  "dist/pipeup.esm.js": BUDGET * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

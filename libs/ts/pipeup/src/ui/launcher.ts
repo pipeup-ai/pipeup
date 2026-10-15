@@ -34,6 +34,8 @@ export function createLauncher(ctx: Ctx): View {
   // Pipeup's mark: the comment bubble in a thin line; its plus a touch heavier so it holds at this size.
   const mark = icon("comment", 22, 1.4);
   mark.lastElementChild!.setAttribute("stroke-width", "1.6");
+  // The count's bubble: round for one digit, wider for two or three characters, cross-fading between them.
+  const cnt = h("span", { class: "cnt" }, icon("bubble", 28, 1.4), icon("wide", 28, 1.4), ...nums);
   const btn = h(
     "button",
     {
@@ -45,7 +47,7 @@ export function createLauncher(ctx: Ctx): View {
       "aria-expanded": "false",
     },
     h("span", { class: "plus" }, mark),
-    h("span", { class: "cnt" }, icon("bubble", 28, 1.4), ...nums),
+    cnt,
     // Open threads on other slides or views: a small dot.
     h("span", { class: "dot" }),
   );
@@ -218,6 +220,9 @@ export function createLauncher(ctx: Ctx): View {
     if (!on) endEdit?.(true);
     // The copy choices start folded each time the menu opens.
     if (!on) foldCopy();
+    // Opened from the panel's footer it sits above the footer, without the rows the footer has. Set only as it opens,
+    // so a menu closing as the panel opens fades where it is, whole.
+    else menu.classList.toggle("inp", ctx.state.listing);
     menu.classList.toggle("show", on);
     inert(menu, !on);
     btn.setAttribute("aria-expanded", String(on));
@@ -288,24 +293,93 @@ export function createLauncher(ctx: Ctx): View {
    * transitions: rebuilding the list used to take focus out of an open reply box and put it back, which restarted
    * its focus styles (a flash) on every update.
    */
-  const place = (parent: Element, nodes: Node[]) => {
+  const place = (parent: Element, nodes: Node[], ease = false) => {
     const want = new Set(nodes);
-    for (const c of [...parent.childNodes]) if (!want.has(c)) c.remove();
-    nodes.forEach((n, i) => {
-      if (parent.childNodes[i] !== n) parent.insertBefore(n, parent.childNodes[i] ?? null);
-    });
+    const had = new Set(parent.childNodes);
+    // A card swapped for its thread's other card (opened or closed) goes at once; the new one eases from its height.
+    const swaps = new Map<string | undefined, number>();
+    const ids = new Set(nodes.map(idOf));
+    for (const c of had) {
+      if (want.has(c)) continue;
+      const id = idOf(c);
+      if (id && ids.has(id)) swaps.set(id, (c as HTMLElement).offsetHeight);
+      if (ease && drawn && c instanceof HTMLElement && !swaps.has(id)) fold(c);
+      else c.remove();
+    }
+    // What is folding away keeps its place while the rest settle around it.
+    let at: Node | null = parent.firstChild;
+    for (const n of nodes) {
+      while (at && at !== n && folding.has(at)) at = at.nextSibling;
+      if (at === n) at = n.nextSibling;
+      else parent.insertBefore(n, at);
+    }
+    if (ease && drawn)
+      for (const n of nodes)
+        if (!(n instanceof HTMLElement)) continue;
+        else if (!had.has(n)) grow(n, swaps.get(idOf(n)) ?? 0);
+        else if (folding.delete(n)) grow(n, n.offsetHeight);
   };
-  /** Group boxes, kept by key between updates for the same reason. */
-  const groupBoxes = new Map<string, [HTMLElement, HTMLElement]>();
+  /** The thread a card in the list is for. */
+  const idOf = (n: Node) =>
+    n instanceof HTMLElement ? (n.firstElementChild as HTMLElement | null)?.dataset.thread : undefined;
+  /** What is folding out of the list; and whether the list has been drawn since the panel opened (changes ease). */
+  const folding = new WeakSet<Node>();
+  let drawn = false;
+  /** Folds `el` away (it fades, with reduced motion), then removes it. */
+  const fold = (el: HTMLElement) => {
+    if (folding.has(el)) return;
+    if (el.classList.contains("out")) return el.remove();
+    folding.add(el);
+    el.style.height = `${el.offsetHeight}px`;
+    void el.offsetHeight;
+    el.classList.add("out");
+    if (!reduced) el.style.height = "0";
+    setTimeout(() => folding.delete(el) && el.remove(), 340);
+  };
+  /**
+   * Eases `el` from `from` px tall to its own height, fading in when it comes from nothing (with reduced motion it only
+   * fades in). Growing eases a limit just past its height, so what grows inside it meanwhile (a reply box's buttons) is
+   * never cut off and never jumps at the end.
+   */
+  const grow = (el: HTMLElement, from: number) => {
+    const s = el.style;
+    // Measured, and set to where it starts, without easing; then it eases from there.
+    s.transition = "none";
+    el.classList.remove("out");
+    s.height = s.maxHeight = s.overflow = "";
+    const to = el.offsetHeight;
+    const p = to > from ? "maxHeight" : "height";
+    if (reduced || !from) el.classList.add("out");
+    if (!reduced) {
+      s.overflow = "hidden";
+      s[p] = `${from}px`;
+    }
+    void el.offsetHeight;
+    s.transition = "";
+    el.classList.remove("out");
+    if (reduced) return;
+    s[p] = `${to > from ? to + 40 : to}px`;
+    setTimeout(() => (s[p] = s.overflow = ""), 360);
+  };
+  /** Group boxes, their titles and their lists, kept by key between updates (so they never fold for nothing). */
+  const groupBoxes = new Map<string, HTMLElement[]>();
   /** A titled group of rows, one item of the list holding its own list; `mark` ("This slide") follows the title. */
   const group = (title: string, rows: Node[], mark = "", key = title) => {
-    let g = groupBoxes.get(key);
-    if (!g) groupBoxes.set(key, (g = [h("div", { role: "listitem" }), h("div", { role: "list" })]));
-    g[1].setAttribute("aria-label", mark ? `${title} · ${mark}` : title);
-    place(g[0], [h("div", { class: "sec", "aria-hidden": "true" }, title, mark && h("b", {}, mark)), g[1]]);
-    place(g[1], rows);
-    return g[0];
+    let [g, sec, l] = groupBoxes.get(key) ?? [];
+    if (!g || !sec || !l)
+      groupBoxes.set(key, [
+        (g = h("div", { role: "listitem" })),
+        (sec = h("div", { class: "sec", "aria-hidden": "true" })),
+        (l = h("div", { role: "list" })),
+      ]);
+    l.setAttribute("aria-label", mark ? `${title} · ${mark}` : title);
+    sec.replaceChildren(title, mark && h("b", {}, mark));
+    place(g, [sec, l]);
+    place(l, rows, true);
+    return g;
   };
+  /** What the list says when nothing is in it. */
+  const empty = h("div", { class: "sec", role: "listitem" });
 
   /**
    * On a deck, threads by slide in deck order ("Slide 3 · 2 open"), this slide's group marked; threads with no
@@ -495,23 +569,21 @@ export function createLauncher(ctx: Ctx): View {
       return draft && t.id === draftBefore ? [draft.card, card] : [card];
     };
     const gone = shownItems.filter((i) => lost(i.thread));
-    place(list, [
-      ...(shownItems.length || draft
-        ? []
-        : [
-            h(
-              "div",
-              { class: "sec", role: "listitem" },
-              ctx.state.mine ? "No comments mention you" : "No open comments",
-            ),
-          ]),
-      ...groups(
-        shownItems.filter((i) => !lost(i.thread)),
-        row,
-      ),
-      ...(draft && draftBefore === null ? [draft.card] : []),
-      ...(gone.length ? [group("No longer on the page", gone.flatMap(row))] : []),
-    ]);
+    empty.textContent = ctx.state.mine ? "No comments mention you" : "No open comments";
+    place(
+      list,
+      [
+        ...(shownItems.length || draft ? [] : [empty]),
+        ...groups(
+          shownItems.filter((i) => !lost(i.thread)),
+          row,
+        ),
+        ...(draft && draftBefore === null ? [draft.card] : []),
+        ...(gone.length ? [group("No longer on the page", gone.flatMap(row))] : []),
+      ],
+      true,
+    );
+    drawn = true;
     for (const id of closed.keys()) if (!shownItems.some((i) => i.thread.id === id)) closed.delete(id);
     // Focus normally stays where it was; it is put back only if what held it was rebuilt.
     const now = focused();
@@ -864,7 +936,8 @@ export function createLauncher(ctx: Ctx): View {
     set(mdRow, "As Markdown", "With where each thread is, ready for an AI or a document");
     set(textRow, "As text", "Just the words");
     const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;
-    set(lookRow, "Theme", `${lookWord}. Automatic follows the page; press to change`);
+    // The row ends with the choice; its tooltip says what Automatic means, once.
+    set(lookRow, "Theme", "Automatic follows the page; press to change");
     lookEnd.textContent = lookWord;
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
@@ -1009,8 +1082,9 @@ export function createLauncher(ctx: Ctx): View {
     const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
     if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
     btn.setAttribute("aria-haspopup", ctx.state.commenting ? "dialog" : "menu");
-    // Only words worth reaching out for; the shortcut is always there.
-    const tipText = [label, status].filter(Boolean).join(" · ") + (label || status ? " · " : "");
+    // Only words worth reaching out for (the exact number when the bubble says 9+); the shortcut is always there.
+    const lead = label || (n > 9 ? `${n} open` : "");
+    const tipText = [lead, status].filter(Boolean).join(" · ") + (lead || status ? " · " : "");
     if (tipWords.data !== tipText) tipWords.data = tipText;
   };
   // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
@@ -1061,8 +1135,10 @@ export function createLauncher(ctx: Ctx): View {
         // At zero the bubble fades back to the comment icon, keeping its last number while it goes.
         if (n) {
           const [was, next] = nums[0].classList.contains("on") ? nums : [nums[1], nums[0]];
-          next.textContent = n > 99 ? "99+" : String(n);
-          next.classList.toggle("s", n > 99);
+          // Up to 9, then 9+: never more than two characters in the bubble (the exact number is in its name and
+          // its slide-out).
+          next.textContent = n > 9 ? "9+" : String(n);
+          cnt.classList.toggle("w", n > 9);
           was.classList.remove("on");
           next.classList.add("on");
         }
@@ -1095,6 +1171,7 @@ export function createLauncher(ctx: Ctx): View {
         ctx.state.hot = null;
       }
       if (listing) buildAll();
+      else drawn = false;
     },
     frame: drawWire,
     destroy() {

@@ -15,6 +15,8 @@ const GAP_FROM_CONTENT = 32;
 const EXIT_MS = 220;
 /** The comment control's corner: a 32 px square flush with the window's edges (44 on touch screens). */
 const CORNER = 44;
+/** A comment taller than this at rest (four lines and a little) shows its first lines, then "more". */
+const LONG = 88;
 
 /** Width of the gutter that pages with data-pipeup-reserve keep for comments. */
 export const GUTTER = 320;
@@ -78,6 +80,7 @@ export function createColumn(ctx: Ctx): View {
   const items = new Map<string, Item>();
   let draft: { el: HTMLElement; box: DraftBox; of: Draft } | null = null;
   const sizes = new ResizeObserver(() => restack());
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
   const isLost = (t: Thread) => lost(ctx, t);
 
@@ -87,9 +90,39 @@ export function createColumn(ctx: Ctx): View {
     return top === null ? Number.POSITIVE_INFINITY : top + window.scrollY - 4;
   }
 
+  /**
+   * Moves a thread (or the draft) to `y`. With reduced motion it never slides: it fades out, moves while unseen and fades
+   * back in, and moves asked for meanwhile join that one.
+   */
+  const hops = new WeakMap<HTMLElement, string>();
+  function moveTo(el: HTMLElement, y = 0): void {
+    const t = `translateY(${Math.round(y)}px)`;
+    if (!reduced || !el.style.transform) return void (el.style.transform = t);
+    if (el.style.transform === t && !hops.has(el)) return;
+    if (!hops.has(el)) {
+      el.classList.add("hop");
+      // It moves once it has faded right out (a busy page can start the fade late).
+      const land = () => {
+        if (+getComputedStyle(el).opacity > 0.01) return void requestAnimationFrame(land);
+        el.style.transform = hops.get(el)!;
+        hops.delete(el);
+        el.classList.remove("hop");
+      };
+      window.setTimeout(land, 200);
+    }
+    hops.set(el, t);
+  }
+
   function restack(): void {
     const finite: StackItem[] = [];
     const lost: { id: string; height: number }[] = [];
+    // A long comment at rest shows its first lines, then "more": measured here, where the cards are laid out anyway.
+    for (const { el } of items.values()) {
+      const tx = el.querySelector<HTMLElement>(".root>.tx");
+      if (!tx) continue;
+      tx.style.setProperty("--full", `${tx.scrollHeight}px`);
+      el.classList.toggle("long", tx.scrollHeight > LONG);
+    }
     for (const [id, item] of items) {
       let w = want(item.thread);
       if (Number.isFinite(w)) item.placed = w;
@@ -123,20 +156,23 @@ export function createColumn(ctx: Ctx): View {
       pos.set(l.id, y);
       y += l.height + 10;
     }
-    for (const [id, item] of items) {
-      if (item.el.classList.contains("wait")) {
-        if (!pos.has(id)) continue;
+    for (const [id, el] of [
+      ...[...items].map(([id, i]) => [id, i.el] as const),
+      ["draft", draft?.el] as const,
+    ]) {
+      if (!el) continue;
+      if (el.classList.contains("wait")) {
+        if (!pos.has(id) && el !== draft?.el) continue;
         // First placement: appear in place (fading in), don't glide in from the top.
-        item.el.style.transition = "none";
-        item.el.style.transform = `translateY(${Math.round(pos.get(id)!)}px)`;
-        void item.el.offsetWidth;
-        item.el.style.transition = "";
-        item.el.classList.remove("wait");
+        el.style.transition = "none";
+        el.style.transform = `translateY(${Math.round(pos.get(id) ?? 0)}px)`;
+        void el.offsetWidth;
+        el.style.transition = "";
+        el.classList.remove("wait");
         continue;
       }
-      item.el.style.transform = `translateY(${Math.round(pos.get(id) ?? 0)}px)`;
+      moveTo(el, pos.get(id));
     }
-    if (draft) draft.el.style.transform = `translateY(${Math.round(pos.get("draft") ?? 0)}px)`;
   }
 
   function fill(item: Item, t: Thread): void {
@@ -156,13 +192,13 @@ export function createColumn(ctx: Ctx): View {
     });
     // A closed thread opens from the keyboard with its button, which has no box of its own (the thread shows its
     // focus); `data-thread`: Esc in the open thread comes back to it.
+    // It waits unseen until it is first placed, then fades in there.
     const el = h(
       "div",
-      { class: "th", "data-thread": t.id },
+      { class: "th wait", "data-thread": t.id },
       h("button", { class: "opn sr", type: "button", "data-thread": t.id }),
       view.element,
     );
-    el.style.transition = "none";
     el.addEventListener("mouseenter", () => ctx.hot(t.id));
     el.addEventListener("mouseleave", () => ctx.hot(null));
     el.addEventListener("click", () => ctx.open(t.id));
@@ -191,8 +227,7 @@ export function createColumn(ctx: Ctx): View {
     if (draft) draft.box.setLabel(d.label);
     else {
       const box = draftBox(ctx, d);
-      const el = h("div", { class: "th on" }, box.element);
-      el.style.transition = "none";
+      const el = h("div", { class: "th on wait" }, box.element);
       col.append(el);
       sizes.observe(el);
       draft = { el, box, of: d };
@@ -205,16 +240,16 @@ export function createColumn(ctx: Ctx): View {
     // Under All comments the column steps aside (faded, out of reach); chosen threads open as popovers.
     inert(col, ctx.state.listing);
     const live = new Set<string>();
-    const fresh: HTMLElement[] = [];
     const focused = ctx.state.active !== null || ctx.state.draft !== null;
     for (const t of list) {
       if (!ctx.visible(t)) continue;
-      live.add(t.id);
       let item = items.get(t.id);
+      // A comment just sent waits for its draft to go, then takes the draft's place.
+      if (!item && ctx.state.draft?.sending) continue;
+      live.add(t.id);
       if (!item) {
         item = create(t);
         items.set(t.id, item);
-        fresh.push(item.el);
       } else if (
         item.thread !== t ||
         item.lost !== isLost(t) ||
@@ -258,11 +293,6 @@ export function createColumn(ctx: Ctx): View {
     )
       void col.offsetWidth;
     restack();
-    if (draft) fresh.push(draft.el);
-    for (const el of fresh) {
-      void el.offsetWidth;
-      el.style.transition = "";
-    }
   }
 
   function frame(): void {

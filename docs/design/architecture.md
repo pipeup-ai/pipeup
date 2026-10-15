@@ -629,7 +629,8 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
   button (`.launch .mode`): the comment-plus icon (`.plus`) and, while threads are open, a larger comment
   bubble (`.cnt`, the `bubble` icon) with the count inside, cross-fading between the two. The count is two
   stacked spans (`.n`); a change writes the hidden one and swaps `.on`, so the old number fades out as the new
-  one fades in; above 99 it reads "99+". Nothing about the button changes size. A CSS tooltip (`.ttip`,
+  one fades in; above 9 it reads "9+" (the exact number is in its
+  name and its slide-out). Nothing about the button changes size. A CSS tooltip (`.ttip`,
   "Comment" and `SHORTCUT_LABEL`) eases in after 0.5 s on hover or keyboard focus, hidden while the menu is
   open and on `hover:none` screens. The slide-out words and the "more" button are gone. A click opens the menu
   (`aria-haspopup="menu"`), which rises above the button and is built top down so **Comment** (or Stop

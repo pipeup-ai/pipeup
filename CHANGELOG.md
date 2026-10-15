@@ -16,7 +16,10 @@ change the API and the stored comment format.
 - **The naming bar names controls plainly**: "Checkbox · Email me updates", "Switch · Dark mode", "Tab · Overview", "Dropdown · Monthly" (its chosen option, not every one), "Disclosure" for a details summary, "List" and "Article"; a block with no words is a "Bar" or a "Shape". Its Pin icon is a map pin, no longer a second comment bubble. Where it sits over the page's words beside its block, it fades while the pointer is over them.
 - **All comments is a list of comments under a heading** for screen readers (it was a menu holding buttons, text and a reply box); the arrow keys still move between cards.
 - Comment mode's hint waits until the menu has closed, then shows for its full time; from the keyboard it also says how to pause (hold Space). Messages sit beside the open menu, never under it.
-- Pipeup is 55.0 KB gzip, and its budget rises from 53 to 55 KB.
+- **Long comments show their first lines at rest.** In the column a long comment shows four lines, fading, then **more**; the open thread shows all of it, so one long comment never pushes the others out of reach.
+- **Lists and menus ease.** Cards that All comments' filters take away or bring back fold out and in, a card opening or closing there eases to its new height, a sent comment fades in exactly where its box was, and with reduced motion column threads fade out, move unseen and fade back in. The menu fades out whole when All comments is chosen, and ⋯ changes in place when Delete asks again.
+- **The comment control's count stops at 9+** (it went to 99+), in a wider bubble, so it always sits clear of the bubble's outline whatever the page's font; the exact number is in the control's name and shows when you point at it.
+- **Pipeup is SIZE KB gzip** with the click-path review's fixes (52.1 KB in beta.2), and its budget rises from 53 to BUDGET KB.
 
 ### Fixed
 
@@ -25,6 +28,15 @@ change the API and the stored comment format.
 - **A card's hidden actions can't be pressed**: on a touch tablet a tap on a closed card opens it instead of resolving it, and after Resolve the next card's actions wait for the pointer to move.
 - Enter in a page's form field in comment mode submits the form, instead of opening a comment on its submit button.
 - The line to a new comment in All comments goes when the panel closes. Letting go of Space brings the block cursor's outline back. Double- or triple-clicking words in comment mode selects them without opening a box on the paragraph, and Esc with words selected clears the selection first. Clicking a second block moves an empty box there with the caret in it. The menu opened with the mouse takes the arrow keys, and Esc on Copy comments' choices folds them first. Screen readers hear "Reply sent" and "Comment added", and the edit box is named "Edit comment".
+- **Highlights stay readable over any colour.** A highlight now follows the colour behind its own words, not the page's look or Pipeup's: light words in a dark footer or on a coloured button get a deep amber that keeps them readable (they fell to 1.9 to 1), and Theme › Light on a dark page no longer drops highlighted words to 1.1 to 1.
+- **The page's accent is used only when it reads.** A link colour or `--pipeup-accent` is taken only when words in it reach 4.5 to 1 on Pipeup's surfaces in the look showing; otherwise Pipeup uses its own. Words on the accent take whichever of white and near black reads better.
+- **High-contrast (forced colours) modes show every state**: switches, the filters on and off, your own reaction and whether comment mode is on.
+- **Keyboard focus is plainly marked** on menu rows, All comments' cards, a card's actions and every other button, with a ring of at least 3 to 1 in both looks.
+- **Right-to-left comments read right to left.** Each comment, reply and writing box takes the direction of its own words.
+- **The other-slides dot shows in comment mode** (it was the accent on the accent).
+- **Names use the card's width.** A card's hidden actions no longer keep 72 px of its top line empty; they ease in over the end of it, and the card keeps its size.
+- **A theme that differs from the page stays solid.** Dimmed cards and the corner's glass no longer turn mid-grey when the Theme is dark on a light page, or light on a dark one.
+- **Words that match the controls.** Resolving says "✓ Resolved in All comments shows it again", the Theme tooltip says Automatic once, and For you's tooltip no longer covers its "No comments mention you".
 - **Reaction counts show on cards and threads.** Since reactions arrived in 0.7.0, a chip showed its emoji with a blank where the number belongs: the comment control's rule for hiding its own count also hid the chips' numbers. All comments' summary line was unaffected.
 - **A click made while Space is held is the page's alone.** With a comment waiting, switching a site's tab that way no longer switches it straight back, and a click that started while Space was held finishes as the page's even if Space is let go first (one that started without it is Pipeup's).
 - **Comments on content that changed show "Moved"**, beside the page and in All comments, with what they read.
