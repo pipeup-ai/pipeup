@@ -53,6 +53,7 @@ test("choosing from All comments focuses the reply line; arrowing through rows d
   await page.locator(".launch .mode").focus();
   await page.keyboard.press("Enter");
   await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("Enter");
   await expect(page.locator(".all.show")).toBeVisible();
   await expect.poll(async () => (await focusInPipeup(page)).cls).toContain("mi");

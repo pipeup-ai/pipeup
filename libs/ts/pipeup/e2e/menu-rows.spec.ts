@@ -3,7 +3,7 @@ import { commenting, control, focusInPipeup, open, openMenu, settled } from "./h
 
 const menu = (page: Page) => page.locator(".menu.show");
 
-test("the menu, top down: who you are, copying, Look, All comments, then Start commenting", async ({
+test("the menu, top down: who you are, copying, Look, All comments, then Hide comments and Start commenting", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -22,6 +22,7 @@ test("the menu, top down: who you are, copying, Look, All comments, then Start c
     "Look",
     "All comments",
     "|",
+    "Hide comments",
     "Start commenting",
   ]);
   // The identity row: your avatar and name, with Add name at its end.
@@ -30,8 +31,13 @@ test("the menu, top down: who you are, copying, Look, All comments, then Start c
   await expect(id).toContainText("Add name");
   await expect(menu(page).getByText("Stop commenting")).toHaveCount(0);
   await expect(menu(page).locator(".fmt, .fm")).toHaveCount(0);
-  // Hiding comments and showing resolved ones are not in the menu any more.
-  await expect(menu(page).getByText(/Hide comments|Show resolved/)).toHaveCount(0);
+  // Showing resolved threads is in the All comments panel, not the menu.
+  await expect(menu(page).getByText(/Show resolved/)).toHaveCount(0);
+  // Hide comments is a switch, off until the reviewer turns it on.
+  await expect(menu(page).getByRole("menuitemcheckbox", { name: "Hide comments" })).toHaveAttribute(
+    "aria-checked",
+    "false",
+  );
 });
 
 test("every row is one line; its explanation is a tooltip on hover and on keyboard focus", async ({
@@ -41,7 +47,7 @@ test("every row is one line; its explanation is a tooltip on hover and on keyboa
   await openMenu(page);
   await settled(menu(page));
   const rows = menu(page).locator(".mi");
-  await expect(rows).toHaveCount(6);
+  await expect(rows).toHaveCount(7);
   for (const r of await rows.all()) {
     await expect(r.locator("small")).toHaveCount(0);
     expect((await r.boundingBox())!.height).toBeLessThanOrEqual(36);
@@ -72,6 +78,7 @@ test("every row is one line; its explanation is a tooltip on hover and on keyboa
   await control(page).focus();
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Start commenting");
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   const all = menu(page).getByRole("menuitem", { name: /All comments/ });
   await expect(all).toBeFocused();
@@ -191,7 +198,7 @@ test("the identity row edits your name, and then shows it with an edit mark", as
   await expect(input).toBeFocused();
   await expect(id).toHaveCount(0);
   await expect(menu(page).locator(".ed .av")).toHaveCount(1);
-  await expect(menu(page).locator(".mi")).toHaveCount(5);
+  await expect(menu(page).locator(".mi")).toHaveCount(6);
   await input.fill("Red Panda");
   await input.press("Enter");
   await expect(id.locator(".lb")).toHaveText("Red Panda");

@@ -97,6 +97,7 @@ test("a click opens the menu above the button; the item nearest it is Start comm
     "Copy as Text",
     "Look",
     "All comments",
+    "Hide comments",
     "Start commenting",
   ]);
   await expect(menu.locator("[role=separator]")).toHaveCount(2);

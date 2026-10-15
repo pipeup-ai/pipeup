@@ -1,6 +1,15 @@
 import { expect, test } from "@playwright/test";
 import type { MountOptions } from "../src/ui/mount";
-import { fixture, open, seedText, selectWords, showComments, stubClipboard, openMenu } from "./helpers";
+import {
+  fixture,
+  hideComments,
+  open,
+  seedText,
+  selectWords,
+  showComments,
+  stubClipboard,
+  openMenu,
+} from "./helpers";
 
 const lastCopy = (page: import("@playwright/test").Page) =>
   page.evaluate(() => (window as any).__copied.at(-1) ?? "");
@@ -14,7 +23,7 @@ test("the control shows the open count and a menu", async ({ page }) => {
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await expect(page.locator(".launch .mode .n.on")).toHaveText("2");
   await menu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(6);
+  await expect(page.locator(".menu.show .mi")).toHaveCount(7);
 });
 
 test("Copy as Markdown copies Markdown with locations; Copy as Text copies the words", async ({ page }) => {
@@ -97,18 +106,17 @@ test("resolved threads hide; Show resolved brings them back with Reopen", async 
   await expect(th.getByRole("button", { name: "Reopen" })).toBeVisible();
 });
 
-test("leaving comment mode hides threads and highlights, fades the column, and selecting offers nothing", async ({
+test("Hide comments hides threads and highlights and fades the column; outside comment mode selecting offers nothing", async ({
   page,
 }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await showComments(page);
+  // Comments show with comment mode off.
   await expect(page.locator(".th")).toHaveCount(1);
   expect(await page.locator(".col").evaluate((el) => getComputedStyle(el).transitionProperty)).toContain(
     "opacity",
   );
-  await menu(page);
-  await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
+  await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await expect(page.locator(".th")).toHaveCount(0);
   await selectWords(page, "#p2", "second designer");

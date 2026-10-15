@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addon, blank, CORE, combined, load, mount, openMenu } from "./helpers";
+import { addon, blank, CORE, combined, hideComments, load, mount, openMenu } from "./helpers";
 
 const info = (page: import("@playwright/test").Page) =>
   page.evaluate(() => (window as any).Pipeup.addons().map((a: any) => `${a.id}:${a.state}`));
@@ -64,12 +64,13 @@ test("menu rows: an action, a switch that keeps the menu open, a count, and an e
   await openMenu(page);
   const menu = page.locator(".menu.show");
   const labels = await menu.locator(".lb").allTextContents();
-  // Add-on rows sit between All comments and Start commenting.
-  expect(labels.slice(-5)).toEqual([
+  // Add-on rows sit between All comments and Hide comments.
+  expect(labels.slice(-6)).toEqual([
     "All comments",
     "Pressed 0 times",
     "Switch is off",
     "Fails",
+    "Hide comments",
     "Start commenting",
   ]);
   await menu.getByText("Switch is off").click();
@@ -194,6 +195,7 @@ test("a notice raised while comments are closed waits for the menu; announcement
   await blank(page);
   await load(page, CORE, addon("test"));
   await mount(page);
+  await hideComments(page);
   await page.evaluate(() => (window as any).__hello.host.notify("Shared copy is up to date"));
   await expect(page.locator(".toast.show")).toHaveCount(0);
   await openMenu(page);
@@ -253,6 +255,7 @@ test("an add-on's own announcement is heard at once while comments show, never w
   await blank(page);
   await load(page, CORE, addon("test"));
   await mount(page);
+  await hideComments(page);
   await page.evaluate(() => (window as any).__hello.host.announce("Listening"));
   await expect(page.locator(".layer > .sr")).toHaveText("");
   await openMenu(page);
@@ -318,6 +321,7 @@ test("other people's new comments are announced as one short sentence, never whi
       await w.__hello.host.merge(ada.ops());
     }, text);
   // Comments are closed: nothing is said, and the words wait.
+  await hideComments(page);
   await bring("While closed");
   await expect(page.locator(".layer > .sr")).toHaveText("");
   await openMenu(page);

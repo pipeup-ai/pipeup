@@ -24,12 +24,16 @@ export interface UiState {
   showResolved: boolean;
   /** All comments shows only the threads that name this reviewer. */
   mine: boolean;
-  /** Comments are out of sight: comment mode is off and All comments is closed. */
+  /** The reviewer chose Hide comments (remembered for this page in this browser). */
+  hide: boolean;
+  /** Comments are out of sight: Hide comments is on, and nothing is showing them for a while (comment mode, All comments, a draft). */
   hidden: boolean;
   mode: "column" | "bubbles";
   draft: Draft | null;
   /** Comment mode: the page is quiet and a click chooses a block to comment on. */
   commenting: boolean;
+  /** Comment mode is paused while ⌘ (Ctrl elsewhere) is held: the page works as normal. */
+  paused: boolean;
   /** All comments is open on the right: in the column layout it takes the column's place. */
   listing: boolean;
   /** A thread chosen from All comments on a narrow screen is open: comments show until it closes. */
@@ -49,6 +53,8 @@ export interface MenuActions {
   copyAll(as: CopyAs): Promise<void>;
   toggleResolved(): void;
   toggleMine(): void;
+  /** Hide comments on or off, remembered for this page in this browser. */
+  setHide(on: boolean): void;
   rename(name: string): Promise<void>;
   /** The reviewer's name; "" until they add one. */
   name(): string;
@@ -114,11 +120,13 @@ export interface Ctx {
   /** Who can be mentioned with `@`: people in this document, agents the page lists, and people supplied. */
   people(): Person[];
   cancelDraft(): void;
-  /** Turns comment mode on or off; comments show while it is on. `keys`: from the keyboard (the block cursor starts). */
+  /** Turns comment mode on or off. `keys`: from the keyboard (the block cursor starts). */
   setCommenting(on: boolean, keys?: boolean): void;
   /** What a click on the page does: cancels an empty draft (back to one with words), else closes the open thread. */
   dismiss(): void;
   registerDraft(box: DraftBox | null): void;
+  /** All comments opens thread `id` in its panel (while the panel is open, opening a thread goes there). */
+  registerList(open: ((id: string) => void) | null): void;
   toast(message: string): void;
   /** Tells screen readers (a polite live region), once. */
   say(text: string): void;

@@ -7,7 +7,7 @@ import type { Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
-import { isShortcut, SHORTCUT_LABEL } from "./shortcut";
+import { HOLD_LABEL, isShortcut, SHORTCUT_LABEL } from "./shortcut";
 import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
@@ -103,16 +103,26 @@ export function startApp(o: AppOptions): App {
   const resolved = new Map<string, Resolved>();
   const pendingFuzzy = new Set<string>();
   const claimed = new WeakSet<Event>();
+  // Hide comments is the reviewer's choice for this page, kept in their browser under the document's identity.
+  const HIDE_KEY = `pipeup:hide:${o.doc.id}`;
+  let hide = false;
+  try {
+    hide = localStorage.getItem(HIDE_KEY) === "1";
+  } catch {
+    /* no storage: comments show */
+  }
   const state: UiState = {
     active: null,
     hot: null,
     showResolved: false,
     mine: false,
-    // Comments show only in comment mode or while All comments is open: hidden on load.
-    hidden: true,
+    // Comments show unless the reviewer chose Hide comments for this page.
+    hide,
+    hidden: hide,
     mode: chooseMode(o.root),
     draft: null,
     commenting: false,
+    paused: false,
     listing: false,
     reading: false,
     menu: false,
@@ -122,6 +132,8 @@ export function startApp(o: AppOptions): App {
   const sr = h("div", { class: "sr", "aria-live": "polite" });
   host.layer.append(toastEl, sr);
   let openBox: DraftBox | null = null;
+  /** Opens a thread in the All comments panel; set by the panel. */
+  let list: ((id: string) => void) | null = null;
   let views: View[] = [];
   let modeView: CommentMode | null = null;
   let destroyed = false;
@@ -316,6 +328,16 @@ export function startApp(o: AppOptions): App {
       state.mine = !state.mine;
       render();
     },
+    setHide: (on) => {
+      state.hide = on;
+      try {
+        if (on) localStorage.setItem(HIDE_KEY, "1");
+        else localStorage.removeItem(HIDE_KEY);
+      } catch {
+        /* for this visit only */
+      }
+      render();
+    },
     rename: async (typed) => {
       // As the document keeps it: one line, single spaces.
       const name = typed.replace(/\s+/g, " ").trim();
@@ -390,6 +412,9 @@ export function startApp(o: AppOptions): App {
     dismiss,
     registerDraft: (box) => {
       openBox = box;
+    },
+    registerList: (fn) => {
+      list = fn;
     },
     toast,
     say,
@@ -519,10 +544,12 @@ export function startApp(o: AppOptions): App {
       if (words) unsent.set(state.active, words);
       state.active = null;
     }
-    // Comments show in comment mode, while All comments is open, while a thread chosen there on a narrow screen
-    // (where the panel steps aside) is open, and while a comment is being written (its words are never lost);
-    // otherwise the open thread closes.
-    state.hidden = !state.commenting && !state.listing && !state.reading && !state.draft;
+    // Comments show unless the reviewer hid them. Hidden, they still show in comment mode, while All comments is
+    // open, while a thread chosen there on a narrow screen (where the panel steps aside) is open, and while a
+    // comment is being written (its words are never lost); otherwise the open thread closes.
+    state.hidden = state.hide && !state.commenting && !state.listing && !state.reading && !state.draft;
+    // Holding ⌘ (Ctrl) pauses comment mode: the page gets its own cursor back.
+    sheet.picking(state.commenting && !state.paused);
     if (state.hidden) state.active = null;
     if (!state.hidden) announceMentions(threads);
     fadeHighlights(state.hidden ? 0 : 1);
@@ -617,6 +644,8 @@ export function startApp(o: AppOptions): App {
   function open(id: string | null, sent = false): void {
     // Words being written are never dropped: another thread waits (comment mode follows the same rule).
     if (id && held()) return;
+    // While All comments is open, a thread opens there (a click on its highlight, bubble or column thread).
+    if (id && state.listing && list) return list(id);
     if (state.active === id && !state.draft) return id ? focusReply(id) : undefined;
     const busy = !sent && writing();
     // Read before the views change: a column thread's button goes inert as its thread opens.
@@ -678,7 +707,7 @@ export function startApp(o: AppOptions): App {
   function setCommenting(on: boolean, keys = false): void {
     if (state.commenting === on) return;
     state.commenting = on;
-    sheet.picking(on);
+    state.paused = false;
     if (on) {
       state.active = null;
       state.listing = false;
@@ -695,7 +724,7 @@ export function startApp(o: AppOptions): App {
     if (keys) modeView.resume();
     if (!keys)
       toast(
-        `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · ${SHORTCUT_LABEL} or Esc to finish`,
+        `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · ${SHORTCUT_LABEL} or Esc to finish`,
         HINT_MS,
         true,
       );

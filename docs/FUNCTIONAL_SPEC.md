@@ -26,8 +26,8 @@ they would in Google Docs or Figma.
 
 Principles:
 
-- **The page stays the author's.** Pipeup never changes how the page looks or behaves when
-  comments are closed, and never covers its content.
+- **The page stays the author's.** Pipeup never changes how the page behaves outside comment mode,
+  never changes how it looks when comments are hidden, and never covers its content.
 - **Private by default.** Without any setup, comments stay on the reviewer's own machine. Pipeup itself
   never sends anything anywhere. Only add-ons the author chooses to include can send anything, and each
   one says what it sends.
@@ -133,6 +133,9 @@ any of them off.
   instead of things that act. Nothing on the page fires, submits or navigates when clicked or tapped.
   From the keyboard, while the block cursor (below) is not in use, Enter and Space on a focused control
   of the page do what the page expects, and Pipeup does nothing with them.
+- **Holding ⌘ (Ctrl elsewhere) pauses comment mode** for as long as it is held. The outline and the
+  picking cursor go and the page works as normal, so a reviewer can click through it to reach what they
+  want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
   the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
   readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
@@ -236,15 +239,17 @@ any of them off.
 
 **When comments show**
 
-- **Comments show only while you are reviewing**: in comment mode, while the All comments panel is
-  open, and while a comment is being written. With comment mode off, highlights, bubbles, pins, the
-  column and open threads are all out of sight; the comment control still shows the number of open
-  threads. Pages open with comments hidden, since comment mode starts off.
-- Choosing a thread from All comments shows the comments while the panel stays open. When the panel
-  closes and comment mode is off, they hide again.
+- **Comments show whether comment mode is on or off.** Highlights, bubbles, pins and the column can be
+  read, hovered and opened. Outside comment mode the rest of the page behaves as normal. Pages open with
+  comments showing.
+- **Hide comments** in the comment control's menu puts them out of sight until it is turned off. Highlights, bubbles,
+  pins, the column and open threads all go; the comment control still shows the number of open threads.
+  The choice is remembered for that page in this browser. Comment mode, the All comments panel and a
+  comment being written still show the comments while they last, and the comments hide again when they end.
 - Showing and hiding **eases**; nothing snaps. With reduced motion they only fade.
-- In comment mode, hovering a highlight previews its thread and clicking it opens the thread, rather
-  than choosing the block, unless a comment is being written.
+- Hovering a highlight previews its thread and clicking it opens the thread, unless a comment is being
+  written. In comment mode that click opens the thread instead of choosing the block. Outside comment mode,
+  a highlight on one of the page's links or controls leaves the click to the page.
 
 **What you see at rest — the words lead**
 
@@ -318,6 +323,8 @@ any of them off.
   - **Copy as Text** — the same threads as plain text: where it is, then just the names and
     words (§7a). Each copy row has a one-line tooltip. There is no copy-format setting;
   - **All comments**, with the number of open threads;
+  - **Hide comments**, with a **switch**. When it is on, comments are out of sight (*When comments
+    show*, above). Toggling it leaves the menu open, so the switch is seen to move;
   - nearest the button, **Start commenting**, with its shortcut and a **switch** that shows whether
     comment mode is on. Toggling it starts or stops comment mode and **leaves the menu open**, so
     the switch is seen to move — except that turning it on from the keyboard closes the menu as the
@@ -349,6 +356,8 @@ any of them off.
     closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
     Show resolved is on.
   - The panel closes with its close button, Esc (after any open thread), or a click on the page.
+    A click on a comment on the page (its highlighted words, bubble, pin or column thread) doesn't count as
+    a click on the page: it opens that thread in the panel, as choosing its row does, and the panel stays open.
   - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
@@ -439,7 +448,7 @@ any of them off.
   - **Bubbles** — on slides and rich pages, on the element or spot they belong to.
 - **Documents designed for review** keep a **gutter on the right** for comments: the reading area
   stays centred in the space beside it, and threads sit in the gutter. When comments are hidden
-  (comment mode is off), while the All comments panel makes its own room, or when there is no room
+  (Hide comments), while the All comments panel makes its own room, or when there is no room
   for the column, the gutter closes and the content eases back to the true centre.
   This happens only on pages that reserve the gutter (§4); Pipeup never shifts a page that doesn't.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
@@ -745,8 +754,8 @@ which Pipeup discards. It also can't tell when something is missing.
 - Authors and agents can see which add-ons a page has, and whether each one is on.
 - Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
   dark appearance and reduced motion, and keep every rule that words being written are never lost.
-- **While comments are closed, add-ons add nothing to the page except words in the comment control's
-  label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
+- **While comments are closed (hidden with Hide comments, and nothing showing them), add-ons add nothing
+  to the page except words in the comment control's label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
   next opens Pipeup.
 
 ### Making your own add-on
@@ -1549,3 +1558,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Approved: `pipeup init` offers to mark blocks, charts and slides, the author accepting, renaming or skipping each (section 15e); `pipeup read` reads a folder of feedback files (section 15f).
 - 2026-10-13 — Built (0.8): `pipeup init` (section 15e). Add-ons can't yet go inside the page with `--offline`; the command says so.
 - 2026-10-13 — Built (0.8): `pipeup read` (section 15f). Without the page open, a thread's place comes from what the comment saved (slide, block name, quote), not from the page's layout.
+- 2026-10-14 — Comments show whether comment mode is on or off, and **Hide comments** (a menu switch, remembered per page in this browser) puts them out of sight; this reverses the 2026-10-06 rule that comments show only while reviewing. Holding ⌘ (Ctrl elsewhere) pauses comment mode so the page can be used. With All comments open, clicking a comment on the page opens it in the panel instead of closing the panel (sections 5, 7 and 9).

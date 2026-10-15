@@ -3,7 +3,9 @@ import {
   commenting,
   control,
   focusInPipeup,
+  hideComments,
   leaveReply,
+  quoteSpot,
   open,
   openMenu,
   seedElement,
@@ -144,6 +146,7 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("Enter");
   await expect(list(page)).toBeVisible();
@@ -157,6 +160,7 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   expect((await focusInPipeup(page)).cls).toContain("mode");
 
   await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");
@@ -226,12 +230,12 @@ test.describe("on a touch screen with no hover", () => {
       .tap();
     await expect(list(page).locator(".xr")).toContainText("Love this line.");
     await expect(page.locator(".layer.hidden")).toHaveCount(0);
-    // Escape closes the thread, then the panel, which hides the comments again (comment mode is off).
+    // Escape closes the thread, then the panel; the comments still show (they aren't hidden).
     await page.keyboard.press("Escape");
     await expect(list(page).locator(".xr")).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(list(page)).toHaveCount(0);
-    await expect(page.locator(".layer.hidden")).toHaveCount(1);
+    await expect(page.locator(".layer.hidden")).toHaveCount(0);
   });
 });
 
@@ -284,7 +288,7 @@ test("choosing a thread in comment mode opens it in the panel and stays in comme
 test("choosing a thread while comments are hidden shows them and opens it in the panel", async ({ page }) => {
   await open(page, "site.html");
   await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
-  // Comment mode is off: comments are hidden.
+  await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await openAll(page);
   await list(page)
@@ -292,5 +296,55 @@ test("choosing a thread while comments are hidden shows them and opens it in the
     .click();
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
   await expect(list(page).locator(".xr")).toContainText("Match the nav?");
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+});
+
+test("with All comments open, clicking a comment's words on the page opens it in the panel, which stays open", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await seedText(page, "#p2", "second designer", "Why Q4?");
+  await openAll(page);
+  const y = await page.evaluate(() => scrollY);
+  const spot = await quoteSpot(page);
+  await page.mouse.click(spot.x, spot.y);
+  await expect(list(page).locator(".xr")).toContainText("Is 20% realistic?");
+  // It stays open, the thread opens nowhere else, and the page stays where it was.
+  await page.waitForTimeout(600);
+  await expect(list(page)).toBeVisible();
+  await expect(page.locator(".pop.show, .th.on")).toHaveCount(0);
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  // A click on the page itself still closes the panel, and the comments still show.
+  await page.mouse.click(900, 790);
+  await expect(list(page)).toHaveCount(0);
+  await expect(page.locator(".layer.hidden")).toHaveCount(0);
+});
+
+test("with All comments open in comment mode, clicking a comment's words opens it in the panel, not a new comment", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await showComments(page);
+  await openAll(page);
+  const spot = await quoteSpot(page);
+  await page.mouse.click(spot.x, spot.y);
+  await expect(list(page).locator(".xr")).toContainText("Is 20% realistic?");
+  await page.waitForTimeout(600);
+  await expect(list(page)).toBeVisible();
+  await expect(page.locator(".pop.show, .th.on, .draft")).toHaveCount(0);
+  await commenting(page);
+});
+
+test("with All comments open, clicking a bubble opens its thread in the panel", async ({ page }) => {
+  await open(page, "site.html");
+  await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
+  await seedText(page, "h1", "in minutes not meetings", "Love this line.");
+  await openAll(page);
+  await page.locator(".bub.in").first().click();
+  await expect(list(page).locator(".xr")).toContainText("Match the nav?");
+  await page.waitForTimeout(600);
+  await expect(list(page)).toBeVisible();
   await expect(page.locator(".pop.show")).toHaveCount(0);
 });

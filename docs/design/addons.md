@@ -349,7 +349,9 @@ export interface ItemHandle { update(): void; remove(): void }
 ### 3.2 Notices, announcements and the composer note (stage 1)
 
 **"Comments are closed"** means Pipeup shows only its control: no menu, panel, column, thread or
-comment mode. Spec §1 promises the page looks unchanged then; §11a extends that to add-ons.
+comment mode. Since 2026-10-14 comments show at rest, so they are closed only while the reviewer has chosen
+Hide comments and nothing is showing them for a while ([comments-at-rest.md](comments-at-rest.md)); the
+core's `hidden` state, which `onUi().shown` mirrors, is unchanged. Spec §1 promises the page looks unchanged then; §11a extends that to add-ons.
 
 - **`notify(text)`** uses the single toast.
   - While comments are open, it shows at once. It never replaces the "This browser can't keep

@@ -1,14 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import {
-  bodySnapshot,
-  commenting,
-  fixture,
-  open,
-  seedText,
-  settled,
-  showComments,
-  toggleCommenting,
-} from "./helpers";
+import { bodySnapshot, fixture, hideComments, open, seedText, settled, showComments } from "./helpers";
 
 const gutter = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--pipeup-gutter").trim());
@@ -40,20 +31,20 @@ test("a reserving page gets a 320px gutter while the column shows; its content s
   expect(box.x + box.width).toBeLessThanOrEqual(w);
 });
 
-test("the gutter opens with comment mode; leaving it closes the gutter and the content returns to the true centre", async ({
+test("the gutter is open while comments show; Hide comments closes it and the content returns to the true centre", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, "reserve.html");
-  // Comments are hidden on load, so the gutter starts closed.
-  await expect.poll(() => gutter(page)).toBe("0px");
-  await showComments(page);
+  // Comments show on load, so the gutter starts open.
   await expect.poll(() => gutter(page)).toBe("320px");
-  await toggleCommenting(page);
-  await commenting(page, false);
+  await hideComments(page);
   await expect.poll(() => gutter(page)).toBe("0px");
   const w = await width(page);
   await expect.poll(async () => Math.abs((await centre(page)) - w / 2)).toBeLessThan(2);
+  // Comment mode shows the comments again, and the gutter with them.
+  await showComments(page);
+  await expect.poll(() => gutter(page)).toBe("320px");
 });
 
 test("narrow windows get bubbles and no gutter, with 24px of hysteresis", async ({ page }) => {

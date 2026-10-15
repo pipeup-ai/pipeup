@@ -355,7 +355,8 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Opens a thread out in the panel (or closes it): the page scrolls to its place, and a line joins the two. */
   let going = "";
-  function toggle(id: string): void {
+  /** `from`: the thread was opened from the page (its highlight, bubble or column thread), so the page stays put. */
+  function toggle(id: string, from = false): void {
     if (openId === id) return closeRow(true);
     const t = latest.find((x) => x.id === id);
     if (!t) return;
@@ -364,7 +365,9 @@ export function createLauncher(ctx: Ctx): View {
     ctx.seen(t);
     buildAll();
     railView.element.querySelector("textarea")?.focus({ preventScroll: true });
-    if (!ctx.elsewhere(t)) return reveal(t);
+    // The row comes into view in the panel, wherever it is in the list.
+    if (from) list.querySelector(".mi.open")?.scrollIntoView({ block: "nearest" });
+    if (!ctx.elsewhere(t)) return reveal(t, !from);
     // Like opening, going somewhere else leaves a draft with words where it is: the thread shows here, with its place.
     if (ctx.state.draft && !ctx.draftEmpty()) return;
     // On another slide or view: go there first, then show it (unless the row was closed or changed meanwhile).
@@ -388,10 +391,11 @@ export function createLauncher(ctx: Ctx): View {
   }
 
   /** Scrolls a thread's place into view and marks it (it pulses once, and stays marked while the row is open). */
-  function reveal(t: Thread): void {
+  function reveal(t: Thread, scroll = true): void {
     const r = ctx.resolved.get(t.id);
     const el = r && !lost(t) ? (r.element ?? r.range?.startContainer.parentElement ?? null) : null;
-    el?.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
+    if (scroll)
+      el?.scrollIntoView({ block: "center", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
     if (el) ctx.hot(t.id);
   }
 
@@ -544,6 +548,15 @@ export function createLauncher(ctx: Ctx): View {
     false,
     count,
   );
+  // Hide comments: a switch, so the menu stays open and it is seen to move.
+  const hideRow = row(
+    icon("hide"),
+    () => {
+      ctx.menu.setHide(!ctx.state.hide);
+      sync();
+    },
+    true,
+  );
   // Nearest the button: comment mode, with its shortcut and a switch that shows it is on. The menu stays open
   // so the switch is seen to move, except that turning it on from the keyboard (no pointer, so detail is 0)
   // closes the menu as the switch moves and puts the block cursor on the page: the cursor takes focus first,
@@ -596,6 +609,7 @@ export function createLauncher(ctx: Ctx): View {
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
     sepB,
+    hideRow,
     startRow,
   ];
   let built = -1;
@@ -647,11 +661,19 @@ export function createLauncher(ctx: Ctx): View {
       (b.querySelector(".kc") as HTMLElement).textContent = item.count ? word(item.count) : "";
     }
     set(
+      hideRow,
+      "Hide comments",
+      ctx.state.hide
+        ? "Comments are hidden on this page until you turn this off"
+        : "Hides the comments on this page until you turn this off",
+      ctx.state.hide,
+    );
+    set(
       startRow,
       "Start commenting",
       ctx.state.commenting
-        ? "Turn off to hide the comments again"
-        : "Shows the comments; choose any part of the page to comment on it",
+        ? "Turn off to use the page as normal"
+        : "Choose any part of the page to comment on it",
       ctx.state.commenting,
     );
   }
@@ -724,9 +746,10 @@ export function createLauncher(ctx: Ctx): View {
         e.stopPropagation();
       }
     }
-    // Only a click on the page itself closes the panel: Pipeup's own threads and bubbles leave it open.
+    // Only a click on the page itself closes the panel: Pipeup's own threads and bubbles, and a highlight (which
+    // opens its thread in the panel), leave it open.
     // Focus that was in the panel and went nowhere (empty page) comes back to the button; a page field keeps it.
-    if (ctx.state.listing && !ctx.owns(e))
+    if (ctx.state.listing && !ctx.owns(e) && !ctx.claimed(e))
       setList(false, wasInPanel && (!document.activeElement || document.activeElement === document.body));
   };
   /**
@@ -783,6 +806,10 @@ export function createLauncher(ctx: Ctx): View {
     e.stopPropagation();
   };
   window.addEventListener("keydown", onEscape, true);
+  // While the panel is open, a thread opened from the page (its highlight, bubble or column thread) opens here.
+  ctx.registerList((id) => {
+    if (openId !== id) toggle(id, true);
+  });
 
   return {
     render(threads) {
@@ -834,6 +861,7 @@ export function createLauncher(ctx: Ctx): View {
       window.removeEventListener("pointerout", onPointer, true);
       window.clearTimeout(away);
       window.removeEventListener("keydown", onEscape, true);
+      ctx.registerList(null);
       menu.remove();
       all.remove();
       wire.remove();

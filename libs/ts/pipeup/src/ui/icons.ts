@@ -26,6 +26,12 @@ const PATHS = {
   // A pencil: edit your name.
   smile: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M8.5 14a4.5 4.5 0 0 0 7 0", "M9 9.6h.01M15 9.6h.01"],
   edit: ["M4 20h4L19 9l-4-4L4 16z"],
+  // An eye, struck through: Hide comments.
+  hide: [
+    "M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z",
+    "M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z",
+    "M4 4l16 16",
+  ],
   look: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M12 3v18"],
 } as const;
 

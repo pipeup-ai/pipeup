@@ -7,9 +7,18 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
+
 ### Added
 
+- **Hold ⌘ (Ctrl elsewhere) to pause comment mode.** While the key is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back.
 - **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
+
+### Fixed
+
+- **All comments no longer closes when you click a comment on the page.** Clicking a comment's highlighted words, bubble or column thread while the panel is open now opens that thread in the panel. Before, the panel closed: depending on the case, the thread opened on the page instead, or nothing opened at all.
 
 ## [0.8.0-beta.1] - 2026-10-13
 

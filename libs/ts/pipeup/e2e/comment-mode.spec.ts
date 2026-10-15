@@ -3,6 +3,8 @@ import { SHORTCUT } from "../src/ui/shortcut";
 import {
   commenting,
   control,
+  hideComments,
+  holdKey,
   leaveReply,
   open,
   seedElement,
@@ -75,11 +77,12 @@ test("the shortcut typed in a page textarea types its character and doesn't togg
   await commenting(page, false);
 });
 
-test("with comments hidden on load, the shortcut and Start commenting both start comment mode and show them", async ({
+test("with comments hidden, the shortcut and Start commenting both start comment mode and show them", async ({
   page,
 }) => {
   await open(page, "controls.html");
   await seedElement(page, "[data-pipeup-id=tile-mrr]", "Use a real number");
+  await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
@@ -226,9 +229,11 @@ test("entering comment mode closes an open thread; Escape steps back one level a
   await leaveReply(page);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page, false);
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  // Comments show either way, so leaving comment mode keeps the thread open; entering it closes the thread.
+  await expect(page.locator(".pop.show")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
   await page.mouse.move(5, 790);
   await page.locator("#go").click();
   await expect(page.locator(".pick.on")).toHaveCount(1);
@@ -246,6 +251,45 @@ test("entering comment mode closes an open thread; Escape steps back one level a
   await commenting(page);
   await page.keyboard.press("Escape");
   await commenting(page, false);
+});
+
+test("holding Command (Ctrl elsewhere) pauses comment mode: the page works, and letting go brings it back", async ({
+  page,
+}) => {
+  await open(page, "controls.html");
+  await commentMode(page);
+  const hold = await holdKey(page);
+  await page.locator("#go").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+  await page.keyboard.down(hold);
+  // The outline goes at once, and the page hears the click.
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await page.locator("#go").click();
+  expect(await fired(page)).toContain("go");
+  await expect(page.locator(".pick.on, .pop.show")).toHaveCount(0);
+  await commenting(page);
+  // Letting go: the page is quiet again, and a click comments.
+  await page.keyboard.up(hold);
+  const before = (await fired(page)).length;
+  await page.locator("#go").click();
+  expect((await fired(page)).length).toBe(before);
+  await expect(page.locator(".pick.on")).toHaveCount(1);
+});
+
+test("a pause whose key-up was missed (the window lost it) ends with the next move of the pointer", async ({
+  page,
+}) => {
+  await open(page, "controls.html");
+  await commentMode(page);
+  const hold = await holdKey(page);
+  await page.locator("#go").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+  // The key goes down where Pipeup hears it, and its key-up is lost.
+  await page.evaluate((key) => window.dispatchEvent(new KeyboardEvent("keydown", { key })), hold);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  // The pointer moves without the key held: comment mode is back.
+  await page.locator("#cta").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
 });
 
 test("with the menu open in comment mode, Escape closes only the menu", async ({ page }) => {
@@ -345,13 +389,13 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
     const q = ([...CSS.highlights.get("pipeup-quote")!][0] as Range).getClientRects()[0]!;
     return { x: q.left + q.width / 2, y: q.top + q.height / 2 };
   });
-  // Comments are hidden outside comment mode: nothing to preview.
+  // Comments show outside comment mode too, so the highlight previews there.
   await page.mouse.move(spot.x, spot.y);
-  await page.waitForTimeout(100);
-  await expect(page.locator(".tip.show")).toHaveCount(0);
+  await expect(page.locator(".tip.show")).toHaveCount(1);
   await page.mouse.move(5, 790);
+  await expect(page.locator(".tip.show")).toHaveCount(0);
   await commentMode(page);
-  // Comments only show in comment mode, so their highlights preview and open there.
+  // In comment mode the highlight previews and opens its thread, rather than choosing the block.
   await page.mouse.move(spot.x, spot.y);
   await expect(page.locator(".tip.show")).toHaveCount(1);
   await page.mouse.click(spot.x, spot.y);

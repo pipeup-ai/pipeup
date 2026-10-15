@@ -3,12 +3,14 @@ import {
   bodySnapshot,
   commenting,
   control,
+  hideComments,
   leaveReply,
   open,
   openMenu,
   seedText,
   selectWords,
   settled,
+  showComments,
   toggleCommenting,
 } from "./helpers";
 import { SHORTCUT } from "../src/ui/shortcut";
@@ -25,9 +27,10 @@ const highlightAlpha = (page: Page) =>
     const parts = m[1]!.split(",").map((x) => parseFloat(x));
     return parts.length > 3 ? parts[3]! : 1;
   });
-/** Toggles comment mode with its shortcut, sampling the highlight alpha every frame for 400 ms after. */
-const toggleAndSample = (page: Page) =>
-  page.evaluate(async (code) => {
+/** Samples the highlight alpha every frame for `ms`, while `act` runs. */
+async function sampleWhile(page: Page, act: () => Promise<unknown>, ms = 700): Promise<number[]> {
+  await page.evaluate((ms) => {
+    const w = window as any;
     const alpha = () => {
       const rule = [...document.adoptedStyleSheets]
         .flatMap((s) => [...s.cssRules])
@@ -36,58 +39,85 @@ const toggleAndSample = (page: Page) =>
       const parts = m ? m[1]!.split(",").map((x) => parseFloat(x)) : [];
       return parts.length > 3 ? parts[3]! : m ? 1 : 0;
     };
-    window.dispatchEvent(new KeyboardEvent("keydown", { code, shiftKey: true, altKey: true, bubbles: true }));
-    const seen: number[] = [];
-    const end = performance.now() + 400;
-    while (performance.now() < end) {
-      seen.push(alpha());
-      await new Promise(requestAnimationFrame);
-    }
-    return seen;
-  }, SHORTCUT.code);
+    w.__seen = [];
+    const end = performance.now() + ms;
+    const tick = () => {
+      w.__seen.push(alpha());
+      if (performance.now() < end) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, ms);
+  await act();
+  await page.waitForTimeout(ms);
+  return page.evaluate(() => (window as any).__seen as number[]);
+}
+const hideSwitch = (page: Page) => page.getByRole("menuitemcheckbox", { name: "Hide comments" });
+/** The comments have finished easing in after the page opened. */
+async function shown(page: Page): Promise<void> {
+  await expect.poll(() => highlightAlpha(page)).toBeGreaterThan(0.5);
+  await page.waitForTimeout(400);
+}
 
-test("comments are hidden with comment mode off, shown with it on, and they ease both ways", async ({
+test("comments show with comment mode off; Hide comments hides them, eased both ways, and is remembered for the page", async ({
   page,
 }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  // On load comment mode is off: no thread, no highlight, but the button still counts the open thread.
-  await expect(page.locator(".layer.hidden")).toHaveCount(1);
-  await expect(page.locator(".th")).toHaveCount(0);
-  expect(await highlightAlpha(page)).toBe(0);
-  await expect(page.locator(".launch .mode .n.on")).toHaveText("1");
-
-  const coming = await toggleAndSample(page);
-  await commenting(page);
+  // On load comment mode is off, and the comments show.
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
   await expect(page.locator(".th")).toHaveCount(1);
-  expect(coming.at(-1)!).toBeGreaterThan(0.5);
-  // Eased: the highlight passed through values in between.
-  expect(coming.some((a) => a > 0.05 && a < coming.at(-1)! - 0.05)).toBe(true);
+  await shown(page);
 
-  const going = await toggleAndSample(page);
-  await commenting(page, false);
+  await openMenu(page);
+  const going = await sampleWhile(page, () => hideSwitch(page).click());
+  await expect(hideSwitch(page)).toHaveAttribute("aria-checked", "true");
+  await page.keyboard.press("Escape");
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
+  await expect(page.locator(".th")).toHaveCount(0);
   expect(going.at(-1)!).toBe(0);
+  // Eased: the highlight passed through values in between.
   expect(going.some((a) => a > 0.05 && a < going[0]! - 0.05)).toBe(true);
-  // The column fades rather than vanishing.
+  // The column fades rather than vanishing, and the button still counts the open thread.
   expect(await page.locator(".col").evaluate((e) => getComputedStyle(e).transitionProperty)).toContain(
     "opacity",
   );
-  await expect(page.locator(".th")).toHaveCount(0);
+  await expect(page.locator(".launch .mode .n.on")).toHaveText("1");
+  // Comment mode shows them while it is on.
+  await showComments(page);
+  await expect(page.locator(".layer.hidden")).toHaveCount(0);
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page, false);
+  await expect(page.locator(".layer.hidden")).toHaveCount(1);
+
+  // Remembered for this page: still hidden after a reload, until it is turned off.
+  await open(page, "doc.html");
+  await expect(page.locator(".layer.hidden")).toHaveCount(1);
+  await openMenu(page);
+  const coming = await sampleWhile(page, () => hideSwitch(page).click());
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".layer.hidden")).toHaveCount(0);
+  expect(coming.at(-1)!).toBeGreaterThan(0.5);
+  expect(coming.some((a) => a > 0.05 && a < coming.at(-1)! - 0.05)).toBe(true);
+  await open(page, "doc.html");
+  await expect(page.locator(".layer.hidden")).toHaveCount(0);
 });
 
 test("with reduced motion, comments still fade in and out, by opacity only", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  const coming = await toggleAndSample(page);
-  expect(coming.some((a) => a > 0.05 && a < coming.at(-1)! - 0.05)).toBe(true);
+  await shown(page);
+  await openMenu(page);
+  const going = await sampleWhile(page, () => hideSwitch(page).click());
+  expect(going.some((a) => a > 0.05 && a < going[0]! - 0.05)).toBe(true);
 });
 
-test("All comments shows comments while it is open; closing it hides them again", async ({ page }) => {
+test("with comments hidden, All comments shows them while it is open; closing it hides them again", async ({
+  page,
+}) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await hideComments(page);
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect(panel(page)).toHaveCount(1);
