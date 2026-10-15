@@ -117,7 +117,8 @@ test("someone mentioning you is said once, filters All comments, and opening the
     .toBe(true);
   // Mentions that were seen aren't said again.
   await page.evaluate(() => (window as any).pu.document.resolve((window as any).pu.document.threads()[0].id));
-  await expect(page.locator(".toast.show")).toHaveCount(0);
+  await page.waitForTimeout(300);
+  await expect(page.locator(".toast.show", { hasText: "mentioned" })).toHaveCount(0);
 });
 
 test("a person who shared an email can be told: the offer opens the reviewer's own mail, with the words and the page", async ({

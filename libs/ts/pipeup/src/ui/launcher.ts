@@ -10,7 +10,7 @@ import { popoverAnchor, quoteRects } from "./geometry";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
-import { narrow, PANEL } from "./layout";
+import { narrow, PANEL, touch } from "./layout";
 import { mentionsMe } from "./mentions";
 import { draftBox, type DraftBox } from "./draft-view";
 import { nodeOf } from "./order";
@@ -161,7 +161,7 @@ export function createLauncher(ctx: Ctx): View {
       "aria-keyshortcuts": SHORTCUT_ARIA,
     },
     "Comment",
-    h("small", { "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("small", { class: "ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
     h("span", { class: "sw", "aria-hidden": "true" }),
   );
   footSwitch.addEventListener("click", (e) => {
@@ -483,7 +483,11 @@ export function createLauncher(ctx: Ctx): View {
       const box = draftBox(ctx, d);
       draft = { of: d, box, card: h("div", { class: "cd open new" }, box.element) };
     }
-    if (draft) draft.box.setLabel(d!.label);
+    if (draft) {
+      draft.box.setLabel(d!.label);
+      // The naming bar on the page may have said what it is on; in the panel the card says it itself.
+      draft.box.hideLabel(false);
+    }
     if (openCard && openCard.id !== openId) openCard = null;
     // In page order: the new comment's card goes before the first thread whose content comes after what it's on.
     const on = d && (d.resolved.range?.startContainer ?? d.resolved.element);
@@ -526,7 +530,7 @@ export function createLauncher(ctx: Ctx): View {
       });
       let card: HTMLElement;
       if (open && railView) {
-        railView.update(t, threadOptions(t));
+        railView.update(t, threadOptions(t, about));
         if (!openCard) {
           const xr = h(
             "div",
@@ -589,14 +593,18 @@ export function createLauncher(ctx: Ctx): View {
         ?.focus({ preventScroll: true });
   }
 
-  /** What a thread shows about where it is (its quote, or where its content has gone). */
-  function threadOptions(t: Thread) {
+  /**
+   * What a thread shows about where it is (its quote, or where its content has gone). On a narrow screen, where the
+   * panel covers the page, an open element or pin thread keeps its closed card's `about` line: where it is.
+   */
+  function threadOptions(t: Thread, about?: string) {
     const away = !lost(t) && ctx.elsewhere(t);
     return {
       variant: "popover" as const,
       quote: t.anchor.quote?.exact ?? null,
       lost: lost(t) || away ? t.anchor.snapshot : null,
       place: away ? placeOf(t) : null,
+      note: narrow() && !lost(t) && !away && !t.anchor.quote ? about : null,
     };
   }
 
@@ -611,7 +619,8 @@ export function createLauncher(ctx: Ctx): View {
     railView = threadView(t, { ...ctx.actions, close: () => closeRow(true) }, threadOptions(t));
     ctx.seen(t);
     buildAll();
-    railView.element.querySelector("textarea")?.focus({ preventScroll: true });
+    // On a touch screen the reply line waits to be tapped, so the keyboard doesn't cover the thread.
+    if (!touch()) railView.element.querySelector("textarea")?.focus({ preventScroll: true });
     // The row comes into view in the panel, wherever it is in the list.
     if (from) list.querySelector(".mi.open")?.scrollIntoView({ block: "nearest" });
     if (!ctx.elsewhere(t)) return reveal(t, !from);
@@ -848,7 +857,7 @@ export function createLauncher(ctx: Ctx): View {
       if (keys) setMenu(false);
     },
     true,
-    h("span", { class: "kc", "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("span", { class: "kc ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
   );
   startRow.dataset.item = "comment";
   startRow.setAttribute("aria-keyshortcuts", SHORTCUT_ARIA);

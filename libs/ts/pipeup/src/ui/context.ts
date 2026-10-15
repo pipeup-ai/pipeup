@@ -42,6 +42,8 @@ export interface UiState {
   reading: boolean;
   /** The comment control's menu is open: in comment mode a click outside it only closes it. */
   menu: boolean;
+  /** Pin was tapped on a touch screen: the next tap on the page is where the pin goes, even on a highlight. */
+  pinning: boolean;
 }
 
 /** Something that draws: rebuilt on render, repositioned every frame. */

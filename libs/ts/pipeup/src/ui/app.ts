@@ -12,7 +12,7 @@ import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
-import { narrow, PANEL, popover } from "./layout";
+import { narrow, PANEL, popover, touch } from "./layout";
 import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
@@ -135,6 +135,7 @@ export function startApp(o: AppOptions): App {
     listing: false,
     reading: false,
     menu: false,
+    pinning: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   // What screen readers are told, separate from the toast: visually hidden, never inert.
@@ -160,11 +161,28 @@ export function startApp(o: AppOptions): App {
     if (!destroyed && classify()) render();
   });
 
-  /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS. */
+  /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS (by touch it stays). */
   let hint = false;
+  /** Comment mode's hint, waiting for the menu to close: nothing of Pipeup's covers a message. */
+  let hintLater: (() => void) | null = null;
   let sayRaf = 0;
+  /**
+   * On a touch screen comment mode's hint stays beside the control while comment mode is on (and All comments isn't
+   * covering the page): how to use it by touch, and Done, which leaves comment mode in one tap.
+   */
+  const tapping = () => state.commenting && !state.listing && touch();
+  function tapHint(): void {
+    if (tapping() && !state.menu)
+      toast("Tap what you want to comment on", 0, true, false, {
+        label: "Done",
+        run: () => setCommenting(false),
+      });
+  }
 
-  /** `isHint`: comment mode's hint, which goes early; `quiet`: screen readers hear it some other way. */
+  /**
+   * `ms`: how long it shows (0: until something else takes its place); `isHint`: comment mode's hint, which goes early;
+   * `quiet`: screen readers hear it some other way.
+   */
   function toast(
     text: string,
     ms = TOAST_MS,
@@ -197,7 +215,12 @@ export function startApp(o: AppOptions): App {
     else toastEl.removeAttribute("aria-hidden");
     toastEl.classList.add("show");
     window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => toastEl.classList.remove("show"), ms);
+    if (ms)
+      toastTimer = window.setTimeout(() => {
+        toastEl.classList.remove("show");
+        // By touch, comment mode's hint comes back once another message has faded.
+        toastTimer = window.setTimeout(tapHint, 320);
+      }, ms);
   }
 
   /** Words were thrown away (Cancel or Esc): `undo` brings them back, for a few seconds. */
@@ -205,7 +228,7 @@ export function startApp(o: AppOptions): App {
     toast(text, UNDO_MS, false, false, { label: "Undo", run: undo });
 
   function hideHint(): void {
-    if (!hint) return;
+    if (!hint || tapping()) return;
     hint = false;
     window.clearTimeout(toastTimer);
     toastEl.classList.remove("show");
@@ -482,7 +505,7 @@ export function startApp(o: AppOptions): App {
       }
       return null;
     },
-    readsAt: (x, y) => (ctx.draftEmpty() ? ctx.quoteAt(x, y) : null),
+    readsAt: (x, y) => (ctx.draftEmpty() && !state.pinning ? ctx.quoteAt(x, y) : null),
     owns: (e) => e.composedPath().includes(host.element),
     claim: (e) => void claimed.add(e),
     claimed: (e) => claimed.has(e),
@@ -660,6 +683,11 @@ export function startApp(o: AppOptions): App {
     fadeHighlights(state.hidden ? 0 : 1);
     host.layer.classList.toggle("hidden", state.hidden);
     host.layer.classList.toggle("listing", state.listing);
+    // By touch, comment mode's hint goes while All comments covers the page, and comes back after.
+    if (state.commenting && touch()) {
+      if (state.listing) hideHint();
+      else if (!toastEl.classList.contains("show")) hintLater ??= tapHint;
+    }
     // The open panel makes room beside the page (unless it is the whole width of a narrow screen).
     const push = state.listing && !narrow();
     makeRoom(push ? PANEL : 0);
@@ -778,7 +806,8 @@ export function startApp(o: AppOptions): App {
       putReply(id);
       // With the block cursor in use, focus goes back to it, on the same block, instead of the reply line.
       if (sent && modeView?.cursor()) modeView.refocus();
-      else focusReply(id, busy, from);
+      // On a touch screen the reply line waits to be tapped: the keyboard doesn't cover a thread opened to read it.
+      else focusReply(id, busy || touch(), from);
     }
   }
 
@@ -823,6 +852,7 @@ export function startApp(o: AppOptions): App {
     if (state.commenting === on) return;
     state.commenting = on;
     state.paused = false;
+    hintLater = null;
     if (on) {
       // All comments stays open: new comments are written in it.
       state.active = null;
@@ -837,13 +867,17 @@ export function startApp(o: AppOptions): App {
     if (!modeView) return;
     // From the keyboard the block cursor starts once the comments show (its name counts them).
     if (keys) modeView.resume();
+    // The hint waits for the menu to close (frame); by touch it says how to use comment mode by touch.
     if (!keys)
-      toast(
-        `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · ${SHORTCUT_LABEL} or Esc to finish`,
-        HINT_MS,
-        true,
-      );
-    else if (modeView.cursor()) toast(KEYS_HINT, KEYS_HINT_MS, true, true);
+      hintLater = touch()
+        ? tapHint
+        : () =>
+            toast(
+              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · ${SHORTCUT_LABEL} or Esc to finish`,
+              HINT_MS,
+              true,
+            );
+    else if (modeView.cursor()) hintLater = () => toast(KEYS_HINT, KEYS_HINT_MS, true, true);
     else toast("Nothing here to comment on");
   }
 
@@ -956,6 +990,12 @@ export function startApp(o: AppOptions): App {
 
   const frame = () => {
     if (destroyed) return;
+    // A waiting hint never covers a message that came first (someone mentioned you): it waits for it to fade too.
+    if (hintLater && !state.menu && !(toastEl.classList.contains("show") && !hint)) {
+      const show = hintLater;
+      hintLater = null;
+      show();
+    }
     for (const v of views) v.frame();
     for (const s of swells) follow(s);
     modeView?.frame();
@@ -988,7 +1028,24 @@ export function startApp(o: AppOptions): App {
     if (sel && !sel.isCollapsed) return;
     dismiss();
   };
+  /**
+   * After the window changes shape (a phone turned), what the open thread or comment is on comes back into view, near
+   * the top, so the thread fits below it. Only a change of width counts: a phone's keyboard changes the height.
+   */
+  let wide = window.innerWidth;
+  let shapeTimer = 0;
+  function inView(): void {
+    const r = state.active ? resolved.get(state.active) : state.draft?.resolved;
+    const box = (r?.range ?? r?.element)?.getBoundingClientRect();
+    if (box && (box.top < 0 || box.bottom > window.innerHeight))
+      window.scrollBy({ top: box.top - 16, behavior: reduced ? "auto" : "smooth" });
+  }
   const onResize = () => {
+    if (window.innerWidth !== wide) {
+      wide = window.innerWidth;
+      window.clearTimeout(shapeTimer);
+      shapeTimer = window.setTimeout(inView, 200);
+    }
     host.layer.style.setProperty("--pu-pop", `${popover()}px`);
     const mode = chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {
@@ -1096,6 +1153,7 @@ export function startApp(o: AppOptions): App {
       here.destroy();
       window.clearTimeout(reflowTimer);
       window.clearTimeout(toastTimer);
+      window.clearTimeout(shapeTimer);
       window.clearTimeout(mutationTimer);
       window.clearTimeout(deferredTimer);
       observer.disconnect();

@@ -17,10 +17,13 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // block, Undo for thrown-away words, kept replies, keys kept from the page, and focus after every action (+1.7 KB;
 // docs/design/words-and-focus.md); then 55.5 KB for the looks review's fixes (+1.3 KB): highlights that follow the
 // colour behind their words, readable accents, forced-colour states, focus rings, long comments at rest, the wider
-// count bubble, and lists, cards and menus that ease (docs/design/looks-readable.md).
+// count bubble, and lists, cards and menus that ease (docs/design/looks-readable.md); then 56.5 KB for phones and
+// touch: 44 px targets, everything fitting the screen and clear of the control, Pin waiting for a tap, comment mode's
+// touch hint with Done, threads that open without the keyboard, a menu that scrolls, and a long press for who reacted
+// (+1.1 KB; docs/design/phones-touch.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 55.5 * 1024,
-  "dist/pipeup.esm.js": 55.5 * 1024,
+  "dist/pipeup.min.js": 56.5 * 1024,
+  "dist/pipeup.esm.js": 56.5 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

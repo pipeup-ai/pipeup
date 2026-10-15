@@ -192,7 +192,8 @@ any of them off.
   icons go, and nothing sits under the comment control.
 - **Comment mode on a touch screen says how to use it by touch** ("Tap what you want to comment on"), not the
   keyboard and mouse hints. Its hint stays beside the comment control while comment mode is on, with
-  **Done**, which leaves comment mode in one tap.
+  **Done**, which leaves comment mode in one tap. Only Done takes a tap: what is under the hint's words can
+  still be tapped. A screen with only touch shows no keyboard shortcuts, in the menu or the panel's footer.
 
 **From the keyboard and with a screen reader**
 
@@ -322,7 +323,8 @@ any of them off.
   bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it. Where there's
   no room beside it (on a phone, or near the window's edge), the preview and the thread sit **below what
   they're about, or above it, never over it**, and always on screen. Bubbles themselves are always wholly on
-  screen, and threads on the same element each have their own bubble, never one on top of another.
+  screen, and threads on the same element each have their own bubble, never one on top of another. Turning a
+  phone (or resizing the window) with a thread or new comment open brings what it is about back into view.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
   click; its thread opens just below the line so the words stay visible.
 - A hover preview **waits for you**: it stays open while the pointer moves from the highlight or
@@ -516,7 +518,8 @@ any of them off.
   control to add one appears with the other details when the pointer is over the comment or focus is on
   it, and beside the reply and resolve controls inside an open thread.
 - Your own reactions are marked. **Pointing at or focusing a reaction shows who gave it**, by name as
-  shown elsewhere, with "You" first.
+  shown elsewhere, with "You" first. On a touch screen a long press on it does the same, without taking
+  your reaction back; the names go with the next touch.
 - Adding, changing and removing a reaction **ease**; counts roll, as other counts do. Reduced motion
   turns them into soft fades.
 - **Everywhere comments show:** the column, bubbles, the open thread and All comments (as counts,
@@ -1715,5 +1718,8 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   commented on, and decks that fit the window refit beside All comments. Long comments show a few lines at
   rest. Highlights stay readable over any colour, a page's accent is used only when readable, comments keep
   their text direction, and high-contrast modes keep every state visible (sections 5, 6, 7, 7a, 8 and 9).
+- 2026-10-15 — Touch details found while building the phone fixes: only Done takes a tap on comment mode's touch
+  hint, a screen with only touch shows no keyboard shortcuts, turning a phone brings an open thread or new comment
+  back into view, and a long press on a reaction shows who gave it (sections 5, 7 and 7b).
 - 2026-10-15 — The comment control's count stops at **9+** (it went to 99+), so it is never more than two characters
   and stays clear of the bubble's outline in any font; the exact number is in its name and its slide-out (section 7).
