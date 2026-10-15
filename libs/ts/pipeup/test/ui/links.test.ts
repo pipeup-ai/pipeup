@@ -117,6 +117,7 @@ describe("linkify", () => {
       copy: vi.fn(),
       edit: vi.fn(),
       remove: vi.fn(),
+      drop: vi.fn(),
       close: vi.fn(),
     };
     const el = threadView(t, actions, { variant: "popover", now: () => 0 }).element;

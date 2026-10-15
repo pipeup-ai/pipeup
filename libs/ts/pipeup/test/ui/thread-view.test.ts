@@ -55,6 +55,7 @@ const actions = (): ThreadActions & { calls: string[] } => {
     copy: vi.fn((id: string) => void calls.push(`copy ${id}`)),
     edit: vi.fn(async (id: string, t: string) => void calls.push(`edit ${id} ${t}`)),
     remove: vi.fn(async (id: string) => void calls.push(`remove ${id}`)),
+    drop: vi.fn(),
     close: vi.fn(),
   };
 };
@@ -122,8 +123,13 @@ describe("threadView", () => {
     expect(choices()).toEqual(["Copy thread", "Edit", "Delete"]);
     choose("Delete");
     expect(choices()).toEqual(["Copy thread", "Edit", "Delete for everyone"]);
-    expect(a.calls).toEqual([]);
+    // At once (the second click of a double-click), the question ignores it; a moment later, it deletes.
     choose("Delete for everyone");
+    expect(choices()).toEqual(["Copy thread", "Edit", "Delete for everyone"]);
+    expect(a.calls).toEqual([]);
+    const now = vi.spyOn(performance, "now").mockReturnValue(performance.now() + 600);
+    choose("Delete for everyone");
+    now.mockRestore();
     await vi.waitFor(() => expect(a.calls).toEqual(["remove t1"]));
     expect(el.querySelector(".pm")).toBeNull();
     // Edit puts the words back in a box; Save changes them.

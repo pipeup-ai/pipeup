@@ -28,7 +28,9 @@ export interface ThreadActions {
   /** "Still not right" on an addressed thread: reopens it and puts the cursor in its reply line. */
   notRight(threadId: string): Promise<void>;
   copy(threadId: string): void;
-  /** Esc in the reply line: closes the thread. */
+  /** Cancel or Esc threw away the words in thread `threadId`'s reply line: offers them back. */
+  drop(threadId: string, words: string): void;
+  /** Esc in an empty reply line: closes the thread. */
   close(): void;
 }
 
@@ -46,6 +48,9 @@ export interface ThreadViewOptions {
   rest?: string | null;
   now?: () => number;
 }
+
+/** How long Delete's second question ignores presses: the second click of a double-click lands well within it. */
+const CONFIRM_MS = 500;
 
 export const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
 /** A thread's replies that haven't been deleted: a deleted comment goes away. */
@@ -79,7 +84,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         thread: () => id,
         people: () => actions.people(),
         onSend: (text, mentions) => actions.reply(id, text, mentions),
-        onCancel: actions.close,
+        // Words go first (with Undo), and the thread stays open; an empty line closes it.
+        onCancel: (words) => (words ? actions.drop(id, words) : actions.close()),
       }).element,
     ),
   );
@@ -104,9 +110,10 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
    */
   /** Comments whose quick row of reactions is open, and the chips already shown (so only new ones ease in). */
   const quickOpen = new Set<string>();
-  /** The comment whose ⋯ menu is open, one waiting for Delete to be confirmed, and the one being edited. */
+  /** The comment whose ⋯ menu is open, one waiting for Delete to be confirmed (and since when), and the one being edited. */
   let menuFor = "";
   let confirm = "";
+  let asked = 0;
   let editing: { id: string; el: HTMLElement } | null = null;
   const reactionsSeen = new Set<string>();
   let current = first;
@@ -144,14 +151,22 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     return b;
   };
 
-  /** Puts a comment's words back in a box (Cancel and Save); saving changes them, and Esc leaves them as they were. */
+  /** Focuses what matches `sel` in the card, once it has been rebuilt. */
+  const refocus = (sel: string) => element.querySelector<HTMLElement>(sel)?.focus({ preventScroll: true });
+
+  /**
+   * Puts a comment's words back in a box (Cancel and Save); saving changes them, and Esc leaves them as they were.
+   * Either way focus comes back to the comment's ⋯, where Edit was chosen.
+   */
   function startEdit(c: Comment): void {
     const done = () => {
       editing = null;
       update(current);
+      refocus(`[data-c="${c.id}"]`);
     };
     const box = composer({
       label: "Save",
+      name: "Edit comment",
       kind: "comment",
       value: c.text,
       people: () => actions.people(),
@@ -167,17 +182,32 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
 
   // Leaving the card (focus going elsewhere) closes its ⋯ menu. Checked once focus has settled, so moving between
   // its choices, or the card rebuilding itself and putting focus back, doesn't count as leaving.
+  // The quick row of reactions closes the same way, and so with the thread.
   element.addEventListener("focusout", (e) => {
     if (element.contains(e.relatedTarget as Node | null)) return;
     setTimeout(() => {
-      if (menuFor && !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement)) {
+      if (
+        (menuFor || quickOpen.size) &&
+        !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement)
+      ) {
         menuFor = confirm = "";
+        quickOpen.clear();
         update(current);
       }
     });
   });
 
   function update(t: Thread, next: Partial<ThreadViewOptions> = {}): void {
+    // A rebuilt button keeps focus: the same action on the same comment is focused again (a newer copy arriving
+    // while a reviewer works the card from the keyboard never drops them to the page).
+    const had = (element.getRootNode() as Document | ShadowRoot).activeElement as HTMLElement | null;
+    const key = had && element.contains(had) ? had.dataset.k : undefined;
+    rebuild(t, next);
+    if (key && !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement))
+      element.querySelector<HTMLElement>(`[data-k="${CSS.escape(key)}"]`)?.focus({ preventScroll: true });
+  }
+
+  function rebuild(t: Thread, next: Partial<ThreadViewOptions>): void {
     Object.assign(o, next);
     id = t.id;
     current = t;
@@ -222,16 +252,24 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           quickOpen.delete(c.id);
           void actions.react(c.id, emoji, on);
           update(current);
+          // Focus stays on the comment: back on its React.
+          refocus(`[data-r="${c.id}"]`);
         },
       });
     /** The button that opens the quick row; none on a resolved thread or a deleted comment. */
-    const reactButton = (c: Comment) =>
-      t.resolved || c.deleted
-        ? null
-        : button("smile", "React", () => {
-            if (!quickOpen.delete(c.id)) quickOpen.add(c.id);
-            update(current);
-          });
+    const reactButton = (c: Comment) => {
+      if (t.resolved || c.deleted) return null;
+      const b = button("smile", "React", () => {
+        const on = !quickOpen.delete(c.id);
+        if (on) quickOpen.add(c.id);
+        update(current);
+        // Rebuilt: focus goes into the quick row, or stays on React when it closes.
+        refocus(on ? `[data-q="${c.id}"] button` : `[data-r="${c.id}"]`);
+      });
+      b.dataset.r = c.id;
+      b.dataset.k = `r${c.id}`;
+      return b;
+    };
     const restText = t.resolved
       ? "Resolved" + (n ? ` · ${plural(n)}` : "")
       : t.addressed
@@ -241,35 +279,60 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           : "";
     const mine = (c: Comment) => c.author === actions.me && !c.deleted;
     /** The ⋯ menu's choices for a comment: Copy thread on the comment, Edit and Delete on your own. */
+    // Each choice runs, and says whether the menu stays open (Delete, asking again).
     const menu = (c: Comment, root: boolean): HTMLElement | null => {
-      const items: [string, () => void][] = [];
-      if (root) items.push(["Copy thread", () => actions.copy(t.id)]);
+      const items: [string, () => boolean][] = [];
+      if (root)
+        items.push([
+          "Copy thread",
+          () => {
+            actions.copy(t.id);
+            return false;
+          },
+        ]);
       if (mine(c))
         items.push(
-          ["Edit", () => startEdit(c)],
+          [
+            "Edit",
+            () => {
+              startEdit(c);
+              return false;
+            },
+          ],
           [
             confirm === c.id ? "Delete for everyone" : "Delete",
             () => {
-              if (confirm !== c.id) return void (confirm = c.id);
-              confirm = menuFor = "";
+              if (confirm !== c.id) {
+                confirm = c.id;
+                asked = performance.now();
+                return true;
+              }
+              // The click or tap that asked can't also answer: a double-click on Delete deletes nothing.
+              if (performance.now() - asked < CONFIRM_MS) return true;
+              confirm = "";
               void actions.remove(c.id);
+              return false;
             },
           ],
         );
       if (!items.length) return null;
       const box = h(
         "div",
-        { class: "pm", role: "menu" },
+        { class: "pm", role: "menu", "data-m": c.id },
         ...items.map(([label, run], i) => {
           const b = h(
             "button",
-            { type: "button", role: "menuitem", class: label === "Delete for everyone" ? "dl" : "" },
+            {
+              type: "button",
+              role: "menuitem",
+              class: label === "Delete for everyone" ? "dl" : "",
+              "data-k": `p${c.id}${i}`,
+            },
             label,
           );
           b.addEventListener("click", (e) => {
             e.stopPropagation();
-            if (label !== "Delete") menuFor = "";
-            run();
+            if (!run()) menuFor = "";
             update(current);
             // Rebuilt: while the menu stays open (Delete, asking again), focus stays on the same choice.
             element.querySelectorAll<HTMLElement>(".pm button")[i]?.focus();
@@ -277,6 +340,20 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           return b;
         }),
       );
+      // A menu's keys: arrows, Home and End move; Esc closes it (not the thread) and goes back to its ⋯.
+      box.addEventListener("keydown", (e) => {
+        const l = [...box.querySelectorAll<HTMLElement>("button")];
+        const i = l.indexOf(e.target as HTMLElement);
+        const to = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: l.length - 1 }[e.key];
+        if (to !== undefined) l[(to + l.length) % l.length]?.focus();
+        else if (e.key === "Escape") {
+          menuFor = confirm = "";
+          update(current);
+          refocus(`[data-c="${c.id}"]`);
+        } else return;
+        e.preventDefault();
+        e.stopPropagation();
+      });
       return box;
     };
     /** Who and how long ago (the exact time on hover), then the comment's actions. */
@@ -294,6 +371,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       if (more) {
         more.setAttribute("aria-expanded", String(menuFor === c.id));
         more.dataset.c = c.id;
+        more.dataset.k = `m${c.id}`;
       }
       return h(
         "div",

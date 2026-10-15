@@ -69,7 +69,7 @@ export function createSelection(ctx: Ctx): View {
   button.addEventListener("click", (e) => {
     e.stopPropagation();
     // A draft with words keeps them: the reviewer goes back to it instead.
-    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.dismiss();
+    if (ctx.state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
     const r = range;
     if (!r) return;
     let anchor;

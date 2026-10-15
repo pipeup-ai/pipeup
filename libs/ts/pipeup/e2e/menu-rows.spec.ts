@@ -267,6 +267,10 @@ test("Copy comments opens to its two choices and folds them away again; the menu
   await copy.click();
   await expect(copy).toHaveAttribute("aria-expanded", "false");
   await copy.click();
+  // Esc folds the choices first (focus back on Copy comments), then closes the menu.
+  await page.keyboard.press("Escape");
+  await expect(copy).toHaveAttribute("aria-expanded", "false");
+  await expect(copy).toBeFocused();
   await page.keyboard.press("Escape");
   await openMenu(page);
   await expect(menu(page).getByRole("menuitem", { name: "Copy comments" })).toHaveAttribute(
