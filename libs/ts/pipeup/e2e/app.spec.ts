@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { bodySnapshot, fixture, open, seedText, showComments } from "./helpers";
+import { bodySnapshot, fixture, open, seedText } from "./helpers";
 
 test("mounting leaves the page exactly as it was", async ({ page }) => {
   await page.goto(fixture("doc.html"));
@@ -92,20 +92,25 @@ test("a failed save leaves one comment in the document, not a duplicate", async 
   expect(texts).toEqual(["first"]);
 });
 
-test("dark pages get dark highlight colours, light pages keep the light ones", async ({ page }) => {
+test("light words on a dark page get the dark-ground highlight, dark words keep the light one", async ({
+  page,
+}) => {
+  // The rule for the highlight that holds the comment's words.
   const quoteRule = () =>
-    page.evaluate(
-      () =>
-        [...document.adoptedStyleSheets[0]!.cssRules].find((r) => r.cssText.includes("pipeup-quote"))!
-          .cssText,
-    );
+    page.evaluate(() => {
+      const name = [...CSS.highlights].find(([n, h]) => n.startsWith("pipeup-quote") && h.size)?.[0];
+      return (
+        [...document.adoptedStyleSheets[0]!.cssRules].find((r) => r.cssText.includes(`highlight(${name})`))
+          ?.cssText ?? ""
+      );
+    });
   await page.goto(fixture("doc.html"));
   await page.evaluate(async () => {
     const w = window as any;
     w.pu = await w.Pipeup.mount({});
   });
-  // Highlights show in comment mode, once they have eased in.
-  await showComments(page);
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  // Highlights show once they have eased in.
   await expect.poll(quoteRule).toContain("250, 227, 188, 0.75");
   await page.reload();
   await page.evaluate(async () => {
@@ -114,7 +119,6 @@ test("dark pages get dark highlight colours, light pages keep the light ones", a
     document.body.style.color = "#eee";
     w.pu = await w.Pipeup.mount({});
   });
-  await showComments(page);
   await expect.poll(quoteRule).toMatch(/rgba\(\d+, \d+, \d+, 0?\.[23]\d*\)/);
   const dark = await quoteRule();
   expect(dark).not.toContain("250, 227, 188");

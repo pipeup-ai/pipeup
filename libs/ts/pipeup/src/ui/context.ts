@@ -16,6 +16,8 @@ export interface Draft {
   ranges: Range[];
   /** Where the draft's content is: its range for text, its element for blocks and pins. */
   resolved: Resolved;
+  /** It has been sent and is becoming its thread: the column keeps the new thread for its place. */
+  sending?: boolean;
 }
 
 export interface UiState {

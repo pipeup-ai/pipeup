@@ -1,26 +1,56 @@
+import { canvasPaint, luminance, parseColour } from "./theme";
+
 const NAMES = ["pipeup-quote", "pipeup-on", "pipeup-done"] as const;
-/** Each highlight's colour (r, g, b, alpha), light pages then dark: on dark pages the text is light, so the
- * highlight must stay dark enough to read it. */
+/**
+ * Each highlight's colour (r, g, b, alpha): under dark words on a light ground, then under light words on a dark one
+ * (those take the same name with "-d"). A pale tint would wash light words out, so theirs is a deep amber that keeps
+ * them at 4.5 to 1 or better on a dark band or a coloured button. Which one a passage gets follows its own words and
+ * what is behind them, never the page's look or Pipeup's.
+ */
 const COLOURS: Record<(typeof NAMES)[number], [number[], number[]]> = {
   "pipeup-quote": [
     [250, 227, 188, 0.75],
-    [250, 200, 100, 0.28],
+    [180, 120, 0, 0.35],
   ],
   "pipeup-on": [
     [247, 212, 154, 0.95],
-    [250, 200, 100, 0.42],
+    [180, 120, 0, 0.5],
   ],
   "pipeup-done": [
     [180, 178, 169, 0.22],
-    [180, 178, 169, 0.2],
+    [140, 138, 130, 0.2],
   ],
 };
 /** The highlight rules at strength `k` (0 unseen, 1 full): showing and hiding comments fades them. */
-const paintRules = (dark: boolean, k: number) =>
-  NAMES.map((n) => {
-    const [r, g, b, a] = COLOURS[n][dark ? 1 : 0]!;
-    return `::highlight(${n}){background-color:rgba(${r},${g},${b},${+(a! * k).toFixed(3)})}`;
-  }).join("");
+const paintRules = (k: number) =>
+  NAMES.map((n) =>
+    COLOURS[n]
+      .map(
+        ([r, g, b, a], d) =>
+          `::highlight(${n}${d ? "-d" : ""}){background-color:rgba(${r},${g},${b},${+(a! * k).toFixed(3)})}`,
+      )
+      .join(""),
+  ).join("");
+
+/**
+ * Whether the words a range starts in are lighter than what is behind them (the first opaque background up from them,
+ * or the page's canvas). Over a picture, the words' own lightness decides.
+ */
+export function lightWords(r: Range): boolean {
+  const n = r.startContainer;
+  const el = n instanceof Element ? n : n.parentElement;
+  const win = el?.ownerDocument.defaultView;
+  if (!el || !win) return false;
+  const doc = el.ownerDocument;
+  const words = luminance(parseColour(win.getComputedStyle(el).color, doc) ?? { r: 0, g: 0, b: 0 });
+  for (let e: Element | null = el; e; e = e.parentElement) {
+    const s = win.getComputedStyle(e);
+    if (s.backgroundImage !== "none") return words > 0.4;
+    const c = parseColour(s.backgroundColor, doc);
+    if (c && c.a >= 0.5) return words > luminance(c);
+  }
+  return words > luminance(canvasPaint(doc));
+}
 
 export function highlightsSupported(): boolean {
   return typeof CSS !== "undefined" && "highlights" in CSS && typeof Highlight !== "undefined";
@@ -41,8 +71,6 @@ export interface PageSheet {
   gutter(px: number | null): void;
   /** How strongly highlights are painted, 0 to 1. */
   fade(k: number): void;
-  /** Paints the highlights for a dark page (true) or a light one. */
-  dark(on: boolean): void;
   /**
    * Makes room for the All comments panel: a right margin of `px` on the page, easing in and out unless
    * `still`; 0 takes it away (the page eases back, then the rule goes). The width is also published as
@@ -58,23 +86,22 @@ export interface PageSheet {
  * the page) and, on pages that ask for it, the gutter width. They live in a constructed stylesheet
  * adopted by the document — no <style> element is added and no inline style is written.
  */
-export function installPageSheet(doc: Document = document, dark = false): PageSheet {
+export function installPageSheet(doc: Document = document): PageSheet {
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (!Sheet || !("replaceSync" in Sheet.prototype) || !("adoptedStyleSheets" in doc)) {
-    return { gutter() {}, picking() {}, fade() {}, dark() {}, room() {}, remove: () => clearHighlights() };
+    return { gutter() {}, picking() {}, fade() {}, room() {}, remove: () => clearHighlights() };
   }
   const sheet = new Sheet();
   let current: number | null = null;
   let pick = false;
   let k = 1;
-  let isDark = dark;
   // The panel's room: its margin, and the easing that stays a moment after it closes so the page eases back.
   let margin = 0;
   let ease = "";
   let easing = 0;
   const write = () =>
     sheet.replaceSync(
-      paintRules(isDark, k) +
+      paintRules(k) +
         (current === null ? "" : `:root{--pipeup-gutter:${current}px}`) +
         (pick ? PICKING : "") +
         (margin || ease
@@ -98,11 +125,6 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
       k = to;
       write();
     },
-    dark(on) {
-      if (on === isDark) return;
-      isDark = on;
-      write();
-    },
     room(px, still) {
       if (px === margin) return;
       margin = px;
@@ -124,12 +146,20 @@ export function installPageSheet(doc: Document = document, dark = false): PageSh
   };
 }
 
-export function paintHighlights(g: { quote: Range[]; on: Range[]; done: Range[] }): void {
+/** Paints each group of ranges; `light` says which are light words on a dark ground. */
+export function paintHighlights(
+  g: { quote: Range[]; on: Range[]; done: Range[] },
+  light: (r: Range) => boolean,
+): void {
   if (!highlightsSupported()) return;
-  for (const n of NAMES) CSS.highlights.set(n, new Highlight(...g[n.slice(7) as keyof typeof g]));
+  for (const n of NAMES) {
+    const all = g[n.slice(7) as keyof typeof g];
+    CSS.highlights.set(n, new Highlight(...all.filter((r) => !light(r))));
+    CSS.highlights.set(`${n}-d`, new Highlight(...all.filter(light)));
+  }
 }
 
 export function clearHighlights(): void {
   if (!highlightsSupported()) return;
-  for (const name of NAMES) CSS.highlights.delete(name);
+  for (const name of NAMES) for (const d of ["", "-d"]) CSS.highlights.delete(name + d);
 }

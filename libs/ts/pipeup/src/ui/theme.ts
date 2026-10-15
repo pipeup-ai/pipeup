@@ -145,12 +145,21 @@ export function readTheme(root: Element, look: Look): Theme {
   ).trim();
   const link = root.querySelector("a[href]");
   const linkColor = link ? win.getComputedStyle(link).color : "";
-  // A link colour that can't be seen on Pipeup's own surface (the pale links of a dark page, say) is not used.
-  const fromLink = linkColor && linkColor !== DEFAULT_LINK ? parseColour(linkColor, doc) : null;
-  const seen = fromLink && contrast(luminance(fromLink), dark ? 0.011 : 1) >= 3;
-  const accent = custom || (seen ? linkColor : dark ? FALLBACK_ACCENT_DARK : FALLBACK_ACCENT);
+  const want = custom || (linkColor !== DEFAULT_LINK && linkColor);
+  // The author's accent, or else the page's link colour, only when words in it read at 4.5 to 1 on the softly tinted
+  // surface Pipeup lays under them (the palest it puts behind accent words): otherwise Pipeup's own.
+  const c = want ? parseColour(want, doc) : null;
+  const [sr, sg, sb] = dark ? [27, 27, 25] : [255, 255, 255];
+  const readable =
+    c &&
+    contrast(
+      luminance(c),
+      luminance({ r: 0.12 * c.r + 0.88 * sr!, g: 0.12 * c.g + 0.88 * sg!, b: 0.12 * c.b + 0.88 * sb! }),
+    ) >= 4.5;
+  const accent = readable ? (want as string) : dark ? FALLBACK_ACCENT_DARK : FALLBACK_ACCENT;
+  // Words on the accent: whichever of white and near black reads better.
   const rgb = parseColour(accent, doc);
-  const on = rgb && contrast(luminance(rgb), 1) < 3 ? "#111" : "#fff";
+  const on = rgb && luminance(rgb) > 0.19 ? "#111" : "#fff";
   return { font, accent, dark, on };
 }
 

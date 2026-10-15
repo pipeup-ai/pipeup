@@ -363,7 +363,8 @@ test("the button's comment bubble is drawn with a thinner line than other icons,
   const widths = await control(page)
     .locator("svg")
     .evaluateAll((els) => els.map((e) => parseFloat(e.getAttribute("stroke-width")!)));
-  expect(widths).toHaveLength(2);
+  // The plus, and the count's bubble in its round and wide forms.
+  expect(widths).toHaveLength(3);
   for (const w of widths) expect(w).toBeCloseTo(1.4, 1);
   await openMenu(page);
   const other = await page
