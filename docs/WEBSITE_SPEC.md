@@ -73,7 +73,7 @@ visitor how to add it. Functional requirements only.
    one ticked, and the GitHub link. It stays on one line at any width; on phones the GitHub link is
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
-4. **Footer**: always at the bottom of the window, with the facts that matter (one file and its size, no dependencies,
+4. **Footer**: always at the bottom of the window, with the facts that matter (one file, no dependencies,
    works from disk, stays on your device) on the left and, on the right, an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
@@ -286,3 +286,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-11 — Proposed (not built): the install commands (plugin and one-command installer) come first wherever the site offers the copy-and-paste prompt, which stays as the fallback; llms.txt and the Markdown copies lead with the install line too (FUNCTIONAL_SPEC 15a).
 - 2026-10-12 — Proposed (not built): llms.txt, llms-full.txt, the Markdown copies and the site prompts carry the same instructions for answering comments (FUNCTIONAL_SPEC 15b).
 - 2026-10-12 — Built: the install commands in the README, llms.txt and the Markdown copies lead with the prompt as the fallback; on the "create HTML" walkthrough the one-command install sits as a quiet line under the steps, below the Copy prompt step, so the page still fits one screen.
+- 2026-10-15 — The footer and the home page's Markdown no longer state Pipeup's size: it changes with every release, and it had fallen out of date. The facts line keeps "One file".
