@@ -158,19 +158,25 @@
       .as .pin { left: 172px; top: 50px; } .as.s2 .pin { opacity: 1; transform: none; }
       .as .cb { left: 118px; top: 92px; width: 190px; } .as.s2 .cb { opacity: 1; transform: none; }
       .as .ring { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--violet); font: 700 6px/1 var(--sans); color: var(--violet); font-style: normal; flex: none; }
-      .as .rd, .as .rp, .as .rc { position: absolute; opacity: 0; transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); transform: translateY(5px); }
-      .as .rd { left: 126px; top: 156px; display: flex; gap: 6px; align-items: center; font-size: 10.5px; color: var(--muted); }
-      .as.s3 .rd { opacity: 1; transform: none; } .as.s4 .rd { opacity: 0; }
-      .as .rp { left: 118px; top: 150px; width: 190px; padding: 9px 11px; background: var(--paper); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
-      .as.s4 .rp { opacity: 1; transform: none; }
-      .as .rp .who { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
-      .as .rp .lead { font-size: 11.5px; color: var(--strong); margin-bottom: 7px; }
-      .as .pl { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bone); font-size: 10.5px; color: var(--muted); transition: background-color 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease); }
+      /* Inside the comment's card, as Pipeup draws them: the add-on's quiet line while it reads, then its reply, indented
+         under the comment like any reply, with its references as pills. Each unfolds in place; the reading line folds away. */
+      .as .fold { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 0.4s var(--move), opacity 0.3s var(--ease); }
+      .as .fold > div { overflow: hidden; min-height: 0; }
+      .as.s3 .fold.rd, .as.s4 .fold.rp { grid-template-rows: 1fr; opacity: 1; }
+      .as.s4 .fold.rd { grid-template-rows: 0fr; opacity: 0; }
+      .as.s5 .fold.rp > div { overflow: visible; }
+      .as .seen { display: flex; gap: 6px; align-items: center; padding: 6px 0 0 11px; font-size: 10px; color: var(--faint); }
+      .as .seen i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--violet); flex: none; }
+      .as .rep { padding: 8px 0 0 11px; }
+      .as .rep .who { margin-bottom: 4px; }
+      .as .rep .lead { font-size: 11.5px; line-height: 1.35; color: var(--strong); margin-bottom: 6px; }
+      .as .pl { position: relative; display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--bone); font-size: 10.5px; color: var(--muted); transition: background-color 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease); }
       .as .pl .sl { width: 10px; height: 7px; border: 1.3px solid currentColor; border-radius: 2px; }
       .as.s5 .pl { background: #ece9fb; color: var(--violet); border-color: var(--violet); }
-      .as .rc { left: 126px; top: 236px; padding: 5px 9px; font-size: 10.5px; color: var(--strong); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 14px rgba(40,38,30,.14); }
+      .as .rc { position: absolute; left: 0; top: calc(100% + 6px); white-space: nowrap; padding: 5px 9px; font-size: 10.5px; color: var(--strong); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 14px rgba(40,38,30,.14);
+        opacity: 0; transform: translateY(5px); transition: opacity 0.35s var(--ease), transform 0.4s var(--ease); }
       .as.s5 .rc { opacity: 1; transform: none; } .as.s6 .rc { opacity: 0; }
-      .as .cursor { transform: translate(90px, 220px); } .as.s1 .cursor { transform: translate(150px, 84px); } .as.s4 .cursor { transform: translate(290px, 250px); } .as.s5 .cursor { transform: translate(152px, 218px); }
+      .as .cursor { transform: translate(90px, 220px); } .as.s1 .cursor { transform: translate(150px, 84px); } .as.s4 .cursor { transform: translate(290px, 250px); } .as.s5 .cursor { transform: translate(168px, 209px); }
       .addon.plain { grid-template-columns: 1fr; }
       /* Voice */
       .vo .w { left: 40px; top: 24px; width: 320px; height: 250px; }
@@ -346,10 +352,7 @@
         <div class="demo" data-len="10000" data-steps='[[700,"s1"],[1200,"s2"],[3600,"s3"],[5000,"s4"],[6500,"s5"],[8300,"s6"]]' data-type="1500,3000" aria-hidden="true">
           <div class="stage as">
             <div class="w"><div class="dots"><i></i><i></i><i></i></div><div class="ln" style="top:42px;width:170px"></div><div class="ln" style="top:58px;width:210px"></div><div class="hl"></div><div class="ln" style="top:96px;width:190px"></div><div class="ln" style="top:112px;width:230px"></div><div class="ln" style="top:128px;width:120px"></div><div class="pin"></div></div>
-            <div class="cb" data-say="What about churn?"><div class="who"><span class="av" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><b>Owl</b><span class="ago">just now</span><span class="acts"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z" /><path d="M8.5 14a4.5 4.5 0 0 0 7 0" /><path d="M9 9.6h.01M15 9.6h.01" /></svg><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01" /></svg></span></div><div class="txt"></div></div>
-            <div class="rd"><i class="ring"></i>AI assistant is reading this…</div>
-            <div class="rp"><div class="who"><i class="ring">AI</i>AI assistant</div><div class="lead">This may be related:</div><span class="pl"><i class="sl"></i>Slide 6</span></div>
-            <div class="rc">Hold churn under 3%.</div>
+            <div class="cb" data-say="What about churn?"><div class="who"><span class="av" style="background:#fdebd3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97a1e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="13" r="6"/><circle cx="7.5" cy="7.5" r="1.8"/><circle cx="16.5" cy="7.5" r="1.8"/></svg></span><b>Owl</b><span class="ago">just now</span><span class="acts"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z" /><path d="M8.5 14a4.5 4.5 0 0 0 7 0" /><path d="M9 9.6h.01M15 9.6h.01" /></svg><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 12h.01M12 12h.01M18.5 12h.01" /></svg></span></div><div class="txt"></div><div class="fold rd"><div><div class="seen"><i></i>AI assistant is reading this…</div></div></div><div class="fold rp"><div><div class="rep"><div class="who"><i class="ring">AI</i><b>AI assistant</b><span class="ago">just now</span><span class="acts"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z" /><path d="M8.5 14a4.5 4.5 0 0 0 7 0" /><path d="M9 9.6h.01M15 9.6h.01" /></svg></span></div><div class="lead">This may be related:</div><span class="pl"><i class="sl"></i>Slide 6<span class="rc">Hold churn under 3%.</span></span></div></div></div></div>
             <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
           </div></div>
       </section>
