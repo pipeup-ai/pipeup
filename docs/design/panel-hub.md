@@ -53,6 +53,16 @@ builds on [comments-at-rest.md](comments-at-rest.md).
   it (the pointer-down bookkeeping that rule needed is gone). Esc in the panel steps back past the draft first
   (`ctx.back()`). While listing, the menu has `z-index:1`, because otherwise the panel, drawn later, covered it.
 
+## Updating the list without a flash
+
+- `buildAll` runs on every render while the panel is open, and a render can come from just pointing at a highlight.
+  Rebuilding the list with `replaceChildren` took focus out of an open reply box and put it back, which restarted its
+  focus styles: the box flashed on every update.
+- `place(parent, nodes)` now updates the list (and each group box, kept by key) by moving only what changed. The open
+  card (`openCard`) and the new comment's card are kept between updates. The new comment's card goes into the list at
+  its place in page order (`draftBefore`) instead of being moved there afterwards. Focus is put back only if what held
+  it was rebuilt.
+
 ## Deleted comments and the pulse
 
 - `replies(t)` (thread-view) is a thread's replies that haven't been deleted. The card, the reply counts in the column,
@@ -73,3 +83,4 @@ can't move to an add-on. There are no unused styles to cut (checked).
 - 2026-10-14 — From review of the build: the panel stays open until closed, @ and ✓ always show with tooltips, open cards
   show their quote once, the footer's menu draws above the panel, deleted comments go away, and the pulse follows the
   page.
+- 2026-10-14 — The list updates in place, so an open reply box no longer flashes when the panel updates.

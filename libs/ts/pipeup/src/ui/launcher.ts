@@ -269,20 +269,34 @@ export function createLauncher(ctx: Ctx): View {
     return s && ctx.here.slide() !== null ? `On slide ${s}` : name ? `In ${name}` : HIDDEN;
   };
 
+  /**
+   * Puts `nodes` in `parent`, in order, moving as little as possible. What stays put keeps its focus and its
+   * transitions: rebuilding the list used to take focus out of an open reply box and put it back, which restarted
+   * its focus styles (a flash) on every update.
+   */
+  const place = (parent: Element, nodes: Node[]) => {
+    const want = new Set(nodes);
+    for (const c of [...parent.childNodes]) if (!want.has(c)) c.remove();
+    nodes.forEach((n, i) => {
+      if (parent.childNodes[i] !== n) parent.insertBefore(n, parent.childNodes[i] ?? null);
+    });
+  };
+  /** Group boxes, kept by key between updates for the same reason. */
+  const groupBoxes = new Map<string, HTMLElement>();
   /** A titled group of rows; `mark` ("This slide") follows the title. */
-  const group = (title: string, rows: Node[], mark = "") =>
-    h(
-      "div",
-      { role: "group", "aria-label": mark ? `${title} · ${mark}` : title },
-      h("div", { class: "sec", "aria-hidden": "true" }, title, mark && h("b", {}, mark)),
-      ...rows,
-    );
+  const group = (title: string, rows: Node[], mark = "", key = title) => {
+    let g = groupBoxes.get(key);
+    if (!g) groupBoxes.set(key, (g = h("div", { role: "group" })));
+    g.setAttribute("aria-label", mark ? `${title} · ${mark}` : title);
+    place(g, [h("div", { class: "sec", "aria-hidden": "true" }, title, mark && h("b", {}, mark)), ...rows]);
+    return g;
+  };
 
   /**
    * On a deck, threads by slide in deck order ("Slide 3 · 2 open"), this slide's group marked; threads with no
    * slide join this slide's. On other pages, the threads here first, then each other view's under its name.
    */
-  function groups(items: ExportItem[], row: (i: ExportItem) => HTMLElement): Node[] {
+  function groups(items: ExportItem[], row: (i: ExportItem) => Node[]): Node[] {
     const now = ctx.here.slide();
     const by = new Map<string | null, ExportItem[]>();
     for (const i of items) {
@@ -300,18 +314,22 @@ export function createLauncher(ctx: Ctx): View {
     if (now === null) {
       const mine = by.get(null) ?? [];
       by.delete(null);
-      return [...mine.map(row), ...[...by].map(([k, l]) => group(k || HIDDEN, l.map(row)))];
+      return [...mine.flatMap(row), ...[...by].map(([k, l]) => group(k || HIDDEN, l.flatMap(row)))];
     }
     return [...by]
       .sort(([a], [b]) => Number(a) - Number(b) || 0)
       .map(([k, l]) =>
         group(
           `Slide ${k} · ${l.filter((i) => !i.thread.resolved).length} open`,
-          l.map(row),
+          l.flatMap(row),
           k === now ? "This slide" : "",
+          `slide:${k}`,
         ),
       );
   }
+
+  /** The open thread's card, kept between updates so its reply box never leaves the page while it is open. */
+  let openCard: { id: string; card: HTMLElement; xr: HTMLElement } | null = null;
 
   /** Every thread, in page order; the ones whose content is gone last, under their own heading. */
   function buildAll(): void {
@@ -322,9 +340,44 @@ export function createLauncher(ctx: Ctx): View {
     const shownItems = everyone
       .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId)
       .filter((i) => !ctx.state.mine || mentionsMe(i.thread, ctx.doc.me));
+    showResolved.setAttribute("aria-pressed", String(ctx.state.showResolved));
+    mine.setAttribute("aria-pressed", String(ctx.state.mine));
+    // The footer: who you are and whether comment mode is on.
+    const name = ctx.menu.name();
+    footName.textContent = name || animalName(ctx.doc.me);
+    if (faceOf(ctx.doc.me, name) !== footKey) {
+      footKey = faceOf(ctx.doc.me, name);
+      const av = avatar(ctx.doc.me, name);
+      av.classList.add("in");
+      footFace.replaceChildren(av);
+    }
+    footSwitch.setAttribute("aria-checked", String(ctx.state.commenting));
+    // A new comment's card: made once per draft, so its words, caret and focus survive updates. A comment being
+    // written moves into the panel with its words (the same box), and back out when it closes.
+    const d = ctx.state.draft;
+    if (draft && draft.of !== d) {
+      draft = null;
+      if (!d) ctx.registerDraft(null);
+    }
+    const made = d && !draft;
+    if (d && !draft) {
+      openId = railView = null;
+      const box = draftBox(ctx, d);
+      draft = { of: d, box, card: h("div", { class: "cd open new" }, box.element) };
+    }
+    if (draft) draft.box.setLabel(d!.label);
+    if (openCard && openCard.id !== openId) openCard = null;
+    // In page order: the new comment's card goes before the first thread whose content comes after what it's on.
+    const on = d && (d.resolved.range?.startContainer ?? d.resolved.element);
+    const draftBefore = on
+      ? (shownItems.find((i) => {
+          const n = nodeOf(ctx, i.thread);
+          return n && on.compareDocumentPosition(n) & 4;
+        })?.thread.id ?? null)
+      : null;
     // Each thread is a card: who and how long ago, the words it's about, the comment, and its replies as a count.
-    // Opened, the card shows the thread itself beneath the words it's about.
-    const row = (i: ExportItem) => {
+    // Opened, the card is the thread itself; a click on its top line (not its buttons) closes it again.
+    const row = (i: ExportItem): Node[] => {
       const t = i.thread;
       const open = t.id === openId;
       const av = avatar(t.root.author, t.root.name);
@@ -352,88 +405,59 @@ export function createLauncher(ctx: Ctx): View {
               ? `“${clip(t.anchor.quote.exact, 80)}”`
               : i.location.where,
         ),
-        h("span", { class: "tx clamp" }, t.root.deleted ? "Deleted" : t.root.text),
+        h("span", { class: "tx clamp" }, t.root.text),
         rest.length ? h("span", { class: "rest" }, rest.join(" · ")) : null,
       );
       b.addEventListener("click", (e) => {
         e.stopPropagation();
         toggle(t.id);
       });
-      const card = h("div", { class: `cd${t.resolved ? " done" : ""}${open ? " open" : ""}` }, b);
+      let card: HTMLElement;
       if (open && railView) {
         railView.update(t, threadOptions(t));
-        const xr = h(
-          "div",
-          { class: "xr", role: "region", "aria-label": "Comment thread" },
-          railView.element,
-        );
-        // Opened, the card is the thread itself; a click on its top line (not its buttons) closes it again.
-        xr.addEventListener("click", (e) => {
-          const at = e.target as Element;
-          if (at.closest(".root>.hdr") && !at.closest("button")) closeRow(true);
-        });
-        card.append(xr);
-      }
-      return card;
+        if (!openCard) {
+          const xr = h(
+            "div",
+            { class: "xr", role: "region", "aria-label": "Comment thread" },
+            railView.element,
+          );
+          xr.addEventListener("click", (e) => {
+            const at = e.target as Element;
+            if (at.closest(".root>.hdr") && !at.closest("button")) closeRow(true);
+          });
+          openCard = { id: t.id, card: h("div", {}), xr };
+        }
+        card = openCard.card;
+        card.className = `cd open${t.resolved ? " done" : ""}`;
+        place(card, [b, openCard.xr]);
+      } else card = h("div", { class: `cd${t.resolved ? " done" : ""}` }, b);
+      return draft && t.id === draftBefore ? [draft.card, card] : [card];
     };
     const gone = shownItems.filter((i) => lost(i.thread));
-    showResolved.setAttribute("aria-pressed", String(ctx.state.showResolved));
-    mine.setAttribute("aria-pressed", String(ctx.state.mine));
-    // The footer: who you are and whether comment mode is on.
-    const name = ctx.menu.name();
-    footName.textContent = name || animalName(ctx.doc.me);
-    if (faceOf(ctx.doc.me, name) !== footKey) {
-      footKey = faceOf(ctx.doc.me, name);
-      const av = avatar(ctx.doc.me, name);
-      av.classList.add("in");
-      footFace.replaceChildren(av);
-    }
-    footSwitch.setAttribute("aria-checked", String(ctx.state.commenting));
-    // A new comment's card: made once per draft, so its words, caret and focus survive the list being rebuilt.
-    const d = ctx.state.draft;
-    // A comment being written moves into the panel with its words (the same box), and back out when it closes.
-    if (draft && draft.of !== d) {
-      draft = null;
-      if (!d) ctx.registerDraft(null);
-    }
-    const made = d && !draft;
-    if (d && !draft) {
-      openId = railView = null;
-      const box = draftBox(ctx, d);
-      draft = { of: d, box, card: h("div", { class: "cd open new" }, box.element) };
-    }
-    if (draft) draft.box.setLabel(d!.label);
-    const caret = draft && draft.card.contains(at) ? draft.box.caret() : null;
-    list.replaceChildren(
-      shownItems.length || draft
-        ? ""
-        : h(
-            "div",
-            { class: "sec", role: "presentation" },
-            ctx.state.mine ? "No comments mention you" : "No open comments",
-          ),
+    place(list, [
+      ...(shownItems.length || draft
+        ? []
+        : [
+            h(
+              "div",
+              { class: "sec", role: "presentation" },
+              ctx.state.mine ? "No comments mention you" : "No open comments",
+            ),
+          ]),
       ...groups(
         shownItems.filter((i) => !lost(i.thread)),
         row,
       ),
-      gone.length ? group("No longer on the page", gone.map(row)) : "",
-    );
-    if (draft) {
-      // In page order: before the first thread whose content comes after what the new comment is on.
-      const at = d!.resolved.range?.startContainer ?? d!.resolved.element;
-      const next = items(list).find((b) => {
-        const t = latest.find((x) => x.id === b.dataset.thread);
-        const n = t && nodeOf(ctx, t);
-        return n && at && at.compareDocumentPosition(n) & 4;
-      });
-      if (next) next.parentElement!.before(draft.card);
-      else list.append(draft.card);
-      if (made) draft.box.focus();
-      else caret?.();
-      if (made || caret) return;
-    }
-    if (inReply) railView!.element.querySelector("textarea")?.focus({ preventScroll: true });
-    else if (before)
+      ...(draft && draftBefore === null ? [draft.card] : []),
+      ...(gone.length ? [group("No longer on the page", gone.flatMap(row))] : []),
+    ]);
+    // Focus normally stays where it was; it is put back only if what held it was rebuilt.
+    const now = focused();
+    if (made) draft!.box.focus();
+    else if (draft?.card.contains(at) && !draft.card.contains(now)) draft.box.caret()();
+    else if (inReply && !railView!.element.contains(now))
+      railView!.element.querySelector("textarea")?.focus({ preventScroll: true });
+    else if (before && now !== at)
       items(list)
         .find((b) => b.dataset.thread === before)
         ?.focus({ preventScroll: true });

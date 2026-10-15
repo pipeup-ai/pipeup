@@ -252,3 +252,44 @@ test("the pulse on a thread's content follows it while opening it from the panel
   });
   expect(Math.abs(p.y + 4 - words.y)).toBeLessThan(3);
 });
+
+test("an open card's reply box stays steady while the panel updates (it never flashes)", async ({ page }) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await seedText(page, "#p2", "second designer", "Why Q4?");
+  await openAll(page);
+  await panel(page)
+    .getByRole("menuitem", { name: /Is 20% realistic/ })
+    .click();
+  const box = panel(page).locator(".xr .rbox .line");
+  await expect(box.locator("textarea")).toBeFocused();
+  await page.waitForTimeout(500);
+  // Sample the box's buttons every frame while the pointer crosses another thread's highlight (which updates the panel).
+  await page.evaluate(() => {
+    const w = window as any;
+    const bts = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(".xr .rbox .bts")!;
+    w.__op = [];
+    const t0 = performance.now();
+    const tick = () => {
+      w.__op.push(Number(getComputedStyle(bts).opacity));
+      if (performance.now() - t0 < 900) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  const spot = await page.evaluate(() => {
+    for (const r of CSS.highlights.get("pipeup-quote")!)
+      if (r.toString().includes("second")) {
+        const q = (r as Range).getClientRects()[0]!;
+        return { x: q.left + 10, y: q.top + 5 };
+      }
+    return null;
+  });
+  await page.mouse.move(spot!.x, spot!.y);
+  await page.waitForTimeout(300);
+  await page.mouse.move(5, 700);
+  await page.waitForTimeout(700);
+  const op = await page.evaluate(() => (window as any).__op as number[]);
+  expect(op.length).toBeGreaterThan(20);
+  expect(Math.min(...op)).toBeGreaterThan(0.95);
+  await expect(box.locator("textarea")).toBeFocused();
+});
