@@ -27,8 +27,12 @@ const highlightAlpha = (page: Page) =>
     const parts = m[1]!.split(",").map((x) => parseFloat(x));
     return parts.length > 3 ? parts[3]! : 1;
   });
-/** Samples the highlight alpha every frame for `ms`, while `act` runs. */
-async function sampleWhile(page: Page, act: () => Promise<unknown>, ms = 700): Promise<number[]> {
+/**
+ * Samples the highlight alpha every frame from just before `act` runs until the fade has finished: the alpha
+ * has moved and then held still for 10 frames. A slow click or a slow page can't cut the fade short; gives up
+ * after `ms`.
+ */
+async function sampleWhile(page: Page, act: () => Promise<unknown>, ms = 10_000): Promise<number[]> {
   await page.evaluate((ms) => {
     const w = window as any;
     const alpha = () => {
@@ -39,16 +43,23 @@ async function sampleWhile(page: Page, act: () => Promise<unknown>, ms = 700): P
       const parts = m ? m[1]!.split(",").map((x) => parseFloat(x)) : [];
       return parts.length > 3 ? parts[3]! : m ? 1 : 0;
     };
-    w.__seen = [];
+    const seen: number[] = (w.__seen = []);
+    w.__sampled = false;
     const end = performance.now() + ms;
+    let moved = false;
+    let still = 0;
     const tick = () => {
-      w.__seen.push(alpha());
-      if (performance.now() < end) requestAnimationFrame(tick);
+      const a = alpha();
+      still = seen.length && a === seen.at(-1) ? still + 1 : 0;
+      moved ||= seen.length > 0 && a !== seen[0];
+      seen.push(a);
+      if ((moved && still >= 10) || performance.now() >= end) w.__sampled = true;
+      else requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   }, ms);
   await act();
-  await page.waitForTimeout(ms);
+  await page.waitForFunction(() => (window as any).__sampled === true);
   return page.evaluate(() => (window as any).__seen as number[]);
 }
 const hideSwitch = (page: Page) => page.getByRole("menuitemcheckbox", { name: "Hide comments" });
@@ -74,7 +85,7 @@ test("comments show with comment mode off; Hide comments hides them, eased both 
   await page.keyboard.press("Escape");
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await expect(page.locator(".th")).toHaveCount(0);
-  expect(going.at(-1)!).toBe(0);
+  await expect.poll(() => highlightAlpha(page)).toBe(0);
   // Eased: the highlight passed through values in between.
   expect(going.some((a) => a > 0.05 && a < going[0]! - 0.05)).toBe(true);
   // The column fades rather than vanishing, and the button still counts the open thread.
@@ -96,8 +107,9 @@ test("comments show with comment mode off; Hide comments hides them, eased both 
   const coming = await sampleWhile(page, () => hideSwitch(page).click());
   await page.keyboard.press("Escape");
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
-  expect(coming.at(-1)!).toBeGreaterThan(0.5);
-  expect(coming.some((a) => a > 0.05 && a < coming.at(-1)! - 0.05)).toBe(true);
+  await expect.poll(() => highlightAlpha(page)).toBeGreaterThan(0.5);
+  const full = await highlightAlpha(page);
+  expect(coming.some((a) => a > 0.05 && a < full - 0.05)).toBe(true);
   await open(page, "doc.html");
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
 });
