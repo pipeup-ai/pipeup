@@ -1066,8 +1066,9 @@ export function createLauncher(ctx: Ctx): View {
     const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
     if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
     btn.setAttribute("aria-haspopup", ctx.state.commenting ? "dialog" : "menu");
-    // Only words worth reaching out for; the shortcut is always there.
-    const tipText = [label, status].filter(Boolean).join(" · ") + (label || status ? " · " : "");
+    // Only words worth reaching out for (the exact number when the bubble says 9+); the shortcut is always there.
+    const lead = label || (n > 9 ? `${n} open` : "");
+    const tipText = [lead, status].filter(Boolean).join(" · ") + (lead || status ? " · " : "");
     if (tipWords.data !== tipText) tipWords.data = tipText;
   };
   // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
@@ -1118,8 +1119,9 @@ export function createLauncher(ctx: Ctx): View {
         // At zero the bubble fades back to the comment icon, keeping its last number while it goes.
         if (n) {
           const [was, next] = nums[0].classList.contains("on") ? nums : [nums[1], nums[0]];
-          next.textContent = n > 99 ? "99+" : String(n);
-          next.classList.toggle("s", n > 99);
+          // Up to 9, then 9+: never more than two characters in the bubble (the exact number is in its name and
+          // its slide-out).
+          next.textContent = n > 9 ? "9+" : String(n);
           cnt.classList.toggle("w", n > 9);
           was.classList.remove("on");
           next.classList.add("on");

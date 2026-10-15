@@ -386,10 +386,12 @@ any of them off.
   behind it shows through, softened, so it covers as little of the page as it can. It is 32 px across (44 on
   touch screens, for fingers).
   - With no open threads it shows the comment icon, Pipeup's mark, drawn in a thin line.
-  - With open threads it shows **their number inside the comment bubble**, which nearly fills the square.
+  - With open threads it shows **their number inside the comment bubble**, which nearly fills the square: up to 9,
+    then **9+**, so it is never more than two characters and fits in any font. The exact number is in its name for
+    screen readers and in what it shows when pointed at.
   - In comment mode the glass turns the accent colour.
   - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
-    add-on says, such as who else is here), opening and folding evenly; it folds back as soon as the pointer
+    add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
     leaves, and while the menu is open. The control itself never moves. Its name, state and shortcut are read
     out by screen readers, and the menu shows the shortcut beside Start commenting.
 - **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
@@ -1713,3 +1715,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   commented on, and decks that fit the window refit beside All comments. Long comments show a few lines at
   rest. Highlights stay readable over any colour, a page's accent is used only when readable, comments keep
   their text direction, and high-contrast modes keep every state visible (sections 5, 6, 7, 7a, 8 and 9).
+- 2026-10-15 — The comment control's count stops at **9+** (it went to 99+), so it is never more than two characters
+  and stays clear of the bubble's outline in any font; the exact number is in its name and its slide-out (section 7).

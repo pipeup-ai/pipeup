@@ -73,9 +73,10 @@ changes size. An open card keeps them in the line.
 
 In comment mode the control is filled with the accent, and the dot was the accent too (1.2 to 1); it now takes the
 words-on-accent colour, easing with the control. The count's bubble has a second, wider form (`wide`, an ellipse on the
-same 24 grid with the same tail) that cross-fades in for two and three characters, with the number set 1 px higher in
-it; "99+" is 10 px (it was 8.5). Measured from the font's ink, every count from 1 to 99+ clears the outline by 1.5 px or
-more, in a serif and a sans-serif page font.
+same 24 grid with the same tail) that cross-fades in for "9+", with the number set 1 px higher in it. The count stops
+at "9+" (it went to "99+", which ran into the outline in wide fonts such as Verdana, Arial and Courier New, and in CI's
+Linux fallback for Georgia); measured from the font's ink, every count clears the outline by 1.5 px or more, in serif,
+sans-serif and monospace page fonts. The exact number is in the control's name and its slide-out.
 
 ## A look that differs from the page (`app.ts`, `styles.ts`)
 
@@ -124,3 +125,4 @@ transition list were trimmed. The budget rose from 53 to 53.5 KB on its own; wit
 
 - 2026-10-15 — First version.
 - 2026-10-15 — Merged with the words-and-focus batch: Pipeup is 55.0 KB, budget 55.5 KB.
+- 2026-10-15 — The count stops at 9+ (99+ didn't fit wide fonts); the exact number is in the name and the slide-out.

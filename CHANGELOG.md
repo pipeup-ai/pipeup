@@ -14,7 +14,7 @@ change the API and the stored comment format.
 - **Focus never drops to the page.** After Resolve or deleting a thread, focus goes to the next thread (or the block cursor, or the comment control); React, choosing an emoji, Edit and deleting a reply keep it on the card. A comment's ⋯ menu works with the arrow keys, and Esc closes it before the thread.
 - **Long comments show their first lines at rest.** In the column a long comment shows four lines, fading, then **more**; the open thread shows all of it, so one long comment never pushes the others out of reach.
 - **Lists and menus ease.** Cards that All comments' filters take away or bring back fold out and in, a card opening or closing there eases to its new height, a sent comment fades in exactly where its box was, and with reduced motion column threads fade out, move unseen and fade back in. The menu fades out whole when All comments is chosen, and ⋯ changes in place when Delete asks again.
-- **The count's bubble widens for two and three characters**, so 10, 99 and 99+ (now 10 px, was 8.5) sit clear of its outline.
+- **The comment control's count stops at 9+** (it went to 99+), in a wider bubble, so it always sits clear of the bubble's outline whatever the page's font; the exact number is in the control's name and shows when you point at it.
 - **Pipeup is 55.0 KB gzip** with the click-path review's fixes (52.1 KB in beta.2), and its budget rises from 53 to 55.5 KB.
 
 ### Fixed

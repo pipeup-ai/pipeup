@@ -226,7 +226,6 @@ transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-
 .cnt,.has>.plus{opacity:0}
 .has>.cnt{opacity:1}
 .cnt>.n{font-size:11px;font-weight:500;line-height:1;margin:-1.2px 0 0 1.2px;font-variant-numeric:tabular-nums lining-nums;opacity:0;transition:opacity var(--in) var(--eo)}
-.n.s{font-size:10px;letter-spacing:-.03em}
 .w>.n{margin-top:-3.4px}
 .cnt>svg{transition:opacity var(--in) var(--eo)}
 .cnt>svg+svg,.cnt.w>svg{opacity:0}

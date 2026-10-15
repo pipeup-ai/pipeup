@@ -427,14 +427,12 @@ test("the other-slides dot reads on the comment control in comment mode (SL-10)"
   expect(ratio).toBeGreaterThanOrEqual(3);
 });
 
-test("the count fits inside its bubble at 10, 99 and 99+, at a readable size (MD-13, LK-18)", async ({
-  page,
-}) => {
+test("the count fits inside its bubble at 9 and 9+, at a readable size (MD-13, LK-18)", async ({ page }) => {
   await open(page, "doc.html");
   for (const [n, text] of [
-    [10, "10"],
-    [99, "99"],
-    [120, "99+"],
+    [9, "9"],
+    [10, "9+"],
+    [120, "9+"],
   ] as const) {
     await page.evaluate(async (n) => {
       const w = window as any;
