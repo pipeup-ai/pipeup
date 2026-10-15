@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Reaction counts show on cards and threads.** Since reactions arrived in 0.7.0, a chip showed its emoji with a blank where the number belongs: the comment control's rule for hiding its own count also hid the chips' numbers. All comments' summary line was unaffected.
+
 ## [0.8.0-beta.2] - 2026-10-15
 
 This pre-release is about reading and writing comments: every thread is the same compact card, All comments is the hub while it is open, you can edit and delete your own comments, comments show without comment mode, and the comment control is a small frosted square tucked into the corner. Pipeup is 52.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
