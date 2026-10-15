@@ -126,7 +126,7 @@ An add-on is a script on the page. **It runs with the page's full power, so noth
 
 - **List the add-ons that may run.** Put one attribute on the page: `<html data-pipeup-addons="share,myteam-hello">`. When it is there, only those add-ons run; any other is ignored, shows as off with the reason "this page doesn't allow it", and writes one plain line to the console. `none` lets no add-on run. Without the attribute every add-on runs, as before. Ids must match exactly.
 - **Pin each script.** Use a fixed version and an integrity hash: `<script src="…" integrity="sha384-…" crossorigin="anonymous">`. Or host one bundled file and pin that.
-- **Set a content security policy.** An add-on's "what it sends" sentence is a statement; a policy that allows scripts and connections only to the hosts you intend is what enforces it. For Pipeup's own add-ons, the hosts each declares are in the `network.to` of its page on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons.html).
+- **Set a content security policy.** An add-on's "what it sends" sentence is a statement; a policy that allows scripts and connections only to the hosts you intend is what enforces it. For Pipeup's own add-ons, the hosts each declares are in its `network.to`, and its page on the site says where it sends ([Add-ons](https://pipeup-ai.github.io/pipeup/addons.html) has a card for each, leading to its page).
 - **One bundled file.** For a company, host one file that holds Pipeup and the add-on together. The template's build makes it and prints its integrity hash.
 - **A name can't prove who made an add-on.** The first add-on with a name wins. Listing the add-ons you expect, and pinning them, covers this.
 

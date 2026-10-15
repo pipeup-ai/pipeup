@@ -27,7 +27,7 @@ You want feedback on it.
 1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
 2. Share the file: email, chat, a drive or a website. It works straight from the file.
 3. People comment on the page.
-4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** (with the agents add-on) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
+4. Hand their comments to your AI: paste them (Copy as Markdown), or use **Copy a prompt for my agent** (with the [agents add-on](https://pipeup-ai.github.io/pipeup/addons/agents.html.md)) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
 
 You decide how comments travel. By default they stay in each reviewer's browser until they send them.
 
@@ -40,5 +40,5 @@ You decide how comments travel. By default they stay in each reviewer's browser 
 - Skills: [pipeup-integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [pipeup-summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [pipeup-apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md), [pipeup-send-to-git-setup](https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md) (a company saving reviews into its own Git).
 - Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx pipeup skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
 - Making your own add-on: [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html.md). Add one safely: pin it with its integrity hash, list it in `data-pipeup-addons` on `<html>`, and tell the author about a Content-Security-Policy (best effort).
-- Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html).
+- Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html), a card for each add-on; each has its own page and Markdown copy, listed in [addons.html.md](https://pipeup-ai.github.io/pipeup/addons.html.md).
 - Source: [github.com/pipeup-ai/pipeup](https://github.com/pipeup-ai/pipeup).
