@@ -5,7 +5,7 @@ import type { Ctx, Draft, View } from "./context";
 import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
 import { bubblePoint, popoverAnchor } from "./geometry";
-import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
+import { placeDraft, placePopover, popover, room, touch, type AnchorPoint, type Viewport } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { replies, threadView, type ThreadView } from "./thread-view";
@@ -54,12 +54,21 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const r = ctx.resolved.get(t.id);
     return r ? popoverAnchor(t.anchor, r) : null;
   };
+  /**
+   * The window a popover may use: never under All comments, nor under the comment control (in comment mode on a touch
+   * screen, nor under its hint, which stays beside the control all along the bottom).
+   */
+  const vp = (): Viewport => {
+    const v = room(ctx.state.listing);
+    const c = ctx.state.listing ? null : ctx.layer.querySelector(".launch .mode")?.getBoundingClientRect();
+    if (c?.width) v.keep = { left: ctx.state.commenting && touch() ? 0 : c.left, top: c.top };
+    return v;
+  };
   function put(el: HTMLElement, where: AnchorPoint, width: number): void {
-    // Never under All comments.
     const { left, top } = placePopover(
       where,
       { width: el.offsetWidth || width, height: el.offsetHeight },
-      room(ctx.state.listing),
+      vp(),
     );
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
@@ -145,10 +154,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const block = draft && d && !d.anchor.quote && !d.anchor.point ? d.resolved.element : null;
     if (block) {
       // A block's box sits below it (above if no room), so it never covers what it is about.
+      // The naming bar is taller on a touch screen, where its icons are finger-sized.
       const { left, top, above } = placeDraft(
         block.getBoundingClientRect(),
         { width: pop.offsetWidth || popover(), height: pop.offsetHeight },
-        { width: window.innerWidth, height: window.innerHeight },
+        vp(),
+        12,
+        touch() ? 60 : 44,
       );
       const flipped = draft?.above !== null && draft?.above !== above;
       if (draft) draft.above = above;
@@ -302,6 +314,9 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     }
   }
 
+  /** A bubble is always wholly on screen (with room for a finger round it), however near the edge its point is. */
+  const across = (x: number) => `${Math.min(Math.max(x, 20), window.innerWidth - 30)}px`;
+
   function frame(): void {
     for (const [id, b] of bubbles) {
       const t = byId(id);
@@ -312,7 +327,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         continue;
       }
       b.style.visibility = "";
-      b.style.left = `${p.x}px`;
+      b.style.left = across(p.x);
       b.style.top = `${p.y}px`;
       if (!b.classList.contains("in")) {
         void b.offsetWidth;
@@ -322,7 +337,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const d = ctx.state.draft;
     const g = d?.anchor.point && ctx.here.holds(d.anchor.view) ? bubblePoint(d.anchor, d.resolved) : null;
     if (g) {
-      ghost.style.left = `${g.x}px`;
+      ghost.style.left = across(g.x);
       ghost.style.top = `${g.y}px`;
       if (!ghost.classList.contains("in")) {
         ctx.layer.insertBefore(ghost, mark);

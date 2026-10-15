@@ -15,10 +15,12 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // control that opens All comments in comment mode (+1.0 KB of Pipeup's own UI; docs/design/corner-control.md); then
 // 54 KB for the click-path review's words and focus: Tab moving on from a comment box, a waiting box beside its
 // block, Undo for thrown-away words, kept replies, keys kept from the page, and focus after every action (+1.7 KB;
-// docs/design/words-and-focus.md).
+// docs/design/words-and-focus.md); then 55 KB for phones and touch: 44 px targets, everything fitting the screen and
+// clear of the control, Pin waiting for a tap, comment mode's touch hint with Done, threads that open without the
+// keyboard, a menu that scrolls, and a long press for who reacted (+1.1 KB; docs/design/phones-touch.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 54 * 1024,
-  "dist/pipeup.esm.js": 54 * 1024,
+  "dist/pipeup.min.js": 55 * 1024,
+  "dist/pipeup.esm.js": 55 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

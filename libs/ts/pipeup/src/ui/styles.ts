@@ -97,23 +97,24 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .mnl li.on,.mnl li:hover{background:var(--as);color:var(--pu-accent)}
 .dlg{position:fixed;left:50%;top:18vh;width:min(380px,calc(100vw - 32px));padding:16px 18px;border:1px solid var(--ln);border-radius:14px;background:var(--su);box-shadow:var(--sh);color:var(--k);opacity:0;transform:translate(-50%,6px);pointer-events:none;transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
 .dlg.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-.toast.act{pointer-events:auto}
+.toast.act{display:flex;align-items:center}.toast.show .ta{pointer-events:auto}
 .ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
 .rx .n{font-size:11px;font-variant-numeric:tabular-nums}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
 .rx:disabled{cursor:default;opacity:.7}
-.rx.new,.rxq.new{animation:pu-in var(--mv) var(--eo) both}
+.rx{-webkit-touch-callout:none;-webkit-user-select:none}
+.rx.new,.rxq.new{animation:pu-in var(--mv) var(--eo) backwards}
 .rxs{align-items:center}
 .rxq{display:inline-flex;gap:2px}
 .rxo{padding:2px 5px;border-radius:8px;font-size:16px;line-height:1.3;transition:background-color .2s var(--eo)}
 .rxo:hover,.rxo:focus-visible,.rxo[aria-pressed=true]{background:var(--as);outline:none}
-.refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc,.ref.held .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 .ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
 .seen button{margin-left:auto;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--fa);font:inherit;cursor:pointer;transition:color .2s var(--eo),background-color .2s var(--eo)}.seen button:hover,.seen button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .c0{--h:0}.c1{--h:25}.c2{--h:50}.c3{--h:130}.c4{--h:175}.c5{--h:215}.c6{--h:270}.c7{--h:330}.c8{--h:28;--s:35%}.c9{--h:220;--s:8%}
-button.me{flex:none;display:grid}
+button.me{flex:none;display:grid;place-items:center}
 button.me>.av{grid-area:1/1}
 /* Who you are, at the top of a new comment; a name field eases open in its place. */
 .you{flex:1;display:grid;min-width:0;min-height:22px;font-size:12px;color:var(--fa)}
@@ -188,7 +189,7 @@ markers that hold focus are invisible. */
 .pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}
 .km{position:fixed;left:0;top:0;pointer-events:none;outline:none}
 .sr,.mn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
+.namebar{position:fixed;left:0;top:0;display:flex;align-items:center;gap:2px;max-width:calc(100% - 16px);padding:2px 2px 2px 10px;border-radius:10px;font-size:12px;color:var(--mu);
 white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform .3s var(--eo)}
@@ -196,6 +197,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar .lbl{margin-right:6px;max-width:260px;overflow:hidden;text-overflow:ellipsis}
 .namebar .nb{padding:4px;display:grid;place-items:center;border-radius:7px;transition:background-color .2s var(--eo),color .2s var(--eo)}
 .namebar .nb:hover,.namebar .nb:focus-visible{background:var(--ho);color:var(--k);outline:none}
+.namebar .nb.on{background:var(--as);color:var(--pu-accent)}
 .namebar .nb[hidden]{display:none}
 
 /* The comment control: a small square of frosted glass tucked into the page's corner (flush right and bottom, its
@@ -207,7 +209,7 @@ transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-
 .launch:has(.mode.on){background:color-mix(in srgb,var(--pu-accent) 90%,transparent);color:var(--pu-on,#fff)}
 /* While All comments is open, the control is the panel's footer: it draws in, and the footer takes its place. */
 .layer.listing .launch{opacity:0;transform:scale(.6);pointer-events:none}
-.layer.listing .menu{right:8px;bottom:60px;z-index:1}
+.layer.listing .menu{--b:60px;right:8px;z-index:1}
 .layer.listing .menu :is([data-item=comment],[data-item=all]){display:none}
 .launch .mode{position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:10px 0 0}
 .mode>*,.cnt>*{grid-area:1/1}
@@ -231,9 +233,10 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
 .launch .mode[aria-expanded=true]+.ttip{grid-template-columns:minmax(0,0fr);opacity:0}
 @media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
-.menu{position:fixed;right:8px;bottom:40px;width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
+.menu{--b:40px;position:fixed;right:8px;bottom:var(--b);width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .menu.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
+@media (max-height:600px){.menu{max-height:calc(100% - var(--b) - 8px);overflow-y:auto;overscroll-behavior:contain}}
 /* Menu rows: one line each; the explanation is a tooltip beside the menu that eases in after a moment. */
 .mi{position:relative;display:flex;gap:10px;align-items:center;width:100%;min-height:34px;text-align:left;padding:6px 10px;border-radius:8px;transition:background-color .2s var(--eo)}
 .mi:hover,.mi:focus-visible{background:var(--so);outline:none}
@@ -335,16 +338,20 @@ and above its footer when it fills the screen. */
 .layer:is(.listing,:has(.xp.show)) .toast{--r:calc(var(--pu-panel) + 16px)}
 @media (max-width:480px){.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px}}
 
-/* Touch: fingers need bigger targets than pointers (44 px for the menu's rows, 36 and more for buttons). */
+/* Touch: everything a finger presses is at least 44 px across. A bubble keeps its small look round a larger hit area.
+The control is 44 px, so the menu and messages sit further from it. Shortcuts aren't shown where there is no keyboard. */
 @media (pointer:coarse){
-.mi{min-height:44px}
-.ib{min-width:36px;min-height:36px}
-.rxo{min-width:40px;min-height:40px}
-.refs .ref{min-height:34px}
-.mnl li{min-height:40px}
-.bts button,.tg{min-height:36px}
+.mi,.ib,.rxo,.refs .ref,.mnl li,.bts button,.tg,.fs,.pm button,.ta,.nb,.selbar button,button.me,.say button,.line,.seen button,.ag button,.go button{min-height:44px}
+.ib,.rxo,.refs .ref,.nb,.selbar button,button.me,.ta{min-width:44px}
+.bub::before{content:"";position:absolute;inset:-14px;border-radius:50%}
+.row:focus-within .bts,.row.has .bts{max-height:52px}
+.hd{padding:4px 8px}
+.toast{--r:52px;display:flex;align-items:center;min-height:44px;padding:4px 14px;line-height:1.25}
+.ta{display:grid;place-items:center;margin:-5px -10px -5px 6px;padding:0 10px}
 .launch .mode{width:44px;height:44px}
+.menu{--b:52px}
 }
+@media (pointer:coarse) and (hover:none){.ks{display:none}}
 
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}

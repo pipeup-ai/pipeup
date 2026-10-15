@@ -22,6 +22,8 @@ export interface ReactionPicker {
 }
 
 const PICKER = { width: 320, height: 340 };
+/** How long a finger rests on a reaction before it says who gave it. */
+const LONG_PRESS_MS = 450;
 
 /** Opens the picker in a popover beside `anchor`; it closes on a choice, Escape, a click elsewhere or when asked. */
 export function openPicker(anchor: HTMLElement, picker: ReactionPicker, pick: (emoji: string) => void): void {
@@ -111,9 +113,28 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
     );
     o.seen.add(key);
     b.disabled = o.resolved;
+    // By touch, which can't point, a long press says who gave it, as pointing does, and leaves the reaction be. The
+    // names stay until the next touch.
+    let held = 0;
+    let told = false;
+    b.addEventListener("pointerdown", (e) => {
+      told = false;
+      if (e.pointerType === "touch")
+        held = window.setTimeout(() => {
+          told = true;
+          b.classList.add("held");
+          window.addEventListener("pointerdown", () => b.classList.remove("held"), {
+            capture: true,
+            once: true,
+          });
+        }, LONG_PRESS_MS);
+    });
+    for (const t of ["pointerup", "pointercancel"]) b.addEventListener(t, () => window.clearTimeout(held));
+    b.addEventListener("contextmenu", (e) => e.preventDefault());
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      o.react(r.emoji, !mine);
+      if (told) told = false;
+      else o.react(r.emoji, !mine);
     });
     return b;
   });
