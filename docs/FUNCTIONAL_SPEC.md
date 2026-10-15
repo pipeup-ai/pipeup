@@ -293,8 +293,8 @@ any of them off.
 
 - Clicking a highlight, bubble, preview or card opens it: the card lifts slightly with a soft shadow,
   lines up with its content, and other threads dim and step aside.
-- An open card or a new comment in the column is **never under the round button**: when it would reach
-  the button's corner, it moves up just enough to clear it, so its buttons can always be pressed.
+- An open card or a new comment in the column is **never under the comment control**: when it would reach
+  the control's corner, it moves up just enough to clear it, so its buttons can always be pressed.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
   elsewhere on the page, or by opening another thread.
 - An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
@@ -323,19 +323,24 @@ any of them off.
 
 **The comment control**
 
-- The comment control is **one round button** in a corner. It takes no extra space and never
-  slides open.
+- The comment control is **one small square of frosted glass tucked into the page's bottom-right corner**:
+  flush with the window's right and bottom edges, only its top-left corner rounded, with no border. What is
+  behind it shows through, softened, so it covers as little of the page as it can. It is 32 px across (44 on
+  touch screens, for fingers).
   - With no open threads it shows the comment icon, Pipeup's mark, drawn in a thin line.
-  - With open threads it shows **their number inside the comment bubble**, slightly larger.
-  - Hovering it shows a **tooltip**: "Comment" and the shortcut.
-- **While All comments is open, the round button becomes the panel's footer**: your avatar and name,
+  - With open threads it shows **their number inside the comment bubble**, which nearly fills the square.
+  - In comment mode the glass turns the accent colour.
+  - **Pointed at (or reached from the keyboard), it reaches left** after a moment, just far enough to show
+    its shortcut (and anything an add-on says, such as who else is here), then eases back when the pointer
+    leaves. The control itself never moves. Its name, state and shortcut are read out by screen readers.
+- **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
-  the footer back into the round button. Both shapes ease into each other.
+  the footer back into the control. Both shapes ease into each other.
 - **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
-  appear **beside the round button**, never at the bottom centre where decks keep their slide controls and
+  appear **beside the comment control**, never at the bottom centre where decks keep their slide controls and
   phones show the page's last lines. While All comments is open they sit beside the panel, and above its
   footer when the panel fills a phone's screen.
-- **Clicking it opens its menu**, which rises above the button. Each item is **one line**; what it
+- **Clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
@@ -1618,3 +1623,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-14 — Fixes from the walkthrough of every feature in every format: a mention of you stays inline in its sentence; Pipeup's messages appear beside the round button instead of the bottom centre (over decks' slide controls and phones' text); an open card or new comment in the column moves up clear of the round button; with no room beside a bubble (a phone, or the window's edge) the preview and thread sit below or above what they're about, never over it; the selection's comment icon sits past the end of the paragraph's text, so it never covers the line above. They add 0.4 KB to Pipeup (51.1 KB gzip), so its budget rises from 51 to 52 KB (section 16a).
 - 2026-10-15 — All comments' two filters read plainly as on or off: each is a pill with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and tinted with the accent colour when on. Hovering a closed card in the panel, or focusing into it, shows its actions (React, ✓ Resolve and ⋯) at its top right, as on every other card; they work without opening the card (section 7). They add 0.5 KB to Pipeup (51.6 KB gzip), inside its 52 KB budget.
 - 2026-10-15 — The menu gets shorter and plainer: **Copy comments** is one row that opens to its two choices (As Markdown, As text), a second click instead of two rows, and **Look** is renamed **Theme** (section 7). Comment mode's pause moves from holding ⌘ (Ctrl elsewhere) to holding **Space** (section 5): ⌘-click opens a link in a new tab, Option-click pins (and downloads a link in some browsers), and Space is the one key that leaves a click alone. On the block cursor Space now pauses; Enter comments.
+- 2026-10-15 — The comment control becomes a small square of frosted glass tucked into the bottom-right corner (flush with the edges, its top left rounded, no border), with the count inside a larger bubble; pointed at, it reaches left to show its shortcut instead of a tooltip above it (section 7). It covers much less of the page than the round button did.

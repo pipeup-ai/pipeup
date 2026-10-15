@@ -15,6 +15,7 @@ change the API and the stored comment format.
 - **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
 - **Pipeup is 51.9 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
+- **The comment control is a small frosted square tucked into the corner** instead of a round button floating over the page: flush with the bottom and right edges, no border, the count inside a bigger bubble. Pointed at, it reaches left to show its shortcut.
 - **A shorter menu.** **Copy comments** is one row that opens to its two choices, As Markdown and As text, and **Look** is now called **Theme**.
 
 ### Added

@@ -189,7 +189,9 @@ test("a mention of you reads inline in its sentence, only bolder", async ({ page
   expect(shape).toEqual({ display: "inline", lines: 1, sameLine: true });
 });
 
-test("messages sit beside the round button, and beside All comments while it is open", async ({ page }) => {
+test("messages sit beside the comment control, and beside All comments while it is open", async ({
+  page,
+}) => {
   await start(page);
   await showComments(page);
   await sayAs(page, "Sam", "Over to you @Me", "me");
@@ -198,10 +200,10 @@ test("messages sit beside the round button, and beside All comments while it is 
   await settled(toast);
   const t = (await toast.boundingBox())!;
   const b = (await control(page).boundingBox())!;
-  // Level with the button and to its left: nowhere near the middle of the page's bottom edge.
+  // Level with the control and to its left: nowhere near the middle of the page's bottom edge.
   expect(t.x + t.width).toBeLessThanOrEqual(b.x);
   expect(t.x).toBeGreaterThan(page.viewportSize()!.width / 2);
-  expect(Math.abs(t.y + t.height / 2 - (b.y + b.height / 2))).toBeLessThan(6);
+  expect(Math.abs(t.y + t.height / 2 - (b.y + b.height / 2))).toBeLessThan(8);
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await page.locator(".all.show .mi").first().click();

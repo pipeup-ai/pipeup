@@ -22,8 +22,8 @@ const AWAY_MS = 3000;
 const HIDDEN = "Hidden on the page";
 
 /**
- * The comment control: one round button in the corner (the comment icon, or the open count inside a comment
- * bubble) that opens a menu, Comment nearest it. All comments is a panel on the right that stays open while
+ * The comment control: a small frosted square tucked into the corner (the comment icon, or the open count inside a
+ * comment bubble) that opens a menu, Comment nearest it. All comments is a panel on the right that stays open while
  * choosing threads reveals them, so every counted thread can be reached.
  */
 const LOOKS = ["auto", "light", "dark"] as const;
@@ -32,7 +32,7 @@ export function createLauncher(ctx: Ctx): View {
   // Two numbers in one place: a change cross-fades from one to the other.
   const nums = [h("span", { class: "n" }), h("span", { class: "n" })] as const;
   // Pipeup's mark: the comment bubble in a thin line; its plus a touch heavier so it holds at this size.
-  const mark = icon("comment", 20, 1.4);
+  const mark = icon("comment", 22, 1.4);
   mark.lastElementChild!.setAttribute("stroke-width", "1.6");
   const btn = h(
     "button",
@@ -45,11 +45,11 @@ export function createLauncher(ctx: Ctx): View {
       "aria-expanded": "false",
     },
     h("span", { class: "plus" }, mark),
-    h("span", { class: "cnt" }, icon("bubble", 34, 1.4), ...nums),
+    h("span", { class: "cnt" }, icon("bubble", 28, 1.4), ...nums),
     // Open threads on other slides or views: a small dot.
     h("span", { class: "dot" }),
   );
-  const tipWords = document.createTextNode("Comment");
+  const tipWords = document.createTextNode("");
   const tip = h("span", { class: "ttip", "aria-hidden": "true" }, tipWords, h("small", {}, SHORTCUT_LABEL));
   const launch = h("div", { class: "launch" }, btn, tip);
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
@@ -145,7 +145,7 @@ export function createLauncher(ctx: Ctx): View {
         line.btn.textContent = note.action.label;
     }
   };
-  // While the panel is open the round button is its footer: who you are, Comment with its switch, and ⋯ for the menu.
+  // While the panel is open the comment control is its footer: who you are, Comment with its switch, and ⋯ for the menu.
   const footFace = h("span", { class: "ma" });
   const footName = h("span", { class: "lb" });
   const footSwitch = h(
@@ -981,7 +981,8 @@ export function createLauncher(ctx: Ctx): View {
     const status = ctx.addons.statusText();
     const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
     if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
-    const tipText = (label || "Comment") + (status ? ` · ${status}` : "");
+    // Only words worth reaching out for; the shortcut is always there.
+    const tipText = [label, status].filter(Boolean).join(" · ") + (label || status ? " · " : "");
     if (tipWords.data !== tipText) tipWords.data = tipText;
   };
   // An add-on adding or removing a row rebuilds the menu while it is open (never while a name is being edited).
@@ -1056,7 +1057,7 @@ export function createLauncher(ctx: Ctx): View {
       if (all.classList.contains("show") !== listing) {
         all.classList.toggle("show", listing);
         inert(all, !listing);
-        // The round button becomes the panel's footer, and comes back when the panel goes.
+        // The control becomes the panel's footer, and comes back when the panel goes.
         inert(launch, listing);
       }
       // The thread open in the panel goes with the panel, or when it is gone.

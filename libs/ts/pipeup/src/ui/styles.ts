@@ -136,7 +136,7 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .bub.in:hover,.bub.on{transform:scale(1.18)}
 .bub.done{background:var(--fa)}
 .bub.ghost{pointer-events:none}
-.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.ttip,.tt,.mode,.rxp{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
+.tip,.pop,.menu,.all,.xp,.toast,.selbar,.namebar,.tt,.rxp{background:var(--su);border:1px solid var(--ln);box-shadow:var(--sh)}
 .tip{position:fixed;max-width:260px;border-radius:10px;padding:7px 10px;opacity:0;transform:translateY(3px);
 transition:opacity .22s var(--eo),transform .26s var(--eo)}
 .tip.show{opacity:1;transform:none;pointer-events:auto;cursor:pointer;
@@ -194,34 +194,38 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar .nb:hover,.namebar .nb:focus-visible{background:var(--ho);color:var(--k);outline:none}
 .namebar .nb[hidden]{display:none}
 
-/* The comment control: one round button; the open count sits inside a comment bubble. Nothing about it
-grows or slides: its layers and numbers cross-fade in place. */
-.launch{position:fixed;right:20px;bottom:20px;pointer-events:auto;transform-origin:100% 100%;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
-/* While All comments is open, the round button is the panel's footer: it draws in, and the footer takes its place. */
+/* The comment control: a small square of frosted glass tucked into the page's corner (flush right and bottom, its
+top left rounded), with the open count inside a comment bubble. Pointed at, it reaches left just far enough to show
+its shortcut (and anything add-ons say). Its layers and numbers cross-fade in place. */
+.launch{position:fixed;right:0;bottom:0;display:flex;flex-direction:row-reverse;align-items:center;border-top-left-radius:10px;pointer-events:auto;transform-origin:100% 100%;
+background:color-mix(in srgb,var(--su) 62%,transparent);-webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5);
+transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-color .3s var(--eo),color .3s var(--eo)}
+.launch:has(.mode.on){background:color-mix(in srgb,var(--pu-accent) 90%,transparent);color:var(--pu-on,#fff)}
+/* While All comments is open, the control is the panel's footer: it draws in, and the footer takes its place. */
 .layer.listing .launch{opacity:0;transform:scale(.6);pointer-events:none}
 .layer.listing .menu{right:8px;bottom:60px;z-index:1}
 .layer.listing .menu :is([data-item=comment],[data-item=all]){display:none}
-.launch .mode{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;transition:background-color .3s var(--eo),color .3s var(--eo)}
+.launch .mode{position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:10px 0 0}
 .mode>*,.cnt>*{grid-area:1/1}
 .mode>*{display:grid;place-items:center;transition:opacity var(--in) var(--eo)}
 .cnt,.has>.plus{opacity:0}
 .has>.cnt{opacity:1}
-.n{font-size:12px;font-weight:500;line-height:1;margin:-1.4px 0 0 1.4px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity var(--in) var(--eo)}
-.n.s{font-size:9.5px;letter-spacing:-.04em}
+.n{font-size:11px;font-weight:500;line-height:1;margin:-1.2px 0 0 1.2px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity var(--in) var(--eo)}
+.n.s{font-size:8.5px;letter-spacing:-.04em}
 .n.on{opacity:1}
-.launch .mode:hover,.launch .mode[aria-expanded=true]{background:var(--ho)}
-.launch .mode.on{background:var(--pu-accent);color:var(--pu-on,#fff)}
-/* Open threads on other slides or views: a small dot at the button's top right, easing in and out. */
-.mode>.dot{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--pu-accent);border:2px solid var(--su);opacity:0}
+.launch .mode:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
+/* Open threads on other slides or views: a small dot at the bubble's top right, easing in and out. */
+.mode>.dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--pu-accent);opacity:0}
 .mode.else>.dot{opacity:1}
-/* The tooltip eases in after a moment, above the button, and never moves it. */
-.ttip{position:absolute;right:0;bottom:54px;white-space:nowrap;border-radius:8px;padding:4px 9px;font-size:12px;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
-.ttip small{margin-left:8px}
-.ttip small,.mi .kc{font-size:12px;color:var(--fa)}
-.mode:hover+.ttip,.mode:focus-visible+.ttip{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .5s,transform var(--in) var(--eo) .5s}
-.launch .mode[aria-expanded=true]+.ttip{opacity:0;transition:opacity var(--out) var(--ei)}
+/* What it reaches out to show: the shortcut, after anything add-ons say. It eases out after a moment. */
+.ttip{display:flex;align-items:center;max-width:0;overflow:hidden;white-space:nowrap;font-size:12px;color:var(--mu);pointer-events:none;opacity:0;transition:var(--out) var(--ei)}
+.ttip small{font-size:12px}
+.ttip small,.mi .kc{color:var(--fa)}
+.launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
+.launch:hover .ttip,.launch:has(.mode:focus-visible) .ttip{max-width:240px;padding-left:10px;opacity:1;transition:var(--mv) var(--eo) .3s}
+.launch .mode[aria-expanded=true]+.ttip{max-width:0;padding-left:0;opacity:0}
 @media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
-.menu{position:fixed;right:20px;bottom:76px;width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
+.menu{position:fixed;right:8px;bottom:40px;width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .menu.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
 /* Menu rows: one line each; the explanation is a tooltip beside the menu that eases in after a moment. */
@@ -319,9 +323,9 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .adr .go button{padding:2px 8px;border-radius:6px;font-size:12px;color:var(--mu);transition:color .2s var(--eo),background-color .2s var(--eo)}.adr .go button:hover,.adr .go button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
 @keyframes pu-in{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}
-/* Messages sit beside the round button, never over the page's own bottom bar; beside the panel while it is open,
+/* Messages sit beside the comment control, never over the page's own bottom bar; beside the panel while it is open,
 and above its footer when it fills the screen. */
-.toast{--r:76px;position:fixed;right:var(--r);bottom:24px;max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
+.toast{--r:40px;position:fixed;right:var(--r);bottom:4px;max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
 .toast.show{opacity:1;transform:none}
 .layer:is(.listing,:has(.xp.show)) .toast{--r:calc(var(--pu-panel) + 16px)}
 @media (max-width:480px){.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px}}
@@ -334,6 +338,7 @@ and above its footer when it fills the screen. */
 .refs .ref{min-height:34px}
 .mnl li{min-height:40px}
 .bts button,.tg{min-height:36px}
+.launch .mode{width:44px;height:44px}
 }
 
 @media (forced-colors: active){
@@ -345,7 +350,8 @@ and above its footer when it fills the screen. */
 @media (prefers-reduced-motion: reduce){
 .ln,.subs{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
-.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc,.rxp,.mnl{transform:none!important}
+.bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.tt,.toast,.ref .rc,.rxp,.mnl{transform:none!important}
+.ttip{transition-property:opacity!important}
 .dlg{transform:translate(-50%,0)!important}
 .sw::after{transform:none!important;transition-property:opacity}
 [aria-checked=true]>.sw::after{opacity:0}

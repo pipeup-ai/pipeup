@@ -120,10 +120,10 @@ export async function leaveReply(page: Page): Promise<void> {
   );
 }
 
-/** The comment control: one round button in the corner. */
+/** The comment control: one small square in the corner. */
 export const control = (page: Page): Locator => page.locator(".launch .mode");
 
-/** Opens the comment control's menu: a click on the one round button. */
+/** Opens the comment control's menu: a click on it. */
 export async function openMenu(page: Page): Promise<void> {
   await control(page).click();
   await expect(page.locator(".menu.show")).toHaveCount(1);

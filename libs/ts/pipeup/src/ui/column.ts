@@ -13,8 +13,8 @@ export const COLUMN_MIN = 300;
 const GAP_FROM_CONTENT = 32;
 /** The exit motion (0.20 s) plus a frame, before a faded-out element is removed. */
 const EXIT_MS = 220;
-/** The round button's corner: 20 px in from the window's edges, 46 px across. */
-const CORNER = 66;
+/** The comment control's corner: a 32 px square flush with the window's edges (44 on touch screens). */
+const CORNER = 44;
 
 /** Width of the gutter that pages with data-pipeup-reserve keep for comments. */
 export const GUTTER = 320;
@@ -103,7 +103,7 @@ export function createColumn(ctx: Ctx): View {
     const top = d ? anchorTop(d.anchor, d.resolved) : null;
     if (draft && top !== null)
       finite.push({ id: "draft", want: top + window.scrollY - 4, height: draft.el.offsetHeight });
-    // The open thread or draft lines up with its words, nudged up if the round button would cover it.
+    // The open thread or draft lines up with its words, nudged up if the comment control would cover it.
     const lead = draft ? "draft" : ctx.state.active;
     const f = finite.find((x) => x.id === lead);
     if (f && col.getBoundingClientRect().right > window.innerWidth - CORNER)

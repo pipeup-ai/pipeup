@@ -9,7 +9,7 @@ const cursorOf = (page: Page, selector: string) =>
   page.evaluate((s) => getComputedStyle(document.querySelector(s)!).cursor, selector);
 const tip = (page: Page) => page.locator(".launch .ttip");
 
-test("the comment control shows only its icon at rest; hovering it eases in a tooltip and never grows it", async ({
+test("the comment control shows only its icon at rest; hovering it eases in its shortcut and the button stays put", async ({
   page,
 }) => {
   await open(page, "controls.html");
@@ -18,10 +18,10 @@ test("the comment control shows only its icon at rest; hovering it eases in a to
   await expect(mode(page).locator(".lbl")).toHaveCount(0);
   const rest = (await mode(page).boundingBox())!;
   expect(await tip(page).evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
-  expect(await tip(page).evaluate((e) => getComputedStyle(e).transitionProperty)).toContain("opacity");
+  // Its words ease in and out (every property it changes eases).
+  expect(await tip(page).evaluate((e) => getComputedStyle(e).transitionProperty)).toMatch(/all|opacity/);
   await mode(page).hover();
   await expect(tip(page)).toHaveCSS("opacity", "1");
-  await expect(tip(page)).toContainText("Comment");
   await expect(tip(page)).toContainText(/⇧⌥C|Shift\+Alt\+C/);
   expect((await mode(page).boundingBox())!).toEqual(rest);
   await page.mouse.move(5, 5);

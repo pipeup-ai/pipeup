@@ -47,7 +47,7 @@ visitor how to add it. Functional requirements only.
      says it is done. Then an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a channel, a file
      card with a download button), is downloaded, and goes into Codex the same way. Each agent has its highlight
      colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses, and each
-     press shows a ring. The steps: open it (if a round comment button shows, skip ahead); if not, **Copy prompt**
+     press shows a ring. The steps: open it (if a comment button shows in the corner, skip ahead); if not, **Copy prompt**
      and paste it into an AI assistant along with the file; comment; send it back with **Copy comments › As Markdown**. It says
      comments stay in the browser until copied and sent.
    - **Create comment-enabled HTML** ("You're creating an HTML page to share"). The scene shows a conversation with an AI
