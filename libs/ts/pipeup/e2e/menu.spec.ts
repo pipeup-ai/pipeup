@@ -91,7 +91,7 @@ test("mount no longer takes copyAs", () => {
   expect(options).toBeTruthy();
 });
 
-test("resolved threads hide; Show resolved brings them back with Reopen", async ({ page }) => {
+test("resolved threads hide; ✓ Resolved brings them back with Reopen", async ({ page }) => {
   await open(page, "doc.html");
   const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
@@ -99,7 +99,7 @@ test("resolved threads hide; Show resolved brings them back with Reopen", async 
   await expect(page.locator(".th")).toHaveCount(0);
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("button", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Resolved", exact: true }).click();
   await page.keyboard.press("Escape");
   const th = page.locator(".th.resolved");
   await expect(th).toHaveCount(1);
@@ -174,7 +174,7 @@ test("resolving and reopening still succeed when the save fails, with a not-save
 
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("button", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Resolved", exact: true }).click();
   await page.keyboard.press("Escape");
   await page.evaluate(() => (window as any).failNextSave());
   const done = page.locator(".th.resolved");

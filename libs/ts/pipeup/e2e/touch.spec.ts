@@ -77,8 +77,17 @@ test("on a phone, All comments takes the whole width and its threads open in pla
   await page.getByRole("menuitem", { name: /All comments/ }).tap();
   const panel = (await page.locator(".all.show").boundingBox())!;
   expect(panel.width).toBeGreaterThanOrEqual(page.viewportSize()!.width - 2);
+  // The two filters fit on one line across the phone.
+  const hd = page.locator(".all.show .hd");
+  expect(await hd.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+  expect((await hd.boundingBox())!.height).toBeLessThan(56);
+  // With no hover, a closed card shows no actions (nothing to press by accident); opened, it has them.
+  await expect(page.locator(".all.show .cd .acts")).toBeHidden();
   await page.locator(".all.show .mi").first().tap();
   await expect(page.locator(".all.show")).toContainText("Is this the plan?");
+  await expect(
+    page.locator(".all.show .cd.open").getByRole("button", { name: "Resolve", exact: true }),
+  ).toBeVisible();
 });
 
 test("on a phone, a thread's buttons and the reaction row are finger-sized", async ({ page }) => {

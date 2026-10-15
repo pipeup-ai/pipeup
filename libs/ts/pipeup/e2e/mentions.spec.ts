@@ -90,7 +90,7 @@ test("someone mentioning you is said once, filters All comments, and opening the
   await expect(page.locator(".toast.show")).toHaveText("Sam mentioned you in 1 comment");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const filter = page.getByRole("button", { name: "Mentions of me" });
+  const filter = page.getByRole("button", { name: "For you" });
   await expect(filter).toBeVisible();
   // A second thread that names nobody is hidden by the filter.
   await page.evaluate(() => {

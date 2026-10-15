@@ -49,7 +49,7 @@ test("a thread can be replied to and resolved in the panel, and it stays until i
   await page.keyboard.press("Enter");
   await expect(thread.locator(".rps")).toContainText("Agreed");
   await thread.getByRole("button", { name: "Resolve", exact: true }).click();
-  // Resolved, but still open here to be reopened; closing it lets it go (Show resolved is off).
+  // Resolved, but still open here to be reopened; closing it lets it go (✓ Resolved is off).
   await expect(thread.getByRole("button", { name: "Reopen" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(panel(page).locator(".xr")).toHaveCount(0);

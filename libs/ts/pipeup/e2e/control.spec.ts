@@ -267,7 +267,7 @@ test("an avatar in a panel row keeps its square", async ({ page }) => {
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const av = panel(page).locator(".mi .av").first();
+  const av = panel(page).locator(".cd .av").first();
   await settled(av);
   // Measured until it settles: under load the panel's own entry can still be easing when the first look is taken.
   await expect

@@ -33,12 +33,17 @@ export interface ThreadActions {
 }
 
 export interface ThreadViewOptions {
-  variant: "column" | "popover";
+  /** `card`: a closed card in All comments, only its first comment: words cut to two lines, no replies or reply box. */
+  variant: "column" | "popover" | "card";
   quote?: string | null;
   /** Snapshot of content that can't be shown: gone from the page, or somewhere it couldn't be reached. */
   lost?: string | null;
   /** Where that content is, when it isn't gone ("On slide 3"); default "No longer on the page". */
   place?: string | null;
+  /** A card's line about what it's on, as written (in place of the quote). */
+  note?: string | null;
+  /** A card's quiet last line (its replies and reactions), as written. */
+  rest?: string | null;
   now?: () => number;
 }
 
@@ -49,7 +54,7 @@ export const replies = (t: Thread) => t.root.replies.filter((c) => !c.deleted);
 export interface ThreadView {
   readonly element: HTMLElement;
   /** Shows a newer copy of the thread. The reply line is kept, so what's being typed in it (and focus) survives. */
-  update(t: Thread, o?: { quote?: string | null; lost?: string | null; place?: string | null }): void;
+  update(t: Thread, o?: Partial<ThreadViewOptions>): void;
 }
 
 /**
@@ -59,6 +64,7 @@ export interface ThreadView {
  */
 export function threadView(first: Thread, actions: ThreadActions, options: ThreadViewOptions): ThreadView {
   const o = { ...options };
+  const card = o.variant === "card";
   let id = first.id;
   const line = h(
     "div",
@@ -90,7 +96,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   let seen: HTMLElement | null = null;
   let addressed: HTMLElement | null = null;
   let addressedKey = "";
-  const element = h("div", {}, root, h("div", { class: "more" }, inner));
+  const element = h("div", {}, root, card ? null : h("div", { class: "more" }, inner));
   /**
    * Avatars by comment, with the face they show. Updates rebuild the comment's box, so the same avatar is
    * moved into the new one instead: it eases in once, when it first appears, and never again. When the face
@@ -171,10 +177,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     });
   });
 
-  function update(
-    t: Thread,
-    next: { quote?: string | null; lost?: string | null; place?: string | null } = {},
-  ): void {
+  function update(t: Thread, next: Partial<ThreadViewOptions> = {}): void {
     Object.assign(o, next);
     id = t.id;
     current = t;
@@ -213,6 +216,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         picker: actions.picker(),
         resolved: t.resolved,
         quick: quickOpen.has(c.id),
+        bare: card,
         seen: reactionsSeen,
         react: (emoji, on) => {
           quickOpen.delete(c.id);
@@ -313,24 +317,31 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     };
     /** The comment's words, or a box to change them while it is being edited. */
     const text = (c: Comment) => (editing?.id === c.id ? editing.el : words(c));
-    const context = o.lost
-      ? h("div", { class: "ctx" }, `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`)
-      : o.quote
-        ? h("div", { class: "ctx" }, `“${clip(o.quote, 80)}”`)
-        : null;
+    const about = o.note
+      ? o.note
+      : o.lost
+        ? `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`
+        : o.quote
+          ? `“${clip(o.quote, 80)}”`
+          : "";
+    const last = card ? o.rest : o.variant === "column" && restText;
     nextFaces = new Map();
     // Each comment keeps room for its avatar at the top right, so the words never move or narrow for it.
     const nextRoot = h(
       "div",
       { class: "root" },
       head(t.root, true),
-      context,
+      about ? h("div", { class: "ctx" }, about) : null,
       text(t.root),
       reactions(t.root),
-      o.variant === "column" && restText ? h("div", { class: "rest" }, restText) : null,
+      last ? h("div", { class: "rest" }, last) : null,
     );
     root.replaceWith(nextRoot);
     root = nextRoot;
+    element.className = t.resolved ? "thread resolved" : "thread";
+    element.setAttribute("data-thread", t.id);
+    // A closed card is only its first comment.
+    if (card) return void (faces = nextFaces);
 
     // Swap the comment and replies around the reply line; never rebuild the line itself.
     list?.remove();
@@ -411,9 +422,6 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     note.hidden = !(t.resolved && held);
     if (t.resolved && !held) line.remove();
     else if (line.parentNode !== inner) inner.append(line);
-
-    element.className = t.resolved ? "thread resolved" : "thread";
-    element.setAttribute("data-thread", t.id);
   }
 
   update(first);

@@ -362,16 +362,27 @@ any of them off.
   views and ones whose content is gone (§8), with each author's avatar.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
     the panel closes, so the panel covers none of the page's content (§9).
-  - The panel has no title. Its top line holds two **icon toggles** and the close button: **@** shows
-    only comments that mention me ("No comments mention you" when there are none), and **✓** brings
+  - The panel has no title. Its top line holds two **filters** and the close button. Each filter is a small
+    pill with an icon and a word, so it reads as something that is on or off: **@ For you** shows only
+    comments that mention me ("No comments mention you" when there are none), and **✓ Resolved** brings
     resolved threads back, muted, each with **Reopen**, in the panel and on the page. Both always show,
     whether or not there are any yet, and each has a **tooltip** that says what it does, easing in on hover
-    and keyboard focus. Clicking an icon turns it on; clicking again turns it off. On, it is bold; off, it is
-    grey; neither has a border, and hovering shows the other state's colour. Nothing in the panel wraps onto
-    a second line.
+    and keyboard focus. Clicking a filter turns it on; clicking again turns it off. Off, it is grey words and
+    icon with nothing behind them; on, it is filled with a soft tint of the accent colour, its words and icon
+    in the accent colour, like a chosen filter in a mail or document app. Hovering an off filter shows a
+    light fill, and every change between the states eases. Screen readers hear each filter's word and
+    whether it is on. The light and dark looks both show the two states plainly. Nothing in the panel wraps
+    onto a second line, at the panel's width or across a narrow screen.
   - Each thread is a **card** (§7, *compact cards*), with the words it is about. Choosing a card **opens it
     out in place**: its top line, the words it is about (once), its comments and replies, its actions and its
     reply box, all usable there. Clicking its top line closes it again. Nothing opens on the page.
+  - **Hovering a closed card shows its actions** at its top right, as on any card (*Actions*, above), and so
+    does moving keyboard focus into it: **React**, **✓ Resolve** (**Reopen** on a resolved thread) and **⋯**,
+    with Copy thread, and Edit and Delete on your own comment. They work as they do on the open card, and
+    using one never opens or closes the card: Resolve resolves the thread, which eases out of the list unless
+    resolved threads are shown; React's quick row and Edit's box open inside the closed card. The actions
+    ease in and out, and the card neither moves nor changes size when they appear. On touch screens, which
+    have no hover, a closed card shows no actions; opening it shows them.
   - **A thread is never open in two places.** One open on the page when the panel opens moves into the panel,
     open there with the cursor in its reply box; while the panel is open, nothing opens beside the page.
   - **New comments are written in the panel while it is open.** Turning comment mode on leaves the panel
@@ -383,7 +394,7 @@ any of them off.
     same way with no line, and say where they are.
   - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
     closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
-    Show resolved is on.
+    ✓ Resolved is on.
   - **The panel stays open until it is closed**, with its close button or Esc (after any open thread). A
     click on the page never closes it: in comment mode that click chooses something to comment on, and
     otherwise the page handles it.
@@ -1596,3 +1607,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-14 — From review of the build: the panel stays open until it is closed (× or Esc), and a click on the page never closes it. @ and ✓ always show, with tooltips. An open card shows its quote once. A deleted comment goes away, and deleting a thread's first comment removes the thread. The pulse follows its content while the page scrolls (sections 5 and 7).
 - 2026-10-14 — A thread open on the page moves into All comments when it opens, so the same thread is never shown twice (section 7).
 - 2026-10-14 — Fixes from the walkthrough of every feature in every format: a mention of you stays inline in its sentence; Pipeup's messages appear beside the round button instead of the bottom centre (over decks' slide controls and phones' text); an open card or new comment in the column moves up clear of the round button; with no room beside a bubble (a phone, or the window's edge) the preview and thread sit below or above what they're about, never over it; the selection's comment icon sits past the end of the paragraph's text, so it never covers the line above. They add 0.4 KB to Pipeup (51.1 KB gzip), so its budget rises from 51 to 52 KB (section 16a).
+- 2026-10-15 — All comments' two filters read plainly as on or off: each is a pill with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and tinted with the accent colour when on. Hovering a closed card in the panel, or focusing into it, shows its actions (React, ✓ Resolve and ⋯) at its top right, as on every other card; they work without opening the card (section 7). They add 0.5 KB to Pipeup (51.6 KB gzip), inside its 52 KB budget.

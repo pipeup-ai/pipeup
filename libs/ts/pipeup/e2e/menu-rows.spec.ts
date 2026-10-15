@@ -32,7 +32,7 @@ test("the menu, top down: who you are, copying, Look, All comments, then Hide co
   await expect(menu(page).getByText("Stop commenting")).toHaveCount(0);
   await expect(menu(page).locator(".fmt, .fm")).toHaveCount(0);
   // Showing resolved threads is in the All comments panel, not the menu.
-  await expect(menu(page).getByText(/Show resolved/)).toHaveCount(0);
+  await expect(menu(page).getByText(/Resolved/)).toHaveCount(0);
   // Hide comments is a switch, off until the reviewer turns it on.
   await expect(menu(page).getByRole("menuitemcheckbox", { name: "Hide comments" })).toHaveAttribute(
     "aria-checked",

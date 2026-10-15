@@ -75,6 +75,8 @@ export interface ReactionOptions {
   resolved: boolean;
   /** The quick row is open under this comment. */
   quick: boolean;
+  /** Only the quick row, never the chips (a closed card in All comments counts reactions in its last line). */
+  bare?: boolean;
   /** Gives or takes back a reaction. */
   react(emoji: string, on: boolean): void;
   /** Chips and quick buttons already on the page once, so only new ones ease in. */
@@ -86,10 +88,10 @@ export interface ReactionOptions {
  * pointing at one says who), and, when asked for, the quick row. Nothing for a comment nobody reacted to.
  */
 export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null {
-  if (c.deleted || (!c.reactions.length && !o.quick)) return null;
+  if (c.deleted || ((o.bare || !c.reactions.length) && !o.quick)) return null;
   const has = (emoji: string) =>
     c.reactions.find((r) => r.emoji === emoji)?.by.some((b) => b.author === o.me) ?? false;
-  const chips = c.reactions.map((r) => {
+  const chips = (o.bare ? [] : c.reactions).map((r) => {
     const mine = has(r.emoji);
     const n = r.by.length;
     const names = [...(mine ? ["You"] : []), ...r.by.filter((b) => b.author !== o.me).map((b) => nameOf(b))];
