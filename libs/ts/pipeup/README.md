@@ -66,13 +66,13 @@ outside comment mode the rest of the page works as normal. **Hide comments** in 
 of sight on that page (remembered in the browser); the control still counts the open threads, and comment mode,
 All comments or a comment being written show them again while they last.
 
-The comment control is one round button in the corner: the comment icon, or the number of open threads inside
-a comment bubble. Hovering it shows a tooltip with its shortcut; clicking (or tapping) it opens its menu of
+The comment control is a small square of frosted glass tucked into the bottom-right corner: the comment icon, or
+the number of open threads inside a comment bubble. Pointed at, it reaches left to show its shortcut; clicking (or tapping) it opens its menu of
 one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
 Add name, edited in place in that row), Copy comments (as Markdown for AI, or as text), Theme, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
 **All comments** is a panel on the right that moves the page over to make room: every thread in page order as a
 card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
-of me) and **✓** (show resolved). While it is open the round button is its footer (who you are, Comment, and ⋯ for the
+of me) and **✓** (show resolved). While it is open the comment control is its footer (who you are, Comment, and ⋯ for the
 menu), comment mode leaves it open, and a new comment is written in it, in page order. Choosing a card scrolls to its
 place and opens it in the panel; clicking a comment on the page opens it there too. The panel stays open until you
 close it with its × or Esc; a click on the page never closes it.

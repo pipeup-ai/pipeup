@@ -2,9 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   commenting,
   control,
-  leaveReply,
   focusInPipeup,
+  leaveReply,
   open,
+  openAll,
   openMenu,
   seedElement,
   seedText,
@@ -13,7 +14,7 @@ import {
 
 const panel = (page: Page) => page.locator(".all.show");
 
-test("the control is one round button: no more button, no slide-out words, the number inside it", async ({
+test("the control is one small square tucked into the corner, flush with the window's edges, the number inside it", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -21,9 +22,18 @@ test("the control is one round button: no more button, no slide-out words, the n
   await expect(page.locator(".launch button")).toHaveCount(1);
   await settled(page.locator(".launch"));
   const empty = (await control(page).boundingBox())!;
-  expect(empty.width).toBeGreaterThanOrEqual(44);
-  expect(empty.width).toBeLessThanOrEqual(46);
+  expect(empty.width).toBe(32);
   expect(Math.abs(empty.width - empty.height)).toBeLessThan(1);
+  // Flush right and bottom, with no border; frosted glass behind it.
+  const vp = page.viewportSize()!;
+  expect(empty.x + empty.width).toBe(vp.width);
+  expect(empty.y + empty.height).toBe(vp.height);
+  const look = await page.locator(".launch").evaluate((e) => ({
+    border: getComputedStyle(e).borderTopWidth,
+    blur: getComputedStyle(e).backdropFilter,
+  }));
+  expect(look.border).toBe("0px");
+  expect(look.blur).toContain("blur");
   await expect(control(page)).toHaveAttribute("aria-label", "Comment");
   await expect(control(page)).toHaveAttribute("aria-keyshortcuts", "Shift+Alt+C");
 
@@ -62,7 +72,7 @@ test("the number cross-fades when it changes, and shows 99+ above 99", async ({ 
   await expect(page.locator(".launch .mode .n.on")).toHaveText("99+");
 });
 
-test("hovering the button shows a tooltip with its shortcut, after a short delay, and the button stays put", async ({
+test("pointed at, the control reaches left just far enough to show its shortcut, after a short delay, and stays put", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -71,8 +81,13 @@ test("hovering the button shows a tooltip with its shortcut, after a short delay
   const before = (await control(page).boundingBox())!;
   await control(page).hover();
   await expect(tip).toHaveCSS("opacity", "1");
-  await expect(tip).toContainText("Comment");
-  await expect(tip).toContainText(/⇧⌥C|Shift\+Alt\+C/);
+  await expect(tip).toHaveText(/^(⇧⌥C|Shift\+Alt\+C)$/);
+  await settled(page.locator(".launch .ttip"));
+  // It grows to the left only, and only by the keys (their width, whatever the platform calls them).
+  const tab = (await page.locator(".launch").boundingBox())!;
+  expect(tab.x + tab.width).toBe(before.x + before.width);
+  const words = await tip.locator("> span").evaluate((e) => e.scrollWidth);
+  expect(Math.abs(tab.width - before.width - words)).toBeLessThan(1.5);
   expect(await tip.evaluate((e) => parseFloat(getComputedStyle(e).transitionDelay))).toBeGreaterThan(0);
   await settled(page.locator(".launch"));
   expect((await control(page).boundingBox())!).toEqual(before);
@@ -153,8 +168,7 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
   );
   await seedElement(page, "#far", "Is this far enough?");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toBeVisible();
   await expect(page.locator(".menu.show")).toHaveCount(0);
   await settled(panel(page));
@@ -207,8 +221,7 @@ test("the panel slides in from the right edge, and with reduced motion only fade
   expect(await all.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
   expect(await all.evaluate((el) => getComputedStyle(el).opacity)).toBe("0");
   expect(await all.evaluate((el) => getComputedStyle(el).transform)).not.toBe("none");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   expect(await all.evaluate((el) => getComputedStyle(el).transitionProperty)).toContain("transform");
   await settled(all);
@@ -225,13 +238,11 @@ test("the panel closes with its close button or Esc; a click on the page leaves 
 }) => {
   await open(page, "site.html");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await panel(page).getByRole("button", { name: "Close" }).click();
   await expect(panel(page)).toHaveCount(0);
   await expect(control(page)).toBeFocused();
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   await page.mouse.click(40, 700);
   await page.waitForTimeout(400);
@@ -245,8 +256,7 @@ test("in the column, the panel takes the column's place: a chosen thread opens o
 }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await panel(page)
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })
     .click();
@@ -266,8 +276,7 @@ test("in the column, the panel takes the column's place: a chosen thread opens o
 test("an avatar in a panel row keeps its square", async ({ page }) => {
   await open(page, "site.html");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   const av = panel(page).locator(".cd .av").first();
   await settled(av);
   // Measured until it settles: under load the panel's own entry can still be easing when the first look is taken.
@@ -284,8 +293,7 @@ test("with reduced motion, opening and closing the panel only fades it", async (
   await open(page, "site.html");
   const all = page.locator(".all");
   expect(await all.evaluate((el) => getComputedStyle(el).transitionProperty)).toBe("opacity");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   expect(await all.evaluate((el) => getComputedStyle(el).transitionProperty)).toBe("opacity");
   expect(await all.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
@@ -299,8 +307,7 @@ test("with reduced motion, opening and closing the panel only fades it", async (
 test("the column fades out with the exit timing when the panel opens", async ({ page }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   const t = await page.locator(".col").evaluate((e) => {
     const s = getComputedStyle(e);
@@ -313,8 +320,7 @@ test("the column fades out with the exit timing when the panel opens", async ({ 
 test("a click on empty page leaves the panel open", async ({ page }) => {
   await open(page, "site.html");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");
   await page.mouse.click(40, 700);
   await page.waitForTimeout(400);
@@ -323,8 +329,7 @@ test("a click on empty page leaves the panel open", async ({ page }) => {
 
 test("a click on a page field leaves the panel open and puts focus in the field", async ({ page }) => {
   await open(page, "controls.html");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(panel(page)).toHaveCount(1);
   await page.locator("#email").click();
   await expect(page.locator("#email")).toBeFocused();
@@ -368,4 +373,45 @@ test("the button's comment bubble is drawn with a thinner line than other icons,
   expect(other).toBeGreaterThan(1.6);
   const n = page.locator(".launch .mode .n.on");
   expect(await n.evaluate((e) => getComputedStyle(e).fontWeight)).toBe("500");
+});
+
+test("in comment mode the control opens All comments, whose footer has the switch and ⋯ for the menu", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await expect(control(page)).toHaveAttribute("aria-haspopup", "menu");
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await commenting(page);
+  await expect(control(page)).toHaveAttribute("aria-haspopup", "dialog");
+  await control(page).click();
+  const panel = page.locator(".all.show");
+  await expect(panel).toHaveCount(1);
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(panel).toContainText("Is 20% realistic?");
+  // The footer: comment mode's switch, on, and ⋯ for the rest of the menu.
+  await expect(panel.getByRole("switch", { name: /Comment/ })).toHaveAttribute("aria-checked", "true");
+  await panel.locator(".pf").getByRole("button", { name: "More" }).click();
+  await expect(page.locator(".menu.show")).toHaveCount(1);
+});
+
+test("holding Space never brings out the shortcut, even with focus left on the control", async ({ page }) => {
+  await open(page, "controls.html");
+  // Comment mode turned on from the menu, the menu closed with Escape: focus is back on the control, shown as
+  // keyboard focus, and the pointer is away on the page.
+  await control(page).click();
+  await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
+  await commenting(page);
+  await page.keyboard.press("Escape");
+  await expect(control(page)).toBeFocused();
+  await page.mouse.move(200, 200);
+  const tip = page.locator(".launch .ttip");
+  await page.waitForTimeout(700);
+  await expect(tip).toHaveCSS("opacity", "0");
+  await page.keyboard.down("Space");
+  await page.waitForTimeout(700);
+  await expect(tip).toHaveCSS("opacity", "0");
+  await page.keyboard.up("Space");
+  await page.waitForTimeout(500);
+  await expect(tip).toHaveCSS("opacity", "0");
 });

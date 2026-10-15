@@ -18,9 +18,12 @@ test.afterAll(async () => {
 // The add-ons' status is the menu's first line; the menu draws it when it opens.
 async function label(page: Page): Promise<string> {
   const was = (await page.locator(".menu.show").count()) > 0;
+  const panel = (await page.locator(".all.show").count()) > 0;
   if (!was) await openMenu(page);
   const text = (await page.locator(".menu").first().textContent()) ?? "";
   if (!was) await page.keyboard.press("Escape");
+  // In comment mode the menu was the panel's: close the panel it opened too.
+  if (!was && !panel && (await page.locator(".all.show").count()) > 0) await page.keyboard.press("Escape");
   return text;
 }
 

@@ -10,10 +10,12 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // everywhere, the panel's footer and new comments written in it, editing and deleting from ⋯, and Cancel and Comment
 // buttons: +1.6 KB of Pipeup's own UI, which every page shows (docs/design/panel-hub.md); then 52 KB for the
 // walkthrough's fixes (+0.4 KB): messages beside the round button, popovers and the selection's icon that never cover
-// what they're about, and new comments clear of the button (docs/design/walkthrough-fixes.md).
+// what they're about, and new comments clear of the button (docs/design/walkthrough-fixes.md); then 53 KB for the
+// panel's filter pills and actions on hover, one Copy comments row with Theme, Space to pause, and the frosted corner
+// control that opens All comments in comment mode (+1.0 KB of Pipeup's own UI; docs/design/corner-control.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 52 * 1024,
-  "dist/pipeup.esm.js": 52 * 1024,
+  "dist/pipeup.min.js": 53 * 1024,
+  "dist/pipeup.esm.js": 53 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

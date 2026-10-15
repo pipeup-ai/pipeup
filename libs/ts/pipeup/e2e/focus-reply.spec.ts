@@ -1,5 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { focusInPipeup, leaveReply, open, seedElement, seedText, selectWords, showComments } from "./helpers";
+import {
+  focusInPipeup,
+  leaveReply,
+  open,
+  openAll,
+  seedElement,
+  seedText,
+  selectWords,
+  showComments,
+} from "./helpers";
 
 /** The words of the first quote highlight, as a point to click. */
 const quotePoint = (page: Page) =>
@@ -138,8 +147,7 @@ test("choosing from All comments does not drop a draft with words", async ({ pag
   await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   const box = await draftWithWords(page);
-  await page.locator(".launch .mode").click();
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await page
     .locator(".all.show")
     .getByRole("menuitem", { name: /Is 20% realistic\?/ })

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { addon, blank, CORE, hideComments, load, mount, openMenu } from "./helpers";
+import { addon, blank, closePanel, CORE, hideComments, load, mount, openMenu } from "./helpers";
 
 /** A scripted stand-in for a model: it decides by the comment's words and writes one short reply, piece by piece. */
 const FAKE = () => {
@@ -58,6 +58,7 @@ async function turnOn(page: Page) {
   await expect(panel).toContainText("Test model");
   await panel.getByRole("button", { name: "Turn on" }).click();
   await expect(page.locator(".xp")).toHaveCount(0);
+  await closePanel(page);
 }
 
 test("turned on, it replies to a comment that deserves one, in its own name, and stays quiet on the rest", async ({
@@ -189,6 +190,7 @@ test("the Assistant replies row is in the menu only while comments show", async 
   await openMenu(page);
   await expect(page.locator(".menu.show")).toContainText("Assistant replies");
   await page.keyboard.press("Escape");
+  await closePanel(page);
   await page.keyboard.press("Shift+Alt+KeyC");
   await expect(page.locator(".launch .mode.on")).toHaveCount(0);
   await openMenu(page);

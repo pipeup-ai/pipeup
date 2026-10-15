@@ -1,12 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { open, openMenu, seedElement, seedText } from "./helpers";
+import { open, openAll, seedElement, seedText } from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(panel(page)).toBeVisible();
-}
 const row = (page: Page, words: RegExp) => panel(page).getByRole("menuitem", { name: words });
 
 test("a row is a preview; clicking it opens the thread out in the panel, with a line to its place", async ({

@@ -103,7 +103,7 @@ test("threads follow the text when the layout changes without any DOM change", a
   await expect.poll(async () => Math.abs((await th.boundingBox())!.y - after)).toBeLessThan(10);
 });
 
-test("a new comment low in the window is nudged up, clear of the round button", async ({ page }) => {
+test("a new comment low in the window is nudged up, clear of the comment control", async ({ page }) => {
   await page.setViewportSize({ width: 1000, height: 800 });
   await open(page, "doc.html", { name: "Sam" });
   await showComments(page);

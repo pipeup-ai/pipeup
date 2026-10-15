@@ -142,14 +142,13 @@ test("hidden UI takes no focus: Tab never reaches a closed popover, menu or prev
   await seedText(page, "h1", "in minutes not meetings", "Love this line, see https://example.test/a");
   // The menu, opened and closed.
   const count = page.locator(".launch .mode");
+  // In comment mode the control opens All comments; its footer's menu, opened and closed; then the panel closed.
   await count.click();
-  await expect(page.locator(".menu.show")).toHaveCount(1);
-  await count.click();
-  await expect(page.locator(".menu.show")).toHaveCount(0);
-  // All comments, opened and closed.
-  await count.click();
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect(page.locator(".all.show")).toHaveCount(1);
+  await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
+  await expect(page.locator(".menu.show")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator(".all.show")).toHaveCount(0);
   // The preview, shown and gone.

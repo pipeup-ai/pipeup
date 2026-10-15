@@ -1,3 +1,4 @@
+import { openMenu } from "./helpers";
 import { expect, test } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
@@ -74,7 +75,7 @@ test("Send to Git asks first, sends the review as Markdown, and it is committed 
   await page.keyboard.press("Enter");
   await expect(page.locator(".bub, .th").first()).toBeVisible();
 
-  await page.locator(".launch .mode").click();
+  await openMenu(page);
   await page.locator(".menu.show").getByText("Send to Git").click();
   const panel = page.locator(".xp.show");
   await expect(panel).toContainText("This will send 1 open comment");

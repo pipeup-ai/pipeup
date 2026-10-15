@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   commenting,
   open,
-  openMenu,
+  openAll,
   seedText,
   settled,
   showComments,
@@ -11,11 +11,6 @@ import {
 } from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(panel(page)).toBeVisible();
-}
 
 test.describe.configure({ mode: "parallel" });
 
@@ -52,7 +47,8 @@ for (const look of ["light", "dark"] as const)
     // Each filter shows its icon and its word, and is named by its word.
     const at = hd.getByRole("button", { name: "For you", exact: true });
     const resolved = hd.getByRole("button", { name: "Resolved", exact: true });
-    await expect(at).toHaveText("@For you");
+    await expect(at).toHaveText("For you");
+    await expect(at.locator("svg")).toHaveCount(1);
     await expect(resolved).toHaveText("Resolved");
     await expect(resolved.locator("svg")).toHaveCount(1);
     await expect(resolved).toHaveAttribute("aria-pressed", "false");
@@ -189,7 +185,7 @@ test("a closed card's actions show when the keyboard reaches it (not after a cli
   await expect(panel(page).locator(".cd.open")).toHaveCount(0);
 });
 
-test("while the panel is open the round button is its footer: who you are, Comment, and ⋯ for the menu", async ({
+test("while the panel is open the comment control is its footer: who you are, Comment, and ⋯ for the menu", async ({
   page,
 }) => {
   await open(page, "doc.html", { name: "Sam" });
@@ -197,7 +193,7 @@ test("while the panel is open the round button is its footer: who you are, Comme
   await openAll(page);
   const foot = panel(page).locator(".pf");
   await expect(foot).toContainText("Sam");
-  // The round button has stepped aside (out of sight and out of the keyboard's reach).
+  // The control has stepped aside (out of sight and out of the keyboard's reach).
   await expect(page.locator(".launch")).toHaveAttribute("inert", "");
   await expect.poll(() => page.locator(".launch").evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
   // Comment turns comment mode on, and the panel stays.
@@ -216,7 +212,7 @@ test("while the panel is open the round button is its footer: who you are, Comme
   const m = (await menu.boundingBox())!;
   expect(m.y + m.height).toBeLessThanOrEqual((await foot.boundingBox())!.y + 1);
   await page.keyboard.press("Escape");
-  // Closing the panel brings the round button back.
+  // Closing the panel brings the control back.
   await panel(page).getByRole("button", { name: "Close" }).click();
   await expect(page.locator(".launch")).not.toHaveAttribute("inert", "");
 });

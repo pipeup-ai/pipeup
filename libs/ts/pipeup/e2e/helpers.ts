@@ -120,17 +120,48 @@ export async function leaveReply(page: Page): Promise<void> {
   );
 }
 
-/** The comment control: one round button in the corner. */
+/** The comment control: one small square in the corner. */
 export const control = (page: Page): Locator => page.locator(".launch .mode");
 
-/** Opens the comment control's menu: a click on the one round button. */
+/** Comment mode is on: the control shows it. */
+const isCommenting = (page: Page) => control(page).evaluate((b) => b.classList.contains("on"));
+
+/**
+ * Opens the comment control's menu: a click on it. In comment mode the control opens All comments instead, and the
+ * menu is its footer's ⋯.
+ */
 export async function openMenu(page: Page): Promise<void> {
-  await control(page).click();
+  const panelOpen = (await page.locator(".all.show").count()) > 0;
+  if (panelOpen || (await isCommenting(page))) {
+    if (!panelOpen) await control(page).click();
+    await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
+  } else await control(page).click();
   await expect(page.locator(".menu.show")).toHaveCount(1);
 }
 
-/** Turns comment mode on or off from the menu's Start commenting switch, then closes the menu with Esc. */
+/** Opens All comments: from the menu, or in comment mode straight from the control. */
+export async function openAll(page: Page): Promise<void> {
+  if (await isCommenting(page)) await control(page).click();
+  else {
+    await openMenu(page);
+    await page.getByRole("menuitem", { name: /All comments/ }).click();
+  }
+  await expect(page.locator(".all.show")).toHaveCount(1);
+}
+
+/**
+ * Turns comment mode on from the menu's Start commenting switch (the menu closes with Esc), or off from the
+ * Comment switch in All comments' footer (the panel then closes with ×).
+ */
 export async function toggleCommenting(page: Page): Promise<void> {
+  if (await isCommenting(page)) {
+    await control(page).click();
+    const panel = page.locator(".all.show");
+    await panel.getByRole("switch", { name: /Comment/ }).click();
+    await panel.getByRole("button", { name: "Close" }).click();
+    await expect(page.locator(".all.show")).toHaveCount(0);
+    return;
+  }
   await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
   // The menu stays open so the switch is seen to move.
