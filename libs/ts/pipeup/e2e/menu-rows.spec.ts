@@ -3,7 +3,7 @@ import { commenting, control, focusInPipeup, open, openMenu, settled } from "./h
 
 const menu = (page: Page) => page.locator(".menu.show");
 
-test("the menu, top down: who you are, copying, Look, All comments, then Hide comments and Start commenting", async ({
+test("the menu, top down: who you are, Copy comments, Theme, All comments, then Hide comments and Start commenting", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -11,15 +11,19 @@ test("the menu, top down: who you are, copying, Look, All comments, then Hide co
   const me = await page.evaluate(() => (window as any).Pipeup.animalName((window as any).pu.document.me));
   const shape = await menu(page).evaluate((m) =>
     [...m.children].map((c) =>
-      c.classList.contains("sep") ? "|" : (c.querySelector(".lb")?.textContent ?? c.className),
+      c.classList.contains("sep")
+        ? "|"
+        : c.classList.contains("subs")
+          ? [...c.querySelectorAll(".lb")].map((l) => l.textContent).join(" / ")
+          : (c.querySelector(".lb")?.textContent ?? c.className),
     ),
   );
   expect(shape).toEqual([
     me,
     "|",
-    "Copy as Markdown",
-    "Copy as Text",
-    "Look",
+    "Copy comments",
+    "As Markdown / As text",
+    "Theme",
     "All comments",
     "|",
     "Hide comments",
@@ -46,20 +50,20 @@ test("every row is one line; its explanation is a tooltip on hover and on keyboa
   await open(page, "site.html");
   await openMenu(page);
   await settled(menu(page));
-  const rows = menu(page).locator(".mi");
-  await expect(rows).toHaveCount(7);
+  // Copy comments' two choices are folded away until it is opened.
+  const rows = menu(page).locator(".mi:not(.subs .mi)");
+  await expect(rows).toHaveCount(6);
   for (const r of await rows.all()) {
     await expect(r.locator("small")).toHaveCount(0);
     expect((await r.boundingBox())!.height).toBeLessThanOrEqual(36);
   }
-  const asText = menu(page).getByRole("menuitem", { name: "Copy as Text", exact: true });
+  const asText = menu(page).getByRole("menuitem", { name: "Copy comments" });
   const tip = asText.locator(".tt");
-  await expect(asText).toHaveAttribute("aria-description", "Just the words");
-  await expect(tip).toHaveText("Just the words");
-  await expect(menu(page).getByRole("menuitem", { name: "Copy as Markdown", exact: true })).toHaveAttribute(
+  await expect(asText).toHaveAttribute(
     "aria-description",
-    "Markdown, with where each thread is",
+    "As Markdown, with where each thread is, or as text",
   );
+  await expect(tip).toHaveText("As Markdown, with where each thread is, or as text");
   await expect(tip).toHaveCSS("opacity", "0");
   const before = (await asText.boundingBox())!;
   await asText.hover();
@@ -198,7 +202,7 @@ test("the identity row edits your name, and then shows it with an edit mark", as
   await expect(input).toBeFocused();
   await expect(id).toHaveCount(0);
   await expect(menu(page).locator(".ed .av")).toHaveCount(1);
-  await expect(menu(page).locator(".mi")).toHaveCount(6);
+  await expect(menu(page).locator(".mi:not(.subs .mi)")).toHaveCount(5);
   await input.fill("Red Panda");
   await input.press("Enter");
   await expect(id.locator(".lb")).toHaveText("Red Panda");
@@ -243,4 +247,35 @@ test.describe("on a touch screen with no hover", () => {
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
     await commenting(page);
   });
+});
+
+test("Copy comments opens to its two choices and folds them away again; the menu opens with them folded", async ({
+  page,
+}) => {
+  await open(page, "site.html");
+  await openMenu(page);
+  const copy = menu(page).getByRole("menuitem", { name: "Copy comments" });
+  const choices = menu(page).locator(".subs");
+  await expect(copy).toHaveAttribute("aria-expanded", "false");
+  await expect(choices).toHaveAttribute("inert", "");
+  await copy.click();
+  await expect(copy).toHaveAttribute("aria-expanded", "true");
+  await expect(menu(page).getByRole("menuitem", { name: "As Markdown", exact: true })).toBeVisible();
+  await expect(menu(page).getByRole("menuitem", { name: "As text", exact: true })).toHaveAttribute(
+    "aria-description",
+    "Just the words",
+  );
+  // Unfolding eases (no jump): the choices' height grows over time.
+  expect(await choices.evaluate((e) => getComputedStyle(e).transitionProperty)).toContain(
+    "grid-template-rows",
+  );
+  await copy.click();
+  await expect(copy).toHaveAttribute("aria-expanded", "false");
+  await copy.click();
+  await page.keyboard.press("Escape");
+  await openMenu(page);
+  await expect(menu(page).getByRole("menuitem", { name: "Copy comments" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
 });

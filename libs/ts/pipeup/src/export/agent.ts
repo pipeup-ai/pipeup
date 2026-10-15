@@ -24,7 +24,7 @@ export interface AgentThread {
 }
 
 export interface AgentComments {
-  /** The same Markdown as Copy as Markdown. */
+  /** The same Markdown as Copy comments › As Markdown. */
   markdown: string;
   threads: AgentThread[];
 }

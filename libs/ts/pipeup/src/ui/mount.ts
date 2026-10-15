@@ -123,7 +123,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   }
   if (ephemeral)
     app.ctx.toast(
-      "This browser can't keep comments for this page — copy the comments (Copy as Markdown) to keep them",
+      "This browser can't keep comments for this page — copy the comments (Copy comments › As Markdown) to keep them",
     );
   const onHide = () => void doc.flush().catch((e: unknown) => globalThis.reportError?.(e));
   // Add-ons set up now, after the "can't keep comments" notice, in registration order.

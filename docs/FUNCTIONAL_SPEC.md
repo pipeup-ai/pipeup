@@ -47,7 +47,7 @@ Principles:
 
 1. *I made an HTML deck and want feedback.* I add Pipeup to it, send the file or link, and get
    comments pinned to the exact slide and spot.
-2. *Several people reviewed my file separately.* Each copies their comments (Copy as Markdown) and sends
+2. *Several people reviewed my file separately.* Each copies their comments (Copy comments › As Markdown) and sends
    them to me; I paste them into my AI agent, which knows exactly where each comment is.
 3. *I want a live review session.* I create a room on my own relay, share an invite link, and
    everyone sees who is here, which slide they are on and where their cursor is.
@@ -59,7 +59,7 @@ Principles:
 5. *Someone sent me an HTML file.* I open it, choose "Comment", select a sentence and type. I
    don't need an account.
 6. *I'm reviewing a deck.* I click anywhere on a slide to drop a pin and comment, Figma style.
-7. *I'm done.* I press "Copy as Markdown" and send what I copied back however I like — or, in a
+7. *I'm done.* I press "Copy comments › As Markdown" and send what I copied back however I like — or, in a
    room, my comments are already shared.
 
 **Agents**
@@ -135,9 +135,14 @@ any of them off.
   instead of things that act. Nothing on the page fires, submits or navigates when clicked or tapped.
   From the keyboard, while the block cursor (below) is not in use, Enter and Space on a focused control
   of the page do what the page expects, and Pipeup does nothing with them.
-- **Holding ⌘ (Ctrl elsewhere) pauses comment mode** for as long as it is held. The outline and the
+- **Holding Space pauses comment mode** for as long as it is held, on every platform. The outline and the
   picking cursor go and the page works as normal, so a reviewer can click through it to reach what they
-  want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so.
+  want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so. Space is
+  the key because it changes nothing about a click (⌘, Ctrl, Shift and Option all make a click on a link do
+  something else, such as open a new tab or download it). While Space is held the page doesn't hear it, so it
+  doesn't scroll or turn a slide. Space keeps its usual job where it has one: typing in a field, and a link,
+  button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
+  keep it). On the block cursor, Enter comments and Space pauses.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
   the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
   readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
@@ -338,9 +343,13 @@ any of them off.
     (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
     and leaves the menu open; the row then shows the name and avatar again. The menu never closes
     while the name is being edited;
-  - **Copy as Markdown** — every open thread as Markdown for AI, in order, with where each one is (§7a);
-  - **Copy as Text** — the same threads as plain text: where it is, then just the names and
-    words (§7a). Each copy row has a one-line tooltip. There is no copy-format setting;
+  - **Copy comments**, one row that opens to its two choices beneath it (a second click, or → from the
+    keyboard; ← or a second click folds them away). **As Markdown** copies every open thread as Markdown for
+    AI, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
+    then just the names and words (§7a). Each has a one-line tooltip, and the choices are folded each time the
+    menu opens. There is no copy-format setting;
+  - **Theme**, showing Automatic, Light or Dark; each press moves on to the next, and the menu stays open so
+    the page is seen to change (*Which look*, §9);
   - **All comments**, with the number of open threads;
   - **Hide comments**, with a **switch**. When it is on, comments are out of sight (*When comments
     show*, above). Toggling it leaves the menu open, so the switch is seen to move;
@@ -352,7 +361,7 @@ any of them off.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
   switch; Esc closes the menu) and by touch
   with no hover needed. Switches ease between their states.
-- Choosing a copy row or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
+- Choosing a copy choice or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
   click or tap anywhere outside the menu and the button, or once the pointer has been away from
   both for **3 seconds** (coming back sooner keeps it open). On touch screens, where there is no
   hover, only a tap outside or Esc closes it. In comment mode, a click outside the menu only closes
@@ -407,15 +416,15 @@ any of them off.
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
+- **Copy comments › As Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
   for each one: where it is (slide or section, then the element), the element's stable identifier,
   the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
+  as a list. Copying all comments as Markdown adds the page title and address, the export time, the number of open threads
   (noting resolved ones are left out) and a one-line instruction to work through them and say what
   changed.
-- **Copy as Text** gives **plain text** — where it is, then just the names and words.
+- **Copy comments › As text** gives **plain text** — where it is, then just the names and words.
 - There is no copy-format setting.
-- Resolved threads are left out of both copy rows.
+- Resolved threads are left out of both copy choices.
 
 ## 7b. Reactions
 
@@ -508,7 +517,7 @@ any of them off.
 - **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with a
   fade.
 - **Which look.** Pipeup follows the page's light or dark appearance when the page makes it clear, and is
-  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Look row in the menu; the choice is
+  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Theme row in the menu; the choice is
   remembered in their browser and beats everything else. The author can set a look for the page (`data-pipeup-theme="light"` or `"dark"` on `<html>`), which
   beats detection. If the page changes appearance later (a switch on the page), Pipeup follows however
   the page makes the change, not only when it changes the page's top-level elements.
@@ -658,7 +667,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 
 **Returning feedback (for now)**
 
-- A reviewer sends feedback back to the author by pressing **Copy as Markdown** and sending what they copied
+- A reviewer sends feedback back to the author by pressing **Copy comments › As Markdown** and sending what they copied
   any way they like: a message, an email, or pasted straight into a conversation with an AI
   assistant.
 - **Sealed feedback files** remain part of the design for sharing later: a single small file of the
@@ -853,7 +862,7 @@ permission, a registration, or a place in its npm scope.
   system, over a secure connection, needs no crypto. The guide says so, and says when sealing is worth writing (a
   store the company doesn't control).
 - **The review as a Markdown file.** Pipeup already writes a review as Markdown that says exactly where each comment
-  is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
+  is, ready for an AI to act on (what Copy comments › As Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
   company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
 - **A worked example from "another company".** The repository holds a complete example add-on written the way a
   company would write one, outside the Pipeup project's names and carrying no real company's name: "Send to Git". It adds one row to the menu, "Send
@@ -918,7 +927,7 @@ permission, a registration, or a place in its npm scope.
   1. **"Send to Git"** (needs the company's own service): the reviewer's comments go to a service the company runs, which
      files them in Git. For teams: sign-in, a record of who saved what, pull requests.
   2. **"Save to GitHub"** (needs no server and no token): one menu row opens GitHub's own "new file" page in a new tab with
-     the review already filled in (the Markdown that Copy as Markdown makes, in a file path chosen from the page's name
+     the review already filled in (the Markdown that Copy comments › As Markdown makes, in a file path chosen from the page's name
      and the time). The reviewer signs in to GitHub as themselves and presses GitHub's commit button (or "propose
      changes", when they can't write to the repository). It asks first, saying what will be filled in and where. The
      page names the repository, and optionally the branch and folder, and, for GitHub Enterprise Server, the host. When
@@ -928,7 +937,7 @@ permission, a registration, or a place in its npm scope.
 - **Choosing a way, written down.** The guide's company section lists the ways to get a review into Git and when each fits: the
   company's service using the GitHub API (pull requests, sign-in, records); the same service running Git itself with a
   deploy key (any Git host); the host's API for another host (GitLab, Bitbucket, Azure DevOps, Gitea); GitHub's prefilled new-file or new-issue
-  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy as Markdown pasted to an
+  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy comments › As Markdown pasted to an
   agent or an issue. It names what needs a server and says which of them the examples show.
 - **As little friction as possible: the agent does the setting up.** Each example has one Copy prompt that gives the person's AI
   agent everything it needs (the setup skill). The setup skill covers both examples and starts by asking which fits (no server,
@@ -1074,7 +1083,7 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
   Its overlap checks include add-on surfaces.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy as Markdown), and can read and reply in a page's shared
+- Agents read comments a reviewer copied (Copy comments › As Markdown), and can read and reply in a page's shared
   copy. Later they will also read and write feedback files and, with an invite, take part in rooms on
   a relay.
 - An agent taking part in a shared copy does so under **its own identity and a name that shows it is
@@ -1241,7 +1250,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 **What stays in Pipeup itself**
 - The page's comments for an agent that is looking at it (§15b, Reading): as Markdown, and as data, open threads or all.
-- Copy as Markdown and Copy as Text (§7a); the Markdown still ends with the one-line instruction to work through the
+- Copy comments, as Markdown or as text (§7a); the Markdown still ends with the one-line instruction to work through the
   threads and say what changed.
 - A thread an agent has marked **addressed** shows its note with **Resolve** and **Still not right** (§15b), and an AI
   reply keeps the AI marking (§10), whichever add-on or file the reply came from.
@@ -1319,7 +1328,7 @@ can add Pipeup to a page without looking anything up.
 the comments an author can reach **without opening the page**: what reviewers sent back, the page's shared copy, and an
 agent's replies.
 
-- **`pipeup read <page.html>`** prints the page's comments as Markdown, the same as **Copy as Markdown**, or with
+- **`pipeup read <page.html>`** prints the page's comments as Markdown, the same as **Copy comments › As Markdown**, or with
   `--json` as data in the same form as `Pipeup.comments()` (§15b). Open threads only, unless `--all`.
 - **Where it reads from:**
   - **feedback files** the author passes with `--from <file or folder>` (once per file or folder): sealed feedback files
@@ -1333,7 +1342,7 @@ agent's replies.
   another document is left out, and the command says how many, and why, in words. The same comment from two sources
   is shown once.
 - **It can't read what is only in a reviewer's browser,** and says so when it finds nothing: those comments reach the
-  author by Copy as Markdown, a feedback file or sharing.
+  author by Copy comments › As Markdown, a feedback file or sharing.
 - It never writes to the page, the shared copy or the files it reads. With `--out <file>` it writes one merged feedback
   file the page can open, sealed for the document like any other.
 - Before it contacts a shared copy it says which service it is about to ask; nothing else is sent anywhere.
@@ -1608,3 +1617,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-14 — A thread open on the page moves into All comments when it opens, so the same thread is never shown twice (section 7).
 - 2026-10-14 — Fixes from the walkthrough of every feature in every format: a mention of you stays inline in its sentence; Pipeup's messages appear beside the round button instead of the bottom centre (over decks' slide controls and phones' text); an open card or new comment in the column moves up clear of the round button; with no room beside a bubble (a phone, or the window's edge) the preview and thread sit below or above what they're about, never over it; the selection's comment icon sits past the end of the paragraph's text, so it never covers the line above. They add 0.4 KB to Pipeup (51.1 KB gzip), so its budget rises from 51 to 52 KB (section 16a).
 - 2026-10-15 — All comments' two filters read plainly as on or off: each is a pill with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and tinted with the accent colour when on. Hovering a closed card in the panel, or focusing into it, shows its actions (React, ✓ Resolve and ⋯) at its top right, as on every other card; they work without opening the card (section 7). They add 0.5 KB to Pipeup (51.6 KB gzip), inside its 52 KB budget.
+- 2026-10-15 — The menu gets shorter and plainer: **Copy comments** is one row that opens to its two choices (As Markdown, As text), a second click instead of two rows, and **Look** is renamed **Theme** (section 7). Comment mode's pause moves from holding ⌘ (Ctrl elsewhere) to holding **Space** (section 5): ⌘-click opens a link in a new tab, Option-click pins (and downloads a link in some browsers), and Space is the one key that leaves a click alone. On the block cursor Space now pauses; Enter comments.

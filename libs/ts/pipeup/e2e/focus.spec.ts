@@ -24,11 +24,10 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("All comments");
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toContain("Look");
+  expect((await focusInPipeup(page)).text).toContain("Theme");
+  // Copy comments' choices are folded away, so the arrows pass over them.
   await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toContain("Copy as Text");
-  await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
+  expect((await focusInPipeup(page)).text).toMatch(/^Copy comments/);
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Add name");
   await page.keyboard.press("Home");
@@ -52,8 +51,15 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
-  await page.keyboard.press("ArrowUp");
-  expect((await focusInPipeup(page)).text).toMatch(/^Copy as Markdown/);
+  expect((await focusInPipeup(page)).text).toMatch(/^Copy comments/);
+  // Enter opens its two choices and moves to the first; ArrowLeft folds them back.
+  await page.keyboard.press("Enter");
+  expect((await focusInPipeup(page)).text).toMatch(/^As Markdown/);
+  await page.keyboard.press("ArrowLeft");
+  expect((await focusInPipeup(page)).text).toMatch(/^Copy comments/);
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowDown");
+  expect((await focusInPipeup(page)).text).toMatch(/^As text/);
   await page.keyboard.press("Enter");
   await expect(page.locator(".menu.show")).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mode");

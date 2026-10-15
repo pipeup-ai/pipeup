@@ -69,7 +69,7 @@ All comments or a comment being written show them again while they last.
 The comment control is one round button in the corner: the comment icon, or the number of open threads inside
 a comment bubble. Hovering it shows a tooltip with its shortcut; clicking (or tapping) it opens its menu of
 one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
-Add name, edited in place in that row), Copy as Markdown (for AI), Copy as Text, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
+Add name, edited in place in that row), Copy comments (as Markdown for AI, or as text), Theme, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
 **All comments** is a panel on the right that moves the page over to make room: every thread in page order as a
 card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
 of me) and **✓** (show resolved). While it is open the round button is its footer (who you are, Comment, and ⋯ for the
@@ -87,8 +87,8 @@ Comment mode (press **Shift+Alt+C**, or **⇧⌥C** on a Mac, or switch on Start
 (Option-click, Alt-click, or the naming bar's Pin) on any page. While it is on, clicks and submits on the page do
 nothing, and selecting text offers a comment icon, clicking a highlight opens its thread, and
 clicking a block opens its comment box at once (a bar names the block; Around it and Inside it move the box to the
-block around it or inside it, keeping what you typed, and Pin makes it a pin at the block's centre). Hold **⌘**
-(**Ctrl** elsewhere) to use the page as normal for a moment; letting go brings comment mode back. Esc steps back: the box and its block together, then comment mode (or an open
+block around it or inside it, keeping what you typed, and Pin makes it a pin at the block's centre). Hold **Space**
+to use the page as normal for a moment; letting go brings comment mode back. Esc steps back: the box and its block together, then comment mode (or an open
 comment, then comment mode). It is a quiet page, not a
 sandbox:
 

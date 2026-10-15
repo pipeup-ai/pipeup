@@ -215,9 +215,9 @@ test("with forced colours on, Pipeup's words still read against their backing", 
   await settledRatio(page);
 });
 
-test("the Look row in the menu overrides the page, and the choice is kept", async ({ page }) => {
+test("the Theme row in the menu overrides the page, and the choice is kept", async ({ page }) => {
   await pageWith(page);
-  const row = page.locator(".mi", { hasText: "Look" });
+  const row = page.locator(".mi", { hasText: "Theme" });
   await openMenu(page);
   await expect(row).toContainText("Automatic");
   await row.click();
@@ -249,7 +249,7 @@ test("a reviewer's choice beats the author's setting", async ({ page }) => {
   });
   await expect(layer(page)).toHaveClass(/dark/);
   await openMenu(page);
-  await page.locator(".mi", { hasText: "Look" }).click(); // Light
+  await page.locator(".mi", { hasText: "Theme" }).click(); // Light
   await expect(layer(page)).not.toHaveClass(/dark/);
 });
 

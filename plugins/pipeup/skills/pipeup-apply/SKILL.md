@@ -19,7 +19,7 @@ Use the first of these that works:
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
    comment with `by`, `agent` and `text`). Pass `{ all: true }` to include resolved threads.
-2. **The pasted Markdown**: the author clicks **Copy as Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
+2. **The pasted Markdown**: the author clicks **Copy comments › As Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
 
 Each thread has a `- **Thread:** <id>` line: you need it to answer the thread.
 

@@ -86,7 +86,7 @@ test("reactions are kept when the page is reloaded", async ({ page }) => {
   await expect(page.locator(".th .rx")).toContainText("❤️");
 });
 
-test("an agent reads the reactions, and Copy as Markdown carries them", async ({ page }) => {
+test("an agent reads the reactions, and copying comments as Markdown carries them", async ({ page }) => {
   await start(page);
   await reactAs(page, "Sam", "👍");
   await react(page, "👍");

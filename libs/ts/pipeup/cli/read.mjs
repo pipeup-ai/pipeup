@@ -1,5 +1,5 @@
 // pipeup read: a page's comments without opening it (spec §15f): from feedback files, the page's shared copy and its
-// replies file. Every comment goes through the same checks as in the page; the Markdown is Copy as Markdown's.
+// replies file. Every comment goes through the same checks as in the page; the Markdown is Copy comments › As Markdown's.
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -263,7 +263,7 @@ export async function read(o) {
   const threads = doc.threads();
   if (!threads.length && !found)
     log(
-      "No comments found. Comments that are only in a reviewer's browser can't be read from here: they reach you by Copy as Markdown, a feedback file, or sharing.",
+      "No comments found. Comments that are only in a reviewer's browser can't be read from here: they reach you by Copy comments › As Markdown, a feedback file, or sharing.",
     );
   // Page order: where the page marks the block, else where its quoted words (or what the reviewer saw) appear.
   const order = (t) => {

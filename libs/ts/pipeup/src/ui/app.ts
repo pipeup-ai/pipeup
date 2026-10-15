@@ -570,7 +570,7 @@ export function startApp(o: AppOptions): App {
     // open, while a thread chosen there on a narrow screen (where the panel steps aside) is open, and while a
     // comment is being written (its words are never lost); otherwise the open thread closes.
     state.hidden = state.hide && !state.commenting && !state.listing && !state.reading && !state.draft;
-    // Holding ⌘ (Ctrl) pauses comment mode: the page gets its own cursor back.
+    // Holding Space pauses comment mode: the page gets its own cursor back.
     sheet.picking(state.commenting && !state.paused);
     if (state.hidden) state.active = null;
     if (!state.hidden) announceMentions(threads);

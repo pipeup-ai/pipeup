@@ -48,3 +48,4 @@ About 0.4 KB gzip: Pipeup is 49.2 KB against its 50 KB budget.
 ## Change log
 
 - 2026-10-14 — First version: comments at rest, Hide comments, opening page clicks in All comments, and the ⌘ pause.
+- 2026-10-15 — The pause moves from holding ⌘ (Ctrl) to holding Space: see [menu-copy-theme-space.md](menu-copy-theme-space.md).

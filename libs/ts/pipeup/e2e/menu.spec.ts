@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { MountOptions } from "../src/ui/mount";
 import {
+  copyAs,
   fixture,
   hideComments,
   open,
@@ -23,20 +24,22 @@ test("the control shows the open count and a menu", async ({ page }) => {
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await expect(page.locator(".launch .mode .n.on")).toHaveText("2");
   await menu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(7);
+  await expect(page.locator(".menu.show .mi:not(.subs .mi)")).toHaveCount(6);
 });
 
-test("Copy as Markdown copies Markdown with locations; Copy as Text copies the words", async ({ page }) => {
+test("Copy comments: as Markdown copies Markdown with locations; as text copies the words", async ({
+  page,
+}) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy as Markdown", exact: true }).click();
+  await copyAs(page, "As Markdown");
   await expect.poll(() => lastCopy(page)).toContain("# Review comments: Q3 plan");
   const md = await lastCopy(page);
   expect(md).toContain("- **Thread:** ");
   expect(md).toContain('- **Quoted text:** "20% lift"');
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy as Text", exact: true }).click();
+  await copyAs(page, "As text");
   await expect.poll(() => lastCopy(page)).toMatch(/^Section "Q3 plan"/);
   expect(await lastCopy(page)).not.toContain("**Thread:**");
 });

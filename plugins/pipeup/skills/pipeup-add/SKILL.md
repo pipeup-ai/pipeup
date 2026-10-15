@@ -49,5 +49,5 @@ When you rewrite or regenerate a page, keep `data-pipeup-doc`, `data-pipeup-shar
 ## Tell the author
 
 What you added (one script, a few attributes), how to comment (**⇧⌥C** on a Mac, **Shift+Alt+C** elsewhere, or the round
-button), how comments come back (**Copy as Markdown**, or, with the agents add-on, **Copy a prompt for my agent**), and that nothing leaves their
+button), how comments come back (**Copy comments › As Markdown**, or, with the agents add-on, **Copy a prompt for my agent**), and that nothing leaves their
 browser unless they choose it.

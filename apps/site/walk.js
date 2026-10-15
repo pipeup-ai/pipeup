@@ -23,7 +23,7 @@ const prompts = {
     "3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.",
     "4. Don't change the page's layout to make room for Pipeup.",
     "",
-    "Later I will paste comments copied from Pipeup (Copy as Markdown); apply each one to the page.",
+    "Later I will paste comments copied from Pipeup (Copy comments › As Markdown); apply each one to the page.",
     `The full guide: ${GUIDE}`,
   ].join("\n"),
 };
