@@ -2,7 +2,11 @@ import type { AddonHost, ItemHandle, PipeupAddon, SignedOp } from "pipeup";
 
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const NAME = /^[A-Za-z0-9-]{1,39}$/;
-const MARK = ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M9 9.6h.01M15 9.6h.01", "M8.5 14a4.5 4.5 0 0 0 7 0"];
+const MARK = [
+  "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z",
+  "M9.6 9.8a.6.6 0 1 1-1.2 0a.6.6 0 1 1 1.2 0M15.6 9.8a.6.6 0 1 1-1.2 0a.6.6 0 1 1 1.2 0",
+  "M8.6 14.2c1.9 2.1 4.9 2.1 6.8 0",
+];
 
 /** What this add-on borrows from the core's global. */
 interface Core {

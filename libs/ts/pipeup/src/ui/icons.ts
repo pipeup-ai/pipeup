@@ -27,14 +27,18 @@ const PATHS = {
   ],
   // A row that opens to more rows beneath it.
   chev: ["M9 6l6 6-6 6"],
-  // The same four arrows pointing in: a block inside it.
   // Inside it: a large box with an arrow pointing down into it.
   shrink: ["M7 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z", "M16 8l-7 7M9 10v5h5"],
   // The comment bubble without its plus, to hold the open count.
   bubble: ["M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"],
   close: ["M6 6l12 12M18 6L6 18"],
+  // React: a face with round dot eyes (zero-length strokes blurred into specks) and a gentle smile.
+  smile: [
+    "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z",
+    "M8.6 14.2c1.9 2.1 4.9 2.1 6.8 0",
+    "M9.6 9.8a.6.6 0 1 1-1.2 0a.6.6 0 1 1 1.2 0M15.6 9.8a.6.6 0 1 1-1.2 0a.6.6 0 1 1 1.2 0",
+  ],
   // A pencil: edit your name.
-  smile: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M8.5 14a4.5 4.5 0 0 0 7 0", "M9 9.6h.01M15 9.6h.01"],
   edit: ["M4 20h4L19 9l-4-4L4 16z"],
   // An eye, struck through: Hide comments.
   hide: [
