@@ -73,8 +73,8 @@ visitor how to add it. Functional requirements only.
    one ticked, and the GitHub link. It stays on one line at any width; on phones the GitHub link is
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
-4. **Footer**: always at the bottom of the window, with the facts that matter (one file, no dependencies,
-   works from disk, stays on your device) on the left and, on the right, an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
+4. **Footer**: always at the bottom of the window, with no facts line (the first screen and the Markdown copy say
+   what matters), and on the right an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
@@ -309,3 +309,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-15 — The home showcase and the add-on demos draw Pipeup as the current version does: the comment box with its rounded line and Cancel and Comment, settling into the compact card once sent (how long ago, actions at the top right, a line to reply); the selection's icon just past the end of the paragraph's text; the naming bar with Around it and Pin. In the Assist demo the reading line and the reply sit inside the comment's card, not in boxes of their own. A new rule keeps the animations in step with Pipeup's look (section 5).
 - 2026-10-15 — The Add-ons page becomes a page of small cards in three groups (From Pipeup, Run your own, Examples from another company): each card has a title, one sentence, a picture and a Copy button (straight away for one thing to copy, a menu for more); a click anywhere else opens the add-on's own page. Each add-on's page holds what the long page said about it (what it sends, what it asks, its buttons and demo), with its own Markdown copy; llms.txt and the Markdown copies point to them, and the add-on try pages lead back to their add-on's page.
 - 2026-10-15 — The footer and the home page's Markdown no longer state Pipeup's size: it changes with every release, and it had fallen out of date. The facts line keeps "One file".
+- 2026-10-15 — The footer's facts line goes altogether (One file, No dependencies, Works from disk, Stays on your device): it read as marketing. The footer keeps only its Add-ons and For agents links, on the right.
