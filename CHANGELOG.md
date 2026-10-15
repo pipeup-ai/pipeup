@@ -20,7 +20,7 @@ This pre-release is about reading and writing comments: every thread is the same
 - **Pipeup is 52.1 KB gzip** with these and the fixes below (48.8 KB in 0.8.0-beta.1), and its budget rises from 50 to 53 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
 - **The comment control is a small frosted square tucked into the corner** instead of a round button floating over the page: flush with the bottom and right edges, no border, the count inside a bigger bubble. Pointed at, it reaches left to show its shortcut. In comment mode a click on it opens All comments.
-- **Clearer small icons.** On the naming bar, Around it is a small box with an arrow leaving it and Inside it a large box with an arrow pointing into it, so the two never look alike; Pin stands as tall as them. In an avatar the animal nearly fills its tint.
+- **Clearer small icons.** On the naming bar, Around it is a small box with an arrow leaving it and Inside it a large box with an arrow pointing into it, so the two never look alike; Pin stands as tall as them. A card's actions (React, Resolve, ⋯) are larger. In an avatar the animal nearly fills its tint.
 - **A shorter menu.** **Copy comments** is one row that opens to its two choices, As Markdown and As text, and **Look** is now called **Theme**.
 
 ### Added

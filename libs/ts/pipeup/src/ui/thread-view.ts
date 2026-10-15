@@ -135,7 +135,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     const b = h(
       "button",
       { class: "ib", type: "button", "aria-label": label, title: label },
-      icon(name, 15, name === "more" ? 3 : undefined),
+      icon(name, 18, name === "more" ? 2.6 : undefined),
     );
     b.addEventListener("click", (e) => {
       e.stopPropagation();
