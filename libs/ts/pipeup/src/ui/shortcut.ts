@@ -7,11 +7,12 @@ export const SHORTCUT = {
 const MAC = typeof navigator !== "undefined" && /Mac|iP(hone|ad|od)/.test(navigator.platform);
 /** The key's label: symbols on Apple platforms, words elsewhere. */
 export const SHORTCUT_LABEL: string = MAC ? "⇧⌥C" : "Shift+Alt+C";
-/** The key held to pause comment mode (`KeyboardEvent.key`), and its label: Command on Apple platforms, Ctrl elsewhere. */
-export const HOLD = MAC ? "Meta" : "Control";
-export const HOLD_LABEL = MAC ? "⌘" : "Ctrl";
-/** The key that pauses comment mode is down during this event. */
-export const holding = (e: MouseEvent | KeyboardEvent): boolean => (MAC ? e.metaKey : e.ctrlKey);
+/**
+ * The key held to pause comment mode (`KeyboardEvent.key`), and its label: Space, the one key that changes nothing about
+ * a click (Command, Ctrl, Shift and Option all make a click on a link do something else).
+ */
+export const HOLD = " ";
+export const HOLD_LABEL = "Space";
 export const SHORTCUT_ARIA = "Shift+Alt+C";
 
 /**

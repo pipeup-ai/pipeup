@@ -5,7 +5,7 @@ by the company, hosted by the company, named by the company. Nothing here is pub
 scope, and the Pipeup project doesn't vouch for add-ons from anyone else (see the [guide](../../../../docs/ADDONS_GUIDE.md)).
 
 It adds one row to Pipeup's menu, **Send to Git**. It asks first, then sends the review, as the same AI-ready Markdown
-that **Copy as Markdown** makes, to a service your company runs, which files it in Git. The add-on never holds a Git
+that **Copy comments › As Markdown** makes, to a service your company runs, which files it in Git. The add-on never holds a Git
 password or token, never changes the page, and never posts, edits or resolves a comment for anyone.
 
 ## See it work, on your computer
@@ -81,7 +81,7 @@ The address must be `https:` (or `http:` on this computer, for trying it). `demo
 }
 ```
 
-`markdown` is exactly what Copy as Markdown copies: each open thread says where it is on the page (the slide or section,
+`markdown` is exactly what Copy comments › As Markdown copies: each open thread says where it is on the page (the slide or section,
 the element's `data-pipeup-id`, the quoted text) and what was said. Resolved threads are left out.
 
 **The answer.** `201` with JSON: `{ "path": "reviews/launch-plan/20261010-093005-sam-ab12.md", "commit": "<sha>" }`, and

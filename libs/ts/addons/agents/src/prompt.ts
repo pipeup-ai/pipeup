@@ -18,7 +18,7 @@ export function agentPrompt(m: PromptMeta): string {
     m.file
       ? `1. Read the comments: \`npx pipeup comments ${m.file}\` (add --all for resolved ones). If it says nothing is shared, ask me to switch on Share with my agent.`
       : "1. Read the comments. Open the page in a browser and run `await Pipeup.comments()`, then read `.markdown`. " +
-        "If you can't run the page, ask me to paste its Copy as Markdown.",
+        "If you can't run the page, ask me to paste its comments (Copy comments › As Markdown).",
     "2. Work through the open threads in order. For each, make the change I approved, or say why you didn't. " +
       "Ask me before changing anything I haven't approved, and answer a question with an answer.",
     m.replies

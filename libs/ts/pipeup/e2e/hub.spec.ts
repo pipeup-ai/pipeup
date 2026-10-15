@@ -209,7 +209,7 @@ test("while the panel is open the round button is its footer: who you are, Comme
   await foot.getByRole("button", { name: "More" }).click();
   const menu = page.locator(".menu.show");
   await expect(menu).toBeVisible();
-  await expect(menu.getByRole("menuitem", { name: "Copy as Markdown", exact: true })).toBeVisible();
+  await expect(menu.getByRole("menuitem", { name: "Copy comments", exact: true })).toBeVisible();
   await expect(menu.getByRole("menuitemcheckbox", { name: "Hide comments" })).toBeVisible();
   await expect(menu.getByRole("menuitemcheckbox", { name: "Start commenting" })).toBeHidden();
   await expect(menu.getByRole("menuitem", { name: /All comments/ })).toBeHidden();

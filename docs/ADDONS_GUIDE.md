@@ -152,7 +152,7 @@ For your own add-on, the script is one file your company hosts, in any of these 
 | GitHub's prefilled "new issue" page                                          | No              | The reviewer                                                | Reviews as issues that an agent or workflow picks up |
 | Save into a local clone (the browser's file saving, Chrome and Edge)         | No              | The reviewer, or a hook                                     | A developer on their own machine                     |
 | Download the file and commit it                                              | No              | The reviewer, by hand                                       | Zero setup, rarely done consistently                 |
-| **Copy as Markdown**, pasted to an agent or an issue                         | No              | The agent or the reviewer                                   | What works today                                     |
+| **Copy comments › As Markdown**, pasted to an agent or an issue                      | No              | The agent or the reviewer                                   | What works today                                     |
 
 The two examples show the first and fourth. Start with Save to GitHub if you want to see it work in minutes; use Send to Git when reviews are long or you need sign-in and a record.
 
@@ -162,7 +162,7 @@ The two examples show the first and fourth. Start with Save to GitHub if you wan
 
 ### Example: Send to Git
 
-[Send to Git](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git) is a complete add-on written the way a company would write one. **It is not from the Pipeup project.** It adds a **Send to Git** row. It asks first, then sends the review as the Markdown that Copy as Markdown makes to a service your company runs, which files it in Git for later processing and for AI to work from. It never holds a Git token, never changes the page, and never posts, edits or resolves a comment.
+[Send to Git](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git) is a complete add-on written the way a company would write one. **It is not from the Pipeup project.** It adds a **Send to Git** row. It asks first, then sends the review as the Markdown that Copy comments › As Markdown makes to a service your company runs, which files it in Git for later processing and for AI to work from. It never holds a Git token, never changes the page, and never posts, edits or resolves a comment.
 
 The page names the service: `<html data-pipeup-send-to-git-url="https://reviews.example.com/reviews">`. The request is `POST` with `{ title, url, exportedAt, openThreads, markdown }`; the answer is `201` with `{ path, commit }` (and `pr` when it opened a pull request). The service must choose the file's path itself, know who is sending, answer the browser's check, limit size and rate, and hold the Git credentials. The example's README has the whole contract, a stand-in service that saves each review in a local Git repository (so you can see the whole path), and a **checker** that tells you in words whether your own service follows the contract.
 

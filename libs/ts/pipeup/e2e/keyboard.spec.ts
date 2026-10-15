@@ -181,7 +181,7 @@ const hearKeyups = (page: Page) =>
 const ups = async (page: Page, key: string) =>
   (await page.evaluate(() => (window as any).ups as string[])).filter((k) => k === key);
 
-for (const key of ["Enter", "Space", "Escape"]) {
+for (const key of ["Enter", "Escape"]) {
   test(`the page never hears the keyup of ${key} once the cursor took it`, async ({ page }) => {
     await open(page, "doc.html");
     await shortcut(page);
@@ -190,9 +190,23 @@ for (const key of ["Enter", "Space", "Escape"]) {
     await page.keyboard.press(key);
     if (key === "Escape") await expect(page.locator(".pick.show")).toHaveCount(0);
     else await expect(page.locator(".draft")).toHaveCount(1);
-    expect(await ups(page, key === "Space" ? " " : key)).toEqual([]);
+    expect(await ups(page, key)).toEqual([]);
   });
 }
+
+test("on the block cursor Space pauses comment mode instead of commenting, and the page never hears it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await shortcut(page);
+  await expect.poll(() => cursorOn(page)).not.toBeNull();
+  await hearKeyups(page);
+  await page.keyboard.down("Space");
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await page.keyboard.up("Space");
+  await expect(page.locator(".draft")).toHaveCount(0);
+  expect(await ups(page, " ")).toEqual([]);
+});
 
 test("a keyup the cursor took but never heard does not swallow a later keyup the page should hear", async ({
   page,
@@ -463,8 +477,8 @@ test("on a reveal.js deck the deck hears no key the cursor takes; → still move
     "document ArrowRight",
     "window ArrowRight",
   ]);
-  // Space comments on the block; the deck doesn't hear it either.
-  await page.keyboard.press("Space");
+  // Enter comments on the block; the deck doesn't hear it either.
+  await page.keyboard.press("Enter");
   await expect(page.locator(".draft").getByRole("textbox", { name: "Comment" })).toBeFocused();
   expect(await page.evaluate(() => (window as any).heard)).toEqual([
     "document ArrowRight",

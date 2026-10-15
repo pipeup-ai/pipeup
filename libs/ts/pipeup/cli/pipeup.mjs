@@ -26,7 +26,7 @@ const USAGE = `pipeup init <page.html> [--yes] [--dry-run] [--update] [--offline
   failed, 2 the command needs something first.
 
 pipeup read <page.html> [--from <file or folder>]… [--deep] [--all] [--json] [--no-share] [--out <file>]
-  Prints the page's comments without opening it, as Markdown (like Copy as Markdown) or, with --json, as data: from
+  Prints the page's comments without opening it, as Markdown (like Copy comments › As Markdown) or, with --json, as data: from
   feedback files and folders of them (--deep looks in folders inside), the page's shared copy (with @pipeup/share
   installed; --no-share reads nothing from the network) and its replies file. Every comment is checked as the page
   checks it; what was read, skipped or left out is said on standard error. --out writes one merged feedback file.

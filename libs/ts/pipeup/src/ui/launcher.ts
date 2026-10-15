@@ -205,12 +205,16 @@ export function createLauncher(ctx: Ctx): View {
   let draft: { of: Draft; box: DraftBox; card: HTMLElement } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
+  /** Folds the menu's copy choices away (set once the rows exist). */
+  let foldCopy = () => {};
   const setMenu = (on: boolean) => {
     menuOpen = ctx.state.menu = on;
     if (on) ctx.addons.flush();
     window.clearTimeout(away);
     away = 0;
     if (!on) endEdit?.(true);
+    // The copy choices start folded each time the menu opens.
+    if (!on) foldCopy();
     menu.classList.toggle("show", on);
     inert(menu, !on);
     btn.setAttribute("aria-expanded", String(on));
@@ -231,7 +235,7 @@ export function createLauncher(ctx: Ctx): View {
 
   // Rows the panel's footer leaves out of the menu (Comment and All comments) aren't stops for the arrow keys.
   const items = (p: HTMLElement = menu) =>
-    [...p.querySelectorAll<HTMLElement>(".mi")].filter((b) => b.offsetParent);
+    [...p.querySelectorAll<HTMLElement>(".mi")].filter((b) => b.offsetParent && !b.closest("[inert]"));
   const focused = () => (menu.getRootNode() as Document | ShadowRoot).activeElement;
   /** Closing from inside the menu (an item, Escape) gives focus back to the button. */
   const closeToControl = () => {
@@ -692,13 +696,42 @@ export function createLauncher(ctx: Ctx): View {
   let faceKey = "";
   const idRow = row(face, editName, false, nameEnd);
   idRow.dataset.item = "name";
-  const copyRow = row(icon("copy"), () => {
+  // Copy comments: one row that opens to its two choices beneath it, as Markdown (with where each thread is) or as text.
+  const mdRow = row(icon("copy"), () => {
     closeToControl();
     void ctx.menu.copyAll("ai");
   });
   const textRow = row(icon("lines"), () => {
     closeToControl();
     void ctx.menu.copyAll("text");
+  });
+  const copyChoices = h("div", { class: "subs", role: "group" }, h("div", {}, mdRow, textRow));
+  const copyRow = row(
+    icon("copy"),
+    () => setCopy(copyRow.getAttribute("aria-expanded") !== "true"),
+    false,
+    h("span", { class: "chev" }, icon("chev", 13)),
+  );
+  /** Opens the copy choices (focus moves to the first) or folds them away again (focus back on Copy comments). */
+  const setCopy = (on: boolean, focus = true) => {
+    copyRow.setAttribute("aria-expanded", String(on));
+    copyChoices.classList.toggle("open", on);
+    inert(copyChoices, !on);
+    if (focus) (on ? mdRow : copyRow).focus({ preventScroll: true });
+  };
+  foldCopy = () => setCopy(false, false);
+  foldCopy();
+  copyRow.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" && copyRow.getAttribute("aria-expanded") !== "true") {
+      e.preventDefault();
+      setCopy(true);
+    }
+  });
+  copyChoices.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setCopy(false);
+    }
   });
   /** Automatic, Light or Dark: each press moves on to the next, and the menu stays open so the page is seen to change. */
   const lookEnd = h("span", { class: "kc" });
@@ -778,7 +811,7 @@ export function createLauncher(ctx: Ctx): View {
     idRow,
     sepA,
     copyRow,
-    textRow,
+    copyChoices,
     lookRow,
     allRow,
     ...ctx.addons.menuRows.map(extraRow),
@@ -811,10 +844,11 @@ export function createLauncher(ctx: Ctx): View {
       av.classList.add("in");
       face.replaceChildren(av);
     }
-    set(copyRow, "Copy as Markdown", "Markdown, with where each thread is");
-    set(textRow, "Copy as Text", "Just the words");
+    set(copyRow, "Copy comments", "As Markdown, with where each thread is, or as text");
+    set(mdRow, "As Markdown", "With where each thread is, ready for an AI or a document");
+    set(textRow, "As text", "Just the words");
     const lookWord = ["Automatic", "Light", "Dark"][LOOKS.indexOf(ctx.menu.look())]!;
-    set(lookRow, "Look", `${lookWord}. Automatic follows the page; press to change`);
+    set(lookRow, "Theme", `${lookWord}. Automatic follows the page; press to change`);
     lookEnd.textContent = lookWord;
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";

@@ -13,13 +13,14 @@ change the API and the stored comment format.
 - **All comments' filters read as on or off.** They are pills with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and filled with a soft tint of the accent colour when on, with tooltips. **Hovering a closed card in the panel shows its actions** (React, ✓ Resolve and ⋯, as on every card), and they work without opening it; on touch screens they show once the card is open.
 - **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
 - **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
-- **Pipeup is 51.6 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
+- **Pipeup is 51.9 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
+- **A shorter menu.** **Copy comments** is one row that opens to its two choices, As Markdown and As text, and **Look** is now called **Theme**.
 
 ### Added
 
 - **Edit and delete your own comments** from their ⋯ menu. Editing puts the words back in a box with Cancel and Save; Delete asks once more. A deleted comment goes away, and deleting a thread's first comment removes the thread.
-- **Hold ⌘ (Ctrl elsewhere) to pause comment mode.** While the key is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back.
+- **Hold Space to pause comment mode.** While it is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back. Space is the key because it leaves a click alone (⌘-click would open a link in a new tab); typing in a field and pressing a control from the keyboard keep their Space.
 - **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
 
 ### Fixed

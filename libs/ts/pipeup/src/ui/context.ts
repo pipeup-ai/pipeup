@@ -32,7 +32,7 @@ export interface UiState {
   draft: Draft | null;
   /** Comment mode: the page is quiet and a click chooses a block to comment on. */
   commenting: boolean;
-  /** Comment mode is paused while ⌘ (Ctrl elsewhere) is held: the page works as normal. */
+  /** Comment mode is paused while Space is held: the page works as normal. */
   paused: boolean;
   /** All comments is open on the right: in the column layout it takes the column's place. */
   listing: boolean;

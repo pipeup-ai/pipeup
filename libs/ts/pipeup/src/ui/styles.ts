@@ -234,6 +234,13 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .ma .av{width:20px;height:20px;font-size:11px}
 .mi .av svg{color:inherit}
 .sep{height:1px;margin:4px 10px;background:var(--ru)}
+/* Copy comments opens to its two choices beneath it, set in under it; folding and unfolding ease. */
+.subs{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--in) var(--eo),opacity var(--in) var(--eo)}
+.subs.open{grid-template-rows:1fr;opacity:1}
+.subs>div{min-height:0;overflow:hidden}
+.subs .mi{padding-left:30px}
+.chev{display:grid;transition:transform var(--in) var(--eo)}
+[aria-expanded=true]>.chev{transform:rotate(90deg)}
 .tt{position:absolute;right:calc(100% + 14px);top:50%;translate:0 -50%;width:max-content;max-width:220px;padding:4px 9px;border-radius:8px;font-size:12px;line-height:1.4;
 color:var(--mu);pointer-events:none;opacity:0;transform:translateX(3px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
@@ -336,7 +343,7 @@ and above its footer when it fills the screen. */
 }
 
 @media (prefers-reduced-motion: reduce){
-.ln{transition-property:opacity}
+.ln,.subs{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.ttip,.tt,.toast,.ref .rc,.rxp,.mnl{transform:none!important}
 .dlg{transform:translate(-50%,0)!important}

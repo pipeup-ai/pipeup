@@ -2,7 +2,7 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites. Add one
 script tag and reviewers can select words, click a block or drop a pin, and comment in place. No
-accounts and no servers: comments stay in each reviewer's browser, and **Copy as Markdown** turns them into
+accounts and no servers: comments stay in each reviewer's browser, and **Copy comments › As Markdown** turns them into
 Markdown that says exactly where each comment is, ready to send to the author or paste into an AI
 agent.
 

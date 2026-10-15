@@ -6,7 +6,7 @@ reviewer signs in to GitHub as themselves and presses GitHub's commit button (or
 repository). There is no service to run, and nothing holds a token: GitHub's own page and the reviewer's own sign-in do the
 saving. It never posts, edits or resolves a comment.
 
-The file is the Markdown that **Copy as Markdown** makes: each open thread says where it is on the page and what was said, ready for an AI to
+The file is the Markdown that **Copy comments › As Markdown** makes: each open thread says where it is on the page and what was said, ready for an AI to
 act on. Its path is chosen from the page's name and the time (`reviews/<page>/<time>-<reviewer>.md`); the reviewer can rename it in GitHub.
 
 ## Use it

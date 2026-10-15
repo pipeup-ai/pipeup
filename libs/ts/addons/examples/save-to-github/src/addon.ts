@@ -3,7 +3,7 @@ import type { PipeupAddon, Thread } from "pipeup";
 /**
  * "Save to GitHub": an example of an add-on a company writes for itself. It is NOT from the Pipeup project. It needs no
  * server and holds no token: one menu row opens GitHub's own "new file" page in a new tab with the review already filled
- * in (the Markdown that Copy as Markdown makes). The reviewer signs in to GitHub as themselves and presses GitHub's commit
+ * in (the Markdown that Copy comments › As Markdown makes). The reviewer signs in to GitHub as themselves and presses GitHub's commit
  * button (or "propose changes" when they can't write to the repository). It never posts, edits or resolves a comment.
  *
  * The page names the repository: <html data-pipeup-save-to-github="your-org/reviews">, and optionally
@@ -213,7 +213,7 @@ export function createAddon(): PipeupAddon {
               say.textContent = "The review is copied. In GitHub's page, paste it into the file.";
             } catch {
               say.textContent =
-                "Couldn't copy the review: use Copy as Markdown in Pipeup's menu, then paste it into GitHub's page.";
+                "Couldn't copy the review: use Copy comments › As Markdown in Pipeup's menu, then paste it into GitHub's page.";
             }
           } else say.textContent = "Opened GitHub in a new tab.";
           window.open(url, "_blank", "noopener");

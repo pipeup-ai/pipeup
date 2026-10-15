@@ -93,9 +93,10 @@ test("a click opens the menu above the button; the item nearest it is Start comm
   expect(m.y + m.height).toBeLessThanOrEqual(b.y);
   const names = await menu.locator(".mi .lb").allTextContents();
   expect(names.slice(1)).toEqual([
-    "Copy as Markdown",
-    "Copy as Text",
-    "Look",
+    "Copy comments",
+    "As Markdown",
+    "As text",
+    "Theme",
     "All comments",
     "Hide comments",
     "Start commenting",
@@ -340,7 +341,7 @@ test("All comments has its own icon in the menu", async ({ page }) => {
       .first()
       .evaluate((s) => [...s.querySelectorAll("path")].map((p) => p.getAttribute("d")).join(" "));
   const all = await d(/All comments/);
-  for (const other of [/Copy as/, /add your name/]) expect(await d(other)).not.toBe(all);
+  for (const other of [/Copy comments/, /add your name/]) expect(await d(other)).not.toBe(all);
   const start = await page
     .getByRole("menuitemcheckbox", { name: "Start commenting" })
     .locator("svg")

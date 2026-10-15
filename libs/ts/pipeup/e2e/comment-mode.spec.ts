@@ -4,7 +4,7 @@ import {
   commenting,
   control,
   hideComments,
-  holdKey,
+  HOLD_KEY,
   leaveReply,
   open,
   seedElement,
@@ -253,15 +253,18 @@ test("entering comment mode closes an open thread; Escape steps back one level a
   await commenting(page, false);
 });
 
-test("holding Command (Ctrl elsewhere) pauses comment mode: the page works, and letting go brings it back", async ({
-  page,
-}) => {
+/** Comment mode on from its shortcut, so focus stays on the page; the pointer on the page's button. */
+async function onTheButton(page: Page): Promise<void> {
   await open(page, "controls.html");
-  await commentMode(page);
-  const hold = await holdKey(page);
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page);
   await page.locator("#go").hover();
   await expect(page.locator(".pick.show")).toHaveCount(1);
-  await page.keyboard.down(hold);
+}
+
+test("holding Space pauses comment mode: the page works, and letting go brings it back", async ({ page }) => {
+  await onTheButton(page);
+  await page.keyboard.down(HOLD_KEY);
   // The outline goes at once, and the page hears the click.
   await expect(page.locator(".pick.show")).toHaveCount(0);
   await page.locator("#go").click();
@@ -269,25 +272,57 @@ test("holding Command (Ctrl elsewhere) pauses comment mode: the page works, and 
   await expect(page.locator(".pick.on, .pop.show")).toHaveCount(0);
   await commenting(page);
   // Letting go: the page is quiet again, and a click comments.
-  await page.keyboard.up(hold);
+  await page.keyboard.up(HOLD_KEY);
   const before = (await fired(page)).length;
   await page.locator("#go").click();
   expect((await fired(page)).length).toBe(before);
   await expect(page.locator(".pick.on")).toHaveCount(1);
 });
 
-test("a pause whose key-up was missed (the window lost it) ends with the next move of the pointer", async ({
+test("while Space is held the page neither scrolls nor hears it, and a button clicked in one pause doesn't take the next", async ({
   page,
 }) => {
-  await open(page, "controls.html");
-  await commentMode(page);
-  const hold = await holdKey(page);
-  await page.locator("#go").hover();
-  await expect(page.locator(".pick.show")).toHaveCount(1);
-  // The key goes down where Pipeup hears it, and its key-up is lost.
-  await page.evaluate((key) => window.dispatchEvent(new KeyboardEvent("keydown", { key })), hold);
+  await onTheButton(page);
+  await page.evaluate(() => {
+    const w = window as any;
+    w.spaces = 0;
+    document.addEventListener("keydown", (e) => e.key === " " && w.spaces++);
+  });
+  const y = await page.evaluate(() => scrollY);
+  await page.keyboard.down(HOLD_KEY);
+  await page.locator("#go").click();
+  await page.keyboard.up(HOLD_KEY);
+  // The click left focus on the page's button; holding Space again still pauses rather than pressing it.
+  const clicks = (await fired(page)).filter((f) => f === "go").length;
+  await page.keyboard.down(HOLD_KEY);
   await expect(page.locator(".pick.show")).toHaveCount(0);
-  // The pointer moves without the key held: comment mode is back.
+  await page.keyboard.up(HOLD_KEY);
+  expect((await fired(page)).filter((f) => f === "go").length).toBe(clicks);
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  expect(await page.evaluate(() => (window as any).spaces)).toBe(0);
+});
+
+test("Space keeps its own job: typing in a field, and pressing a control reached from the keyboard", async ({
+  page,
+}) => {
+  await onTheButton(page);
+  await page.locator("#email").focus();
+  await page.keyboard.type("a b");
+  await expect(page.locator("#email")).toHaveValue("a b");
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+  // The page's own button with keyboard focus: Space presses it, as the page expects.
+  await page.locator("#nav-btn").focus();
+  expect(await page.locator("#nav-btn").evaluate((e) => e.matches(":focus-visible"))).toBe(true);
+  await page.keyboard.press(HOLD_KEY);
+  expect(await fired(page)).toContain("nav");
+});
+
+test("a pause ends when the window loses focus while Space is down", async ({ page }) => {
+  await onTheButton(page);
+  await page.keyboard.down(HOLD_KEY);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  // Switching away loses the key-up: the pause ends with the window's blur.
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await page.locator("#cta").hover();
   await expect(page.locator(".pick.show")).toHaveCount(1);
 });

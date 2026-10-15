@@ -161,9 +161,14 @@ export const quoteSpot = (page: Page): Promise<{ x: number; y: number }> =>
     return { x: q.left + q.width / 2, y: q.top + q.height / 2 };
   });
 
-/** The key held to pause comment mode where the test runs: Command on a Mac, Ctrl elsewhere. */
-export const holdKey = (page: Page): Promise<string> =>
-  page.evaluate(() => (/Mac|iP(hone|ad|od)/.test(navigator.platform) ? "Meta" : "Control"));
+/** The key held to pause comment mode: Space, on every platform. */
+export const HOLD_KEY = "Space";
+
+/** From the open menu: Copy comments, then one of its two choices. */
+export async function copyAs(page: Page, as: "As Markdown" | "As text"): Promise<void> {
+  await page.getByRole("menuitem", { name: "Copy comments" }).click();
+  await page.getByRole("menuitem", { name: as, exact: true }).click();
+}
 
 /** Comment mode is on (or off): the control shows it. */
 export async function commenting(page: Page, on = true): Promise<void> {

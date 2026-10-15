@@ -1,5 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { fixture, open, openMenu, seedView, selectWords, showComments, stubClipboard } from "./helpers";
+import {
+  copyAs,
+  fixture,
+  open,
+  openMenu,
+  seedView,
+  selectWords,
+  showComments,
+  stubClipboard,
+} from "./helpers";
 
 const list = (page: Page) => page.locator(".all.show");
 async function openAll(page: Page): Promise<void> {
@@ -118,12 +127,12 @@ test("on a tabbed page, other views are grouped by name and choosing one reveals
   await expect(list(page).locator(".sec")).toHaveText(["Plans tab"]);
 });
 
-test("Copy as Markdown names a non-slide view in the Where line", async ({ page }) => {
+test("Copy comments as Markdown names a non-slide view in the Where line", async ({ page }) => {
   await stubClipboard(page);
   await open(page, "tabs.html");
   await seedView(page, "#refunds", "Say it up top", { tab: "faq", label: "FAQ tab" });
   await openMenu(page);
-  await page.getByRole("menuitem", { name: "Copy as Markdown" }).click();
+  await copyAs(page, "As Markdown");
   await expect
     .poll(() => page.evaluate(() => (window as any).__copied.at(-1) as string))
     .toContain('- **Where:** FAQ tab › Section "FAQ" › Paragraph · Refunds within 30 days.');
