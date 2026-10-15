@@ -111,8 +111,8 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .seen button{margin-left:auto;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--fa);font:inherit;cursor:pointer;transition:color .2s var(--eo),background-color .2s var(--eo)}.seen button:hover,.seen button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .c0{--h:0}.c1{--h:25}.c2{--h:50}.c3{--h:130}.c4{--h:175}.c5{--h:215}.c6{--h:270}.c7{--h:330}.c8{--h:28;--s:35%}.c9{--h:220;--s:8%}
-.me{flex:none;display:grid}
-.me>.av{grid-area:1/1}
+button.me{flex:none;display:grid}
+button.me>.av{grid-area:1/1}
 /* Who you are, at the top of a new comment; a name field eases open in its place. */
 .you{flex:1;display:grid;min-width:0;min-height:22px;font-size:12px;color:var(--fa)}
 .you .nm{font-size:13px;font-weight:600;color:var(--k)}
@@ -309,9 +309,12 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .adr .go button{padding:2px 8px;border-radius:6px;font-size:12px;color:var(--mu);transition:color .2s var(--eo),background-color .2s var(--eo)}.adr .go button:hover,.adr .go button:focus-visible{color:var(--pu-accent);background:var(--as);outline:none}
 @keyframes pu-in{0%{opacity:0;transform:translateY(3px)}100%{opacity:1;transform:none}}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}
-.toast{position:fixed;left:50%;bottom:28px;border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translate(-50%,6px);
-transition:opacity .3s var(--eo),transform .36s var(--eo)}
-.toast.show{opacity:1;transform:translate(-50%,0)}
+/* Messages sit beside the round button, never over the page's own bottom bar; beside the panel while it is open,
+and above its footer when it fills the screen. */
+.toast{--r:76px;position:fixed;right:var(--r);bottom:24px;max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
+.toast.show{opacity:1;transform:none}
+.layer:is(.listing,:has(.xp.show)) .toast{--r:calc(var(--pu-panel) + 16px)}
+@media (max-width:480px){.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px}}
 
 /* Touch: fingers need bigger targets than pointers (44 px for the menu's rows, 36 and more for buttons). */
 @media (pointer:coarse){
@@ -337,7 +340,7 @@ transition:opacity .3s var(--eo),transform .36s var(--eo)}
 [aria-checked=true]>.sw::after{opacity:0}
 [aria-checked=true]>.sw::before{opacity:1}
 .th{transition-property:opacity,box-shadow}
-.tip.show{transition-property:opacity}
+.tip.show,.toast{transition-property:opacity}
 .pick,.pick.show{transition:opacity .16s ease-in-out}
 .all,.all.show,.xp,.xp.show{transition-property:opacity}
 .namebar,.namebar.show{transform:none!important;transition:opacity .16s ease-in-out}

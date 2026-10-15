@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { open, seedElement, seedText, showComments } from "./helpers";
+import { control, open, seedElement, seedText, selectWords, settled, showComments } from "./helpers";
 
 const quoteTop = (page: import("@playwright/test").Page, i = 0) =>
   page.evaluate((i) => ([...CSS.highlights.get("pipeup-quote")!][i] as Range).getClientRects()[0]!.top, i);
@@ -101,4 +101,27 @@ test("threads follow the text when the layout changes without any DOM change", a
   const after = await quoteTop(page);
   expect(after).toBeGreaterThan(before + 150);
   await expect.poll(async () => Math.abs((await th.boundingBox())!.y - after)).toBeLessThan(10);
+});
+
+test("a new comment low in the window is nudged up, clear of the round button", async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await open(page, "doc.html", { name: "Sam" });
+  await showComments(page);
+  // The window ends just below the last paragraph, where the column meets the button's corner.
+  const last = await page.evaluate(() => {
+    const p = document.querySelector("#p3")!;
+    return Math.ceil(p.getBoundingClientRect().bottom + scrollY);
+  });
+  await page.setViewportSize({ width: 1000, height: last + 10 });
+  await selectWords(page, "#p3", "slips with it");
+  await page.locator(".selbar.show button").click();
+  const draft = page.locator(".col .th.on");
+  await expect(draft.locator(".draft")).toBeVisible();
+  const col = (await page.locator(".col").boundingBox())!;
+  expect(col.x + col.width).toBeGreaterThan(1000 - 66);
+  await settled(draft);
+  const d = (await draft.boundingBox())!;
+  const b = (await control(page).boundingBox())!;
+  expect(d.y + d.height).toBeLessThanOrEqual(b.y);
+  await expect(draft.getByRole("button", { name: "Comment" })).toBeVisible();
 });

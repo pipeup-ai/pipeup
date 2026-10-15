@@ -116,14 +116,16 @@ any of them off.
 
 | Way | Gesture | Best for |
 |---|---|---|
-| **Text** | In comment mode, select words. A small comment control eases in above the selection. | Wording, specific claims |
+| **Text** | In comment mode, select words. A small comment control eases in beside them. | Wording, specific claims |
 | **Block** | In comment mode, hover: an outline glides to the most obvious thing under the pointer — a paragraph, card, image, table, chart or a single button. Click it and the comment box opens straight away. | Whole elements, including controls |
 | **Pin** | In comment mode, Option-click an exact spot, or choose a block and press **Pin** on its naming bar. | Slides, charts, canvases, designs |
 | **General** | Comment on the page or slide as a whole. | Overall reactions |
 
 - **Selecting text offers commenting only in comment mode.** Outside it, selecting text offers
-  nothing and the page behaves as normal. The control is a single comment icon; it never covers
-  the selection.
+  nothing and the page behaves as normal. The control is a single comment icon, just past the end of
+  the paragraph's text, level with the selection's last line. It never covers the selection or the words
+  around it, such as a headline's line above; where there's no room beside the text it sits above the
+  selection (below it at the top of the window).
 - **Comment mode** is switched on and off from the comment control or with **⇧⌥C** on a Mac
   (**Shift+Alt+C** elsewhere) — a shortcut chosen not to clash with common browser and page
   shortcuts. **Esc** steps back out of it. Outside comment mode the page behaves exactly as normal.
@@ -265,7 +267,9 @@ any of them off.
   and in the drawer. In All comments the card also shows the words it is about; beside the page it sits
   level with them instead.
 - On slides and rich pages without a free column, element and pin comments show as **small
-  bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it.
+  bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it. Where there's
+  no room beside it (on a phone, or near the window's edge), the preview and the thread sit **below what
+  they're about, or above it, never over it**, and always on screen.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
   click; its thread opens just below the line so the words stay visible.
 - A hover preview **waits for you**: it stays open while the pointer moves from the highlight or
@@ -284,6 +288,8 @@ any of them off.
 
 - Clicking a highlight, bubble, preview or card opens it: the card lifts slightly with a soft shadow,
   lines up with its content, and other threads dim and step aside.
+- An open card or a new comment in the column is **never under the round button**: when it would reach
+  the button's corner, it moves up just enough to clear it, so its buttons can always be pressed.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
   elsewhere on the page, or by opening another thread.
 - An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
@@ -320,6 +326,10 @@ any of them off.
 - **While All comments is open, the round button becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
   the footer back into the round button. Both shapes ease into each other.
+- **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
+  appear **beside the round button**, never at the bottom centre where decks keep their slide controls and
+  phones show the page's last lines. While All comments is open they sit beside the panel, and above its
+  footer when the panel fills a phone's screen.
 - **Clicking it opens its menu**, which rises above the button. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
@@ -554,7 +564,8 @@ the page, and reaches people outside the page only in ways the reviewer or the a
   - people the page's author supplies (below);
   - people from an add-on's directory, when the page has one.
 - A mention **points at a person**, not only a name: it keeps working if they rename themselves, and two
-  people called Sam stay apart. It reads as the name, softly tinted, in the comment; copying keeps
+  people called Sam stay apart. It reads as the name, softly tinted, inline in the comment's words (a
+  mention of you is also bolder); copying keeps
   `@Name`. An `@` that matches nobody stays plain words.
 - Comment words are still text only; a mention is never a link, markup or a way to run anything.
 
@@ -1584,3 +1595,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.6 KB to Pipeup (50.8 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
 - 2026-10-14 — From review of the build: the panel stays open until it is closed (× or Esc), and a click on the page never closes it. @ and ✓ always show, with tooltips. An open card shows its quote once. A deleted comment goes away, and deleting a thread's first comment removes the thread. The pulse follows its content while the page scrolls (sections 5 and 7).
 - 2026-10-14 — A thread open on the page moves into All comments when it opens, so the same thread is never shown twice (section 7).
+- 2026-10-14 — Fixes from the walkthrough of every feature in every format: a mention of you stays inline in its sentence; Pipeup's messages appear beside the round button instead of the bottom centre (over decks' slide controls and phones' text); an open card or new comment in the column moves up clear of the round button; with no room beside a bubble (a phone, or the window's edge) the preview and thread sit below or above what they're about, never over it; the selection's comment icon sits past the end of the paragraph's text, so it never covers the line above. They add 0.4 KB to Pipeup (51.1 KB gzip), so its budget rises from 51 to 52 KB (section 16a).

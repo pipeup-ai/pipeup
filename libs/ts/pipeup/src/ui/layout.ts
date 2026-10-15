@@ -22,6 +22,8 @@ export interface AnchorPoint {
   y: number;
   /** Text comments open below their line; element comments open beside. */
   below: boolean;
+  /** What it is about: with no room beside, an element or pin's popover goes below it or above, not over it. */
+  box: Box;
 }
 
 /** Threads sit level with what they're about; overlaps push down; the open thread aligns exactly. */
@@ -76,7 +78,8 @@ export function placePopover(
     if (top + size.height > vp.height - margin) top = at.y - size.height - 40;
   } else {
     left = at.x + 14;
-    if (left + size.width > vp.width - margin) left = at.x - size.width - 28;
+    // No room beside (a phone, or the right edge): below what it is about, or above it, not over it.
+    if (left + size.width > vp.width - margin) return placeDraft(at.box, size, vp, margin, 0);
     top = Math.min(at.y - 12, vp.height - size.height - margin);
   }
   return { left: Math.max(margin, left), top: Math.max(margin, top) };
@@ -84,7 +87,8 @@ export function placePopover(
 
 /**
  * An element draft: just below its block, above it when there is no room below, never over the block or the
- * naming bar (which sits above the block, or below it when there is no room above).
+ * naming bar (which sits above the block, or below it when there is no room above). A block too tall for either
+ * keeps the box on screen, as low as it fits.
  */
 export function placeDraft(
   block: Box,
@@ -101,7 +105,7 @@ export function placeDraft(
   return {
     above: !under,
     left: Math.max(margin, Math.min(block.left, vp.width - size.width - margin)),
-    top: Math.max(margin, top),
+    top: Math.max(margin, under ? Math.min(top, vp.height - size.height - margin) : top),
   };
 }
 
@@ -118,4 +122,20 @@ export function placeBar(
     Math.min(target.left + target.width / 2 - size.width / 2, vp.width - size.width - 8),
   );
   return { left, top };
+}
+
+/**
+ * The selection's comment icon: just past the right of its block's text, level with the selection's last line, so it
+ * covers no words; above the selection (or below) when there's no room there.
+ */
+export function placeIcon(
+  sel: Box,
+  line: Box,
+  textRight: number,
+  size: { width: number; height: number },
+  vp: Viewport,
+): { left: number; top: number } {
+  const left = textRight + 8;
+  if (left + size.width > vp.width - 8) return placeBar(sel, size, vp);
+  return { left, top: line.top + line.height / 2 - size.height / 2 };
 }
