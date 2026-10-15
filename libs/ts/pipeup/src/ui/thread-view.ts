@@ -13,6 +13,10 @@ export interface ThreadActions {
   /** This reviewer's key, to mark their own reactions. */
   readonly me: string;
   reply(parentId: string, text: string, mentions?: Mention[]): Promise<void>;
+  /** Changes the words of one of this reviewer's comments. */
+  edit(commentId: string, text: string, mentions?: Mention[]): Promise<void>;
+  /** Deletes one of this reviewer's comments. */
+  remove(commentId: string): Promise<void>;
   /** Who can be mentioned with `@` in a reply. */
   people(): Person[];
   /** Gives (`on`) or takes back this reviewer's reaction to a comment. */
@@ -39,6 +43,8 @@ export interface ThreadViewOptions {
 }
 
 export const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
+/** A thread's replies that haven't been deleted: a deleted comment goes away. */
+export const replies = (t: Thread) => t.root.replies.filter((c) => !c.deleted);
 
 export interface ThreadView {
   readonly element: HTMLElement;
@@ -47,9 +53,9 @@ export interface ThreadView {
 }
 
 /**
- * One thread: the words first; who, when and actions ease open beneath them on hover (always shown in a popover,
- * so its height never changes under the pointer). Replies sit one level
- * in beneath the comment, oldest first, and the thread ends with its reply line at the same indent.
+ * One thread, as a compact card: who and how long ago, then the words; its actions sit at the top right (on hover,
+ * and always when open). Replies sit one level in beneath the comment, oldest first, and the thread ends with its
+ * reply box at the same indent.
  */
 export function threadView(first: Thread, actions: ThreadActions, options: ThreadViewOptions): ThreadView {
   const o = { ...options };
@@ -62,6 +68,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       {},
       composer({
         label: "Reply",
+        placeholder: "Reply or add others with @",
         kind: "reply",
         thread: () => id,
         people: () => actions.people(),
@@ -91,6 +98,10 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
    */
   /** Comments whose quick row of reactions is open, and the chips already shown (so only new ones ease in). */
   const quickOpen = new Set<string>();
+  /** The comment whose ⋯ menu is open, one waiting for Delete to be confirmed, and the one being edited. */
+  let menuFor = "";
+  let confirm = "";
+  let editing: { id: string; el: HTMLElement } | null = null;
   const reactionsSeen = new Set<string>();
   let current = first;
   let faces = new Map<string, { key: string; el: HTMLElement }>();
@@ -115,13 +126,50 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   };
 
   const button = (name: IconName, label: string, run: () => void) => {
-    const b = h("button", { class: "ib", type: "button", "aria-label": label, title: label }, icon(name));
+    const b = h(
+      "button",
+      { class: "ib", type: "button", "aria-label": label, title: label },
+      icon(name, 15, name === "more" ? 3 : undefined),
+    );
     b.addEventListener("click", (e) => {
       e.stopPropagation();
       run();
     });
     return b;
   };
+
+  /** Puts a comment's words back in a box (Cancel and Save); saving changes them, and Esc leaves them as they were. */
+  function startEdit(c: Comment): void {
+    const done = () => {
+      editing = null;
+      update(current);
+    };
+    const box = composer({
+      label: "Save",
+      kind: "comment",
+      value: c.text,
+      people: () => actions.people(),
+      onSend: async (words, mentions) => {
+        await actions.edit(c.id, words, mentions);
+        done();
+      },
+      onCancel: done,
+    });
+    editing = { id: c.id, el: h("div", { class: "edit" }, box.element) };
+    queueMicrotask(() => box.focus());
+  }
+
+  // Leaving the card (focus going elsewhere) closes its ⋯ menu. Checked once focus has settled, so moving between
+  // its choices, or the card rebuilding itself and putting focus back, doesn't count as leaving.
+  element.addEventListener("focusout", (e) => {
+    if (element.contains(e.relatedTarget as Node | null)) return;
+    setTimeout(() => {
+      if (menuFor && !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement)) {
+        menuFor = confirm = "";
+        update(current);
+      }
+    });
+  });
 
   function update(
     t: Thread,
@@ -131,8 +179,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     id = t.id;
     current = t;
     const now = (o.now ?? Date.now)();
-    const n = t.root.replies.length;
-    const who = (c: Comment) => h("span", { class: "who" }, `${nameOf(c)} · ${formatAgo(c.at, now)}`);
+    const live = replies(t);
+    const n = live.length;
     /** A comment's words with the people it names marked (yours stronger); links and references as usual. */
     const body = (c: Comment): (string | Node)[] => {
       const plain = (t: string) => (isAiName(c.name) ? referenced(t) : linkify(t));
@@ -187,25 +235,84 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         : n
           ? plural(n)
           : "";
-    const footer = h(
-      "div",
-      { class: o.variant === "column" ? (restText ? "ft has-rest" : "ft") : "ft open" },
-      o.variant === "column" && restText ? h("span", { class: "rest" }, restText) : null,
-      h(
-        "span",
-        { class: "hover" },
-        who(t.root),
+    const mine = (c: Comment) => c.author === actions.me && !c.deleted;
+    /** The ⋯ menu's choices for a comment: Copy thread on the comment, Edit and Delete on your own. */
+    const menu = (c: Comment, root: boolean): HTMLElement | null => {
+      const items: [string, () => void][] = [];
+      if (root) items.push(["Copy thread", () => actions.copy(t.id)]);
+      if (mine(c))
+        items.push(
+          ["Edit", () => startEdit(c)],
+          [
+            confirm === c.id ? "Delete for everyone" : "Delete",
+            () => {
+              if (confirm !== c.id) return void (confirm = c.id);
+              confirm = menuFor = "";
+              void actions.remove(c.id);
+            },
+          ],
+        );
+      if (!items.length) return null;
+      const box = h(
+        "div",
+        { class: "pm", role: "menu" },
+        ...items.map(([label, run], i) => {
+          const b = h(
+            "button",
+            { type: "button", role: "menuitem", class: label === "Delete for everyone" ? "dl" : "" },
+            label,
+          );
+          b.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (label !== "Delete") menuFor = "";
+            run();
+            update(current);
+            // Rebuilt: while the menu stays open (Delete, asking again), focus stays on the same choice.
+            element.querySelectorAll<HTMLElement>(".pm button")[i]?.focus();
+          });
+          return b;
+        }),
+      );
+      return box;
+    };
+    /** Who and how long ago (the exact time on hover), then the comment's actions. */
+    const head = (c: Comment, root: boolean) => {
+      const options = menu(c, root);
+      const more = options
+        ? button("more", "More", () => {
+            menuFor = menuFor === c.id ? "" : c.id;
+            confirm = "";
+            update(current);
+            // Rebuilt: focus goes into the menu, or back to its ⋯ when it closes.
+            element.querySelector<HTMLElement>(menuFor ? ".pm button" : `[data-c="${c.id}"]`)?.focus();
+          })
+        : null;
+      if (more) {
+        more.setAttribute("aria-expanded", String(menuFor === c.id));
+        more.dataset.c = c.id;
+      }
+      return h(
+        "div",
+        { class: "hdr" },
+        ...face(c),
+        h("span", { class: "who" }, nameOf(c)),
+        h("span", { class: "ago", title: new Date(c.at).toLocaleString() }, formatAgo(c.at, now)),
         h(
           "span",
           { class: "acts" },
-          reactButton(t.root),
-          button("copy", "Copy thread", () => actions.copy(t.id)),
-          t.resolved
-            ? button("reopen", "Reopen", () => void actions.reopen(t.id))
-            : button("resolve", "Resolve", () => void actions.resolve(t.id)),
+          reactButton(c),
+          root
+            ? t.resolved
+              ? button("reopen", "Reopen", () => void actions.reopen(t.id))
+              : button("resolve", "Resolve", () => void actions.resolve(t.id))
+            : null,
+          more,
         ),
-      ),
-    );
+        menuFor === c.id ? options : null,
+      );
+    };
+    /** The comment's words, or a box to change them while it is being edited. */
+    const text = (c: Comment) => (editing?.id === c.id ? editing.el : words(c));
     const context = o.lost
       ? h("div", { class: "ctx" }, `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`)
       : o.quote
@@ -216,11 +323,11 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     const nextRoot = h(
       "div",
       { class: "root" },
-      ...face(t.root),
+      head(t.root, true),
       context,
-      words(t.root),
+      text(t.root),
       reactions(t.root),
-      footer,
+      o.variant === "column" && restText ? h("div", { class: "rest" }, restText) : null,
     );
     root.replaceWith(nextRoot);
     root = nextRoot;
@@ -233,29 +340,21 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         ? h(
             "div",
             { class: "rps" },
-            ...t.root.replies.map((c) =>
-              h(
-                "div",
-                { class: "it" },
-                ...face(c),
-                words(c),
-                reactions(c),
-                h(
-                  "div",
-                  { class: o.variant === "column" ? "rft" : "rft open" },
-                  h("span", { class: "rrow" }, who(c), h("span", { class: "acts" }, reactButton(c))),
-                ),
-              ),
-            ),
+            ...live.map((c) => h("div", { class: "it" }, head(c, false), text(c), reactions(c))),
             // A reply being written by an add-on (an AI's, streaming in): not a comment yet, so only shown.
             writing === undefined
               ? null
               : h(
                   "div",
                   { class: "it ghost", "data-pipeup-writing": "row" },
-                  avatar("", AI_NAME),
+                  h(
+                    "div",
+                    { class: "hdr" },
+                    avatar("", AI_NAME),
+                    h("span", { class: "who" }, AI_NAME),
+                    h("span", { class: "ago" }, "writing now"),
+                  ),
                   h("div", { class: "tx", "data-pipeup-writing": "words" }, writing),
-                  h("div", { class: "rft open" }, h("span", { class: "who" }, `${AI_NAME} · writing now`)),
                 ),
           )
         : null;

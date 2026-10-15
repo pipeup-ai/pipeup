@@ -152,18 +152,18 @@ test("selecting text offers nothing outside comment mode, and the comment icon i
   await expect(page.locator(".selbar.show")).toHaveCount(0);
 });
 
-test("Show resolved is a switch in the All comments panel, not the menu", async ({ page }) => {
+test("Show resolved is an icon toggle in the All comments panel, not the menu", async ({ page }) => {
   await open(page, "doc.html");
   const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
   await openMenu(page);
   await expect(page.locator(".menu.show").getByText("Show resolved")).toHaveCount(0);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const sw = panel(page).locator(".hd").getByRole("switch", { name: "Show resolved" });
-  await expect(sw).toHaveAttribute("aria-checked", "false");
+  const sw = panel(page).locator(".hd").getByRole("button", { name: "Show resolved" });
+  await expect(sw).toHaveAttribute("aria-pressed", "false");
   await expect(panel(page).locator(".list").getByRole("menuitem")).toHaveCount(0);
   await sw.click();
-  await expect(sw).toHaveAttribute("aria-checked", "true");
+  await expect(sw).toHaveAttribute("aria-pressed", "true");
   await expect(
     panel(page)
       .locator(".list")
@@ -173,14 +173,10 @@ test("Show resolved is a switch in the All comments panel, not the menu", async 
   // Space toggles it back from the keyboard.
   await sw.focus();
   await page.keyboard.press("Space");
-  await expect(sw).toHaveAttribute("aria-checked", "false");
+  await expect(sw).toHaveAttribute("aria-pressed", "false");
   await expect(panel(page)).toHaveCount(1);
-  // The switch eases with the move token.
-  expect(
-    await sw
-      .locator(".sw")
-      .evaluate((e) => getComputedStyle(e, "::after").transitionDuration.split(",")[0]!.trim()),
-  ).toBe("0.34s");
+  // It eases between its two colours.
+  expect(await sw.evaluate((e) => getComputedStyle(e).transitionProperty)).toContain("color");
 });
 
 test("the open panel makes room: the page moves over by its width, and back when it closes", async ({

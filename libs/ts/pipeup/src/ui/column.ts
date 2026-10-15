@@ -6,7 +6,7 @@ import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { plural, threadView, type ThreadView } from "./thread-view";
+import { plural, replies, threadView, type ThreadView } from "./thread-view";
 
 /** Free width needed beside the content before comments get their own column. */
 export const COLUMN_MIN = 300;
@@ -158,7 +158,8 @@ export function createColumn(ctx: Ctx): View {
   }
 
   function syncDraft(): void {
-    const d = ctx.state.draft;
+    // While All comments is open, a new comment is written there instead.
+    const d = ctx.state.listing ? null : ctx.state.draft;
     if (draft && draft.of !== d) {
       leave(draft.el);
       draft = null;
@@ -200,7 +201,7 @@ export function createColumn(ctx: Ctx): View {
       const on = ctx.state.active === t.id;
       el.classList.toggle("on", on);
       const opn = el.firstElementChild as HTMLElement;
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       opn.setAttribute("aria-label", `Open thread: ${clip(t.root.text, 60)}, ${plural(n)}`);
       opn.setAttribute("aria-expanded", String(on));
       inert(opn, on);

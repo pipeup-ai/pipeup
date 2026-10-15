@@ -8,7 +8,7 @@ import { bubblePoint, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { threadView, type ThreadView } from "./thread-view";
+import { replies, threadView, type ThreadView } from "./thread-view";
 
 const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
 /** How long a preview waits after the pointer leaves, so the pointer can reach it and click. */
@@ -76,7 +76,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       return;
     }
     if (tipFor !== t.id) {
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       tip.replaceChildren(
         h("div", { class: "tx clamp" }, ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text))),
         h("div", { class: "who" }, `${nameOf(t.root)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`),
@@ -232,7 +232,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) move();
     listing = ctx.state.listing;
 
-    const d = opts.popovers ? ctx.state.draft : null;
+    // While All comments is open, a new comment is written there instead.
+    const d = opts.popovers && !ctx.state.listing ? ctx.state.draft : null;
     if (d) {
       const where = d.anchor.point ?? d.resolved.element;
       if (draft?.of !== d) {
@@ -275,7 +276,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       ctx.registerDraft(null);
     }
 
-    const next = pops() && ctx.state.active ? byId(ctx.state.active) : null;
+    // While All comments is open, threads open in it, never also beside the page.
+    const next = pops() && !ctx.state.listing && ctx.state.active ? byId(ctx.state.active) : null;
     if (!next || !ctx.visible(next)) {
       shown = null;
       shownView = null;

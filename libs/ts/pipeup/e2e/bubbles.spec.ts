@@ -29,7 +29,7 @@ test("hovering a bubble previews it; clicking opens the thread; replying and res
   await pop.locator(".rbox.always textarea").press("Enter");
   await expect(pop).toContainText("Yes — will change it.");
   await pop.locator(".root").hover();
-  await pop.getByRole("button", { name: "Resolve" }).click();
+  await pop.getByRole("button", { name: "Resolve", exact: true }).click();
   await expect(page.locator(".bub")).toHaveCount(0);
   await expect(page.locator(".toast.show")).toContainText("Resolved");
 });

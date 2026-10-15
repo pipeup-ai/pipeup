@@ -164,8 +164,9 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
   expect(Math.round(p.height)).toBe(vp.height);
   expect(p.width).toBeGreaterThanOrEqual(300);
   expect(p.width).toBeLessThanOrEqual(340);
-  await expect(panel(page)).toContainText("All comments");
-  await expect(panel(page).locator(".hd")).toContainText("2");
+  // No title: the panel is named for screen readers, and its header holds only the toggles and Close.
+  await expect(panel(page)).toHaveAttribute("aria-label", "All comments");
+  await expect(panel(page).locator(".cd")).toHaveCount(2);
   await expect(panel(page).getByRole("button", { name: "Close" })).toBeVisible();
   // Focus moved in.
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");
@@ -218,7 +219,9 @@ test("the panel slides in from the right edge, and with reduced motion only fade
   expect(await all.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
 });
 
-test("the panel closes with its close button, and with a click on the page", async ({ page }) => {
+test("the panel closes with its close button or Esc; a click on the page leaves it open", async ({
+  page,
+}) => {
   await open(page, "site.html");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
   await openMenu(page);
@@ -230,6 +233,9 @@ test("the panel closes with its close button, and with a click on the page", asy
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect(panel(page)).toHaveCount(1);
   await page.mouse.click(40, 700);
+  await page.waitForTimeout(400);
+  await expect(panel(page)).toHaveCount(1);
+  await page.keyboard.press("Escape");
   await expect(panel(page)).toHaveCount(0);
 });
 
@@ -303,25 +309,25 @@ test("the column fades out with the exit timing when the panel opens", async ({ 
   expect(t.f).toBe("cubic-bezier(0.4, 0, 1, 1)");
 });
 
-test("a click on empty page closes the panel and gives focus back to the button", async ({ page }) => {
+test("a click on empty page leaves the panel open", async ({ page }) => {
   await open(page, "site.html");
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");
   await page.mouse.click(40, 700);
-  await expect(panel(page)).toHaveCount(0);
-  await expect(control(page)).toBeFocused();
+  await page.waitForTimeout(400);
+  await expect(panel(page)).toHaveCount(1);
 });
 
-test("a click on a page field closes the panel and leaves focus in the field", async ({ page }) => {
+test("a click on a page field leaves the panel open and puts focus in the field", async ({ page }) => {
   await open(page, "controls.html");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect(panel(page)).toHaveCount(1);
   await page.locator("#email").click();
-  await expect(panel(page)).toHaveCount(0);
   await expect(page.locator("#email")).toBeFocused();
+  await expect(panel(page)).toHaveCount(1);
 });
 
 test("All comments has its own icon in the menu", async ({ page }) => {

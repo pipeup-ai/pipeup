@@ -14,9 +14,9 @@ const boxes = (page: Page, selector: string) =>
     const r = (el: Element | null) => {
       if (!el) return null;
       const b = el.getBoundingClientRect();
-      return { left: b.left, top: b.top, right: b.right, width: b.width };
+      return { left: b.left, top: b.top, right: b.right, bottom: b.bottom, width: b.width };
     };
-    const av = box.querySelector(":scope > .av");
+    const av = box.querySelector(":scope > .hdr > .av");
     const measure = () => ({ box: r(box)!, words: r(box.querySelector(":scope > .tx"))!, av: r(av) });
     const withAvatar = measure();
     // Take the avatar out and measure again, in the same task: the words must not move or widen.
@@ -28,7 +28,7 @@ const boxes = (page: Page, selector: string) =>
     return { withAvatar, without, html: av!.outerHTML };
   }, selector);
 
-test("each comment shows its writer's avatar at its top right, and the words never move for it", async ({
+test("each comment shows its writer's avatar at the start of its top line, and the words never move for it", async ({
   page,
 }) => {
   await open(page, "doc.html");
@@ -40,18 +40,18 @@ test("each comment shows its writer's avatar at its top right, and the words nev
   );
   const th = page.locator(".th");
   await th.locator(".tx").first().click();
-  await settled(th.locator(".root > .av"));
-  await settled(th.locator(".it > .av"));
+  await settled(th.locator(".root > .hdr > .av"));
+  await settled(th.locator(".it > .hdr > .av"));
   const me = await animal(page);
   await expect(th.locator(".av")).toHaveCount(2);
   for (const av of await th.locator(".av").all()) await expect(av).toHaveAttribute("data-animal", me);
 
   for (const selector of [".th .root", ".th .rps .it"]) {
     const { withAvatar: a, without: b, html } = await boxes(page, selector);
-    // Top right of the comment, clear of the words.
-    expect(Math.abs(a.av!.right - a.box.right)).toBeLessThan(1);
-    expect(a.av!.top - a.box.top).toBeLessThan(8);
-    expect(a.av!.left).toBeGreaterThanOrEqual(a.words.right);
+    // At the start of the comment's top line, above its words.
+    expect(a.av!.left - a.box.left).toBeLessThan(2);
+    expect(a.av!.top - a.box.top).toBeLessThan(12);
+    expect(a.av!.bottom).toBeLessThanOrEqual(a.words.top + 1);
     // The words keep their left edge and width without it.
     expect(b.words).toEqual(a.words);
     expect(html).not.toMatch(/\p{Extended_Pictographic}/u);
@@ -60,12 +60,12 @@ test("each comment shows its writer's avatar at its top right, and the words nev
   // Adding a name: the avatar shows the initial, the hover detail the name; the words still don't move.
   const before = (await boxes(page, ".th .root")).withAvatar.words;
   await page.evaluate(() => ((window as any).pu.document.name = "Sam"));
-  await expect(th.locator(".root > .av").last()).toHaveText("S");
+  await expect(th.locator(".root > .hdr > .av").last()).toHaveText("S");
   // The old face leaves once the new one covers it.
-  await expect(th.locator(".root > .av")).toHaveCount(1);
-  await settled(th.locator(".root > .av"));
+  await expect(th.locator(".root > .hdr > .av")).toHaveCount(1);
+  await settled(th.locator(".root > .hdr > .av"));
   await th.locator(".root").hover();
-  await expect(th.locator(".root .who")).toHaveText("Sam · just now");
+  await expect(th.locator(".root .who")).toHaveText("Sam");
   const after = await boxes(page, ".th .root");
   expect(after.withAvatar.words).toEqual(before);
   expect(after.without.words).toEqual(before);
@@ -75,7 +75,7 @@ test("an avatar eases in and stays put while the thread re-renders", async ({ pa
   await open(page, "doc.html");
   await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  const av = page.locator(".th .root > .av");
+  const av = page.locator(".th .root > .hdr > .av");
   await expect(av).toHaveClass(/\bin\b/);
   expect(await av.evaluate((el) => getComputedStyle(el).transitionDuration)).toContain("0.26s");
   await av.evaluate((el) => ((el as any).__same = true));
@@ -95,9 +95,12 @@ test("the first comment needs no name; the draft says who you are and takes a na
   const draft = page.locator(".draft");
   await expect(draft.locator(".nf")).toHaveAttribute("inert", "");
   await expect(draft.locator(".say")).toHaveText(`You're ${me} · add your name`);
-  await expect(draft.locator(".row .me .av")).toHaveAttribute("data-animal", me);
-  const plane = await draft.locator(".send path").getAttribute("d");
-  expect(plane).toBe("M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13");
+  await expect(draft.locator(".hdr .me .av")).toHaveAttribute("data-animal", me);
+  await expect(draft.getByRole("textbox", { name: "Comment" })).toHaveAttribute(
+    "placeholder",
+    "Comment or add others with @",
+  );
+  await expect(draft.locator(".send")).toHaveText("Comment");
 
   await draft.getByRole("button", { name: "add your name" }).click();
   const field = draft.getByRole("textbox", { name: "Your name" });
@@ -106,7 +109,7 @@ test("the first comment needs no name; the draft says who you are and takes a na
   await page.keyboard.type("Sam");
   await page.keyboard.press("Enter");
   await expect(draft.locator(".say")).toHaveText("Sam · change");
-  await expect(draft.locator(".row .me .av").last()).toHaveText("S");
+  await expect(draft.locator(".hdr .me .av").last()).toHaveText("S");
   await expect(draft.getByRole("textbox", { name: "Comment" })).toBeFocused();
   await expect(page.locator(".toast.show")).toContainText("New comments will say Sam");
 
@@ -114,8 +117,8 @@ test("the first comment needs no name; the draft says who you are and takes a na
   await page.keyboard.press("Enter");
   const th = page.locator(".th", { hasText: "Which changes?" });
   await th.locator(".root").hover();
-  await expect(th.locator(".who").first()).toHaveText("Sam · just now");
-  await expect(th.locator(".root > .av").last()).toHaveText("S");
+  await expect(th.locator(".who").first()).toHaveText("Sam");
+  await expect(th.locator(".root > .hdr > .av").last()).toHaveText("S");
 });
 
 test("one identity is the same animal after a reload", async ({ page }) => {
@@ -128,7 +131,7 @@ test("one identity is the same animal after a reload", async ({ page }) => {
   await page.evaluate(async () => ((window as any).pu = await (window as any).Pipeup.mount()));
   await showComments(page);
   expect(await page.evaluate(() => (window as any).pu.document.me)).toBe(first);
-  await expect(page.locator(".th .root > .av")).toHaveAttribute("data-animal", me);
+  await expect(page.locator(".th .root > .hdr > .av")).toHaveAttribute("data-animal", me);
 });
 
 /**
@@ -166,16 +169,16 @@ test("a changing avatar cross-fades: its spot is never empty or see-through", as
   await open(page, "doc.html");
   await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  const av = page.locator(".th .root > .av");
+  const av = page.locator(".th .root > .hdr > .av");
   await expect(av).toHaveClass(/\bin\b/);
   await settled(av);
-  const thread = await sampleSpot(page, ".th .root > .av", () =>
+  const thread = await sampleSpot(page, ".th .root > .hdr > .av", () =>
     page.evaluate(() => void ((window as any).pu.document.name = "Sam")),
   );
   expect(thread.length).toBeGreaterThan(10);
   expect(Math.min(...thread)).toBeGreaterThan(0.95);
-  await expect(page.locator(".th .root > .av")).toHaveCount(1);
-  await expect(page.locator(".th .root > .av")).toHaveText("S");
+  await expect(page.locator(".th .root > .hdr > .av")).toHaveCount(1);
+  await expect(page.locator(".th .root > .hdr > .av")).toHaveText("S");
 
   await page.mouse.click(900, 700);
   await selectWords(page, "#p2", "second designer");

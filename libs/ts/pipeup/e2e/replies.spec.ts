@@ -19,16 +19,17 @@ test("replies sit one level under the comment, in order, with no reply to a repl
     "Then 20% is a stretch",
     "Say 15 to 20%",
   ]);
-  await expect(th.getByRole("button", { name: "Reply" })).toHaveCount(0);
+  // No reply to a reply: comments have no Reply action; the one Reply is the reply box's own.
+  await expect(th.locator(".acts").getByRole("button", { name: "Reply" })).toHaveCount(0);
   await expect(th.locator(".rbox.always textarea")).toHaveCount(1);
   const x = async (selector: string) => (await th.locator(selector).first().boundingBox())!.x;
   expect(await x(".rps .it")).toBeGreaterThan((await x(".root .tx")) + 10);
   expect(Math.abs((await x(".rbox.always > div")) - (await x(".rps .it")))).toBeLessThan(2);
-  // The line itself starts where the replies' words do: nothing sits before it.
-  expect(Math.abs((await x(".rbox.always textarea")) - (await x(".rps .it .tx")))).toBeLessThan(2);
+  // The reply box starts where the replies' words do: nothing sits before it.
+  expect(Math.abs((await x(".rbox.always .line")) - (await x(".rps .it .tx")))).toBeLessThan(2);
 });
 
-test("the reply line is only a line: no reply mark, and a click anywhere on it puts the caret at the end", async ({
+test("the reply box: no reply mark, and a click anywhere in it puts the caret at the end", async ({
   page,
 }) => {
   await open(page, "doc.html");
@@ -36,13 +37,13 @@ test("the reply line is only a line: no reply mark, and a click anywhere on it p
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   const th = page.locator(".th");
   await th.locator(".tx").first().click();
-  const line = th.locator(".rbox.always .row");
+  const line = th.locator(".rbox.always .line");
   await expect(line).toBeVisible();
   await settled(th.locator(".more"));
   await expect(th.locator(".ricon")).toHaveCount(0);
   await expect(line).toHaveCSS("cursor", "text");
   const input = line.locator("textarea");
-  // The far right of an empty line (where the send arrow will be) still focuses the line.
+  // The far right of an empty box still focuses it.
   const b = (await line.boundingBox())!;
   await page.mouse.click(b.x + b.width - 3, b.y + b.height / 2);
   await expect(input).toBeFocused();
@@ -57,6 +58,6 @@ test("the reply line is only a line: no reply mark, and a click anywhere on it p
   expect(await input.evaluate((el: HTMLTextAreaElement) => [el.selectionStart, el.selectionEnd])).toEqual([
     10, 10,
   ]);
-  // Hovering darkens the line, eased.
-  expect(await input.evaluate((el) => getComputedStyle(el).transitionProperty)).toContain("border-color");
+  // Hovering darkens the box, eased.
+  expect(await line.evaluate((el) => getComputedStyle(el).transitionProperty)).toContain("border-color");
 });

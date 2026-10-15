@@ -90,7 +90,7 @@ test("someone mentioning you is said once, filters All comments, and opening the
   await expect(page.locator(".toast.show")).toHaveText("Sam mentioned you in 1 comment");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const filter = page.getByRole("switch", { name: "Mentions of me" });
+  const filter = page.getByRole("button", { name: "Mentions of me" });
   await expect(filter).toBeVisible();
   // A second thread that names nobody is hidden by the filter.
   await page.evaluate(() => {
@@ -102,7 +102,7 @@ test("someone mentioning you is said once, filters All comments, and opening the
   });
   await expect(page.locator(".all.show .mi")).toHaveCount(2);
   await filter.click();
-  await expect(filter).toHaveAttribute("aria-checked", "true");
+  await expect(filter).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".all.show .mi")).toHaveCount(1);
   await expect(page.locator(".all.show .mi")).toContainText("Is this the plan?");
   // Opening it marks the mention seen on this device, as a signed op other devices learn from.

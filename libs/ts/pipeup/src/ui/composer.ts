@@ -1,15 +1,18 @@
 import { h } from "./dom";
 import { filterPeople, locate, mentionToken, type Person } from "./mentions";
 import type { Mention } from "../model/types";
-import { draw, icon } from "./icons";
+import { draw } from "./icons";
 
 export interface ComposerOptions {
+  /** The line's name for screen readers, and the send button's word ("Comment", "Reply", "Save"). */
   label: string;
+  /** What the empty line says ("Comment or add others with @"). */
+  placeholder?: string;
+  /** Words already in the line (editing a comment). */
+  value?: string;
   /** A new comment, or a reply in `thread()`. */
   kind?: "comment" | "reply";
   thread?: () => string;
-  /** Something to show before the line instead, such as the writer's avatar. */
-  before?: Node;
   /** `mentions`: the people named in the words, found after trimming. */
   onSend(text: string, mentions: Mention[]): Promise<void> | void;
   onCancel?(): void;
@@ -72,19 +75,24 @@ export const composerNote = (): string | null => source?.note() ?? null;
 /** Sent to a writing line or a new-comment box when what add-ons put in it changes. */
 export const SOURCE_CHANGED = "pu-source";
 
-/** A writing line: no placeholder, Enter sends, Shift+Enter breaks, Esc cancels, a paper plane appears with text. */
+/**
+ * A writing box: what it is for when empty, then Cancel and Send (named for what it does) while it is in use.
+ * Enter sends, Shift+Enter breaks, Esc cancels. Send stays grey, and out of Tab's reach, until there are words.
+ */
 export function composer(o: ComposerOptions): Composer {
-  const input = h("textarea", { class: "input", rows: "1", "aria-label": o.label });
-  // Hidden while the line is empty, and out of Tab's reach.
-  const send = h(
-    "button",
-    { class: "send", type: "button", "aria-label": "Send", title: "Send", inert: true },
-    icon("send"),
-  );
-  // Buttons for add-ons' tools, between the words and Send.
+  const input = h("textarea", {
+    class: "input",
+    rows: "1",
+    "aria-label": o.label,
+    placeholder: o.placeholder ?? "",
+  });
+  const send = h("button", { class: "send", type: "button", inert: true }, o.label);
+  const cancel = h("button", { class: "cnl", type: "button" }, "Cancel");
+  // Buttons for add-ons' tools, at the end of the line.
   const slot = h("span", { class: "tools" });
   slot.hidden = true;
-  const element = h("div", { class: "row" }, o.before, input, slot, send);
+  const line = h("div", { class: "line" }, input, slot);
+  const element = h("div", { class: "row" }, line, h("div", { class: "bts" }, cancel, send));
   const kind = o.kind ?? "comment";
   let busy = false;
   const ends = new Set<() => void>();
@@ -94,6 +102,7 @@ export function composer(o: ComposerOptions): Composer {
   const sync = () => {
     const words = input.value.trim() !== "";
     send.classList.toggle("show", words);
+    element.classList.toggle("has", words);
     send.inert = !words;
     input.style.height = "auto";
     input.style.height = `${Math.max(27, input.scrollHeight)}px`;
@@ -252,9 +261,9 @@ export function composer(o: ComposerOptions): Composer {
       busy = false;
     }
   };
-  // The whole line is somewhere to write: a press anywhere on it but the send arrow puts the caret at the end.
-  element.addEventListener("mousedown", (e) => {
-    if (e.target === input || send.contains(e.target as Node) || slot.contains(e.target as Node)) return;
+  // The whole line is somewhere to write: a press anywhere on it but its buttons puts the caret at the end.
+  line.addEventListener("mousedown", (e) => {
+    if (e.target === input || slot.contains(e.target as Node)) return;
     e.preventDefault();
     input.focus({ preventScroll: true });
     input.setSelectionRange(input.value.length, input.value.length);
@@ -287,17 +296,30 @@ export function composer(o: ComposerOptions): Composer {
       void submit();
     } else if (e.key === "Escape") {
       e.preventDefault();
-      input.value = "";
-      sync();
-      input.blur();
-      ended();
-      o.onCancel?.();
+      stop();
     }
   });
+  const stop = () => {
+    input.value = "";
+    sync();
+    input.blur();
+    ended();
+    o.onCancel?.();
+  };
+  // A press on a button keeps the caret where it is (the line doesn't lose focus first).
+  for (const b of [send, cancel]) b.addEventListener("mousedown", (e) => e.preventDefault());
   send.addEventListener("click", (e) => {
     e.stopPropagation();
     void submit();
   });
+  cancel.addEventListener("click", (e) => {
+    e.stopPropagation();
+    stop();
+  });
+  if (o.value) {
+    input.value = o.value;
+    queueMicrotask(sync);
+  }
   return {
     element,
     input,

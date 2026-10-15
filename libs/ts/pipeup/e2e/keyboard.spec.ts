@@ -797,7 +797,7 @@ test("the empty draft's hidden Send button takes no Tab stop", async ({ page }) 
   await expect(page.locator(".pop.show .send")).not.toHaveAttribute("inert", "");
 });
 
-test("sending a reply with the Send button keeps focus in the reply line", async ({ page }) => {
+test("sending a reply with the Reply button keeps focus in the reply box", async ({ page }) => {
   await open(page, "controls.html");
   await seedElement(page, "#title", "Headline");
   await toggleCommenting(page);
@@ -805,6 +805,9 @@ test("sending a reply with the Send button keeps focus in the reply line", async
   await page.keyboard.press("Enter");
   await expect(page.locator(".pop.show .rbox textarea")).toBeFocused();
   await page.keyboard.type("A reply");
+  // Tab goes to Cancel, then to Reply.
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".pop.show .cnl")).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator(".pop.show .send")).toBeFocused();
   await page.keyboard.press("Enter");
@@ -818,7 +821,7 @@ test("Resolve on a thread opened from the cursor puts focus back on the marker",
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Enter");
   await expect(page.locator(".th.on")).toContainText("On the paragraph");
-  await page.getByRole("button", { name: "Resolve" }).focus();
+  await page.getByRole("button", { name: "Resolve", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".th.on")).toHaveCount(0);
   await expect(page.locator(".km:not([inert])")).toBeFocused();
@@ -842,7 +845,7 @@ test("Resolve on a thread opened from a bubble puts focus on the Comment control
   await toggleCommenting(page);
   await page.getByRole("button", { name: /Comment on Heading/ }).focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: "Resolve" }).focus();
+  await page.getByRole("button", { name: "Resolve", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".pop.show")).toHaveCount(0);
   await expect(page.locator(".launch .mode")).toBeFocused();

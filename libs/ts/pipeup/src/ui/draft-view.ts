@@ -33,9 +33,8 @@ export interface DraftBox {
 }
 
 /**
- * The box for a new comment: what it's on, then the writing line with the writer's avatar beside it. Nobody
- * has to give a name; a quiet line says who they are ("You're Otter · add your name") and opens a name
- * field in its place.
+ * The box for a new comment, as a card: who is writing, what it's on, then the writing box. Nobody has to give a
+ * name; the top line says who they are ("You're Otter · add your name") and opens a name field in its place.
  */
 export function renderDraft(o: DraftOptions): DraftBox {
   // The avatar is a shortcut for the mouse; keyboards and screen readers use the line's own button.
@@ -44,8 +43,8 @@ export function renderDraft(o: DraftOptions): DraftBox {
   me.addEventListener("mousedown", (e) => e.preventDefault());
   const comp = composer({
     label: "Comment",
+    placeholder: "Comment or add others with @",
     kind: "comment",
-    before: me,
     onSend: o.onSend,
     onCancel: o.onCancel,
     people: o.people,
@@ -133,7 +132,14 @@ export function renderDraft(o: DraftOptions): DraftBox {
   sync();
   setNaming(false);
   const ctxLine = h("div", { class: "ctx" }, o.label);
-  const element = h("div", { class: "draft" }, ctxLine, note, comp.element, you);
+  const element = h(
+    "div",
+    { class: "draft" },
+    h("div", { class: "hdr" }, me, you),
+    ctxLine,
+    note,
+    comp.element,
+  );
   element.addEventListener(SOURCE_CHANGED, syncNote);
   return {
     element,
@@ -155,21 +161,27 @@ export function renderDraft(o: DraftOptions): DraftBox {
   };
 }
 
+/** Each draft keeps one box, so it can move between the page and All comments with its words, caret and name field. */
+const boxes = new WeakMap<Draft, DraftBox>();
+
 /**
  * The box for the app's current draft. While it holds words, a click elsewhere won't throw them away.
  * The caller focuses it as soon as it is in the page: a deferred focus could land after the reader has
  * already moved on, taking their typing or the new selection they just made.
  */
 export function draftBox(ctx: Ctx, d: Draft): DraftBox {
-  const box = renderDraft({
-    label: d.label,
-    me: ctx.doc.me,
-    name: () => ctx.menu.name(),
-    rename: (name) => ctx.menu.rename(name),
-    onSend: (text, mentions) => ctx.postDraft(text, mentions),
-    people: () => ctx.people(),
-    onCancel: () => ctx.cancelDraft(),
-  });
+  const box =
+    boxes.get(d) ??
+    renderDraft({
+      label: d.label,
+      me: ctx.doc.me,
+      name: () => ctx.menu.name(),
+      rename: (name) => ctx.menu.rename(name),
+      onSend: (text, mentions) => ctx.postDraft(text, mentions),
+      people: () => ctx.people(),
+      onCancel: () => ctx.cancelDraft(),
+    });
+  boxes.set(d, box);
   ctx.registerDraft(box);
   return box;
 }

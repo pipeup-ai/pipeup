@@ -187,7 +187,7 @@ test("closed, the list is out of the keyboard's reach, and resolved threads foll
   await page.evaluate((id) => (window as any).pu.document.resolve(id), a);
   await openAll(page);
   await expect(list(page).getByRole("menuitem")).toHaveCount(1);
-  await list(page).getByRole("switch", { name: "Show resolved" }).click();
+  await list(page).getByRole("button", { name: "Show resolved" }).click();
   await expect(list(page).getByRole("menuitem")).toHaveCount(2);
   // The choice stays when the panel closes and opens again.
   await page.keyboard.press("Escape");
@@ -315,9 +315,10 @@ test("with All comments open, clicking a comment's words on the page opens it in
   await expect(list(page)).toBeVisible();
   await expect(page.locator(".pop.show, .th.on")).toHaveCount(0);
   expect(await page.evaluate(() => scrollY)).toBe(y);
-  // A click on the page itself still closes the panel, and the comments still show.
+  // A click on the page itself leaves the panel open too: only its × or Esc closes it.
   await page.mouse.click(900, 790);
-  await expect(list(page)).toHaveCount(0);
+  await page.waitForTimeout(400);
+  await expect(list(page)).toHaveCount(1);
   await expect(page.locator(".layer.hidden")).toHaveCount(0);
 });
 

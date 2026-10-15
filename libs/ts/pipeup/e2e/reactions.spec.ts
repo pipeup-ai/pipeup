@@ -100,7 +100,7 @@ test("All comments shows a thread's reactions as counts", async ({ page }) => {
   await react(page, "🙏");
   await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(page.locator(".all.show .mi small").first()).toContainText("🙏 1");
+  await expect(page.locator(".all.show .mi .rest").first()).toContainText("🙏 1");
 });
 
 test("a keyboard user can react: the React button opens the quick row, and its buttons are named", async ({

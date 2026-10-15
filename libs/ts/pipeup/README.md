@@ -70,11 +70,17 @@ The comment control is one round button in the corner: the comment icon, or the 
 a comment bubble. Hovering it shows a tooltip with its shortcut; clicking (or tapping) it opens its menu of
 one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
 Add name, edited in place in that row), Copy as Markdown (for AI), Copy as Text, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
-**All comments** is a panel on the right that moves the page over to make room: every thread in page order with
-where it is, threads whose content is gone under "No longer on the page", and a Show resolved switch in its
-header. Choosing one scrolls to it and opens it while the panel stays open (or opens it beside the panel when it
-has nowhere to show); clicking a comment on the page opens it in the panel too. The panel closes with its close
-button, Esc or a click anywhere else on the page. Elements the page
+**All comments** is a panel on the right that moves the page over to make room: every thread in page order as a
+card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
+of me) and **✓** (show resolved). While it is open the round button is its footer (who you are, Comment, and ⋯ for the
+menu), comment mode leaves it open, and a new comment is written in it, in page order. Choosing a card scrolls to its
+place and opens it in the panel; clicking a comment on the page opens it there too. The panel stays open until you
+close it with its × or Esc; a click on the page never closes it.
+
+Every thread is the same compact card, beside the page, from a bubble or in the panel: avatar, name and how long ago,
+the words, and its actions (React, ✓ Resolve, and ⋯ for Copy thread, and Edit and Delete on your own). A deleted
+comment goes away; deleting a thread's first comment removes the thread. The comment and
+reply boxes have Cancel and Comment (Reply) buttons; Enter also sends. Elements the page
 fixes to the window don't move over with the page.
 
 Comment mode (press **Shift+Alt+C**, or **⇧⌥C** on a Mac, or switch on Start commenting in the control's menu) lets reviewers comment on blocks and drop pins
