@@ -31,6 +31,8 @@ const PATHS = {
   shrink: ["M7 4h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z", "M16 8l-7 7M9 10v5h5"],
   // The comment bubble without its plus, to hold the open count.
   bubble: ["M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"],
+  // The same bubble drawn wider, for a count of two or three characters ("10", "99+").
+  wide: ["M23.2 11.2a10.8 8.2 0 0 1-14.85 7.6L2.6 21l.45-5.7A10.8 8.2 0 1 1 23.2 11.2z"],
   close: ["M6 6l12 12M18 6L6 18"],
   // React: a face with round dot eyes (zero-length strokes blurred into specks) and a gentle smile.
   smile: [

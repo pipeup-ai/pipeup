@@ -83,8 +83,10 @@ export const SOURCE_CHANGED = "pu-source";
  * Enter sends, Shift+Enter breaks, Esc cancels. Send stays grey, and out of Tab's reach, until there are words.
  */
 export function composer(o: ComposerOptions): Composer {
+  // Each box takes the direction of its own words, so Arabic and Hebrew are written right to left.
   const input = h("textarea", {
     class: "input",
+    dir: "auto",
     rows: "1",
     "aria-label": o.name ?? o.label,
     placeholder: o.placeholder ?? "",

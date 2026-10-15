@@ -112,6 +112,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   const quickOpen = new Set<string>();
   /** The comment whose ⋯ menu is open, one waiting for Delete to be confirmed (and since when), and the one being edited. */
   let menuFor = "";
+  let shownMenu = "";
   let confirm = "";
   let asked = 0;
   let editing: { id: string; el: HTMLElement } | null = null;
@@ -209,6 +210,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
 
   function rebuild(t: Thread, next: Partial<ThreadViewOptions>): void {
     Object.assign(o, next);
+    const wasShown = shownMenu;
+    shownMenu = menuFor;
     id = t.id;
     current = t;
     const now = (o.now ?? Date.now)();
@@ -234,10 +237,11 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       }
       return [...out, ...plain(c.text.slice(at))];
     };
+    // Each comment reads in its own direction (Arabic and Hebrew right to left), whatever Pipeup's.
     const words = (c: Comment) =>
       h(
         "div",
-        { class: c.deleted ? "tx del" : "tx" },
+        { class: c.deleted ? "tx del" : "tx", dir: "auto" },
         ...(c.deleted ? ["Deleted"] : [...body(c), c.edited ? " (edited)" : ""]),
       );
     const reactions = (c: Comment) =>
@@ -316,9 +320,10 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
           ],
         );
       if (!items.length) return null;
+      // It eases in when it opens; rebuilt while open (Delete asking again), it changes in place.
       const box = h(
         "div",
-        { class: "pm", role: "menu", "data-m": c.id },
+        { class: wasShown === c.id ? "pm" : "pm in", role: "menu", "data-m": c.id },
         ...items.map(([label, run], i) => {
           const b = h(
             "button",
@@ -411,6 +416,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       head(t.root, true),
       about ? h("div", { class: "ctx" }, about) : null,
       text(t.root),
+      // In the column a long comment shows its first lines at rest, then "more" (the column measures it).
+      o.variant === "column" && h("div", { class: "mr", "aria-hidden": "true" }, h("span", {}, "more")),
       reactions(t.root),
       last ? h("div", { class: "rest" }, last) : null,
     );
@@ -443,7 +450,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
                     h("span", { class: "who" }, AI_NAME),
                     h("span", { class: "ago" }, "writing now"),
                   ),
-                  h("div", { class: "tx", "data-pipeup-writing": "words" }, writing),
+                  h("div", { class: "tx", dir: "auto", "data-pipeup-writing": "words" }, writing),
                 ),
           )
         : null;

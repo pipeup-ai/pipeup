@@ -12,7 +12,7 @@ bubble. It replaces the 46 px round button that floated 20 px in from the corner
   comment mode (`.launch:has(.mode.on)`) the glass is the accent at 90%, with `--pu-on` for its icon.
 - `.mode` (the button) is 32 × 32, transparent, inheriting the colour, its top-left corner rounded to match the focus
   ring. It is 44 × 44 under `pointer: coarse`. The plain mark is drawn at 22 px and the bubble at 28 px, so the count
-  (11 px, or 8.5 px for "99+") nearly fills the square.
+  (11 px; it stops at "9+", so never more than two characters) nearly fills the square.
 - `.mode` no longer shares the panels' solid surface rule, and its hover and open fills are gone: the square itself is
   the target.
 
