@@ -350,7 +350,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
    * Space pauses where it has no other job: not while typing, and not on a control reached from the keyboard (Space
    * presses it), on the page or in Pipeup. A control that has focus only because it was clicked doesn't keep it, so
    * a button pressed during one pause doesn't take Space from the next. The page doesn't hear it either, so it
-   * doesn't scroll or turn a slide.
+   * doesn't scroll or turn a slide. Which way focus came is tracked here, not read from :focus-visible: the browser
+   * counts Space's own key-up as a key, which would hand a clicked button the next Space.
    */
   const holds = (e: KeyboardEvent): boolean => {
     if (e.key !== HOLD || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
@@ -359,9 +360,12 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     if (markers.some((m) => m === t)) return true;
     const c = t instanceof Element ? t.closest(CONTROL) : null;
     return (
-      !c || !c.matches("input,textarea,select,[contenteditable]:not([contenteditable=false]),:focus-visible")
+      !c || (!byKeys && !c.matches("input,textarea,select,[contenteditable]:not([contenteditable=false])"))
     );
   };
+  /** The reviewer's last move was a key other than Space (so focus was likely moved with the keyboard), not a press. */
+  let byKeys = false;
+  const pressed = () => (byKeys = false);
 
   const onMove = (e: PointerEvent) => {
     if (ctx.owns(e) || ctx.state.paused) return;
@@ -425,6 +429,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
   // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
+    if (e.key !== HOLD) byKeys = true;
     // Once paused, Space stays Pipeup's until it is let go, even on a control the click has just focused.
     if (holds(e) || (e.key === HOLD && ctx.state.paused)) {
       if (!e.repeat) pause(true);
@@ -728,6 +733,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   window.addEventListener("keyup", onKeyUp, true);
   window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
+  window.addEventListener("pointerdown", pressed, true);
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
@@ -782,6 +788,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       if (!taken) window.removeEventListener("keyup", onKeyUp, true);
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerdown", pressed, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);

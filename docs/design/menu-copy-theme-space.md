@@ -28,9 +28,11 @@ unchanged, so a reviewer's earlier choice is kept.
   can't tell whether Space is down, so a missed key-up is ended by the window's `blur` (as before) and the next key-up.
 - `holds(e)` decides whether a Space keydown is the pause. It is not when a modifier is down or the keys are composing,
   when focus is in a text field (`input`, `textarea`, `select`, `contenteditable`), or when it is on a control matching
-  `CONTROL` that `:focus-visible` (reached from the keyboard, so Space presses it). A control that has focus only because
-  it was clicked doesn't match `:focus-visible`, so a page button pressed during one pause doesn't take Space from the
-  next. The block cursor's markers always count as the pause: Enter comments there, and Space no longer does.
+  `CONTROL` and the reviewer's last move was a key (`byKeys`: set by any keydown other than Space, cleared by any
+  `pointerdown`), so Space presses a control reached from the keyboard. A control that has focus because it was clicked
+  doesn't keep Space, so a page button pressed during one pause doesn't take it from the next. This is tracked here
+  rather than read from `:focus-visible`, which Chrome turns on when Space's own key-up lands on the clicked button.
+  The block cursor's markers always count as the pause: Enter comments there, and Space no longer does.
 - On a pause keydown (and every repeat while paused, whatever has focus), the capture listener on `window` calls
   `preventDefault` and `stopPropagation`: the page neither scrolls nor hears it (a deck doesn't turn a slide). The
   matching keyup ends the pause and is swallowed the same way.
@@ -43,3 +45,5 @@ Pipeup is 51.9 KB gzip (+0.3 KB, within the 52 KB budget).
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-15 — How focus came is tracked (`byKeys`), not read from `:focus-visible`: on CI's Chrome, Space's key-up made a
+  clicked button focus-visible, so the next Space pressed it.

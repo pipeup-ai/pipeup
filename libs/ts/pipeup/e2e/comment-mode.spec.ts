@@ -310,9 +310,9 @@ test("Space keeps its own job: typing in a field, and pressing a control reached
   await page.keyboard.type("a b");
   await expect(page.locator("#email")).toHaveValue("a b");
   await expect(page.locator(".pick.show")).toHaveCount(1);
-  // The page's own button with keyboard focus: Space presses it, as the page expects.
+  // The page's own button reached from the keyboard: Space presses it, as the page expects.
   await page.locator("#nav-btn").focus();
-  expect(await page.locator("#nav-btn").evaluate((e) => e.matches(":focus-visible"))).toBe(true);
+  await page.keyboard.press("Shift");
   await page.keyboard.press(HOLD_KEY);
   expect(await fired(page)).toContain("nav");
 });
