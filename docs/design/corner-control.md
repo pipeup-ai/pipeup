@@ -44,8 +44,9 @@ height; `.tg` has `line-height: 1`, so icon and word share a middle line.
 
 ## Icons
 
-- The naming bar's `expand` and `shrink` are two diagonal arrows each (out to the corners, in from them) instead of
-  four, and `pin` is redrawn on the same 4 to 20 span as the arrows, so the three stand the same height.
+- The naming bar's `expand` (Around it) is a small box with an arrow leaving it up and out, and `shrink` (Inside it)
+  a large box with an arrow pointing down into it: as two arrow pairs (out and in) they looked too alike. `pin` is
+  redrawn on the same 4 to 20 span, so the three stand the same height.
 - In an avatar the animal's drawing is 122% of the tint (it has room round it in its 24 grid), so the animal nearly
   fills the tint, with `stroke-width: 1.3` so its line stays as thin as before.
 
@@ -68,3 +69,4 @@ the budget rises to 53 KB.
 - 2026-10-15 — The slide-out eases to its exact width (a grid column) and is the pointer's only: it lingered, then
   clipped, when it eased against a 240 px cap and stayed open with keyboard focus.
 - 2026-10-15 — Two-arrow Around it and Inside it, a full-height Pin, and a larger animal in its avatar.
+- 2026-10-15 — Around it and Inside it become a box with an arrow out and a box with an arrow in.

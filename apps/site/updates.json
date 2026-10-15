@@ -1,19 +1,19 @@
 {
   "v": 1,
-  "at": "2026-10-15T15:39:40.997Z",
-  "expires": "2027-01-13T15:39:40.997Z",
+  "at": "2026-10-15T15:43:50.047Z",
+  "expires": "2027-01-13T15:43:50.047Z",
   "latest": "0.8.0-beta.2",
   "minimum": "0.5.0",
   "versions": {
     "0.8.0-beta.2": {
       "date": "2026-10-15",
-      "integrity": "sha384-hs+KxK2ET9rcpajVjI2TPYW04RU5HSBGXETnAot4Us0nJt603oDffXXn7FQktXPA",
+      "integrity": "sha384-1kLRVVNzaPKi7ONQJXvYMWs9vhl3EhyB4MwvqFVcv4PAbtLWJrE6Lfvg2vNDAFpl",
       "notes": "https://github.com/pipeup-ai/pipeup/releases/tag/v0.8.0-beta.2"
     }
   },
   "advisories": [],
   "sig": {
     "key": "k1",
-    "value": "SzmZ3Y0pRjeDKiji6CjSqPOzEpraXQ4YBbVmW30exhD-nBL7bK0a6XoWNBjqQrpW0IMo6RNXeKjIVgbZHWzrDA"
+    "value": "VPobZ9R6SO2cRFHoccajL84IGviGlxonLrDmRP2HZI0tSTj9d972Jxq7b8eyV45QM14jq5VuSCO5LOyp5iKjAw"
   }
 }
