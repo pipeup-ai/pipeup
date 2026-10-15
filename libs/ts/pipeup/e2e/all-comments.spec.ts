@@ -187,7 +187,7 @@ test("closed, the list is out of the keyboard's reach, and resolved threads foll
   await page.evaluate((id) => (window as any).pu.document.resolve(id), a);
   await openAll(page);
   await expect(list(page).getByRole("menuitem")).toHaveCount(1);
-  await list(page).getByRole("switch", { name: "Show resolved" }).click();
+  await list(page).getByRole("button", { name: "Show resolved" }).click();
   await expect(list(page).getByRole("menuitem")).toHaveCount(2);
   // The choice stays when the panel closes and opens again.
   await page.keyboard.press("Escape");

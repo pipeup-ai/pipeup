@@ -158,7 +158,8 @@ export function createColumn(ctx: Ctx): View {
   }
 
   function syncDraft(): void {
-    const d = ctx.state.draft;
+    // While All comments is open, a new comment is written there instead.
+    const d = ctx.state.listing ? null : ctx.state.draft;
     if (draft && draft.of !== d) {
       leave(draft.el);
       draft = null;

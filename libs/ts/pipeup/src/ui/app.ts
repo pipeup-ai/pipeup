@@ -226,7 +226,10 @@ export function startApp(o: AppOptions): App {
   };
 
   const actions: ThreadActions = {
-    me: o.doc.me,
+    // Read each time: the identity can change after Pipeup starts (a portable one restored, say).
+    get me() {
+      return o.doc.me;
+    },
     picker: () => addons.picker,
     people: () => peopleFor(o.doc.threads(), o.doc.me),
     react: async (commentId, emoji, on) => {
@@ -244,6 +247,22 @@ export function startApp(o: AppOptions): App {
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
         else fail(e);
+      }
+    },
+    edit: async (id, text, mentions) => {
+      try {
+        await o.doc.edit(id, text, mentions);
+      } catch (e) {
+        if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
+        else fail(e);
+      }
+    },
+    remove: async (id) => {
+      try {
+        await o.doc.remove(id);
+        toast("Deleted");
+      } catch (e) {
+        toast(e instanceof UnsavedChangeError ? `Deleted · ${UNSAVED_NOTE}` : message(e));
       }
     },
     resolve: async (id) => {
@@ -684,8 +703,7 @@ export function startApp(o: AppOptions): App {
 
   function startDraft(d: Draft): void {
     hideHint();
-    // A new comment goes where comments are written (the column, say), not under All comments.
-    state.listing = false;
+    // While All comments is open the new comment is written there; otherwise where comments are written.
     state.draft = d;
     state.active = null;
     render();
@@ -709,8 +727,8 @@ export function startApp(o: AppOptions): App {
     state.commenting = on;
     state.paused = false;
     if (on) {
+      // All comments stays open: new comments are written in it.
       state.active = null;
-      state.listing = false;
       modeView = createCommentMode(ctx);
     } else {
       hideHint();

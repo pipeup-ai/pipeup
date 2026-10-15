@@ -824,3 +824,4 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-08 — §7: S2 public relays — damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work; all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s. Cross-network rates still to test.
 - 2026-10-08 — §7: add-ons spike S4 passed: GitHub Actions runs PrivateBin 2.0.6 and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server.
 - 2026-10-14 — §11 *Visibility* is superseded by [comments-at-rest.md](comments-at-rest.md): comments show at rest, Hide comments is the reviewer's choice, and holding ⌘ (Ctrl) pauses comment mode.
+- 2026-10-14 — The card, the writing box and the panel are described in [panel-hub.md](panel-hub.md); it supersedes the hover footers and the panel rows in §11.

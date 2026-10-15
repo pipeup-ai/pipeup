@@ -34,7 +34,7 @@ test("the first comment needs no name: it posts, shows in place, and names its w
   const th = page.locator(".th", { hasText: "Which changes?" });
   await expect(th).toBeVisible();
   await th.locator(".root").hover();
-  await expect(th.locator(".who").first()).toHaveText(`${me} · just now`);
+  await expect(th.locator(".who").first()).toHaveText(me);
   expect(await page.evaluate(() => (window as any).pu.document.name)).toBe("");
 
   await page.mouse.click(900, 700);
@@ -138,7 +138,7 @@ test("a name added from the draft is used even when it can't be remembered, and 
   await draft.getByRole("textbox", { name: "Comment" }).press("Enter");
   const th = page.locator(".th", { hasText: "Which changes?" });
   await th.locator(".root").hover();
-  await expect(th.locator(".who").first()).toHaveText("Sam · just now");
+  await expect(th.locator(".who").first()).toHaveText("Sam");
 });
 
 const T0 = Date.UTC(2026, 0, 1);

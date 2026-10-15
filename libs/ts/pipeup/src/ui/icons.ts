@@ -1,8 +1,6 @@
 const NS = "http://www.w3.org/2000/svg";
 const PATHS = {
   comment: ["M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z", "M12.3 8.2v6.6M9 11.5h6.6"],
-  // A paper plane pointing right.
-  send: ["M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13"],
   // The same mark as the website's Copy prompt button: two overlapping rounded squares.
   copy: [
     "M10 8h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z",
@@ -32,6 +30,7 @@ const PATHS = {
     "M12 9.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 0 0 0-5z",
     "M4 4l16 16",
   ],
+  more: ["M5.5 12h.01M12 12h.01M18.5 12h.01"],
   look: ["M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z", "M12 3v18"],
 } as const;
 

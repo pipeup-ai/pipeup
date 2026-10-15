@@ -9,10 +9,15 @@ change the API and the stored comment format.
 
 ### Changed
 
+- **All comments is the hub while it is open.** The round button becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title: **@** (mentions of me) and **✓** (show resolved) are icon toggles, bold when on.
+- **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
+- **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
+- **Pipeup is 50.5 KB gzip** with these, and its budget rises from 50 to 51 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
 
 ### Added
 
+- **Edit and delete your own comments** from their ⋯ menu. Editing puts the words back in a box with Cancel and Save; Delete asks once more.
 - **Hold ⌘ (Ctrl elsewhere) to pause comment mode.** While the key is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back.
 - **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
 

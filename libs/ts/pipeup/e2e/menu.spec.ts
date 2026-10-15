@@ -41,13 +41,14 @@ test("Copy as Markdown copies Markdown with locations; Copy as Text copies the w
   expect(await lastCopy(page)).not.toContain("**Thread:**");
 });
 
-test("a thread's own copy button always gives Markdown", async ({ page }) => {
+test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ page }) => {
   await open(page, "doc.html");
   await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   const th = page.locator(".th");
   await th.locator(".tx").first().hover();
-  await th.getByRole("button", { name: /^Copy/ }).first().click();
+  await th.locator(".root").getByRole("button", { name: "More" }).click();
+  await th.getByRole("menuitem", { name: "Copy thread" }).click();
   await expect.poll(() => lastCopy(page)).toContain("- **Thread:** ");
 });
 
@@ -98,7 +99,7 @@ test("resolved threads hide; Show resolved brings them back with Reopen", async 
   await expect(page.locator(".th")).toHaveCount(0);
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("switch", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Show resolved" }).click();
   await page.keyboard.press("Escape");
   const th = page.locator(".th.resolved");
   await expect(th).toHaveCount(1);
@@ -166,14 +167,14 @@ test("resolving and reopening still succeed when the save fails, with a not-save
   await page.evaluate(() => (window as any).failNextSave());
   const th = page.locator(".th");
   await th.locator(".tx").first().hover();
-  await th.getByRole("button", { name: "Resolve" }).click();
+  await th.getByRole("button", { name: "Resolve", exact: true }).click();
   await expect(page.locator(".toast.show")).toContainText("Resolved");
   await expect(page.locator(".toast.show")).toContainText("not saved yet");
   expect(await page.evaluate(() => (window as any).pu.document.threads()[0].resolved)).toBe(true);
 
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("switch", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Show resolved" }).click();
   await page.keyboard.press("Escape");
   await page.evaluate(() => (window as any).failNextSave());
   const done = page.locator(".th.resolved");

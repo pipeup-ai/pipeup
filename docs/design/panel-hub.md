@@ -1,0 +1,61 @@
+# All comments as the hub, and one card everywhere
+
+Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (the comment box, Edit and Delete) and §7 (*compact cards*, actions,
+the comment control, All comments). Mock-ups: the *Comments at Rest* page, part two (storyboard, swimlanes, screens). This
+builds on [comments-at-rest.md](comments-at-rest.md).
+
+## The card (`thread-view.ts`)
+
+- Every comment starts with `.hdr`: avatar, `.who` (the name, cut short on one line), `.ago` (`formatAgo`, with the exact
+  time as its `title`), then `.acts` at the right. The hover-only footers (`.ft`, `.rft`) are gone, and so is the avatar's
+  reserved space at the top right.
+- Root actions: React, Resolve or Reopen, and ⋯ (`more`). A reply has React, plus ⋯ when it is yours. ⋯ opens `.pm`, which
+  holds Copy thread (on the root) and, on your own comments, Edit and Delete. Delete needs a second press ("Delete for
+  everyone"). The open menu, the comment waiting for that second press and the comment being edited live in the view, so
+  they survive `update()`.
+- The view rebuilds its comments on every update. After a choice it puts focus back (into the menu, or on the ⋯ that
+  opened it). It closes the menu once focus has settled outside the card (`focusout`, then a `setTimeout`): moving
+  between choices, or the card rebuilding itself, doesn't count as leaving.
+- Edit swaps the comment's words for a composer prefilled with them (`value`, label "Save"). Saving calls
+  `actions.edit`, and Esc or Cancel puts the words back. `actions.remove` deletes.
+- `ThreadActions.me` is a getter (`o.doc.me`): the identity can change after Pipeup starts, and a snapshot made Edit and
+  Delete disappear.
+- Column cards hide `.acts` until hovered, focused or open (`.th:not(.on):not(:hover):not(:focus-within)`), and show `.rest`
+  (the reply count) only while closed. The popover and the panel always show their actions.
+
+## The writing box (`composer.ts`, `draft-view.ts`)
+
+- The composer is `.row`, which holds `.line` (a rounded box: the textarea and add-ons' tools) and `.bts` (Cancel, then
+  Send named for what it does: Comment, Reply, Save). `.bts` eases open while the row has focus or words (`.row.has`).
+  Send has `.show` and is out of Tab's reach until there are words. The paper-plane icon is gone. `placeholder` and
+  `value` are new options.
+- The draft card starts with `.hdr` (the avatar button and the "You're Otter · add your name" line), then the label,
+  the add-on note and the composer.
+- Each draft keeps one box (`draftBox` caches it per `Draft` in a WeakMap). A view that takes the draft over (column,
+  popover or panel) moves the same element, so its words, caret and name field go with it.
+
+## The panel (`launcher.ts`)
+
+- The header is `mine` (@) and `showResolved` (✓): buttons with `aria-pressed` (`.tg`) beside Close. There is no title
+  and no count.
+- The rows are cards (`.cd`). The button (`.mi`) holds the header, the quote (or the location, or the lost snapshot), the
+  clamped words and `.rest`. Opened, the card keeps only the button's quote line and shows the thread view beneath it
+  (`.xr`).
+- The footer (`.pf`) shows the face and name, `.fs` (Comment, its shortcut and a switch) and ⋯, which opens the same
+  menu as the round button. While listing, the layer's `.listing` class moves the menu above the footer, hides its
+  Comment and All comments rows (and `items()` skips hidden rows), and draws the round button in (opacity and scale,
+  inert).
+- New comments: `startDraft` and `setCommenting(true)` no longer clear `listing`. The column and bubbles leave the draft
+  to the panel while listing. `buildAll` puts the draft's card before the first thread whose node follows the draft's
+  (`compareDocumentPosition`), focuses it once, and puts the caret back after rebuilds. `target()` takes a draft too, so
+  the line joins the card to what it's about. In comment mode a page click doesn't close the panel. Esc in the panel
+  steps back past the draft first (`ctx.back()`).
+
+## Size
+
++1.3 KB gzip (49.2 → 50.5 KB). The budget rises from 50 to 51 KB. This is Pipeup's own UI, which every page shows, so it
+can't move to an add-on. There are no unused styles to cut (checked).
+
+## Change log
+
+- 2026-10-14 — First version.

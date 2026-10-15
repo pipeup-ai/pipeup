@@ -23,7 +23,7 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   const thread = panel(page).locator(".xr");
   await expect(thread).toHaveCount(1);
   await expect(thread).toContainText("Love this line.");
-  await expect(thread.getByRole("button", { name: "Resolve" })).toBeVisible();
+  await expect(thread.getByRole("button", { name: "Resolve", exact: true })).toBeVisible();
   await expect(page.locator(".pop.show")).toHaveCount(0);
   // The line runs from the open row to its place on the page.
   await expect(page.locator(".cx.show")).toHaveCount(1);
@@ -32,7 +32,7 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   await expect(panel(page).locator(".xr")).toHaveCount(1);
   await expect(panel(page).locator(".xr")).toContainText("Match the nav?");
   // Clicking the open row closes it again.
-  await panel(page).locator(".mi.open").click();
+  await panel(page).locator(".cd.open > .mi").click();
   await expect(panel(page).locator(".xr")).toHaveCount(0);
   await expect(page.locator(".cx.show")).toHaveCount(0);
 });
@@ -48,7 +48,7 @@ test("a thread can be replied to and resolved in the panel, and it stays until i
   await thread.locator("textarea").fill("Agreed");
   await page.keyboard.press("Enter");
   await expect(thread.locator(".rps")).toContainText("Agreed");
-  await thread.getByRole("button", { name: "Resolve" }).click();
+  await thread.getByRole("button", { name: "Resolve", exact: true }).click();
   // Resolved, but still open here to be reopened; closing it lets it go (Show resolved is off).
   await expect(thread.getByRole("button", { name: "Reopen" })).toBeVisible();
   await page.keyboard.press("Escape");

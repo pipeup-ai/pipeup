@@ -257,9 +257,10 @@ test("the box doesn't repeat the block's name while the naming bar shows it, and
   await page.locator("#go").click();
   await expect(bar(page)).toContainText("Button · Start free");
   await expect(page.locator(".pop.show .draft .ctx")).toBeHidden();
-  const draft = (await page.locator(".pop.show .draft").boundingBox())!;
+  // The writing box follows straight on from who is writing.
+  const who = (await page.locator(".pop.show .draft .hdr").boundingBox())!;
   const row = (await page.locator(".pop.show .draft .row").boundingBox())!;
-  expect(row.y - draft.y).toBeLessThan(2);
+  expect(row.y - (who.y + who.height)).toBeLessThan(2);
 });
 
 test("a draft with no naming bar keeps its label, as one left open after leaving comment mode", async ({

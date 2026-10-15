@@ -232,7 +232,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) move();
     listing = ctx.state.listing;
 
-    const d = opts.popovers ? ctx.state.draft : null;
+    // While All comments is open, a new comment is written there instead.
+    const d = opts.popovers && !ctx.state.listing ? ctx.state.draft : null;
     if (d) {
       const where = d.anchor.point ?? d.resolved.element;
       if (draft?.of !== d) {

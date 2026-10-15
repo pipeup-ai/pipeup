@@ -164,8 +164,9 @@ test("All comments is a full-height panel on the right; choosing a thread reveal
   expect(Math.round(p.height)).toBe(vp.height);
   expect(p.width).toBeGreaterThanOrEqual(300);
   expect(p.width).toBeLessThanOrEqual(340);
-  await expect(panel(page)).toContainText("All comments");
-  await expect(panel(page).locator(".hd")).toContainText("2");
+  // No title: the panel is named for screen readers, and its header holds only the toggles and Close.
+  await expect(panel(page)).toHaveAttribute("aria-label", "All comments");
+  await expect(panel(page).locator(".cd")).toHaveCount(2);
   await expect(panel(page).getByRole("button", { name: "Close" })).toBeVisible();
   // Focus moved in.
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Love this line.");

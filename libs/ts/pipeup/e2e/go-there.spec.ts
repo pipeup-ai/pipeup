@@ -34,7 +34,7 @@ test("All comments groups a deck's threads by slide, in deck order, this slide m
   await expect(list(page).getByRole("group", { name: "Slide 2 · 1 open · This slide" })).toContainText(
     "Bar on two",
   );
-  await expect(list(page).locator(".hd .pn")).toHaveText("4");
+  await expect(list(page).locator(".cd")).toHaveCount(4);
 });
 
 test("choosing a thread on another slide goes there with the page's onReveal, then opens it in the panel", async ({

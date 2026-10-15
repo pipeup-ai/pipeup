@@ -154,14 +154,16 @@ any of them off.
   selection is cleared or its comment is started or cancelled.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
-- Writing a comment: type and press **Enter** to send (**Shift+Enter** for a new line, **Esc** to
-  cancel). A small paper-plane send icon, pointing right, appears once there is text. There is no
-  placeholder text and no "Post" button.
-- **A name is never required.** A reviewer can comment straight away. Next to the comment box, their
-  avatar shows who they are and invites them to add a name ("You're Otter · add your name").
+- Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
+  with @"**. **Cancel** and **Comment** buttons sit beneath it while you write. **Enter** also sends,
+  **Shift+Enter** starts a new line and **Esc** cancels. Comment stays grey until there are words.
+- **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
+  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
-- The writer of a comment can **edit** or **delete** it; edits are marked as edited.
+- The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
+  words back in a box with **Cancel** and **Save**; edits are marked as edited. Delete asks once more
+  before it deletes.
 - On touch screens: tap chooses a block, long-press selects text, and the naming bar's Pin drops a pin.
 
 **From the keyboard and with a screen reader**
@@ -251,12 +253,16 @@ any of them off.
   written. In comment mode that click opens the thread instead of choosing the block. Outside comment mode,
   a highlight on one of the page's links or controls leaves the click to the page.
 
-**What you see at rest — the words lead**
+**What you see at rest — compact cards**
 
 - On documents, threads sit in a **column beside the content, level with what they are about**.
   When threads would overlap they stack, and they glide when space changes.
-- A thread at rest shows **the comment's words**, a faint reply count, and a small **avatar at the
-  comment's top right** that never moves or narrows the words. No names, boxes or buttons.
+- Each thread is a **compact card**: the writer's avatar and name, **how long ago** it was written (just
+  now, 5m ago, 2h ago, with the exact time on hover), the comment's words, and its reply count. Cards are
+  close to the comment cards people know from other editors, with less padding.
+- **The same card is used everywhere a thread shows**: in the column, beside a bubble, in All comments
+  and in the drawer. In All comments the card also shows the words it is about; beside the page it sits
+  level with them instead.
 - On slides and rich pages without a free column, element and pin comments show as **small
   bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
@@ -267,20 +273,19 @@ any of them off.
 
 **Hover shows more**
 
-- Hovering a comment reveals **who wrote it, when, and its actions**, easing open **underneath**
-  the words — never on top of them. These details **take no space until hovered**; nothing holds
-  an empty row for them. Only real content, such as a reply count, shows at rest.
+- Hovering a card shows its **actions** at its top right; the open card always shows them. Nothing
+  opens beneath the words or moves them.
 - Hovering a comment or its highlight gives the commented content **one slow, soft pulse**, so you
   can see what it belongs to; the two light up together.
 
 **Opening a thread**
 
-- Clicking a highlight, bubble, preview or thread opens it: it gains a thin line on its left (no
-  background), lines up with its content, and other threads dim and step aside.
+- Clicking a highlight, bubble, preview or card opens it: the card lifts slightly with a soft shadow,
+  lines up with its content, and other threads dim and step aside.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
   elsewhere on the page, or by opening another thread.
-- An open thread always ends with a quiet **reply line**. **Opening a thread puts the cursor in its
-  reply line**, so the reader can type a reply straight away; Esc still closes the thread. A new comment
+- An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
+  **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. A new comment
   opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
   is in use, with focus back on the block cursor.
 - Every thread can be opened from the keyboard: bubbles and threads at rest in the column are buttons,
@@ -295,14 +300,13 @@ any of them off.
 - There is **no reply to a reply**: every reply is to the original comment, written in the reply
   line at the end of the thread.
 
-**Actions** (shown on hover, as icons with names, right after who wrote it and when)
+**Actions** (icons with names at the card's top right, on hover and on the open card)
 
-- **Copy** and **Resolve / Reopen** — on the thread. Copy takes the **whole thread** (see §7a);
+- **React**, **✓ Resolve** (or **Reopen**) and **⋯**, which holds **Copy thread** and, on your own
+  comments, **Edit** and **Delete**. Replies have React and ⋯. Copy takes the **whole thread** (see §7a);
   resolving fades the thread and its highlight away.
-- The thread is answered from its reply line, which lines up with the indented replies. It is a
-  plain line to write on, with no mark or placeholder before it: clicking anywhere on it puts the
-  caret at the end of what is there, and on hover the line darkens slightly and shows a text
-  cursor.
+- The thread is answered from its reply box, which lines up with the indented replies. Clicking
+  anywhere on it puts the caret at the end of what is there.
 
 **The comment control**
 
@@ -311,6 +315,9 @@ any of them off.
   - With no open threads it shows the comment icon, Pipeup's mark, drawn in a thin line.
   - With open threads it shows **their number inside the comment bubble**, slightly larger.
   - Hovering it shows a **tooltip**: "Comment" and the shortcut.
+- **While All comments is open, the round button becomes the panel's footer**: your avatar and name,
+  **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
+  the footer back into the round button. Both shapes ease into each other.
 - **Clicking it opens its menu**, which rises above the button. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
@@ -343,11 +350,17 @@ any of them off.
   views and ones whose content is gone (§8), with each author's avatar.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
     the panel closes, so the panel covers none of the page's content (§9).
-  - **Show resolved** is a small switch in the panel's header: it brings resolved threads back,
-    muted, each with **Reopen**, in the panel and on the page.
-  - A row is a **preview**: the first words of the thread and where it is. Choosing a row **opens the
-    thread out in the panel** as the thread itself: its comments and replies, who and when, Copy,
-    Resolve (or Reopen) and a reply line, all usable there. Nothing opens on the page.
+  - The panel has no title. Its top line holds two **icon toggles** and the close button: **@** shows
+    only comments that mention me (it appears only when there are some), and **✓** brings resolved
+    threads back, muted, each with **Reopen**, in the panel and on the page. Clicking an icon turns it on;
+    clicking again turns it off. On, it is bold; off, it is grey; neither has a border, and hovering shows
+    the other state's colour. Nothing in the panel wraps onto a second line.
+  - Each thread is a **card** (§7, *compact cards*), with the words it is about. Choosing a card **opens it
+    out in place**: its comments and replies, its actions and its reply box, all usable there. Nothing
+    opens on the page.
+  - **New comments are written in the panel while it is open.** Turning comment mode on leaves the panel
+    open; choosing something on the page then adds a new card to the list where it falls in page order,
+    joined to its place by the same line as an open thread. Sending turns it into a thread there.
   - Choosing a row also **reveals where the thread is**: the page scrolls to it, its words are marked,
     and a thin line eases in from the open row to that place, following scrolling, until the row is
     closed. Threads with no place to point at (content gone, or on another slide or view) open the
@@ -355,7 +368,8 @@ any of them off.
   - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
     closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
     Show resolved is on.
-  - The panel closes with its close button, Esc (after any open thread), or a click on the page.
+  - The panel closes with its close button, Esc (after any open thread), or a click on the page. In
+    comment mode a click on the page chooses something to comment on instead, and the panel stays open.
     A click on a comment on the page (its highlighted words, bubble, pin or column thread) doesn't count as
     a click on the page: it opens that thread in the panel, as choosing its row does, and the panel stays open.
   - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
@@ -1559,3 +1573,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Built (0.8): `pipeup init` (section 15e). Add-ons can't yet go inside the page with `--offline`; the command says so.
 - 2026-10-13 — Built (0.8): `pipeup read` (section 15f). Without the page open, a thread's place comes from what the comment saved (slide, block name, quote), not from the page's layout.
 - 2026-10-14 — Comments show whether comment mode is on or off, and **Hide comments** (a menu switch, remembered per page in this browser) puts them out of sight; this reverses the 2026-10-06 rule that comments show only while reviewing. Holding ⌘ (Ctrl elsewhere) pauses comment mode so the page can be used. With All comments open, clicking a comment on the page opens it in the panel instead of closing the panel (sections 5, 7 and 9).
+- 2026-10-14 — All comments becomes the hub: the round button becomes the panel's footer while it is open, new comments are written in the panel, and comment mode leaves it open. Every thread is the same compact card (avatar, name, how long ago, words; actions at its top right, with ⋯ for Copy thread, Edit and Delete), in the column, beside a bubble, in the panel and in the drawer. The comment and reply boxes say "Comment (Reply) or add others with @" and have Cancel and Comment (Reply) buttons. The panel's header has no title: @ and ✓ are icon toggles (sections 5 and 7).
+- 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.3 KB to Pipeup (50.5 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
