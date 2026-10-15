@@ -23,7 +23,7 @@ const EFFECTS: [string, string][] = [
 export interface Appearance {
   /** The look Pipeup is showing. */
   look: Look;
-  /** Who chose it: the reviewer (the Look row), the author (data-pipeup-theme) or what the page shows. */
+  /** Who chose it: the reviewer (the Theme row), the author (data-pipeup-theme) or what the page shows. */
   source: "reviewer" | "author" | "page";
   /** Contrast of Pipeup's words on its own surface, as the page's styles leave it; 3 is the least that reads. */
   ratio: number;
