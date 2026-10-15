@@ -74,7 +74,7 @@ builds on [comments-at-rest.md](comments-at-rest.md).
 
 ## Size
 
-+1.5 KB gzip (49.2 → 50.7 KB). The budget rises from 50 to 51 KB. This is Pipeup's own UI, which every page shows, so it
++1.6 KB gzip (49.2 → 50.8 KB). The budget rises from 50 to 51 KB. This is Pipeup's own UI, which every page shows, so it
 can't move to an add-on. There are no unused styles to cut (checked).
 
 ## Change log
