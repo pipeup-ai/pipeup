@@ -3,7 +3,7 @@ import type { Ctx, View } from "./context";
 import { clip, h, selected } from "./dom";
 import { icon } from "./icons";
 import { ACTIVATES } from "./comment-mode";
-import { placeIcon } from "./layout";
+import { placeIcon, touch } from "./layout";
 import { IGNORED } from "./pick";
 
 const NOT_HERE = `${IGNORED},input,textarea,select,[contenteditable]:not([contenteditable=false])`;
@@ -30,7 +30,7 @@ export function createSelection(ctx: Ctx): View {
 
   function position(): void {
     if (!range) return;
-    // Past the right of the block's text, level with the selection's last line.
+    // Past the right of the block's text, level with the selection's last line; below the selection on a touch screen.
     const text = range.cloneRange();
     text.selectNodeContents(blockOf(range.commonAncestorContainer, ctx.root));
     const sel = range.getBoundingClientRect();
@@ -40,6 +40,7 @@ export function createSelection(ctx: Ctx): View {
       text.getBoundingClientRect().right,
       { width: bar.offsetWidth || 36, height: bar.offsetHeight || 34 },
       { width: window.innerWidth, height: window.innerHeight },
+      touch(),
     );
     bar.style.left = `${left}px`;
     bar.style.top = `${top}px`;

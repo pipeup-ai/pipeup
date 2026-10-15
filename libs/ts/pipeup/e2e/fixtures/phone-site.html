@@ -1,0 +1,88 @@
+<!doctype html>
+<!-- A small site laid out for phones: a hero taller than a small phone's screen, cards that reach the window's edges,
+     and stats. Bubbles show (there is no column). -->
+<html
+  lang="en"
+  data-pipeup-doc="pHoNeSiTe0000001:PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lumen</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          16px/1.6 system-ui,
+          -apple-system,
+          sans-serif;
+        color: #1d1d1f;
+        background: #fafaf8;
+      }
+      .hero {
+        text-align: center;
+        padding: 72px 20px 56px;
+      }
+      .hero h1 {
+        font-size: 46px;
+        line-height: 1.1;
+        margin: 0 0 12px;
+      }
+      .hero p {
+        color: #55544f;
+        font-size: 19px;
+        margin: 0 auto 28px;
+      }
+      .cta {
+        background: #1d1d1f;
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 26px;
+        font: inherit;
+      }
+      .cards {
+        display: grid;
+        gap: 20px;
+      }
+      .card {
+        background: #fff;
+        border-top: 1px solid #ecebe6;
+        border-bottom: 1px solid #ecebe6;
+        padding: 22px;
+      }
+      .card h3 {
+        margin: 0 0 6px;
+      }
+      .stats {
+        padding: 40px 20px 80px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="hero" data-pipeup-id="hero">
+      <h1>Light up your reading list</h1>
+      <p>Lumen saves articles, syncs them everywhere and reads them aloud when your hands are busy.</p>
+      <button class="cta" data-pipeup-id="start-free">Start free</button>
+    </section>
+    <section class="cards" data-pipeup-id="features">
+      <div class="card" data-pipeup-id="feature-save">
+        <h3>Save anything</h3>
+        <p>One tap from any browser or app.</p>
+      </div>
+      <div class="card" data-pipeup-id="feature-offline">
+        <h3>Offline first</h3>
+        <p>Everything you save is there on the plane.</p>
+      </div>
+      <div class="card" data-pipeup-id="feature-listen">
+        <h3>Listen</h3>
+        <p>Natural voices, any speed.</p>
+      </div>
+    </section>
+    <section class="stats" data-pipeup-id="stats">
+      <p id="readers"><b>48k</b> weekly readers, and 63% of them come back in their first week.</p>
+    </section>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

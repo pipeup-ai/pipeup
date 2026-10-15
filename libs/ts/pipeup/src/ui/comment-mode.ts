@@ -4,7 +4,7 @@ import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
 import { fit, h, inert, selected } from "./dom";
 import { icon, type IconName } from "./icons";
-import { placeBar } from "./layout";
+import { placeBar, touch } from "./layout";
 import { byPage, nodeOf } from "./order";
 import { blockTree, childBlocks, IGNORED, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
 import { HOLD } from "./shortcut";
@@ -98,18 +98,22 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   });
   const label = h("span", { class: "lbl" });
   /** A naming-bar button: an icon, with a name for screen readers and a tooltip. */
-  const nb = (name: string, tip: string, ic: IconName, run: () => void) => {
+  const nb = (name: string, tip: string, ic: IconName, run: (e: MouseEvent) => void) => {
     const b = h("button", { class: "nb", type: "button", "aria-label": name, title: tip }, icon(ic, 16));
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      run();
+      run(e);
     });
     return b;
   };
   const up = nb("Around it", "Select the block around it", "expand", around);
   const down = nb("Inside it", "Select a block inside it", "shrink", inside);
-  const pinner = nb("Pin", "Pin its centre", "pin", () =>
-    ctx.keepCaret(() => commentOn((chosen ?? cur)!, { x: 0.5, y: 0.5 })),
+  // Tapped on a touch screen, Pin waits for the next tap and the pin goes there (a second tap on it lets go); from the
+  // keyboard, and with a mouse (which has Option-click for a spot), it pins the block's centre.
+  const pinner = nb("Pin", "Pin its centre", "pin", (e) =>
+    e.detail && touch()
+      ? wait(!pinning)
+      : ctx.keepCaret(() => commentOn((chosen ?? cur)!, { x: 0.5, y: 0.5 })),
   );
   // A group, not a toolbar: it has no arrow keys of its own.
   const bar = h(
@@ -162,6 +166,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let passed: EventTarget | null = null;
   /** Tab is moving the cursor on from a box: the draft closing doesn't first bring focus back to the old block. */
   let moving = false;
+  /** Pin was tapped: the next tap on the page drops the pin there. */
+  let pinning = false;
 
   /** The event is the page's, outside the areas the author asked Pipeup to leave alone. */
   const onPage = (e: Event) => !ctx.owns(e) && !(e.target instanceof Element && e.target.closest(IGNORED));
@@ -173,17 +179,27 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     fit(outline, at.getBoundingClientRect(), 4);
   }
 
-  /** The bar sits above the chosen block (below it near the top), centred, never over it; glides with the outline. */
+  /**
+   * The bar sits above the chosen block (below it near the top), centred, never over it; glides with the outline. A
+   * block that leaves no room for both (a phone) has its comment box over it: the bar sits just above the box.
+   */
   function positionBar(): void {
     if (!barAt) return;
     bar.classList.toggle("glide", performance.now() < glideUntil && bar.classList.contains("show"));
-    const { left, top } = placeBar(
-      barAt.getBoundingClientRect(),
-      { width: bar.offsetWidth || 200, height: bar.offsetHeight || 34 },
-      { width: window.innerWidth, height: window.innerHeight },
-    );
-    bar.style.left = `${left}px`;
-    bar.style.top = `${top}px`;
+    const size = { width: bar.offsetWidth || 200, height: bar.offsetHeight || 34 };
+    const p = placeBar(barAt.getBoundingClientRect(), size, { width: innerWidth, height: innerHeight });
+    const box = ctx.layer.querySelector(".pop.show")?.getBoundingClientRect();
+    const tall = size.height;
+    if (
+      box &&
+      p.top < box.bottom &&
+      p.top + tall > box.top &&
+      p.left < box.right &&
+      p.left + size.width > box.left
+    )
+      p.top = box.top - tall - 8 >= 8 ? box.top - tall - 8 : box.bottom + 8;
+    bar.style.left = `${p.left}px`;
+    bar.style.top = `${p.top}px`;
   }
 
   function moveTo(el: Element, glide: boolean): void {
@@ -239,7 +255,16 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     }
   }
 
+  /** Pin waits for the next tap (or lets go): the bar says so, and so do screen readers. */
+  function wait(on: boolean): void {
+    pinning = ctx.state.pinning = on;
+    pinner.classList.toggle("on", on);
+    if (on) ctx.say((label.textContent = "Tap where to pin"));
+    else if (barAt) label.textContent = labelOf(barAt);
+  }
+
   function choose(el: Element | null): void {
+    if (pinning) wait(false);
     chosen = el;
     outline.classList.toggle("on", el !== null);
     show(el);
@@ -324,6 +349,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   }
 
   function onPick(e: MouseEvent): void {
+    // Pin is waiting: this tap is where the pin goes, keeping any words already typed.
+    if (pinning) return pin(e);
     // A finished text selection: its own comment icon takes it from here.
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed) {
@@ -908,6 +935,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       ctx.layer.querySelector(".draft")?.classList.remove("wait");
       stopFade();
       stopBar();
+      ctx.state.pinning = false;
       ended = true;
       if (!taken) window.removeEventListener("keyup", onKeyUp, true);
       window.removeEventListener("blur", onBlur);

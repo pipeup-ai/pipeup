@@ -15,6 +15,11 @@ export interface Box {
 export interface Viewport {
   width: number;
   height: number;
+  /**
+   * Where the comment control's corner starts (its left and top edges, and the left of comment mode's touch hint
+   * beside it): a box reaching past `left` stays above `top`, so nothing sits under the control.
+   */
+  keep?: { left: number; top: number };
 }
 
 export interface AnchorPoint {
@@ -57,6 +62,8 @@ export const popover = (): number => (window.innerWidth >= 900 ? 400 : POPOVER);
 /** On screens this narrow or less, All comments takes the whole width (it gets .full). */
 export const NARROW = 480;
 export const narrow = (): boolean => window.innerWidth <= NARROW;
+/** A touch screen: a finger is the main pointer (the stylesheet's `pointer: coarse`). */
+export const touch = (): boolean => window.matchMedia?.("(pointer: coarse)").matches === true;
 
 /** The viewport left for popovers: All comments, when open, takes its width from the right. */
 export function room(listing: boolean): Viewport {
@@ -64,31 +71,31 @@ export function room(listing: boolean): Viewport {
   return { width: listing && !narrow() ? w - PANEL : w, height: window.innerHeight };
 }
 
+/** The lowest a box from `left`, `width` across, may reach: clear of the comment control's corner, and of the margin. */
+const floor = (left: number, width: number, vp: Viewport, margin: number): number =>
+  vp.keep && left + width > vp.keep.left ? Math.min(vp.height - margin, vp.keep.top - 8) : vp.height - margin;
+
 export function placePopover(
   at: AnchorPoint,
   size: { width: number; height: number },
   vp: Viewport,
   margin = 12,
 ): { left: number; top: number } {
-  let left: number;
-  let top: number;
-  if (at.below) {
-    left = Math.min(at.x, vp.width - size.width - margin);
-    top = at.y + 8;
-    if (top + size.height > vp.height - margin) top = at.y - size.height - 40;
-  } else {
-    left = at.x + 14;
-    // No room beside (a phone, or the right edge): below what it is about, or above it, not over it.
-    if (left + size.width > vp.width - margin) return placeDraft(at.box, size, vp, margin, 0);
-    top = Math.min(at.y - 12, vp.height - size.height - margin);
-  }
-  return { left: Math.max(margin, left), top: Math.max(margin, top) };
+  // No room beside (a phone, or the right edge): below what it is about, or above it, not over it.
+  if (!at.below && at.x + 14 + size.width > vp.width - margin) return placeDraft(at.box, size, vp, margin, 0);
+  const left = Math.max(margin, at.below ? Math.min(at.x, vp.width - size.width - margin) : at.x + 14);
+  const low = floor(left, size.width, vp, margin);
+  let top = at.below ? at.y + 8 : at.y - 12;
+  if (at.below && top + size.height > low) top = at.y - size.height - 40;
+  // Always in the window, even when what it is about has gone below it (a phone turned on its side).
+  return { left, top: Math.max(margin, Math.min(top, low - size.height)) };
 }
 
 /**
  * An element draft: just below its block, above it when there is no room below, never over the block or the
  * naming bar (which sits above the block, or below it when there is no room above). A block too tall for either
- * keeps the box on screen, as low as it fits.
+ * keeps the box on screen, as low as it fits. Where the comment control's corner is in the way below, the box moves left
+ * of the control if it can, rather than up over the block.
  */
 export function placeDraft(
   block: Box,
@@ -100,23 +107,27 @@ export function placeDraft(
   const barAbove = block.top - bar >= 8;
   const below = block.top + block.height + 8 + (barAbove ? 0 : bar);
   const above = block.top - 8 - (barAbove ? bar : 0) - size.height;
-  const under = below + size.height <= vp.height - margin || above < margin;
-  const top = under ? below : above;
-  return {
-    above: !under,
-    left: Math.max(margin, Math.min(block.left, vp.width - size.width - margin)),
-    top: Math.max(margin, under ? Math.min(top, vp.height - size.height - margin) : top),
-  };
+  let left = Math.max(margin, Math.min(block.left, vp.width - size.width - margin));
+  const fits = (l: number) => below + size.height <= floor(l, size.width, vp, margin);
+  const aside = vp.keep ? vp.keep.left - 8 - size.width : -1;
+  if (!fits(left) && aside >= margin && fits(aside)) left = Math.min(left, aside);
+  const low = floor(left, size.width, vp, margin);
+  const under = below + size.height <= low || above < margin;
+  return { above: !under, left, top: Math.max(margin, under ? Math.min(below, low - size.height) : above) };
 }
 
-/** The selection bar: centred above the target, or below it when there's no room; never covering it. */
+/**
+ * The naming bar (and the selection's icon): centred above the target, or below it when there's no room; never covering
+ * it. A target taller than the window has room for neither: the bar sits at the window's top, over it.
+ */
 export function placeBar(
   target: Box,
   size: { width: number; height: number },
   vp: Viewport,
 ): { left: number; top: number } {
-  let top = target.top - size.height - 10;
-  if (top < 8) top = target.top + target.height + 10;
+  const above = target.top - size.height - 10;
+  let top = above < 8 ? target.top + target.height + 10 : above;
+  if (top + size.height > vp.height - 8) top = Math.max(8, above);
   const left = Math.max(
     8,
     Math.min(target.left + target.width / 2 - size.width / 2, vp.width - size.width - 8),
@@ -126,7 +137,8 @@ export function placeBar(
 
 /**
  * The selection's comment icon: just past the right of its block's text, level with the selection's last line, so it
- * covers no words; above the selection (or below) when there's no room there.
+ * covers no words; above the selection (or below) when there's no room there. On a touch screen (`below`), below the
+ * selection, clear of the phone's own selection menu above it and its handles at its ends.
  */
 export function placeIcon(
   sel: Box,
@@ -134,8 +146,14 @@ export function placeIcon(
   textRight: number,
   size: { width: number; height: number },
   vp: Viewport,
+  below = false,
 ): { left: number; top: number } {
   const left = textRight + 8;
+  if (below) {
+    const bar = placeBar(sel, size, vp);
+    const under = sel.top + sel.height + 20;
+    return { left: bar.left, top: under + size.height <= vp.height - 8 ? under : bar.top };
+  }
   if (left + size.width > vp.width - 8) return placeBar(sel, size, vp);
   return { left, top: line.top + line.height / 2 - size.height / 2 };
 }

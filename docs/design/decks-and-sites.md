@@ -85,8 +85,15 @@ code (MD-09, MD-10, MD-11, KB-10, LK-06, LK-15). Builds on [words-and-focus.md](
 
 Pipeup is 55.0 KB gzip (+1.2 KB); the budget rises from 54 to 55 KB (`scripts/size.mjs` and the add-ons' `CORE`). The
 largest parts are the names (0.37 KB), the decks' refit and lift, the waiting hint and the view rule in the app
-(0.3 KB), and the showing slides.
+(0.3 KB), and the showing slides. With the looks (#81) and phones (#82) batches merged in, Pipeup is 57.4 KB and the
+budget is 57.5 KB.
+
+When merged with the phones batch, its own "hint waits for the menu" (`hintLater`) replaced this batch's `waiting`:
+`toast()` defers a hint into `hintLater` while the menu is open, `hideHint()` drops a waiting hint (except by touch),
+and the menu's bottom offset (`--b`) carries the deck's lift.
 
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-15 — Merged with the looks and phones batches: one waiting hint, the menu's `--b` with the deck's lift, All
+  comments' groups as list items holding their own lists, and rows that fold and grow; Pipeup 57.4 KB, budget 57.5 KB.

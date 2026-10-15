@@ -103,7 +103,8 @@ test("Start commenting chosen with the mouse leaves the menu open and starts no 
   await commenting(page);
   await expect(page.locator(".menu.show")).toHaveCount(1);
   expect(await cursorOn(page)).toBeNull();
-  // Its hint waits until the menu has closed, so nothing covers it.
+  // Nothing of Pipeup's covers a message: the hint waits until the menu has closed.
+  await page.waitForTimeout(300);
   await expect(page.locator(".toast.show")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator(".toast.show")).toContainText("Click anything to comment");
