@@ -28,12 +28,13 @@ svg{display:block}
 .root>.tx,.it>.tx,.root>.ctx{margin-top:2px}
 .ctx[hidden]{display:none}
 .ctx{font-size:12px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cd>.thread .tx{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tx a{color:var(--pu-accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 
-/* Actions sit at the card's top right: always on an open card, on hover (or focus) on one at rest. */
+/* Actions sit at the card's top right: always on an open card, on hover (or focus) on one at rest. In All comments a
+closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. */
 .acts{margin-left:auto;display:flex;flex:none;transition:opacity var(--in) var(--eo)}
-.th:not(.on):not(:hover):not(:focus-within) .acts{opacity:0}
+.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts{opacity:0}
 .th.on .rest{display:none}
 /* A comment's ⋯ menu: Copy thread, Edit, Delete (asked twice). */
 .pm{position:absolute;right:0;top:100%;z-index:5;display:flex;flex-direction:column;min-width:150px;padding:4px;border:1px solid var(--ln);border-radius:10px;background:var(--su);box-shadow:var(--sh);animation:pu-in var(--in) var(--eo) both}
@@ -219,7 +220,7 @@ grows or slides: its layers and numbers cross-fade in place. */
 .ttip small,.mi .kc{font-size:12px;color:var(--fa)}
 .mode:hover+.ttip,.mode:focus-visible+.ttip{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .5s,transform var(--in) var(--eo) .5s}
 .launch .mode[aria-expanded=true]+.ttip{opacity:0;transition:opacity var(--out) var(--ei)}
-@media (hover:none){.ttip,.tt{display:none}}
+@media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
 .menu{position:fixed;right:20px;bottom:76px;width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .menu.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
@@ -259,30 +260,32 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .all.show,.xp.show{opacity:1;transform:none;pointer-events:auto;transition:transform var(--mv) var(--eo),opacity var(--in) var(--eo)}
 .all.full{width:100%}
-/* The header: no title, just two icon toggles (bold on, grey off; hovering shows the other) and Close. */
-.hd{display:flex;align-items:center;gap:2px;padding:8px 8px 6px 8px}
+/* The header: no title, two filters (an icon and a word in a pill: grey off, a soft accent fill on) and Close. */
+.hd{display:flex;align-items:center;gap:4px;padding:8px 8px 6px}
 .sp{flex:1}
-.tg{display:grid;place-items:center;min-width:30px;height:30px;border-radius:6px;font-size:17px;color:var(--fa);transition:color .2s var(--eo)}
-.tg b{font-weight:400}
-.tg[aria-pressed=true],.tg:hover{color:var(--k)}
-.tg[aria-pressed=true] b{font-weight:700}
-.tg[aria-pressed=true]:hover{color:var(--fa)}
-.tg:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
-/* What each toggle does: a tooltip under it that eases in after a moment, on hover or focus. */
-.tg{position:relative}
+.tg{position:relative;display:flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 9px;border-radius:99px;white-space:nowrap;color:var(--mu);transition:background-color .2s var(--eo),color .2s var(--eo)}
+.tg b{font-size:15px;font-weight:500;line-height:1}
+.tg:hover{background:var(--ho);color:var(--k)}
+.tg[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
+.tg[aria-pressed=true]:hover{background:color-mix(in srgb,var(--pu-accent) 20%,transparent)}
+.tg:focus-visible{outline:2px solid var(--pu-accent);outline-offset:1px}
+/* What each filter does: a tooltip under it that eases in after a moment, on hover or focus. */
 .tg::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 4px);z-index:3;width:max-content;max-width:220px;padding:4px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);font-size:12px;line-height:1.4;color:var(--mu);pointer-events:none;opacity:0;transform:translateY(-3px);transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .tg:hover::after,.tg:focus-visible::after{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .4s,transform var(--in) var(--eo) .4s}
 .list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 8px 8px;background:var(--so)}
 /* Threads in the panel are the same cards; opened, a card shows the thread beneath the words it's about. */
-.cd{margin-top:6px;background:var(--su);border:1px solid var(--ln);border-radius:10px;transition:box-shadow var(--in) var(--eo),border-color var(--in) var(--eo)}
+.cd{position:relative;margin-top:6px;background:var(--su);border:1px solid var(--ln);border-radius:10px;transition:box-shadow var(--in) var(--eo),border-color var(--in) var(--eo),background-color .2s var(--eo)}
 .cd.open{border-color:transparent;box-shadow:var(--sh)}
 .cd.done{opacity:.6}
-.cd .mi{display:block;min-height:0;padding:8px 10px 10px;border-radius:10px}
-.cd .mi>.ctx,.cd .mi>.tx{display:block;margin-top:2px}
+/* Closed, its button lies over it (choosing the card opens it), beneath its actions and what they open. */
+.cd>.mi{position:absolute;inset:0;border-radius:10px;background:none}
+.cd>.thread :is(.acts,.refs,.edit){position:relative;z-index:1}
+.cd:not(.open,.new):is(:hover,:has(>.mi:focus-visible)){background:var(--so)}
+/* Resolved from its actions, it fades and folds away. */
+.cd.out{opacity:0;margin-top:0;border-width:0;overflow:hidden;transition:height var(--mv) var(--eio),margin var(--mv) var(--eio),border-width var(--mv) var(--eio),opacity var(--out) var(--ei)}
 .cd.open>.mi{display:none}
 .cd.open .root>.hdr{cursor:pointer}
-.cd.new{padding:8px 10px 10px}
-.xr{padding:8px 10px 10px}
+.cd.new,.xr,.cd>.thread{padding:8px 10px 10px}
 /* The footer: who you are, Comment (its shortcut and switch), and ⋯ for the menu. */
 .pf{display:flex;align-items:center;gap:8px;min-height:52px;padding:0 8px 0 14px;border-top:1px solid var(--ln)}
 .fs{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;font-size:13px;transition:background-color .2s var(--eo)}
@@ -329,6 +332,7 @@ and above its footer when it fills the screen. */
 @media (forced-colors: active){
 .pick.kf{border:3px solid Highlight}
 .layer :is(.ib,.mi,.nb,.tg,.fs,.selbar button,.say button,.xb button):focus-visible{outline:2px solid Highlight}
+.tg[aria-pressed=true]{background:Highlight;color:HighlightText}
 }
 
 @media (prefers-reduced-motion: reduce){

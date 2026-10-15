@@ -9,10 +9,11 @@ change the API and the stored comment format.
 
 ### Changed
 
-- **All comments is the hub while it is open.** The round button becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title: **@** (mentions of me) and **✓** (show resolved) are icon toggles, bold when on, with tooltips. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
+- **All comments is the hub while it is open.** The round button becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title, just its two filters and ×. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
+- **All comments' filters read as on or off.** They are pills with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and filled with a soft tint of the accent colour when on, with tooltips. **Hovering a closed card in the panel shows its actions** (React, ✓ Resolve and ⋯, as on every card), and they work without opening it; on touch screens they show once the card is open.
 - **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
 - **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
-- **Pipeup is 51.1 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
+- **Pipeup is 51.6 KB gzip** with these and the fixes below, and its budget rises from 50 to 52 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
 
 ### Added

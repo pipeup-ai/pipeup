@@ -152,14 +152,14 @@ test("selecting text offers nothing outside comment mode, and the comment icon i
   await expect(page.locator(".selbar.show")).toHaveCount(0);
 });
 
-test("Show resolved is an icon toggle in the All comments panel, not the menu", async ({ page }) => {
+test("✓ Resolved is a filter in the All comments panel, not the menu", async ({ page }) => {
   await open(page, "doc.html");
   const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
   await openMenu(page);
-  await expect(page.locator(".menu.show").getByText("Show resolved")).toHaveCount(0);
+  await expect(page.locator(".menu.show").getByText(/Resolved/)).toHaveCount(0);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const sw = panel(page).locator(".hd").getByRole("button", { name: "Show resolved" });
+  const sw = panel(page).locator(".hd").getByRole("button", { name: "Resolved", exact: true });
   await expect(sw).toHaveAttribute("aria-pressed", "false");
   await expect(panel(page).locator(".list").getByRole("menuitem")).toHaveCount(0);
   await sw.click();

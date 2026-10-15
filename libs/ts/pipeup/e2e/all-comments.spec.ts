@@ -177,7 +177,7 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   expect((await focusInPipeup(page)).text).toContain("Match the nav?");
 });
 
-test("closed, the list is out of the keyboard's reach, and resolved threads follow Show resolved", async ({
+test("closed, the list is out of the keyboard's reach, and resolved threads follow ✓ Resolved", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -187,7 +187,7 @@ test("closed, the list is out of the keyboard's reach, and resolved threads foll
   await page.evaluate((id) => (window as any).pu.document.resolve(id), a);
   await openAll(page);
   await expect(list(page).getByRole("menuitem")).toHaveCount(1);
-  await list(page).getByRole("button", { name: "Show resolved" }).click();
+  await list(page).getByRole("button", { name: "Resolved", exact: true }).click();
   await expect(list(page).getByRole("menuitem")).toHaveCount(2);
   // The choice stays when the panel closes and opens again.
   await page.keyboard.press("Escape");

@@ -84,3 +84,5 @@ can't move to an add-on. There are no unused styles to cut (checked).
   show their quote once, the footer's menu draws above the panel, deleted comments go away, and the pulse follows the
   page.
 - 2026-10-14 — The list updates in place, so an open reply box no longer flashes when the panel updates.
+- 2026-10-15 — The header's toggles are pills with words, and closed cards show their actions on hover: see
+  [panel-filters-hover.md](panel-filters-hover.md).

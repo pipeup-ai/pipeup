@@ -1,5 +1,14 @@
-import { expect, test, type Page } from "@playwright/test";
-import { commenting, open, openMenu, seedText, settled, showComments, toggleCommenting } from "./helpers";
+import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  commenting,
+  open,
+  openMenu,
+  seedText,
+  settled,
+  showComments,
+  stubClipboard,
+  toggleCommenting,
+} from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
 async function openAll(page: Page): Promise<void> {
@@ -10,41 +19,174 @@ async function openAll(page: Page): Promise<void> {
 
 test.describe.configure({ mode: "parallel" });
 
-test("the panel's header has no title: @ and ✓ are icon toggles, bold when on, and nothing wraps", async ({
+/** A filter's fill and the colour of its words and icon. */
+const paint = (b: Locator) =>
+  b.evaluate((e) => ({ bg: getComputedStyle(e).backgroundColor, color: getComputedStyle(e).color }));
+/** The accent colour as Pipeup paints it. */
+const accent = (page: Page) =>
+  page.evaluate(() => {
+    const layer = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(".layer")!;
+    const probe = document.createElement("i");
+    probe.style.color = "var(--pu-accent)";
+    layer.append(probe);
+    const c = getComputedStyle(probe).color;
+    probe.remove();
+    return c;
+  });
+
+for (const look of ["light", "dark"] as const)
+  test(`the panel's header has no title: @ For you and ✓ Resolved are pills, filled with the accent when on (${look})`, async ({
+    page,
+  }) => {
+    await open(page, "doc.html");
+    if (look === "dark") {
+      await page.evaluate(() => document.documentElement.setAttribute("data-pipeup-theme", "dark"));
+      await expect(page.locator(".layer")).toHaveClass(/dark/);
+    }
+    const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+    await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
+    await seedText(page, "#p2", "second designer", "Why Q4?");
+    await openAll(page);
+    const hd = panel(page).locator(".hd");
+    await expect(hd).not.toContainText("All comments");
+    // Each filter shows its icon and its word, and is named by its word.
+    const at = hd.getByRole("button", { name: "For you", exact: true });
+    const resolved = hd.getByRole("button", { name: "Resolved", exact: true });
+    await expect(at).toHaveText("@For you");
+    await expect(resolved).toHaveText("Resolved");
+    await expect(resolved.locator("svg")).toHaveCount(1);
+    await expect(resolved).toHaveAttribute("aria-pressed", "false");
+    // Off: grey words and icon, nothing behind them.
+    await page.mouse.move(5, 700);
+    await settled(resolved);
+    const off = await paint(resolved);
+    expect(off.bg).toBe("rgba(0, 0, 0, 0)");
+    await expect(panel(page).locator(".cd")).toHaveCount(1);
+    await resolved.click();
+    await expect(resolved).toHaveAttribute("aria-pressed", "true");
+    await expect(panel(page).locator(".cd")).toHaveCount(2);
+    // On: a soft fill of the accent, the words and icon in the accent. The change eases.
+    await page.mouse.move(5, 700);
+    await settled(resolved);
+    const on = await paint(resolved);
+    expect(on.bg).not.toBe(off.bg);
+    expect(on.color).not.toBe(off.color);
+    expect(on.color).toBe(await accent(page));
+    expect(await resolved.evaluate((e) => getComputedStyle(e).transitionProperty)).toContain(
+      "background-color",
+    );
+    // Hovering an off filter shows a light fill, not the on one.
+    await at.hover();
+    await expect.poll(async () => (await paint(at)).bg).not.toBe("rgba(0, 0, 0, 0)");
+    await settled(at);
+    expect((await paint(at)).bg).not.toBe(on.bg);
+    // Each has a tooltip that says what it does, easing in on hover.
+    const tip = () =>
+      at.evaluate((e) => [getComputedStyle(e, "::after").opacity, getComputedStyle(e, "::after").content]);
+    await expect.poll(async () => (await tip())[0]).toBe("1");
+    expect((await tip())[1]).toBe('"Only comments that mention you"');
+    // For you shows even when nobody mentions this reviewer; on, it says so rather than showing everything.
+    await at.click();
+    await expect(at).toHaveAttribute("aria-pressed", "true");
+    await expect(panel(page)).toContainText("No comments mention you");
+    await at.click();
+    // Nothing wraps: the header is one line inside the panel, and across a narrow screen.
+    for (const width of [1280, 360]) {
+      await page.setViewportSize({ width, height: 800 });
+      await expect.poll(() => hd.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+      expect((await hd.boundingBox())!.height).toBeLessThan(50);
+      for (const b of [at, resolved]) expect((await b.boundingBox())!.height).toBeLessThan(32);
+    }
+  });
+
+test("hovering a closed card in the panel shows its actions; they work without opening it, and nothing moves", async ({
   page,
 }) => {
-  await open(page, "doc.html");
-  const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
+  await stubClipboard(page);
+  await open(page, "doc.html", { name: "Sam" });
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await openAll(page);
-  const hd = panel(page).locator(".hd");
-  await expect(hd).not.toContainText("All comments");
-  // One line: the header is as tall as its buttons.
-  expect((await hd.boundingBox())!.height).toBeLessThan(50);
-  const resolved = hd.getByRole("button", { name: "Show resolved" });
-  await expect(resolved).toHaveAttribute("aria-pressed", "false");
-  const grey = await resolved.evaluate((e) => getComputedStyle(e).color);
+  await page.mouse.move(5, 700);
+  const card = panel(page).locator(".cd").first();
+  const next = panel(page).locator(".cd").nth(1);
+  const acts = card.locator(".root .acts");
+  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+  await settled(panel(page));
+  const was = [(await card.boundingBox())!, (await next.boundingBox())!];
+  // Hovered, its actions ease in at its top right, and neither it nor the card below moves.
+  await card.hover();
+  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+  expect(await acts.evaluate((e) => getComputedStyle(e).transitionProperty)).toContain("opacity");
+  expect([(await card.boundingBox())!, (await next.boundingBox())!]).toEqual(was);
+  const box = was[0]!;
+  for (const name of ["React", "Resolve", "More"]) {
+    const b = (await card.getByRole("button", { name, exact: true }).boundingBox())!;
+    expect(b.y - box.y).toBeLessThan(20);
+    expect(b.x).toBeGreaterThan(box.x + box.width / 2);
+  }
+  // React: the quick row opens inside the closed card; a choice reacts, and the card stays closed.
+  await card.getByRole("button", { name: "React", exact: true }).click();
+  await card.getByRole("button", { name: "Thumbs up" }).click();
+  await expect(card.locator(".rest")).toContainText("👍 1");
+  await expect(panel(page).locator(".cd.open")).toHaveCount(0);
+  // ⋯: Copy thread, and Edit and Delete on your own comment. Edit puts the words in a box in the closed card.
+  await card.hover();
+  await card.getByRole("button", { name: "More", exact: true }).click();
+  await expect(card.getByRole("menuitem", { name: "Delete" })).toBeVisible();
+  await card.getByRole("menuitem", { name: "Copy thread" }).click();
+  await expect.poll(() => page.evaluate(() => (window as any).__copied.length)).toBe(1);
+  await card.getByRole("button", { name: "More", exact: true }).click();
+  await card.getByRole("menuitem", { name: "Edit" }).click();
+  const edit = card.locator(".edit textarea");
+  await expect(edit).toBeFocused();
+  await edit.fill("Is 20% realistic for Q3?");
+  await page.keyboard.press("Enter");
+  await expect(card.locator(".root > .tx")).toHaveText("Is 20% realistic for Q3? (edited)");
+  await expect(panel(page).locator(".cd.open")).toHaveCount(0);
+  // Resolve: the thread is resolved from the closed card, which eases out of the list without opening.
+  await card.hover();
+  await card.getByRole("button", { name: "Resolve", exact: true }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as any).pu.document.threads().filter((t: any) => t.resolved).length),
+    )
+    .toBe(1);
   await expect(panel(page).locator(".cd")).toHaveCount(1);
-  await resolved.click();
-  await expect(resolved).toHaveAttribute("aria-pressed", "true");
-  await expect(panel(page).locator(".cd")).toHaveCount(2);
-  await page.mouse.move(5, 5);
-  await expect.poll(() => resolved.evaluate((e) => getComputedStyle(e).color)).not.toBe(grey);
-  // No border or box around it.
-  expect(await resolved.evaluate((e) => getComputedStyle(e).borderTopWidth)).toBe("0px");
-  // @ shows even when nobody mentions this reviewer; on, it says so rather than showing everything.
-  const at = hd.getByRole("button", { name: "Mentions of me" });
-  await expect(at).toBeVisible();
-  await at.click();
-  await expect(panel(page)).toContainText("No comments mention you");
-  await at.click();
-  // Each toggle has a tooltip that says what it does, easing in on hover.
-  await at.hover();
-  const tip = () =>
-    at.evaluate((e) => [getComputedStyle(e, "::after").opacity, getComputedStyle(e, "::after").content]);
-  await expect.poll(async () => (await tip())[0]).toBe("1");
-  expect((await tip())[1]).toBe('"Only comments that mention you"');
+  await expect(panel(page).locator(".cd")).toContainText("Why Q4?");
+  await expect(panel(page).locator(".cd.open")).toHaveCount(0);
+  // Clicking a closed card anywhere but its actions still opens it: its button lies over its words.
+  await panel(page).locator(".cd").click();
+  await expect(panel(page).locator(".cd.open")).toHaveCount(1);
+});
+
+test("a closed card's actions show when the keyboard reaches it (not after a click), and Escape there goes back to the card", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await seedText(page, "#p2", "second designer", "Why Q4?");
+  await openAll(page);
+  await page.mouse.move(5, 700);
+  const cards = panel(page).locator(".cd");
+  const shown = (i: number) =>
+    cards
+      .nth(i)
+      .locator(".acts")
+      .evaluate((e) => getComputedStyle(e).opacity);
+  // Opened with a click, the first card has focus, but its actions stay out of the way.
+  await expect(cards.nth(0).locator(".mi")).toBeFocused();
+  await expect.poll(() => shown(0)).toBe("0");
+  await page.keyboard.press("ArrowDown");
+  await expect(cards.nth(1).locator(".mi")).toBeFocused();
+  await expect.poll(() => shown(1)).toBe("1");
+  await page.keyboard.press("Tab");
+  await expect(cards.nth(1).getByRole("button", { name: "React", exact: true })).toBeFocused();
+  await expect.poll(() => shown(1)).toBe("1");
+  await page.keyboard.press("Escape");
+  await expect(cards.nth(1).locator(".mi")).toBeFocused();
+  await expect(panel(page)).toBeVisible();
+  await expect(panel(page).locator(".cd.open")).toHaveCount(0);
 });
 
 test("while the panel is open the round button is its footer: who you are, Comment, and ⋯ for the menu", async ({

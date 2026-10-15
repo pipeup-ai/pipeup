@@ -14,7 +14,7 @@ import { narrow, PANEL } from "./layout";
 import { mentionsMe } from "./mentions";
 import { draftBox, type DraftBox } from "./draft-view";
 import { nodeOf } from "./order";
-import { plural, replies, threadView, type ThreadView } from "./thread-view";
+import { plural, replies, threadView, type ThreadActions, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
 const AWAY_MS = 3000;
@@ -55,20 +55,22 @@ export function createLauncher(ctx: Ctx): View {
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
   const list = h("div", { class: "list", role: "menu", "aria-label": "All comments" });
   const close = h("button", { class: "ib", type: "button", "aria-label": "Close" }, icon("close"));
-  /** An icon that is its own switch: bold when on, grey when off, nothing around it; hovering shows the other state. */
-  const iconSwitch = (label: string, tip: string, face: Node, run: () => void) => {
+  /** A filter: an icon and a word in a pill, grey when off and filled with a soft tint of the accent when on. */
+  const filter = (word: string, tip: string, face: Node, run: () => void) => {
     // Its tooltip (which eases in on hover and focus) says what it does; screen readers hear it as a description.
+    // Its name is its word: the tooltip, drawn after it, mustn't join the name.
     const b = h(
       "button",
       {
         class: "tg",
         type: "button",
-        "aria-label": label,
+        "aria-label": word,
         "aria-description": tip,
         "data-tip": tip,
         "aria-pressed": "false",
       },
       face,
+      word,
     );
     b.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -76,16 +78,16 @@ export function createLauncher(ctx: Ctx): View {
     });
     return b;
   };
-  // Mentions of me (@): keeps only the threads that name this reviewer. Show resolved (✓): brings resolved ones back.
+  // For you (@): keeps only the threads that name this reviewer. Resolved (✓): brings resolved ones back.
   // Both always show, whether or not there are any yet.
-  const mine = iconSwitch("Mentions of me", "Only comments that mention you", h("b", {}, "@"), () =>
-    ctx.menu.toggleMine(),
+  const mine = filter(
+    "For you",
+    "Only comments that mention you",
+    h("b", { "aria-hidden": "true" }, "@"),
+    () => ctx.menu.toggleMine(),
   );
-  const showResolved = iconSwitch(
-    "Show resolved",
-    "Show resolved comments too",
-    icon("resolve", 17, 2.4),
-    () => ctx.menu.toggleResolved(),
+  const showResolved = filter("Resolved", "Show resolved comments too", icon("resolve", 14, 2.4), () =>
+    ctx.menu.toggleResolved(),
   );
   // What add-ons say under the header ("Claude has answered 3 of 5"), each with an optional button. A line eases in
   // when an add-on sets it and out when it takes it away, and stays put while its words change.
@@ -334,12 +336,46 @@ export function createLauncher(ctx: Ctx): View {
 
   /** The open thread's card, kept between updates so its reply box never leaves the page while it is open. */
   let openCard: { id: string; card: HTMLElement; xr: HTMLElement } | null = null;
+  /**
+   * Closed cards, kept by thread between updates (so a hovered card stays hovered, and what its actions opened stays
+   * open): each shows its first comment, with that comment's actions on hover or focus.
+   */
+  const closed = new Map<string, { card: HTMLElement; view: ThreadView }>();
+  /** Closed cards resolved from their own actions, easing out of the list before they go. */
+  const leaving = new Set<string>();
+  // A closed card's actions are the open card's, except that Resolve first eases the card out when it will leave.
+  const cardActions: ThreadActions = {
+    ...ctx.actions,
+    get me() {
+      return ctx.actions.me;
+    },
+    resolve: async (id) => {
+      const c = closed.get(id)?.card;
+      if (c && !ctx.state.showResolved && !reduced) {
+        leaving.add(id);
+        c.style.height = `${c.offsetHeight}px`;
+        void c.offsetHeight;
+        c.classList.add("out");
+        c.style.height = "0";
+        await new Promise((r) => setTimeout(r, 340));
+      }
+      await ctx.actions.resolve(id);
+      leaving.delete(id);
+      c?.style.removeProperty("height");
+      ctx.render();
+    },
+  };
 
   /** Every thread, in page order; the ones whose content is gone last, under their own heading. */
   function buildAll(): void {
     const at = focused() as HTMLElement | null;
     const before = at?.dataset.thread;
     const inReply = railView !== null && railView.element.contains(at);
+    // Focus in a closed card's actions comes back to the same place, or to the card now where its card was.
+    const inCard = [...closed.values()].find((c) => c.view.element.contains(at));
+    const spots = () => [...inCard!.view.element.querySelectorAll<HTMLElement>("button,textarea")];
+    const spot = inCard ? spots().indexOf(at!) : -1;
+    const cardAt = inCard ? items(list).indexOf(inCard.card.firstChild as HTMLElement) : -1;
     const everyone = ctx.menu.all();
     const shownItems = everyone
       .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId)
@@ -384,33 +420,27 @@ export function createLauncher(ctx: Ctx): View {
     const row = (i: ExportItem): Node[] => {
       const t = i.thread;
       const open = t.id === openId;
-      const av = avatar(t.root.author, t.root.name);
-      av.classList.add("in");
       const n = replies(t).length;
-      const rest = [n ? plural(n) : "", ...t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`)].filter(
-        Boolean,
-      );
+      const rest = [n ? plural(n) : "", ...t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`)]
+        .filter(Boolean)
+        .join(" · ");
+      const about = lost(t)
+        ? `“${clip(t.anchor.snapshot, 80)}”`
+        : t.anchor.quote
+          ? `“${clip(t.anchor.quote.exact, 80)}”`
+          : i.location.where;
+      // The card's button covers it, under its actions: choosing the card opens it. It holds what the card shows,
+      // unseen, for screen readers.
       const b = h(
         "button",
         { class: "mi", type: "button", role: "menuitem", "aria-expanded": String(open), "data-thread": t.id },
         h(
           "span",
-          { class: "hdr" },
-          av,
-          h("span", { class: "who" }, nameOf(t.root)),
-          h("span", { class: "ago" }, formatAgo(t.root.at, Date.now())),
+          { class: "sr" },
+          [nameOf(t.root), formatAgo(t.root.at, Date.now()), about, t.root.text, rest]
+            .filter(Boolean)
+            .join(", "),
         ),
-        h(
-          "span",
-          { class: "ctx" },
-          lost(t)
-            ? `“${clip(t.anchor.snapshot, 80)}”`
-            : t.anchor.quote
-              ? `“${clip(t.anchor.quote.exact, 80)}”`
-              : i.location.where,
-        ),
-        h("span", { class: "tx clamp" }, t.root.text),
-        rest.length ? h("span", { class: "rest" }, rest.join(" · ")) : null,
       );
       b.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -434,7 +464,15 @@ export function createLauncher(ctx: Ctx): View {
         card = openCard.card;
         card.className = `cd open${t.resolved ? " done" : ""}`;
         place(card, [b, openCard.xr]);
-      } else card = h("div", { class: `cd${t.resolved ? " done" : ""}` }, b);
+      } else {
+        const o = { variant: "card" as const, note: about, rest };
+        let c = closed.get(t.id);
+        if (c) c.view.update(t, o);
+        else closed.set(t.id, (c = { card: h("div", {}), view: threadView(t, cardActions, o) }));
+        card = c.card;
+        card.className = `cd${t.resolved ? " done" : ""}${leaving.has(t.id) ? " out" : ""}`;
+        place(card, [b, c.view.element]);
+      }
       return draft && t.id === draftBefore ? [draft.card, card] : [card];
     };
     const gone = shownItems.filter((i) => lost(i.thread));
@@ -455,12 +493,20 @@ export function createLauncher(ctx: Ctx): View {
       ...(draft && draftBefore === null ? [draft.card] : []),
       ...(gone.length ? [group("No longer on the page", gone.flatMap(row))] : []),
     ]);
+    for (const id of closed.keys()) if (!shownItems.some((i) => i.thread.id === id)) closed.delete(id);
     // Focus normally stays where it was; it is put back only if what held it was rebuilt.
     const now = focused();
     if (made) draft!.box.focus();
     else if (draft?.card.contains(at) && !draft.card.contains(now)) draft.box.caret()();
     else if (inReply && !railView!.element.contains(now))
       railView!.element.querySelector("textarea")?.focus({ preventScroll: true });
+    else if (inCard && now !== at)
+      (inCard.card.isConnected
+        ? spots()[spot]
+        : items(list)[Math.min(cardAt, items(list).length - 1)]
+      )?.focus({
+        preventScroll: true,
+      });
     else if (before && now !== at)
       items(list)
         .find((b) => b.dataset.thread === before)
@@ -923,8 +969,13 @@ export function createLauncher(ctx: Ctx): View {
     // The emoji picker takes its own Escape.
     if (e.composedPath().some((n) => n instanceof Element && n.classList.contains("rxp"))) return;
     const at = e.composedPath()[0];
+    // In a closed card's actions, Escape goes back to the card; a box opened there (Edit) takes its own Escape.
+    const card = at instanceof Element && at.closest(".cd:not(.open,.new)");
     if (menuOpen) closeToControl();
-    else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at))) {
+    else if (card && at !== card.firstChild) {
+      if (at instanceof HTMLTextAreaElement) return;
+      (card.firstChild as HTMLElement).focus({ preventScroll: true });
+    } else if (ctx.state.listing && !(at instanceof HTMLTextAreaElement && !all.contains(at))) {
       // A new comment in the panel goes first, as it would anywhere else.
       if (ctx.state.draft) ctx.back();
       else if (openId) closeRow(true);
