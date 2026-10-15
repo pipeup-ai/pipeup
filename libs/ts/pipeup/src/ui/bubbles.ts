@@ -87,7 +87,11 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (tipFor !== t.id) {
       const n = replies(t).length;
       tip.replaceChildren(
-        h("div", { class: "tx clamp" }, ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text))),
+        h(
+          "div",
+          { class: "tx clamp", dir: "auto" },
+          ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text)),
+        ),
         h("div", { class: "who" }, `${nameOf(t.root)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`),
       );
       tipFor = t.id;

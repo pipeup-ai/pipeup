@@ -51,7 +51,9 @@ test("the control is one small square tucked into the corner, flush with the win
   expect(n.y + n.height).toBeLessThanOrEqual(two.y + two.height);
 });
 
-test("the number cross-fades when it changes, and shows 99+ above 99", async ({ page }) => {
+test("the number cross-fades when it changes, and shows 9+ above 9, with the exact number on hover", async ({
+  page,
+}) => {
   await open(page, "site.html");
   await seedElement(page, "[data-pipeup-id=cta-trial]", "One");
   await expect(page.locator(".launch .mode .n.on")).toHaveText("1");
@@ -66,10 +68,15 @@ test("the number cross-fades when it changes, and shows 99+ above 99", async ({ 
   await page.evaluate(async () => {
     const w = window as any;
     const el = document.querySelector("[data-pipeup-id=cta-trial]");
-    for (let i = 0; i < 98; i++)
+    for (let i = 0; i < 7; i++)
       await w.pu.document.comment(w.Pipeup.describeElement(el, document.body), `More ${i}`);
   });
-  await expect(page.locator(".launch .mode .n.on")).toHaveText("99+");
+  await expect(page.locator(".launch .mode .n.on")).toHaveText("9");
+  await seedElement(page, "[data-pipeup-id=cta-trial]", "Ten");
+  await expect(page.locator(".launch .mode .n.on")).toHaveText("9+");
+  // The exact number: in the control's name, and in what it shows when pointed at.
+  await expect(page.locator(".launch .mode")).toHaveAttribute("aria-label", /10 open/);
+  await expect(page.locator(".launch .ttip")).toContainText("10 open");
 });
 
 test("pointed at, the control reaches left just far enough to show its shortcut, after a short delay, and stays put", async ({
@@ -363,7 +370,8 @@ test("the button's comment bubble is drawn with a thinner line than other icons,
   const widths = await control(page)
     .locator("svg")
     .evaluateAll((els) => els.map((e) => parseFloat(e.getAttribute("stroke-width")!)));
-  expect(widths).toHaveLength(2);
+  // The plus, and the count's bubble in its round and wide forms.
+  expect(widths).toHaveLength(3);
   for (const w of widths) expect(w).toBeCloseTo(1.4, 1);
   await openMenu(page);
   const other = await page

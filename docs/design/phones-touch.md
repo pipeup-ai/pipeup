@@ -103,8 +103,10 @@ may have hidden it.
 
 ## Size
 
-Pipeup is 54.9 KB gzip (+1.1 KB); the budget rises from 54 to 55 KB (`scripts/size.mjs` and the add-ons' `CORE`).
+Pipeup is 54.9 KB gzip on its own (+1.1 KB over #80); with the looks batch (#81) merged in, it is 56.2 KB and the
+budget is 56.5 KB (`scripts/size.mjs` and the add-ons' `CORE`).
 
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-15 — Merged with the looks batch: Pipeup is 56.2 KB, budget 56.5 KB.
