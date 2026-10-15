@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Reaction counts show on cards and threads.** Since reactions arrived in 0.7.0, a chip showed its emoji with a blank where the number belongs: the comment control's rule for hiding its own count also hid the chips' numbers. All comments' summary line was unaffected.
+
 ## [0.7.0] - 2026-10-13
 
 This release is about talking to each other: reactions, mentions, identities that can move, and agents as an add-on; plus Pipeup that looks the same on every site, works with a finger, and a check for pages. It folds the two betas, 0.7.0-beta.1 and 0.7.0-beta.2.
