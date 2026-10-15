@@ -95,6 +95,12 @@ for (const look of ["light", "dark"] as const)
     }
   });
 
+/** Answers Delete's second question as a person would: after a moment (a press within half a second is ignored). */
+const confirmDelete = async (scope: Locator) => {
+  await scope.page().waitForTimeout(550);
+  await scope.getByRole("menuitem", { name: "Delete for everyone" }).click();
+};
+
 test("hovering a closed card in the panel shows its actions; they work without opening it, and nothing moves", async ({
   page,
 }) => {
@@ -303,7 +309,7 @@ test("a card shows who and how long ago; its actions show on hover; ⋯ edits an
   await th.locator(".root").getByRole("button", { name: "More" }).click();
   await th.getByRole("menuitem", { name: "Delete" }).click();
   await expect(th.getByRole("menuitem", { name: "Delete for everyone" })).toBeVisible();
-  await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
+  await confirmDelete(th);
   await expect(page.locator(".toast.show")).toContainText("Deleted");
   await settled(page.locator(".toast.show"));
 });
@@ -353,12 +359,12 @@ test("a deleted comment goes away; deleting a thread's first comment removes the
   await expect(reply).toHaveCount(1);
   await reply.getByRole("button", { name: "More" }).click();
   await th.getByRole("menuitem", { name: "Delete" }).click();
-  await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
+  await confirmDelete(th);
   await expect(th.locator(".rps .it")).toHaveCount(0);
   await expect(th).not.toContainText("Deleted");
   await th.locator(".root").getByRole("button", { name: "More" }).click();
   await th.getByRole("menuitem", { name: "Delete" }).click();
-  await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
+  await confirmDelete(th);
   await expect(page.locator(".th")).toHaveCount(0);
   // Nothing is counted any more: the control's bubble fades back to the comment icon.
   await expect(page.locator(".launch .mode")).not.toHaveClass(/\bhas\b/);

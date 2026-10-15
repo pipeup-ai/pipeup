@@ -9,13 +9,21 @@ change the API and the stored comment format.
 
 ### Changed
 
+- **Tab from a comment box moves on.** In comment mode, Tab (or Shift+Tab) from an empty comment box closes it and moves the block cursor to the next (or previous) block in one press, instead of walking through Cancel, the naming bar, the bubbles and the comment control first. From a box with words, Tab goes through its own buttons (Cancel, Comment) and then moves on; the box waits beside its block, dimmed, with a faint outline on the block, and Enter or a click on another block takes you back to it ("Finish or cancel this comment first").
+- **Typed words are never lost without asking.** Esc in a comment box with words, or Cancel, throws them away with an **Undo** for a few seconds; Esc anywhere else (a bubble, the naming bar, the block cursor) never does. A reply being written is kept when its thread closes (a click or tap elsewhere, Esc, another thread, or the window crossing between the column and pop-ups) and is back when it opens; Esc in a reply with words clears them first, with Undo, and the next Esc closes the thread.
+- **Focus never drops to the page.** After Resolve or deleting a thread, focus goes to the next thread (or the block cursor, or the comment control); React, choosing an emoji, Edit and deleting a reply keep it on the card. A comment's ⋯ menu works with the arrow keys, and Esc closes it before the thread.
 - **Long comments show their first lines at rest.** In the column a long comment shows four lines, fading, then **more**; the open thread shows all of it, so one long comment never pushes the others out of reach.
 - **Lists and menus ease.** Cards that All comments' filters take away or bring back fold out and in, a card opening or closing there eases to its new height, a sent comment fades in exactly where its box was, and with reduced motion column threads fade out, move unseen and fade back in. The menu fades out whole when All comments is chosen, and ⋯ changes in place when Delete asks again.
 - **The count's bubble widens for two and three characters**, so 10, 99 and 99+ (now 10 px, was 8.5) sit clear of its outline.
-- **Pipeup is 53.4 KB gzip**, and its budget rises from 53 to 53.5 KB.
+- **Pipeup is 55.0 KB gzip** with the click-path review's fixes (52.1 KB in beta.2), and its budget rises from 53 to 55.5 KB.
 
 ### Fixed
 
+- **Keys used in Pipeup no longer reach the page.** Arrows, Home and End in the menu and All comments, Enter and Space on Pipeup's buttons, and what is typed in a box (going down or coming up) stay with Pipeup, so a deck no longer turns its slide; ← and → on the comment control still do. The Esc that steps back or ends comment mode is Pipeup's, so a reveal.js deck no longer opens its overview.
+- **A double-click on Delete deletes nothing**: its "Delete for everyone" question ignores the click that asked it.
+- **A card's hidden actions can't be pressed**: on a touch tablet a tap on a closed card opens it instead of resolving it, and after Resolve the next card's actions wait for the pointer to move.
+- Enter in a page's form field in comment mode submits the form, instead of opening a comment on its submit button.
+- The line to a new comment in All comments goes when the panel closes. Letting go of Space brings the block cursor's outline back. Double- or triple-clicking words in comment mode selects them without opening a box on the paragraph, and Esc with words selected clears the selection first. Clicking a second block moves an empty box there with the caret in it. The menu opened with the mouse takes the arrow keys, and Esc on Copy comments' choices folds them first. Screen readers hear "Reply sent" and "Comment added", and the edit box is named "Edit comment".
 - **Highlights stay readable over any colour.** A highlight now follows the colour behind its own words, not the page's look or Pipeup's: light words in a dark footer or on a coloured button get a deep amber that keeps them readable (they fell to 1.9 to 1), and Theme › Light on a dark page no longer drops highlighted words to 1.1 to 1.
 - **The page's accent is used only when it reads.** A link colour or `--pipeup-accent` is taken only when words in it reach 4.5 to 1 on Pipeup's surfaces in the look showing; otherwise Pipeup uses its own. Words on the accent take whichever of white and near black reads better.
 - **High-contrast (forced colours) modes show every state**: switches, the filters on and off, your own reaction and whether comment mode is on.

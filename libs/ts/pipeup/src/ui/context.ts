@@ -115,13 +115,19 @@ export interface Ctx {
   /** Runs `fn`, then puts focus and the caret back in the open draft as they were. */
   keepCaret(fn: () => void): void;
   /** Goes back to the open draft: to its slide or view if that has gone, then focus and the caret into it. */
+  focusDraft(): void;
+  /**
+   * The open draft has words and something else was asked for: back to it (its block outlined and named again), and
+   * the reviewer is told to finish or cancel it first.
+   */
   backToDraft(): void;
   postDraft(text: string, mentions?: Mention[]): Promise<void>;
   /** This reviewer has read the comments in `t` that name them: marks them seen, so every device knows. */
   seen(t: Thread): void;
   /** Who can be mentioned with `@`: people in this document, agents the page lists, and people supplied. */
   people(): Person[];
-  cancelDraft(): void;
+  /** Closes the open draft; `words` thrown away with it are offered back (Undo) for a few seconds. */
+  cancelDraft(words?: string): void;
   /** Turns comment mode on or off. `keys`: from the keyboard (the block cursor starts). */
   setCommenting(on: boolean, keys?: boolean): void;
   /** What a click on the page does: cancels an empty draft (back to one with words), else closes the open thread. */

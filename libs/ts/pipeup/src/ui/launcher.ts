@@ -701,7 +701,7 @@ export function createLauncher(ctx: Ctx): View {
     const to = draft ? target(null, draft.of) : t && target(t);
     const box = head?.getBoundingClientRect();
     const view = list.getBoundingClientRect();
-    if (!to || !box || box.top + 12 < view.top || box.top + 12 > view.bottom) {
+    if (!ctx.state.listing || !to || !box?.width || box.top + 12 < view.top || box.top + 12 > view.bottom) {
       wire.classList.remove("show");
       return;
     }
@@ -1020,6 +1020,15 @@ export function createLauncher(ctx: Ctx): View {
     // Opened from the keyboard (no pointer, so detail is 0): focus moves to Start commenting, nearest the button.
     if (e.detail === 0) items().at(-1)?.focus({ preventScroll: true });
   });
+  // A menu opened with the mouse leaves focus on its button: the arrows still move into it.
+  for (const b of [btn, more])
+    b.addEventListener("keydown", (e) => {
+      const l = items();
+      if (!menuOpen || !l.length || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      (e.key === "ArrowDown" ? l[0] : l.at(-1))?.focus({ preventScroll: true });
+    });
   const onAnyClick = (e: Event) => {
     const path = e.composedPath();
     if (menuOpen && !path.includes(menu) && !path.includes(btn) && !path.includes(more)) {
@@ -1077,12 +1086,13 @@ export function createLauncher(ctx: Ctx): View {
   // one at a time, and never also an open thread on the page. A reply line outside the panel keeps its own Escape.
   const onEscape = (e: KeyboardEvent) => {
     if (e.key !== "Escape" || endEdit) return;
-    // The emoji picker takes its own Escape.
-    if (e.composedPath().some((n) => n instanceof Element && n.classList.contains("rxp"))) return;
+    // The emoji picker and a comment's ⋯ menu take their own Escape.
+    if (e.composedPath().some((n) => n instanceof Element && n.matches(".rxp,.pm"))) return;
     const at = e.composedPath()[0];
     // In a closed card's actions, Escape goes back to the card; a box opened there (Edit) takes its own Escape.
     const card = at instanceof Element && at.closest(".cd:not(.open,.new)");
-    if (menuOpen) closeToControl();
+    if (menuOpen && copyChoices.contains(at as Node)) setCopy(false);
+    else if (menuOpen) closeToControl();
     else if (card && at !== card.firstChild) {
       if (at instanceof HTMLTextAreaElement) return;
       (card.firstChild as HTMLElement).focus({ preventScroll: true });

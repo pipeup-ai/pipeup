@@ -33,6 +33,10 @@ const DEFERRED_RESOLVE_MS = 250;
 const MUTATION_DEBOUNCE_MS = 120;
 const TOAST_MS = 2400;
 const HINT_MS = 4000;
+/** How long words thrown away by Cancel or Esc can be brought back. */
+const UNDO_MS = 6000;
+/** Keys that move through Pipeup's menus and lists. */
+const MOVES = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown"];
 /** The keyboard's hint is read, then used: it stays longer (until the cursor first moves or a draft opens). */
 const KEYS_HINT_MS = 10000;
 
@@ -166,27 +170,39 @@ export function startApp(o: AppOptions): App {
     ms = TOAST_MS,
     isHint = false,
     quiet = false,
-    action?: { label: string; href: string },
+    action?: { label: string; href?: string; run?: () => void },
   ): void {
     if (destroyed) return;
     hint = isHint;
     toastEl.textContent = text;
     toastEl.classList.toggle("act", Boolean(action));
-    if (action)
-      toastEl.append(
-        " ",
-        h(
-          "a",
-          { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
-          action.label,
-        ),
-      );
+    if (action) {
+      const { run } = action;
+      const a = run
+        ? h("button", { class: "ta", type: "button" }, action.label)
+        : h(
+            "a",
+            { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
+            action.label,
+          );
+      if (run)
+        a.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toastEl.classList.remove("show");
+          run();
+        });
+      toastEl.append(" ", a);
+    }
     if (quiet) toastEl.setAttribute("aria-hidden", "true");
     else toastEl.removeAttribute("aria-hidden");
     toastEl.classList.add("show");
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => toastEl.classList.remove("show"), ms);
   }
+
+  /** Words were thrown away (Cancel or Esc): `undo` brings them back, for a few seconds. */
+  const offer = (text: string, undo: () => void) =>
+    toast(text, UNDO_MS, false, false, { label: "Undo", run: undo });
 
   function hideHint(): void {
     if (!hint) return;
@@ -221,16 +237,56 @@ export function startApp(o: AppOptions): App {
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
   });
 
+  /** A thread's reply line, wherever it shows (on the page or in All comments): the one that can be used. */
+  const lineOf = (id: string) =>
+    [...host.layer.querySelectorAll<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`)].find(
+      (l) => !l.closest("[inert]"),
+    );
+  /** What is written in reply lines waits for their threads: a thread that closes or is rebuilt keeps it. */
+  function keepReplies(): void {
+    for (const l of host.layer.querySelectorAll<HTMLTextAreaElement>("[data-thread] .rbox textarea"))
+      if (l.value.trim()) unsent.set(l.closest("[data-thread]")!.getAttribute("data-thread")!, l.value);
+  }
+  /** Puts back what was being written in thread `id`'s reply line, if it is empty; `focus`: the caret goes there. */
+  function putReply(id: string, focus = false): void {
+    const words = unsent.get(id);
+    const line = lineOf(id);
+    if (!line) return;
+    unsent.delete(id);
+    if (words && !line.value) {
+      line.value = words;
+      line.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    if (focus) line.focus({ preventScroll: true });
+  }
+
   const writingIn = (id: string): boolean =>
     (host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`)?.value.trim() ??
       "") !== "";
 
-  /** A resolved thread leaves: focus goes to the cursor, else the Comment control. */
-  const gone = (id: string): boolean => {
-    if (state.active !== id || state.showResolved) return false;
-    if (modeView?.cursor()) modeView.refocus();
-    else host.layer.querySelector<HTMLElement>(".launch .mode")?.focus({ preventScroll: true });
-    return true;
+  /**
+   * Where focus goes when thread `id` leaves (resolved, or deleted): read before it leaves, run once it has. With focus
+   * in it, focus goes to the block cursor when it is out, else to the next thread where it was (the next card in the
+   * column or in All comments, or the one before the last), else the Comment control.
+   */
+  function after(id: string): () => void {
+    const at = focusedIn();
+    if (!at?.closest(`[data-thread="${id}"]`)) return () => {};
+    // The threads' own buttons where it was: All comments' rows, the column's, or the bubbles.
+    const kind = at.closest(".cd") ? ".mi" : at.closest(".th") ? ".opn" : ".bub";
+    const all = [...host.layer.querySelectorAll<HTMLElement>(`${kind}[data-thread]`)];
+    const i = all.findIndex((e) => e.getAttribute("data-thread") === id);
+    const next = i < 0 ? null : (all[i + 1] ?? all[i - 1])?.getAttribute("data-thread");
+    return () => {
+      if (modeView?.cursor()) return modeView.refocus();
+      const to = next && host.layer.querySelector<HTMLElement>(`${kind}[data-thread="${next}"]`);
+      (to || host.layer.querySelector<HTMLElement>(".launch .mode"))?.focus({ preventScroll: true });
+    };
+  }
+  /** After Resolve the next card slides up under a still pointer: its actions wait until the pointer moves. */
+  const still = () => {
+    host.layer.classList.add("still");
+    window.addEventListener("pointermove", () => host.layer.classList.remove("still"), { once: true });
   };
 
   const actions: ThreadActions = {
@@ -251,6 +307,7 @@ export function startApp(o: AppOptions): App {
     reply: async (parentId, text, mentions) => {
       try {
         await o.doc.reply(parentId, text, mentions);
+        say("Reply sent");
         tell(mentions, text);
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
@@ -266,21 +323,30 @@ export function startApp(o: AppOptions): App {
       }
     },
     remove: async (id) => {
+      // A deleted thread's focus goes on to the next thread; a deleted reply's stays in its thread.
+      const t = o.doc.threads().find((x) => x.id === id || x.root.replies.some((c) => c.id === id));
+      const then =
+        t && t.root.id === id ? after(t.id) : () => t && lineOf(t.id)?.focus({ preventScroll: true });
       try {
         await o.doc.remove(id);
+        then();
         toast("Deleted");
       } catch (e) {
         toast(e instanceof UnsavedChangeError ? `Deleted · ${UNSAVED_NOTE}` : message(e));
       }
     },
     resolve: async (id) => {
+      const then = after(id);
+      still();
       try {
         await o.doc.resolve(id);
         toast("Resolved · ✓ Resolved in All comments shows it again");
       } catch (e) {
         toast(e instanceof UnsavedChangeError ? `Resolved · ${UNSAVED_NOTE}` : message(e));
       }
-      if (gone(id)) state.active = null;
+      if (state.showResolved) return;
+      if (state.active === id) state.active = null;
+      then();
     },
     reopen: async (id) => {
       try {
@@ -298,6 +364,12 @@ export function startApp(o: AppOptions): App {
       }
       focusReply(id);
     },
+    drop: (id, words) =>
+      offer("Reply discarded", () => {
+        unsent.set(id, words);
+        if (lineOf(id)) putReply(id, true);
+        else open(id);
+      }),
     close: () => {
       open(null);
       const opener = back && host.layer.querySelector<HTMLElement>(back);
@@ -425,11 +497,11 @@ export function startApp(o: AppOptions): App {
       fn();
       restore?.();
     },
+    focusDraft,
     backToDraft: () => {
-      const v = state.draft?.anchor.view;
-      const restore = openBox?.caret();
-      // Its slide or view may have gone: back there first (the box is inert while away), then into the box.
-      void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
+      modeView?.toDraft();
+      toast("Finish or cancel this comment first");
+      focusDraft();
     },
     postDraft,
     seen,
@@ -674,9 +746,16 @@ export function startApp(o: AppOptions): App {
     );
   }
 
+  /** Into the open draft: to its slide or view first if that has gone (the box is inert while away), then the caret. */
+  function focusDraft(): void {
+    const v = state.draft?.anchor.view;
+    const restore = openBox?.caret();
+    void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
+  }
+
   function open(id: string | null, sent = false): void {
-    // Words being written are never dropped: another thread waits (comment mode follows the same rule).
-    if (id && held()) return;
+    // Words being written are never dropped: another thread waits, and the reviewer goes back to them.
+    if (id && state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
     // While All comments is open, a thread opens there (a click on its highlight, bubble or column thread).
     if (id && state.listing && list) return list(id);
     if (state.active === id && !state.draft) return id ? focusReply(id) : undefined;
@@ -685,6 +764,8 @@ export function startApp(o: AppOptions): App {
     const from = focusedIn();
     // A thread read from All comments on a narrow screen has closed: the comments go with it.
     if (!id) state.reading = false;
+    // What is being written in the closing thread's reply line waits for it.
+    keepReplies();
     state.active = id;
     if (id) {
       state.draft = null;
@@ -694,14 +775,7 @@ export function startApp(o: AppOptions): App {
     }
     render();
     if (id) {
-      const words = unsent.get(id);
-      const line =
-        words && host.layer.querySelector<HTMLTextAreaElement>(`[data-thread="${id}"] .rbox textarea`);
-      if (line && !line.value) {
-        line.value = words;
-        line.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      unsent.delete(id);
+      putReply(id);
       // With the block cursor in use, focus goes back to it, on the same block, instead of the reply line.
       if (sent && modeView?.cursor()) modeView.refocus();
       else focusReply(id, busy, from);
@@ -730,10 +804,19 @@ export function startApp(o: AppOptions): App {
     render();
   }
 
-  function cancelDraft(): void {
-    if (!state.draft) return;
+  function cancelDraft(words = ""): void {
+    const d = state.draft;
+    if (!d) return;
     state.draft = null;
     render();
+    if (words)
+      offer("Comment discarded", () => {
+        // Another comment with words was started meanwhile: it isn't replaced.
+        if (state.draft && !ctx.draftEmpty()) return;
+        startDraft(d);
+        modeView?.adopt(d);
+        openBox?.fill(words);
+      });
   }
 
   function setCommenting(on: boolean, keys = false): void {
@@ -764,10 +847,15 @@ export function startApp(o: AppOptions): App {
     else toast("Nothing here to comment on");
   }
 
-  /** Escape's step: the draft, then the open thread, then comment mode's own (a chosen block, the cursor), then comment mode. */
+  /**
+   * Escape's step: words selected in comment mode, an empty draft, then the open thread, then comment mode's own (a
+   * chosen block, the cursor), then comment mode. A draft with words is only thrown away by Esc in its own box: from
+   * anywhere else Escape steps past it.
+   */
   function stepBack(): void {
-    // A draft with words on a slide that is gone can't be seen: Escape leaves it and steps back past it.
-    if (state.draft && (here.holds(state.draft.anchor.view) || ctx.draftEmpty())) cancelDraft();
+    const sel = window.getSelection();
+    if (state.commenting && sel && !sel.isCollapsed && o.root.contains(sel.anchorNode)) sel.removeAllRanges();
+    else if (state.draft && ctx.draftEmpty()) cancelDraft();
     else if (state.active) open(null);
     else if (modeView && !modeView.back()) setCommenting(false);
   }
@@ -800,6 +888,7 @@ export function startApp(o: AppOptions): App {
     try {
       d.sending = true;
       const id = await o.doc.comment(d.anchor, text, mentions);
+      say("Comment added");
       tell(mentions, text);
       state.draft = null;
       resolveAll(new Set([id]));
@@ -856,9 +945,13 @@ export function startApp(o: AppOptions): App {
   };
 
   function buildViews(): void {
+    // A thread rebuilt for another layout keeps what is being written in its reply line, and the caret if it was there.
+    keepReplies();
+    const typing = !!focusedIn()?.closest(".rbox");
     for (const v of views) v.destroy();
     views = viewsFor(ctx);
     render();
+    if (state.active) putReply(state.active, typing);
   }
 
   const frame = () => {
@@ -919,6 +1012,21 @@ export function startApp(o: AppOptions): App {
     scheduleReplace();
   });
 
+  // Keys Pipeup acts on in its own UI never also reach the page, going down or coming up (a deck turns on either):
+  // Enter and Space on its buttons, the moving keys in its menus and lists, and ← → in the menu (Copy comments).
+  // Others, such as ← and → anywhere else, still reach the page.
+  const keep = (e: KeyboardEvent) => {
+    const k = e.key;
+    const at = (sel: string) => e.composedPath().some((n) => n instanceof Element && n.matches(sel));
+    if (
+      k === "Enter" ||
+      k === " " ||
+      (MOVES.includes(k) && at(".menu,.all,.pm")) ||
+      (k.startsWith("Arrow") && at(".menu"))
+    )
+      e.stopPropagation();
+  };
+  for (const t of ["keydown", "keyup", "keypress"]) host.layer.addEventListener(t, keep as EventListener);
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);

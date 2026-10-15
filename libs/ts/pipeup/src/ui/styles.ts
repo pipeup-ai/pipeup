@@ -40,7 +40,7 @@ svg{display:block}
 /* Actions sit at the card's top right: always on an open card, on hover (or focus) on one at rest. In All comments a
 closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. */
 .acts{margin-left:auto;display:flex;flex:none;transition:opacity var(--in) var(--eo)}
-.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts{opacity:0}
+.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts,.still .th:not(.on):not(:focus-within) .acts,.still .cd:not(.open):not(:has(:focus-visible,.pm)) .acts{opacity:0;pointer-events:none}
 /* On a closed card they lie over the end of the top line, on the card's own colour, so the name has the whole line
 while they're hidden and the card never changes size as they ease in. */
 .th:not(.on) .acts,.cd:not(.open) .acts{position:absolute;right:0;padding-left:16px;background:linear-gradient(90deg,transparent,var(--bg) 14px)}
@@ -191,6 +191,9 @@ border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) va
 .pick.show{opacity:1;transition-duration:var(--in);transition-timing-function:var(--eo)}
 .pick.show.glide{transition-property:all;transition-duration:var(--mv);transition-timing-function:var(--eio)}
 .pick.on{border-color:var(--pu-accent)}
+.pkw{position:fixed;left:0;top:0;border:2px dashed color-mix(in srgb,var(--pu-accent) 70%,transparent);border-radius:8px;pointer-events:none;opacity:0;transition:opacity var(--out) var(--ei)}
+.pkw.show{opacity:.6;transition:opacity var(--in) var(--eo)}
+.draft{transition:opacity var(--in) var(--eo)}.draft.wait:not(:focus-within){opacity:.6}
 /* The block cursor: its focus is drawn on the outline (3px accent with a surface halo, 3:1 on any page); the
 markers that hold focus are invisible. */
 .pick.kf{border:3px solid var(--pu-accent);box-shadow:0 0 0 2px var(--su)}

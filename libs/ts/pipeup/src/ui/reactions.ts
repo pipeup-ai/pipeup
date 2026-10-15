@@ -103,6 +103,7 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
         type: "button",
         "aria-pressed": String(mine),
         "aria-label": `${o.picker?.name(r.emoji) ?? NAMES[r.emoji] ?? "Reaction"}, ${n} ${n === 1 ? "person" : "people"}${mine ? ", including you" : ""}`,
+        "data-k": `x${c.id}${r.emoji}`,
       },
       h("span", {}, r.emoji),
       h("span", { class: "n" }, String(n)),
@@ -120,7 +121,12 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
     o.quick && !o.resolved
       ? h(
           "div",
-          { class: `rxq${o.seen.has(`${c.id}|quick`) ? "" : " new"}`, role: "group", "aria-label": "React" },
+          {
+            class: `rxq${o.seen.has(`${c.id}|quick`) ? "" : " new"}`,
+            role: "group",
+            "aria-label": "React",
+            "data-q": c.id,
+          },
           ...QUICK.map((emoji) => {
             const b = h(
               "button",
@@ -129,6 +135,7 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
                 type: "button",
                 "aria-label": NAMES[emoji],
                 "aria-pressed": String(has(emoji)),
+                "data-k": `q${c.id}${emoji}`,
               },
               emoji,
             );

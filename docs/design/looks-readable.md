@@ -117,8 +117,10 @@ control's count reads at full contrast.
 Pipeup is 53.4 KB gzip, 1.3 KB more: the CSS for the forced-colour states, focus rings, long comments, the actions'
 backdrop and the list's folding is about 0.4 KB, and the code for highlights by ground, the accent check, the list's
 fold and grow, the column's fades and the wider bubble the rest. The redundant `outline: none` rules and the list's
-transition list were trimmed. The budget rises from 53 to 53.5 KB (core) and so does `CORE` in the add-ons' build.
+transition list were trimmed. The budget rose from 53 to 53.5 KB on its own; with the words-and-focus batch (#80,
++1.7 KB, budget 54 KB) merged in first, Pipeup is 55.0 KB and the budget is 55.5 KB (core and the add-ons' `CORE`).
 
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-15 — Merged with the words-and-focus batch: Pipeup is 55.0 KB, budget 55.5 KB.

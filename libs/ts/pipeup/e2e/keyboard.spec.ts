@@ -800,17 +800,6 @@ test("closed column threads open from their button, in page order; Esc returns t
   await expect(first).toBeFocused();
 });
 
-test("the empty draft's hidden Send button takes no Tab stop", async ({ page }) => {
-  await open(page, "controls.html");
-  await toggleCommenting(page);
-  await page.locator("#card").click();
-  await expect(draftLine(page)).toBeFocused();
-  await page.keyboard.press("Tab");
-  expect((await focusInPipeup(page)).cls).not.toContain("send");
-  await draftLine(page).fill("Words");
-  await expect(page.locator(".pop.show .send")).not.toHaveAttribute("inert", "");
-});
-
 test("sending a reply with the Reply button keeps focus in the reply box", async ({ page }) => {
   await open(page, "controls.html");
   await seedElement(page, "#title", "Headline");
