@@ -74,11 +74,12 @@ Add name, edited in place in that row), Copy as Markdown (for AI), Copy as Text,
 card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
 of me) and **✓** (show resolved). While it is open the round button is its footer (who you are, Comment, and ⋯ for the
 menu), comment mode leaves it open, and a new comment is written in it, in page order. Choosing a card scrolls to its
-place and opens it in the panel; clicking a comment on the page opens it there too. The panel closes with its close
-button, Esc or a click anywhere else on the page (in comment mode, that click starts a comment instead).
+place and opens it in the panel; clicking a comment on the page opens it there too. The panel stays open until you
+close it with its × or Esc; a click on the page never closes it.
 
 Every thread is the same compact card, beside the page, from a bubble or in the panel: avatar, name and how long ago,
-the words, and its actions (React, ✓ Resolve, and ⋯ for Copy thread, and Edit and Delete on your own). The comment and
+the words, and its actions (React, ✓ Resolve, and ⋯ for Copy thread, and Edit and Delete on your own). A deleted
+comment goes away; deleting a thread's first comment removes the thread. The comment and
 reply boxes have Cancel and Comment (Reply) buttons; Enter also sends. Elements the page
 fixes to the window don't move over with the page.
 

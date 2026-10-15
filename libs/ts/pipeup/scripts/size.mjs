@@ -8,7 +8,7 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // identities and the page-isolation work all landed in core (agent support had left it); then back to 50 KB in 0.8,
 // when portable identities moved out to @pipeup/identity (docs/design/size-pass.md); then 51 KB for one compact card
 // everywhere, the panel's footer and new comments written in it, editing and deleting from ⋯, and Cancel and Comment
-// buttons: +1.3 KB of Pipeup's own UI, which every page shows (docs/design/panel-hub.md).
+// buttons: +1.5 KB of Pipeup's own UI, which every page shows (docs/design/panel-hub.md).
 const BUDGETS = {
   "dist/pipeup.min.js": 51 * 1024,
   "dist/pipeup.esm.js": 51 * 1024,

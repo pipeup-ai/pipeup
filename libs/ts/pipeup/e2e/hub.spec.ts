@@ -33,8 +33,18 @@ test("the panel's header has no title: @ and ✓ are icon toggles, bold when on,
   await expect.poll(() => resolved.evaluate((e) => getComputedStyle(e).color)).not.toBe(grey);
   // No border or box around it.
   expect(await resolved.evaluate((e) => getComputedStyle(e).borderTopWidth)).toBe("0px");
-  // Mentions of me (@) only shows once someone mentions this reviewer.
-  await expect(hd.getByRole("button", { name: "Mentions of me" })).toBeHidden();
+  // @ shows even when nobody mentions this reviewer; on, it says so rather than showing everything.
+  const at = hd.getByRole("button", { name: "Mentions of me" });
+  await expect(at).toBeVisible();
+  await at.click();
+  await expect(panel(page)).toContainText("No comments mention you");
+  await at.click();
+  // Each toggle has a tooltip that says what it does, easing in on hover.
+  await at.hover();
+  const tip = () =>
+    at.evaluate((e) => [getComputedStyle(e, "::after").opacity, getComputedStyle(e, "::after").content]);
+  await expect.poll(async () => (await tip())[0]).toBe("1");
+  expect((await tip())[1]).toBe('"Only comments that mention you"');
 });
 
 test("while the panel is open the round button is its footer: who you are, Comment, and ⋯ for the menu", async ({
@@ -158,4 +168,87 @@ test("a card shows who and how long ago; its actions show on hover; ⋯ edits an
   await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
   await expect(page.locator(".toast.show")).toContainText("Deleted");
   await settled(page.locator(".toast.show"));
+});
+
+test("the footer's ⋯ menu shows on top of the panel", async ({ page }) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await openAll(page);
+  await panel(page).locator(".pf").getByRole("button", { name: "More" }).click();
+  const menu = page.locator(".menu.show");
+  await settled(menu);
+  const b = (await menu.boundingBox())!;
+  // What is drawn at the middle of the menu is the menu, not the panel behind it.
+  const onTop = await page.evaluate(
+    ({ x, y }) => {
+      const at = document.querySelector("pipeup-root")!.shadowRoot!.elementFromPoint(x, y);
+      return !!at?.closest(".menu");
+    },
+    { x: b.x + b.width / 2, y: b.y + b.height / 2 },
+  );
+  expect(onTop).toBe(true);
+});
+
+test("an open card shows the words it's about once, and its top line closes it", async ({ page }) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await openAll(page);
+  await panel(page)
+    .getByRole("menuitem", { name: /Is 20% realistic/ })
+    .click();
+  const card = panel(page).locator(".cd.open");
+  await expect(card.locator(".ctx:visible")).toHaveCount(1);
+  await expect(card.locator(".ctx:visible")).toHaveText("“20% lift”");
+  await card.locator(".root > .hdr .who").click();
+  await expect(panel(page).locator(".cd.open")).toHaveCount(0);
+});
+
+test("a deleted comment goes away; deleting a thread's first comment removes the thread", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await showComments(page);
+  const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await page.evaluate((id) => (window as any).pu.document.reply(id, "Second thoughts"), id);
+  const th = page.locator(".th");
+  await th.locator(".root .tx").first().click();
+  const reply = th.locator(".rps .it");
+  await expect(reply).toHaveCount(1);
+  await reply.getByRole("button", { name: "More" }).click();
+  await th.getByRole("menuitem", { name: "Delete" }).click();
+  await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
+  await expect(th.locator(".rps .it")).toHaveCount(0);
+  await expect(th).not.toContainText("Deleted");
+  await th.locator(".root").getByRole("button", { name: "More" }).click();
+  await th.getByRole("menuitem", { name: "Delete" }).click();
+  await th.getByRole("menuitem", { name: "Delete for everyone" }).click();
+  await expect(page.locator(".th")).toHaveCount(0);
+  // Nothing is counted any more: the control's bubble fades back to the comment icon.
+  await expect(page.locator(".launch .mode")).not.toHaveClass(/\bhas\b/);
+});
+
+test("the pulse on a thread's content follows it while opening it from the panel scrolls the page", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await open(page, "doc.html", { name: "Sam" });
+  await seedText(page, "#p3", "pricing work", "Too tight?");
+  await openAll(page);
+  await panel(page)
+    .getByRole("menuitem", { name: /Too tight/ })
+    .click();
+  await page.waitForTimeout(700);
+  const pulse = page.locator(".pulse").first();
+  await expect(pulse).toHaveCount(1);
+  const p = (await pulse.boundingBox())!;
+  const words = await page.evaluate(() => {
+    const p3 = document.getElementById("p3")!;
+    const text = [...p3.childNodes].find((n) => n.textContent!.includes("pricing work"))!;
+    const range = document.createRange();
+    const at = text.textContent!.indexOf("pricing work");
+    range.setStart(text, at);
+    range.setEnd(text, at + "pricing work".length);
+    const r = range.getClientRects()[0]!;
+    return { y: r.top, x: r.left };
+  });
+  expect(Math.abs(p.y + 4 - words.y)).toBeLessThan(3);
 });

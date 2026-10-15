@@ -8,7 +8,7 @@ import { bubblePoint, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { threadView, type ThreadView } from "./thread-view";
+import { replies, threadView, type ThreadView } from "./thread-view";
 
 const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
 /** How long a preview waits after the pointer leaves, so the pointer can reach it and click. */
@@ -76,7 +76,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       return;
     }
     if (tipFor !== t.id) {
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       tip.replaceChildren(
         h("div", { class: "tx clamp" }, ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text))),
         h("div", { class: "who" }, `${nameOf(t.root)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`),

@@ -208,6 +208,9 @@ export function startApp(o: AppOptions): App {
     throw e;
   }
 
+  // A thread whose first comment was deleted goes away with it, as a deleted reply does.
+  const threadsNow = () => o.doc.threads().filter((t) => !t.root.deleted);
+
   const exportItem = (t: Thread): ExportItem => ({
     thread: t,
     location: locate(t.anchor, resolved.get(t.id) ?? resolveAnchor(t.anchor, o.root), o.root),
@@ -369,7 +372,7 @@ export function startApp(o: AppOptions): App {
       }
     },
     name: () => o.doc.name,
-    all: () => [...o.doc.threads()].sort(byPage(ctx)).map(exportItem),
+    all: () => [...threadsNow()].sort(byPage(ctx)).map(exportItem),
   };
 
   // The surface needs the context, and the context hands it out: a holder breaks the loop.
@@ -396,7 +399,7 @@ export function startApp(o: AppOptions): App {
     visible: (t) =>
       !state.hidden && (!t.resolved || state.showResolved || writingIn(t.id)) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
-      for (const t of o.doc.threads()) {
+      for (const t of threadsNow()) {
         const r = resolved.get(t.id);
         if (t.anchor.quote && ctx.visible(t) && r?.range && hit(x, y, quoteRects(r))) return t;
       }
@@ -553,7 +556,7 @@ export function startApp(o: AppOptions): App {
 
   function render(): void {
     if (destroyed) return;
-    const threads = o.doc.threads();
+    const threads = threadsNow();
     classify();
     // A thread open on a slide or view that is no longer here closes; a reply half-typed in it waits for it.
     if (state.active && elsewhere.has(state.active)) {
@@ -805,16 +808,26 @@ export function startApp(o: AppOptions): App {
   function pulse(id: string): void {
     const r = resolved.get(id);
     if (!r || r.state === "orphaned") return;
-    swell(r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : []);
+    swell(() => (r.range ? quoteRects(r) : r.element ? [r.element.getBoundingClientRect()] : []));
   }
 
-  function swell(rects: readonly DOMRect[]): void {
-    for (const q of rects.slice(0, 6)) {
-      const p = h("div", { class: "pulse" });
-      fit(p, q, 4);
-      host.layer.prepend(p);
-      window.setTimeout(() => p.remove(), 1300);
-    }
+  /** Swells that are showing, and where their content is now: they follow it while the page scrolls under them. */
+  const swells = new Set<{ els: HTMLElement[]; at: () => readonly DOMRect[] }>();
+  function swell(at: () => readonly DOMRect[]): void {
+    const els = at()
+      .slice(0, 6)
+      .map(() => host.layer.insertBefore(h("div", { class: "pulse" }), host.layer.firstChild));
+    const one = { els, at };
+    swells.add(one);
+    follow(one);
+    window.setTimeout(() => {
+      swells.delete(one);
+      for (const p of els) p.remove();
+    }, 1300);
+  }
+  function follow(s: { els: HTMLElement[]; at: () => readonly DOMRect[] }): void {
+    const rects = s.at();
+    s.els.forEach((p, i) => rects[i] && fit(p, rects[i], 4));
   }
 
   /** A reference pill pressed: go to the slide, or scroll to the passage and give it one soft swell. */
@@ -826,7 +839,7 @@ export function startApp(o: AppOptions): App {
     ].find((e) => (e.textContent ?? "").replace(/\s+/g, " ").toLowerCase().includes(want));
     if (!found) return;
     found.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
-    window.setTimeout(() => swell([found.getBoundingClientRect()]), reduced ? 0 : 450);
+    window.setTimeout(() => swell(() => [found.getBoundingClientRect()]), reduced ? 0 : 450);
   };
 
   function buildViews(): void {
@@ -838,6 +851,7 @@ export function startApp(o: AppOptions): App {
   const frame = () => {
     if (destroyed) return;
     for (const v of views) v.frame();
+    for (const s of swells) follow(s);
     modeView?.frame();
     addons.frame();
     raf = requestAnimationFrame(frame);

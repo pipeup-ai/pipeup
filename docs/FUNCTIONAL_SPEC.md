@@ -163,7 +163,8 @@ any of them off.
   embedded content.
 - The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
   words back in a box with **Cancel** and **Save**; edits are marked as edited. Delete asks once more
-  before it deletes.
+  before it deletes. **A deleted comment goes away**: nothing is left in its place, and deleting a thread's
+  first comment removes the whole thread, replies and all.
 - On touch screens: tap chooses a block, long-press selects text, and the naming bar's Pin drops a pin.
 
 **From the keyboard and with a screen reader**
@@ -276,7 +277,8 @@ any of them off.
 - Hovering a card shows its **actions** at its top right; the open card always shows them. Nothing
   opens beneath the words or moves them.
 - Hovering a comment or its highlight gives the commented content **one slow, soft pulse**, so you
-  can see what it belongs to; the two light up together.
+  can see what it belongs to; the two light up together. The pulse stays on its content if the page scrolls
+  meanwhile (as it does when a thread is opened from All comments).
 
 **Opening a thread**
 
@@ -351,13 +353,15 @@ any of them off.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
     the panel closes, so the panel covers none of the page's content (§9).
   - The panel has no title. Its top line holds two **icon toggles** and the close button: **@** shows
-    only comments that mention me (it appears only when there are some), and **✓** brings resolved
-    threads back, muted, each with **Reopen**, in the panel and on the page. Clicking an icon turns it on;
-    clicking again turns it off. On, it is bold; off, it is grey; neither has a border, and hovering shows
-    the other state's colour. Nothing in the panel wraps onto a second line.
+    only comments that mention me ("No comments mention you" when there are none), and **✓** brings
+    resolved threads back, muted, each with **Reopen**, in the panel and on the page. Both always show,
+    whether or not there are any yet, and each has a **tooltip** that says what it does, easing in on hover
+    and keyboard focus. Clicking an icon turns it on; clicking again turns it off. On, it is bold; off, it is
+    grey; neither has a border, and hovering shows the other state's colour. Nothing in the panel wraps onto
+    a second line.
   - Each thread is a **card** (§7, *compact cards*), with the words it is about. Choosing a card **opens it
-    out in place**: its comments and replies, its actions and its reply box, all usable there. Nothing
-    opens on the page.
+    out in place**: its top line, the words it is about (once), its comments and replies, its actions and its
+    reply box, all usable there. Clicking its top line closes it again. Nothing opens on the page.
   - **New comments are written in the panel while it is open.** Turning comment mode on leaves the panel
     open; choosing something on the page then adds a new card to the list where it falls in page order,
     joined to its place by the same line as an open thread. Sending turns it into a thread there.
@@ -368,8 +372,9 @@ any of them off.
   - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
     closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
     Show resolved is on.
-  - The panel closes with its close button, Esc (after any open thread), or a click on the page. In
-    comment mode a click on the page chooses something to comment on instead, and the panel stays open.
+  - **The panel stays open until it is closed**, with its close button or Esc (after any open thread). A
+    click on the page never closes it: in comment mode that click chooses something to comment on, and
+    otherwise the page handles it.
     A click on a comment on the page (its highlighted words, bubble, pin or column thread) doesn't count as
     a click on the page: it opens that thread in the panel, as choosing its row does, and the panel stays open.
   - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
@@ -1574,4 +1579,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-13 — Built (0.8): `pipeup read` (section 15f). Without the page open, a thread's place comes from what the comment saved (slide, block name, quote), not from the page's layout.
 - 2026-10-14 — Comments show whether comment mode is on or off, and **Hide comments** (a menu switch, remembered per page in this browser) puts them out of sight; this reverses the 2026-10-06 rule that comments show only while reviewing. Holding ⌘ (Ctrl elsewhere) pauses comment mode so the page can be used. With All comments open, clicking a comment on the page opens it in the panel instead of closing the panel (sections 5, 7 and 9).
 - 2026-10-14 — All comments becomes the hub: the round button becomes the panel's footer while it is open, new comments are written in the panel, and comment mode leaves it open. Every thread is the same compact card (avatar, name, how long ago, words; actions at its top right, with ⋯ for Copy thread, Edit and Delete), in the column, beside a bubble, in the panel and in the drawer. The comment and reply boxes say "Comment (Reply) or add others with @" and have Cancel and Comment (Reply) buttons. The panel's header has no title: @ and ✓ are icon toggles (sections 5 and 7).
-- 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.3 KB to Pipeup (50.5 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
+- 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.5 KB to Pipeup (50.7 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
+- 2026-10-14 — From review of the build: the panel stays open until it is closed (× or Esc), and a click on the page never closes it. @ and ✓ always show, with tooltips. An open card shows its quote once. A deleted comment goes away, and deleting a thread's first comment removes the thread. The pulse follows its content while the page scrolls (sections 5 and 7).

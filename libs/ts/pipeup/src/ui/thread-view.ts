@@ -43,6 +43,8 @@ export interface ThreadViewOptions {
 }
 
 export const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
+/** A thread's replies that haven't been deleted: a deleted comment goes away. */
+export const replies = (t: Thread) => t.root.replies.filter((c) => !c.deleted);
 
 export interface ThreadView {
   readonly element: HTMLElement;
@@ -177,7 +179,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     id = t.id;
     current = t;
     const now = (o.now ?? Date.now)();
-    const n = t.root.replies.length;
+    const live = replies(t);
+    const n = live.length;
     /** A comment's words with the people it names marked (yours stronger); links and references as usual. */
     const body = (c: Comment): (string | Node)[] => {
       const plain = (t: string) => (isAiName(c.name) ? referenced(t) : linkify(t));
@@ -337,7 +340,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         ? h(
             "div",
             { class: "rps" },
-            ...t.root.replies.map((c) => h("div", { class: "it" }, head(c, false), text(c), reactions(c))),
+            ...live.map((c) => h("div", { class: "it" }, head(c, false), text(c), reactions(c))),
             // A reply being written by an add-on (an AI's, streaming in): not a comment yet, so only shown.
             writing === undefined
               ? null

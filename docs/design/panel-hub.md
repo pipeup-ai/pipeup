@@ -37,10 +37,11 @@ builds on [comments-at-rest.md](comments-at-rest.md).
 ## The panel (`launcher.ts`)
 
 - The header is `mine` (@) and `showResolved` (✓): buttons with `aria-pressed` (`.tg`) beside Close. There is no title
-  and no count.
+  and no count. Both always show. @ on with no mentions says "No comments mention you". Each has a tooltip
+  (`data-tip`, drawn by `.tg::after`, easing in after 0.4 s on hover or focus), mirrored to `aria-description`.
 - The rows are cards (`.cd`). The button (`.mi`) holds the header, the quote (or the location, or the lost snapshot), the
-  clamped words and `.rest`. Opened, the card keeps only the button's quote line and shows the thread view beneath it
-  (`.xr`).
+  clamped words and `.rest`. Opened, the button is hidden and the card is the thread view (`.xr`): its header, the quote
+  once, the thread. A click on its top line (not a button) closes it. The line starts from the card.
 - The footer (`.pf`) shows the face and name, `.fs` (Comment, its shortcut and a switch) and ⋯, which opens the same
   menu as the round button. While listing, the layer's `.listing` class moves the menu above the footer, hides its
   Comment and All comments rows (and `items()` skips hidden rows), and draws the round button in (opacity and scale,
@@ -48,14 +49,27 @@ builds on [comments-at-rest.md](comments-at-rest.md).
 - New comments: `startDraft` and `setCommenting(true)` no longer clear `listing`. The column and bubbles leave the draft
   to the panel while listing. `buildAll` puts the draft's card before the first thread whose node follows the draft's
   (`compareDocumentPosition`), focuses it once, and puts the caret back after rebuilds. `target()` takes a draft too, so
-  the line joins the card to what it's about. In comment mode a page click doesn't close the panel. Esc in the panel
-  steps back past the draft first (`ctx.back()`).
+  the line joins the card to what it's about. The panel stays open until its × or Esc: a page click never closes
+  it (the pointer-down bookkeeping that rule needed is gone). Esc in the panel steps back past the draft first
+  (`ctx.back()`). While listing, the menu has `z-index:1`, because otherwise the panel, drawn later, covered it.
+
+## Deleted comments and the pulse
+
+- `replies(t)` (thread-view) is a thread's replies that haven't been deleted. The card, the reply counts in the column,
+  the panel and the bubble preview use it. The app's `threadsNow()` leaves out threads whose first comment was deleted.
+  Render, All comments, the highlights and the count all read it, so a deleted comment leaves nothing behind.
+- A pulse (`swell`) keeps a function that gives its content's current boxes, and the frame loop refits it. Opening a
+  thread from the panel scrolls the page smoothly, and the pulse now stays on the content instead of where the content
+  was.
 
 ## Size
 
-+1.3 KB gzip (49.2 → 50.5 KB). The budget rises from 50 to 51 KB. This is Pipeup's own UI, which every page shows, so it
++1.5 KB gzip (49.2 → 50.7 KB). The budget rises from 50 to 51 KB. This is Pipeup's own UI, which every page shows, so it
 can't move to an add-on. There are no unused styles to cut (checked).
 
 ## Change log
 
 - 2026-10-14 — First version.
+- 2026-10-14 — From review of the build: the panel stays open until closed, @ and ✓ always show with tooltips, open cards
+  show their quote once, the footer's menu draws above the panel, deleted comments go away, and the pulse follows the
+  page.

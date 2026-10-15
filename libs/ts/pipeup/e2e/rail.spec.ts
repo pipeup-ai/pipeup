@@ -31,8 +31,8 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   await row(page, /Match the nav/).click();
   await expect(panel(page).locator(".xr")).toHaveCount(1);
   await expect(panel(page).locator(".xr")).toContainText("Match the nav?");
-  // Clicking the open row closes it again.
-  await panel(page).locator(".cd.open > .mi").click();
+  // Clicking the open card's top line closes it again.
+  await panel(page).locator(".cd.open .root > .hdr .who").click();
   await expect(panel(page).locator(".xr")).toHaveCount(0);
   await expect(page.locator(".cx.show")).toHaveCount(0);
 });

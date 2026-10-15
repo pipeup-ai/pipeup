@@ -14,7 +14,7 @@ import { narrow, PANEL } from "./layout";
 import { mentionsMe } from "./mentions";
 import { draftBox, type DraftBox } from "./draft-view";
 import { nodeOf } from "./order";
-import { plural, threadView, type ThreadView } from "./thread-view";
+import { plural, replies, threadView, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
 const AWAY_MS = 3000;
@@ -56,10 +56,18 @@ export function createLauncher(ctx: Ctx): View {
   const list = h("div", { class: "list", role: "menu", "aria-label": "All comments" });
   const close = h("button", { class: "ib", type: "button", "aria-label": "Close" }, icon("close"));
   /** An icon that is its own switch: bold when on, grey when off, nothing around it; hovering shows the other state. */
-  const iconSwitch = (label: string, face: Node, run: () => void) => {
+  const iconSwitch = (label: string, tip: string, face: Node, run: () => void) => {
+    // Its tooltip (which eases in on hover and focus) says what it does; screen readers hear it as a description.
     const b = h(
       "button",
-      { class: "tg", type: "button", "aria-label": label, title: label, "aria-pressed": "false" },
+      {
+        class: "tg",
+        type: "button",
+        "aria-label": label,
+        "aria-description": tip,
+        "data-tip": tip,
+        "aria-pressed": "false",
+      },
       face,
     );
     b.addEventListener("click", (e) => {
@@ -68,11 +76,17 @@ export function createLauncher(ctx: Ctx): View {
     });
     return b;
   };
-  // Mentions of me (@): shown once a comment names this reviewer; keeps only the threads that do.
-  const mine = iconSwitch("Mentions of me", h("b", {}, "@"), () => ctx.menu.toggleMine());
-  mine.hidden = true;
-  // Show resolved (✓): brings resolved threads back, muted.
-  const showResolved = iconSwitch("Show resolved", icon("resolve", 17, 2.4), () => ctx.menu.toggleResolved());
+  // Mentions of me (@): keeps only the threads that name this reviewer. Show resolved (✓): brings resolved ones back.
+  // Both always show, whether or not there are any yet.
+  const mine = iconSwitch("Mentions of me", "Only comments that mention you", h("b", {}, "@"), () =>
+    ctx.menu.toggleMine(),
+  );
+  const showResolved = iconSwitch(
+    "Show resolved",
+    "Show resolved comments too",
+    icon("resolve", 17, 2.4),
+    () => ctx.menu.toggleResolved(),
+  );
   // What add-ons say under the header ("Claude has answered 3 of 5"), each with an optional button. A line eases in
   // when an add-on sets it and out when it takes it away, and stays put while its words change.
   const notesBox = h("div", { class: "lns" });
@@ -305,10 +319,9 @@ export function createLauncher(ctx: Ctx): View {
     const before = at?.dataset.thread;
     const inReply = railView !== null && railView.element.contains(at);
     const everyone = ctx.menu.all();
-    const named = everyone.some((i) => mentionsMe(i.thread, ctx.doc.me));
     const shownItems = everyone
       .filter((i) => !i.thread.resolved || ctx.state.showResolved || i.thread.id === openId)
-      .filter((i) => !(ctx.state.mine && named) || mentionsMe(i.thread, ctx.doc.me));
+      .filter((i) => !ctx.state.mine || mentionsMe(i.thread, ctx.doc.me));
     // Each thread is a card: who and how long ago, the words it's about, the comment, and its replies as a count.
     // Opened, the card shows the thread itself beneath the words it's about.
     const row = (i: ExportItem) => {
@@ -316,7 +329,7 @@ export function createLauncher(ctx: Ctx): View {
       const open = t.id === openId;
       const av = avatar(t.root.author, t.root.name);
       av.classList.add("in");
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       const rest = [n ? plural(n) : "", ...t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`)].filter(
         Boolean,
       );
@@ -349,16 +362,23 @@ export function createLauncher(ctx: Ctx): View {
       const card = h("div", { class: `cd${t.resolved ? " done" : ""}${open ? " open" : ""}` }, b);
       if (open && railView) {
         railView.update(t, threadOptions(t));
-        card.append(
-          h("div", { class: "xr", role: "region", "aria-label": "Comment thread" }, railView.element),
+        const xr = h(
+          "div",
+          { class: "xr", role: "region", "aria-label": "Comment thread" },
+          railView.element,
         );
+        // Opened, the card is the thread itself; a click on its top line (not its buttons) closes it again.
+        xr.addEventListener("click", (e) => {
+          const at = e.target as Element;
+          if (at.closest(".root>.hdr") && !at.closest("button")) closeRow(true);
+        });
+        card.append(xr);
       }
       return card;
     };
     const gone = shownItems.filter((i) => lost(i.thread));
     showResolved.setAttribute("aria-pressed", String(ctx.state.showResolved));
-    mine.hidden = !named;
-    mine.setAttribute("aria-pressed", String(ctx.state.mine && named));
+    mine.setAttribute("aria-pressed", String(ctx.state.mine));
     // The footer: who you are and whether comment mode is on.
     const name = ctx.menu.name();
     footName.textContent = name || animalName(ctx.doc.me);
@@ -385,7 +405,13 @@ export function createLauncher(ctx: Ctx): View {
     if (draft) draft.box.setLabel(d!.label);
     const caret = draft && draft.card.contains(at) ? draft.box.caret() : null;
     list.replaceChildren(
-      shownItems.length || draft ? "" : h("div", { class: "sec", role: "presentation" }, "No open comments"),
+      shownItems.length || draft
+        ? ""
+        : h(
+            "div",
+            { class: "sec", role: "presentation" },
+            ctx.state.mine ? "No comments mention you" : "No open comments",
+          ),
       ...groups(
         shownItems.filter((i) => !lost(i.thread)),
         row,
@@ -521,7 +547,7 @@ export function createLauncher(ctx: Ctx): View {
   /** Draws the line from the open thread's header to its place, or lets it fade when there is none to point at. */
   function drawWire(): void {
     const t = openId ? latest.find((x) => x.id === openId) : null;
-    const head = draft?.card ?? (openId ? list.querySelector<HTMLElement>(".cd.open>.mi") : null);
+    const head = draft?.card ?? (openId ? list.querySelector<HTMLElement>(".cd.open") : null);
     const to = draft ? target(null, draft.of) : t && target(t);
     const box = head?.getBoundingClientRect();
     const view = list.getBoundingClientRect();
@@ -811,11 +837,6 @@ export function createLauncher(ctx: Ctx): View {
     // Opened from the keyboard (no pointer, so detail is 0): focus moves to Start commenting, nearest the button.
     if (e.detail === 0) items().at(-1)?.focus({ preventScroll: true });
   });
-  /** Where focus was when the pointer went down: a press on the page has already moved it by the click. */
-  let wasInPanel = false;
-  const onDown = () => {
-    wasInPanel = all.contains(focused());
-  };
   const onAnyClick = (e: Event) => {
     const path = e.composedPath();
     if (menuOpen && !path.includes(menu) && !path.includes(btn) && !path.includes(more)) {
@@ -827,12 +848,7 @@ export function createLauncher(ctx: Ctx): View {
         e.stopPropagation();
       }
     }
-    // Only a click on the page itself closes the panel: Pipeup's own threads and bubbles, and a highlight (which
-    // opens its thread in the panel), leave it open.
-    // Focus that was in the panel and went nowhere (empty page) comes back to the button; a page field keeps it.
-    // In comment mode a click on the page chooses something to comment on, and the panel stays to take it.
-    if (ctx.state.listing && !ctx.owns(e) && !ctx.claimed(e) && !ctx.state.commenting)
-      setList(false, wasInPanel && (!document.activeElement || document.activeElement === document.body));
+    // The panel stays open until it is closed (its × or Esc): a click on the page never closes it.
   };
   /**
    * A pointer away from the menu and the button for 3 s closes the menu; coming back sooner keeps it open. Never
@@ -868,7 +884,6 @@ export function createLauncher(ctx: Ctx): View {
     if (structure) build();
     else sync();
   });
-  window.addEventListener("pointerdown", onDown, true);
   window.addEventListener("click", onAnyClick, true);
   // Over: the pointer arrived somewhere. Out with nowhere to go: it left the window.
   window.addEventListener("pointerover", onPointer, true);
@@ -941,7 +956,6 @@ export function createLauncher(ctx: Ctx): View {
     frame: drawWire,
     destroy() {
       offAddons();
-      window.removeEventListener("pointerdown", onDown, true);
       window.removeEventListener("click", onAnyClick, true);
       window.removeEventListener("pointerover", onPointer, true);
       window.removeEventListener("pointerout", onPointer, true);

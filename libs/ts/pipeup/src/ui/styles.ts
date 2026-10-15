@@ -198,7 +198,7 @@ grows or slides: its layers and numbers cross-fade in place. */
 .launch{position:fixed;right:20px;bottom:20px;pointer-events:auto;transform-origin:100% 100%;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
 /* While All comments is open, the round button is the panel's footer: it draws in, and the footer takes its place. */
 .layer.listing .launch{opacity:0;transform:scale(.6);pointer-events:none}
-.layer.listing .menu{right:8px;bottom:60px}
+.layer.listing .menu{right:8px;bottom:60px;z-index:1}
 .layer.listing .menu :is([data-item=comment],[data-item=all]){display:none}
 .launch .mode{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;transition:background-color .3s var(--eo),color .3s var(--eo)}
 .mode>*,.cnt>*{grid-area:1/1}
@@ -263,12 +263,15 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .hd{display:flex;align-items:center;gap:2px;padding:8px 8px 6px 8px}
 .sp{flex:1}
 .tg{display:grid;place-items:center;min-width:30px;height:30px;border-radius:6px;font-size:17px;color:var(--fa);transition:color .2s var(--eo)}
-.tg[hidden]{display:none}
 .tg b{font-weight:400}
 .tg[aria-pressed=true],.tg:hover{color:var(--k)}
 .tg[aria-pressed=true] b{font-weight:700}
 .tg[aria-pressed=true]:hover{color:var(--fa)}
 .tg:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
+/* What each toggle does: a tooltip under it that eases in after a moment, on hover or focus. */
+.tg{position:relative}
+.tg::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 4px);z-index:3;width:max-content;max-width:220px;padding:4px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);font-size:12px;line-height:1.4;color:var(--mu);pointer-events:none;opacity:0;transform:translateY(-3px);transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
+.tg:hover::after,.tg:focus-visible::after{opacity:1;transform:none;transition:opacity var(--in) var(--eo) .4s,transform var(--in) var(--eo) .4s}
 .list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:4px 8px 8px;background:var(--so)}
 /* Threads in the panel are the same cards; opened, a card shows the thread beneath the words it's about. */
 .cd{margin-top:6px;background:var(--su);border:1px solid var(--ln);border-radius:10px;transition:box-shadow var(--in) var(--eo),border-color var(--in) var(--eo)}
@@ -276,10 +279,10 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .cd.done{opacity:.6}
 .cd .mi{display:block;min-height:0;padding:8px 10px 10px;border-radius:10px}
 .cd .mi>.ctx,.cd .mi>.tx{display:block;margin-top:2px}
-.cd.open>.mi{padding-bottom:0}
-.cd.open>.mi>:not(.ctx){display:none}
+.cd.open>.mi{display:none}
+.cd.open .root>.hdr{cursor:pointer}
 .cd.new{padding:8px 10px 10px}
-.xr{padding:0 10px 10px}
+.xr{padding:8px 10px 10px}
 /* The footer: who you are, Comment (its shortcut and switch), and ⋯ for the menu. */
 .pf{display:flex;align-items:center;gap:8px;min-height:52px;padding:0 8px 0 14px;border-top:1px solid var(--ln)}
 .fs{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:8px;font-size:13px;transition:background-color .2s var(--eo)}
