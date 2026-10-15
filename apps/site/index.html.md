@@ -2,7 +2,7 @@
 
 People comment right on an HTML page, and send their comments back. No accounts, no servers. Their feedback comes back ready for your AI to act on.
 
-- **One file**, about 37 KB, with no dependencies.
+- **One file**, with no dependencies.
 - **Works from disk**: no server needed.
 - **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy comments, as Markdown or as text) and sends it themselves.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
@@ -13,7 +13,7 @@ On the home page, the first screen shows Pipeup on a document, slides, a website
 
 You want to read it and give feedback.
 
-1. Open the file in your browser. If you see a small round comment button at the bottom right, skip to step 3.
+1. Open the file in your browser. If you see a small comment button in the bottom-right corner, skip to step 3.
 2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0-beta.1/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
 3. Comment: select words and click the comment icon, or press Shift+Option+C (Shift+Alt+C) and click any block. With the keyboard: Tab moves between blocks, Enter comments, Esc finishes.
 4. Send it back: **Copy comments › As Markdown** copies every comment with exactly where it is. Paste it in a message or email to whoever sent the file.

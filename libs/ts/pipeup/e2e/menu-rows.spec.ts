@@ -118,20 +118,15 @@ test("the bottom row is Start commenting, with a switch that follows comment mod
     "true",
   );
 
-  // Space toggles it from the keyboard; the menu stays open with focus on the switch.
+  // Turned off again by click, the menu still open.
+  await start.click();
+  await commenting(page, false);
+  // From the keyboard: Enter opens the menu on its switch; Space turns comment mode on, and the menu closes as
+  // the block cursor starts; Escape on it leaves comment mode.
   await page.keyboard.press("Escape");
   await control(page).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toBeFocused();
-  await page.keyboard.press("Space");
-  await commenting(page, false);
-  await expect(menu(page)).toHaveCount(1);
-  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toBeFocused();
-  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
-    "aria-checked",
-    "false",
-  );
-  // Turned on from the keyboard, the menu closes and the block cursor starts; Escape on it leaves comment mode.
   await page.keyboard.press("Space");
   await commenting(page);
   await expect(menu(page)).toHaveCount(0);

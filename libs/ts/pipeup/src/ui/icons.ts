@@ -13,13 +13,18 @@ const PATHS = {
   list: [
     "M3 6.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0M3 12a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0M3 17.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0M9 6.5h11M9 12h11M9 17.5h7",
   ],
-  expand: ["M14 4h6v6M20 4l-6 6M10 20H4v-6M4 20l6-6M20 14v6h-6M20 20l-6-6M4 10V4h6M4 4l6 6"],
-  // A pin as the page shows one: round, its point at the bottom left.
-  pin: ["M6 18v-6a6 6 0 1 1 6 6z"],
+  expand: ["M15 4h5v5M20 4l-6 6M9 20H4v-5M4 20l6-6"],
+  // A pin as the page shows one: round, its point at the bottom left; as tall as the arrows beside it.
+  pin: ["M4 20v-8a8 8 0 1 1 8 8z"],
+  // For you: an @ drawn as small as the resolve tick, so the two filters' icons stand the same height.
+  at: [
+    "M9.1 12a2.9 2.9 0 1 0 5.8 0a2.9 2.9 0 1 0-5.8 0",
+    "M14.9 12v1.1a1.8 1.8 0 0 0 3.6 0V12a6.5 6.5 0 1 0-3.97 5.98",
+  ],
   // A row that opens to more rows beneath it.
   chev: ["M9 6l6 6-6 6"],
   // The same four arrows pointing in: a block inside it.
-  shrink: ["M20 10h-6V4M14 10l6-6M4 14h6v6M10 14l-6 6M14 20v-6h6M14 14l6 6M10 4v6H4M10 10L4 4"],
+  shrink: ["M14 5v5h5M20 4l-6 6M10 19v-5H5M4 20l6-6"],
   // The comment bubble without its plus, to hold the open count.
   bubble: ["M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"],
   close: ["M6 6l12 12M18 6L6 18"],

@@ -5,7 +5,7 @@ import {
   fixture,
   leaveReply,
   open,
-  openMenu,
+  openAll,
   seedElement,
   seedText,
   seedView,
@@ -228,8 +228,7 @@ test("a bubble clicked while a draft with words is away goes back to the draft; 
   await page.evaluate(() => (window as any).deck.go(1));
   await expect(page.locator("#count")).toHaveText("2 / 3");
   // A row chosen in All comments opens out in the panel and leaves the draft where it is.
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await page
     .locator(".all.show")
     .getByRole("menuitem", { name: /Bar on two/ })

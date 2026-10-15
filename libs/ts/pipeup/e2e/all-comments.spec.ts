@@ -5,9 +5,9 @@ import {
   focusInPipeup,
   hideComments,
   leaveReply,
-  quoteSpot,
   open,
-  openMenu,
+  openAll,
+  quoteSpot,
   seedElement,
   seedText,
   settled,
@@ -18,12 +18,6 @@ import {
 /** The number inside the control's comment bubble (the bubble fades away at zero). */
 const count = (page: Page) => page.locator(".launch .mode .cnt");
 const list = (page: Page) => page.locator(".all.show");
-/** Opens All comments from the control's menu. */
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(list(page)).toBeVisible();
-}
 
 /** The count's opacity every frame for `ms`: easing shows values between 0 and 1, a snap shows none. */
 async function sampleOpacity(page: Page, start: () => Promise<unknown>, ms = 600): Promise<number[]> {
@@ -241,8 +235,7 @@ test.describe("on a touch screen with no hover", () => {
 
 test("the menu's All comments opens the list, even with no number to choose", async ({ page }) => {
   await open(page, "site.html");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await expect(list(page)).toBeVisible();
   await expect(list(page)).toContainText("No open comments");
   await expect(page.locator(".menu.show")).toHaveCount(0);

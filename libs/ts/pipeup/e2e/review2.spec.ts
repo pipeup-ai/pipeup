@@ -9,7 +9,7 @@ const cursorOf = (page: Page, selector: string) =>
   page.evaluate((s) => getComputedStyle(document.querySelector(s)!).cursor, selector);
 const tip = (page: Page) => page.locator(".launch .ttip");
 
-test("the comment control shows only its icon at rest; hovering it eases in a tooltip and never grows it", async ({
+test("the comment control shows only its icon at rest; hovering it eases in its shortcut and the button stays put", async ({
   page,
 }) => {
   await open(page, "controls.html");
@@ -18,17 +18,17 @@ test("the comment control shows only its icon at rest; hovering it eases in a to
   await expect(mode(page).locator(".lbl")).toHaveCount(0);
   const rest = (await mode(page).boundingBox())!;
   expect(await tip(page).evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
-  expect(await tip(page).evaluate((e) => getComputedStyle(e).transitionProperty)).toContain("opacity");
+  // Its words ease in and out (every property it changes eases).
+  expect(await tip(page).evaluate((e) => getComputedStyle(e).transitionProperty)).toMatch(/all|opacity/);
   await mode(page).hover();
   await expect(tip(page)).toHaveCSS("opacity", "1");
-  await expect(tip(page)).toContainText("Comment");
   await expect(tip(page)).toContainText(/⇧⌥C|Shift\+Alt\+C/);
   expect((await mode(page).boundingBox())!).toEqual(rest);
   await page.mouse.move(5, 5);
   await expect(tip(page)).toHaveCSS("opacity", "0");
 });
 
-test("the tooltip also shows on keyboard focus, and the shortcut is named for assistive tech", async ({
+test("from the keyboard the shortcut is named for assistive tech and shown in the menu; the slide-out is the pointer's", async ({
   page,
 }) => {
   await open(page, "controls.html");
@@ -37,7 +37,12 @@ test("the tooltip also shows on keyboard focus, and the shortcut is named for as
   await mode(page).focus();
   await page.keyboard.press("Tab");
   await page.keyboard.press("Shift+Tab");
-  await expect(tip(page)).toHaveCSS("opacity", "1");
+  // Keyboard focus doesn't hold the slide-out open: it is only for a pointer resting on the control.
+  await expect(tip(page)).toHaveCSS("opacity", "0");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toContainText(
+    /⇧⌥C|Shift\+Alt\+C/,
+  );
 });
 
 for (const combo of [`Shift+Alt+${SHORTCUT.code}`]) {

@@ -1,3 +1,4 @@
+import { openMenu } from "./helpers";
 import { expect, test } from "@playwright/test";
 import { existsSync, readFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
@@ -64,7 +65,7 @@ test("Save to GitHub asks first, then opens GitHub's new-file page with the revi
   await page.keyboard.press("Enter");
   await expect(page.locator(".bub, .th").first()).toBeVisible();
 
-  await page.locator(".launch .mode").click();
+  await openMenu(page);
   await page.locator(".menu.show").getByText("Save to GitHub").click();
   const panel = page.locator(".xp.show");
   await expect(panel).toContainText("This will open GitHub in a new tab with 1 open comment");
