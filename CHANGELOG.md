@@ -7,13 +7,17 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.0-beta.2] - 2026-10-15
+
+This pre-release is about reading and writing comments: every thread is the same compact card, All comments is the hub while it is open, you can edit and delete your own comments, comments show without comment mode, and the comment control is a small frosted square tucked into the corner. Pipeup is 52.0 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Changed
 
-- **All comments is the hub while it is open.** The round button becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title, just its two filters and ×. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
+- **All comments is the hub while it is open.** The comment control becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title, just its two filters and ×. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
 - **All comments' filters read as on or off.** They are pills with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and filled with a soft tint of the accent colour when on, with tooltips. **Hovering a closed card in the panel shows its actions** (React, ✓ Resolve and ⋯, as on every card), and they work without opening it; on touch screens they show once the card is open.
 - **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
 - **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
-- **Pipeup is 52.1 KB gzip** with these and the fixes below, and its budget rises from 50 to 53 KB.
+- **Pipeup is 52.0 KB gzip** with these and the fixes below (48.8 KB in 0.8.0-beta.1), and its budget rises from 50 to 53 KB.
 - **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
 - **The comment control is a small frosted square tucked into the corner** instead of a round button floating over the page: flush with the bottom and right edges, no border, the count inside a bigger bubble. Pointed at, it reaches left to show its shortcut. In comment mode a click on it opens All comments.
 - **Clearer small icons.** The naming bar's Around it and Inside it are two arrows each (out and in), and Pin stands as tall as them. In an avatar the animal nearly fills its tint.
@@ -28,13 +32,16 @@ change the API and the stored comment format.
 ### Fixed
 
 - **A mention of you stays inline in its sentence.** It showed as a band on its own line, with the rest of the sentence pushed below.
-- **Pipeup's messages appear beside the round button.** They were at the bottom centre, over a deck's slide controls and a phone's last lines of text. While All comments is open they sit beside it.
-- **A new comment beside the page is never under the round button.** Near the bottom of the window, an open card or new comment in the column moves up just enough to clear it.
+- **Pipeup's messages appear beside the comment control.** They were at the bottom centre, over a deck's slide controls and a phone's last lines of text. While All comments is open they sit beside it.
+- **A new comment beside the page is never under the comment control.** Near the bottom of the window, an open card or new comment in the column moves up just enough to clear it.
 - **On a phone, a comment opened from its bubble no longer covers what it's about.** With no room beside the bubble, the comment sits below the element, or above it.
 - **The selection's comment icon no longer covers the line above.** It sits just past the end of the paragraph's text, level with the selection's last line.
 - **All comments no longer closes when you click a comment on the page.** Clicking a comment's highlighted words, bubble or column thread while the panel is open now opens that thread in the panel. Before, the panel closed: depending on the case, the thread opened on the page instead, or nothing opened at all.
 
 ### Changed (the website)
+
+- **The home page's showcase keeps a smallest size**, so no scene is cut off: a thinner frame, never narrower than 440 px beside the headline, never shorter than 400 px, and a sideways scroll on screens too narrow for it.
+- **The footer has no facts line**: it says no more than its Add-ons and For agents links.
 
 - **The Add-ons page is a page of small cards**, in three groups (From Pipeup, Run your own, Examples from another company). Each card has a title, one sentence and a picture; its Copy button copies the prompt, script tag or command (a menu when there is more than one), and a click anywhere else opens the add-on's own page, with what it sends, what it asks, its buttons and its demo. Each add-on page has a Markdown copy for agents, and `llms.txt` points to them.
 - The site's animations show Pipeup as this version draws it: the comment box with Cancel and Comment and the compact card it becomes, the selection's icon beside the text, the naming bar with Around it and Pin, and on the Add-ons page Assist's reading line and reply inside the comment's card.
@@ -343,7 +350,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...HEAD
+[0.8.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...v0.8.0-beta.2
 [0.8.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0-beta.1
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
