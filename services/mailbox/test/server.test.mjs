@@ -526,7 +526,10 @@ describe("a person's inbox (pm2)", async () => {
   test("a note without its proof of work, or that is malformed, is refused", async () => {
     const a = person();
     const ok = note(a.id, "x");
-    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: ok.ct, work: "nope" })).status, 403);
+    // A nonce that doesn't do the work: any guess passes by chance 1 time in 2^8, so find one that fails.
+    let bad = 0;
+    while (work(a.id, ok.ct, `nope${bad}`, 8)) bad++;
+    assert.equal((await t.j("POST", `/i/${a.id}`, { ct: ok.ct, work: `nope${bad}` })).status, 403);
     assert.equal((await t.j("POST", `/i/${a.id}`, { ct: "pu1.abc", work: "1" })).status, 400);
     assert.equal((await t.j("POST", `/i/${a.id}`, "not json")).status, 400);
     assert.equal((await t.j("POST", `/i/${a.id}`, { ct: `pi1.${"A".repeat(9000)}`, work: "1" })).status, 400);
