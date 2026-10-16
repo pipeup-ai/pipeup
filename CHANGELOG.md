@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.0-beta.3] - 2026-10-15
+
+This pre-release fixes what six testers found walking every click and key of beta.2 on documents, slide decks, websites and phones: Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it, focus never drops to the page, decks keep their own controls and make room for All comments, phones get finger-sized targets and a touch hint with Done, and highlights, accents and high-contrast modes stay readable. Pipeup is 57.4 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Changed
 
 - **Tab from a comment box moves on.** In comment mode, Tab (or Shift+Tab) from an empty comment box closes it and moves the block cursor to the next (or previous) block in one press, instead of walking through Cancel, the naming bar, the bubbles and the comment control first. From a box with words, Tab goes through its own buttons (Cancel, Comment) and then moves on; the box waits beside its block, dimmed, with a faint outline on the block, and Enter or a click on another block takes you back to it ("Finish or cancel this comment first").
@@ -392,7 +396,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.3...HEAD
+[0.8.0-beta.3]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...v0.8.0-beta.3
 [0.8.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...v0.8.0-beta.2
 [0.8.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0-beta.1
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
