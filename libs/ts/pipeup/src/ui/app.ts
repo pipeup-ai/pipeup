@@ -1099,8 +1099,32 @@ export function startApp(o: AppOptions): App {
       render();
     }, wait);
   }
+  /**
+   * A page's modal <dialog> makes everything outside it inert, Pipeup too: while one is open, Pipeup's element lives
+   * in the one opened last (in the page's top layer, above its backdrop), and goes back under <html> once none is
+   * open (closed, or removed with Pipeup in it). The page's own elements are never touched; the dialog only holds
+   * Pipeup's element while it is open.
+   */
+  let modals: Element[] = [];
+  function rehome(): void {
+    let open: Element[] = [];
+    try {
+      open = [...document.querySelectorAll("dialog")].filter((d) => d.matches(":modal"));
+    } catch {
+      /* no :modal (an old browser): Pipeup stays under <html> */
+    }
+    modals = [...modals.filter((d) => open.includes(d)), ...open.filter((d) => !modals.includes(d))];
+    const into = modals.at(-1) ?? document.documentElement;
+    if (host.element.parentNode !== into) into.append(host.element);
+  }
+  /** A record that only moved Pipeup's own element (into a dialog or back) says nothing about the page. */
+  const moved = (r: MutationRecord) =>
+    r.type === "childList" &&
+    r.addedNodes.length + r.removedNodes.length > 0 &&
+    [...r.addedNodes, ...r.removedNodes].every((n) => n === host.element);
   const observer = new MutationObserver((records) => {
-    if (records.every((r) => host.element.contains(r.target))) return;
+    if (records.some((r) => r.removedNodes.length)) rehome();
+    if (records.every((r) => host.element.contains(r.target) || moved(r))) return;
     scheduleReplace();
   });
 
@@ -1119,6 +1143,23 @@ export function startApp(o: AppOptions): App {
       e.stopPropagation();
   };
   for (const t of ["keydown", "keyup", "keypress"]) host.layer.addEventListener(t, keep as EventListener);
+  // A page's own dialog never takes Pipeup's focus or closes for what happens in Pipeup: a focus trap that pulls focus
+  // back when it leaves the dialog doesn't hear focus moving into Pipeup (nor the page losing it to Pipeup), and a
+  // dialog that closes on a press outside it doesn't hear presses in Pipeup. Pipeup's own listeners are on window in
+  // the capture phase, or inside its shadow root, so they still hear everything.
+  const ours = (n: EventTarget | null) => n === host.element;
+  const guardFocus = (e: FocusEvent) => {
+    if (
+      e.type === "focusin"
+        ? ours(e.target) && !ours(e.relatedTarget)
+        : ours(e.relatedTarget) && !ours(e.target)
+    )
+      e.stopImmediatePropagation();
+  };
+  const quiet = (e: Event) => e.stopPropagation();
+  const QUIET = ["pointerdown", "mousedown", "touchstart", "click", "focusin", "focusout"];
+  for (const t of ["focusin", "focusout"]) window.addEventListener(t, guardFocus as EventListener, true);
+  for (const t of QUIET) host.element.addEventListener(t, quiet);
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);
@@ -1159,6 +1200,9 @@ export function startApp(o: AppOptions): App {
     }, 150);
   };
   const themeObserver = new MutationObserver((records) => {
+    // A dialog opening or closing (its `open`): Pipeup goes into the open modal one, or back out.
+    if (records.some((r) => r.attributeName === "open" && (r.target as Element).localName === "dialog"))
+      rehome();
     if (records.every((r) => r.target === host.element)) return;
     scheduleLook();
   });
@@ -1175,6 +1219,7 @@ export function startApp(o: AppOptions): App {
 
   resolveAll();
   buildViews();
+  rehome();
   raf = requestAnimationFrame(frame);
 
   return {
@@ -1201,6 +1246,8 @@ export function startApp(o: AppOptions): App {
       offChange();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("click", onClick);
+      for (const t of ["focusin", "focusout"])
+        window.removeEventListener(t, guardFocus as EventListener, true);
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();

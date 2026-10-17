@@ -1128,6 +1128,8 @@ export function createLauncher(ctx: Ctx): View {
       else if (openId) closeRow(true);
       else setList(false, true);
     } else return;
+    // Taken: comment mode's own Escape (on window too, added later) doesn't also step back on this press.
+    e.preventDefault();
     e.stopPropagation();
   };
   window.addEventListener("keydown", onEscape, true);

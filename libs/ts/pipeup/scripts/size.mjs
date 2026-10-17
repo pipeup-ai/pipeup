@@ -23,10 +23,12 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // (+1.1 KB; docs/design/phones-touch.md); then 57.5 KB for the click-path review's decks and websites: a deck's own
 // controls left to it, any showing slide commented on, decks refitting beside All comments, Moved flagged, a click
 // made while Space is held left to the page, plain names for controls, where-labels from the right section, one
-// bubble per thread, and All comments as a list (+1.2 KB; docs/design/decks-and-sites.md).
+// bubble per thread, and All comments as a list (+1.2 KB; docs/design/decks-and-sites.md); then 58 KB for working
+// in a page's own dialogs (Pipeup moves into a modal <dialog>, and keeps its focus and presses from focus traps)
+// and messages inside All comments (+0.3 KB; docs/design/page-dialogs.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 57.5 * 1024,
-  "dist/pipeup.esm.js": 57.5 * 1024,
+  "dist/pipeup.min.js": 58 * 1024,
+  "dist/pipeup.esm.js": 58 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

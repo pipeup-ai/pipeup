@@ -278,6 +278,8 @@ export function composer(o: ComposerOptions): Composer {
     if (o.people) openList();
   });
   input.addEventListener("blur", () => options.length && closeList());
+  // A page's focus trap that cancels presses outside its dialog would keep the caret out: the line takes it anyway.
+  input.addEventListener("mousedown", (e) => e.defaultPrevented && input.focus({ preventScroll: true }));
   // What is typed here is never the page's: not the key going down, nor coming up (a deck may turn on either).
   for (const t of ["keyup", "keypress"]) input.addEventListener(t, (e) => e.stopPropagation());
   input.addEventListener("keydown", (e) => {

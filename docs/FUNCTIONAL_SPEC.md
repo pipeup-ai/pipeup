@@ -403,8 +403,8 @@ any of them off.
   the footer back into the control. Both shapes ease into each other.
 - **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
   appear **beside the comment control**, never at the bottom centre where decks keep their slide controls and
-  phones show the page's last lines. While All comments is open they sit beside the panel, and above its
-  footer when the panel fills a phone's screen. Nothing of Pipeup's covers a message: comment mode's hint waits
+  phones show the page's last lines. While All comments is open they sit inside the panel, above its footer, so
+  they never cover the page beside it (nor a deck's own slide controls there). Nothing of Pipeup's covers a message: comment mode's hint waits
   until the menu has closed, then shows for its usual time.
 - **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
   **⋯** for the rest of the menu.
@@ -587,6 +587,12 @@ any of them off.
   as part of the page. It takes the page's accent colour (or the author's) only when words in it are readable
   on Pipeup's surfaces, at least 4.5 to 1; otherwise it uses its own.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
+- **Pipeup keeps working while a page's own dialog is open**, whatever kind it is: a browser's modal dialog, one
+  from a library (which may stop the rest of the page taking clicks, hide it from screen readers, make it inert or
+  trap focus), or an overlay at the highest layer there is. Pipeup's comment control, menu, comment boxes and All
+  comments show above the dialog and its backdrop and can be used; what is in the dialog can be commented on; and the
+  dialog never takes Pipeup's focus or closes because of what is done in Pipeup. While a browser's modal dialog is
+  open, Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open).
 - **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
   page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
@@ -1733,3 +1739,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   back into view, and a long press on a reaction shows who gave it (sections 5, 7 and 7b).
 - 2026-10-15 — The comment control's count stops at **9+** (it went to 99+), so it is never more than two characters
   and stays clear of the bubble's outline in any font; the exact number is in its name and its slide-out (section 7).
+- 2026-10-17 — Pipeup keeps working while a page's own dialog is open, of any kind (a browser's modal dialog, a library's
+  focus-trapping or inert-making dialog, an overlay at the top layer); while a browser's modal dialog is open, Pipeup's
+  element sits inside it. While All comments is open, messages sit inside the panel above its footer, so they never
+  cover a deck's own slide controls beside it (sections 7 and 9).

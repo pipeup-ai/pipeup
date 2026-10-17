@@ -1,0 +1,158 @@
+<!doctype html>
+<html
+  lang="en"
+  data-pipeup-doc="mOdAlFiXtUrE0001:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+  data-pipeup-auto="off"
+>
+  <head>
+    <meta charset="utf-8" />
+    <title>Settings</title>
+    <style>
+      body {
+        margin: 40px;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      dialog {
+        width: 420px;
+        padding: 24px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+      }
+      dialog::backdrop {
+        background: rgb(0 0 0 / 0.4);
+      }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        background: rgb(0 0 0 / 0.4);
+      }
+      .panel {
+        width: 420px;
+        padding: 24px;
+        border-radius: 12px;
+        background: #fff;
+        pointer-events: auto;
+      }
+      body.locked {
+        overflow: hidden;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app">
+      <h1>Settings</h1>
+      <p id="page-p">The page behind the dialogs.</p>
+      <button id="open-native">Native dialog</button>
+      <button id="open-radix">Library dialog</button>
+      <button id="open-trap">Trapping dialog</button>
+      <button id="open-plain">Non-modal dialog</button>
+      <button id="open-inert">Inert dialog</button>
+      <button id="open-top">Top overlay</button>
+    </main>
+    <dialog id="native">
+      <h2>Delete project?</h2>
+      <p id="native-p">This removes the project and all its comments.</p>
+      <form method="dialog"><button id="native-cancel">Cancel</button> <button>Delete</button></form>
+      <button id="open-nested" type="button">Are you sure?</button>
+    </dialog>
+    <dialog id="nested">
+      <p id="nested-p">This can't be undone.</p>
+      <form method="dialog"><button id="nested-close">Close</button></form>
+    </dialog>
+    <dialog id="plain">
+      <p id="plain-p">A dialog that isn't modal: the page still works around it.</p>
+    </dialog>
+    <!-- Like Headless UI or MUI: everything outside the dialog is made inert. -->
+    <div id="inertd" class="overlay" hidden role="dialog" aria-modal="true">
+      <div class="panel">
+        <h2>Share</h2>
+        <p id="inertd-p">Anyone with the link can view.</p>
+      </div>
+    </div>
+    <!-- A full-window overlay at the highest z-index there is (a consent wall, say). -->
+    <div id="top" class="overlay" hidden style="z-index: 2147483647">
+      <div class="panel"><p id="top-p">We use cookies to run this site.</p></div>
+    </div>
+    <!-- Like Radix or shadcn/ui: the page stops taking pointer events, focus is watched as it bubbles (focusin and
+         focusout), and a press outside the dialog closes it. -->
+    <div id="radix" class="overlay" hidden role="dialog" aria-modal="true">
+      <div class="panel">
+        <h2>Invite people</h2>
+        <p id="radix-p">Send an invite to your team.</p>
+        <input id="radix-input" placeholder="Email" />
+        <button>Send</button>
+      </div>
+    </div>
+    <!-- Like the focus-trap library: focus is watched in the capture phase, and presses outside are cancelled. -->
+    <div id="trap" class="overlay" hidden role="dialog" aria-modal="true">
+      <div class="panel">
+        <h2>Rename</h2>
+        <p id="trap-p">Choose a new name for the file.</p>
+        <input id="trap-input" placeholder="Name" />
+      </div>
+    </div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      $("open-native").onclick = () => $("native").showModal();
+      $("open-nested").onclick = () => $("nested").showModal();
+      $("open-plain").onclick = () => $("plain").show();
+      $("open-inert").onclick = () => {
+        const m = $("inertd");
+        m.hidden = false;
+        for (const el of document.body.children) if (el !== m && el.tagName !== "SCRIPT") el.inert = true;
+      };
+      $("open-top").onclick = () => ($("top").hidden = false);
+      $("open-radix").onclick = () => {
+        const m = $("radix");
+        const panel = m.querySelector(".panel");
+        m.hidden = false;
+        document.body.classList.add("locked");
+        for (const el of document.body.children)
+          if (el !== m && el.tagName !== "SCRIPT") el.ariaHidden = "true";
+        document.addEventListener("focusin", (e) => {
+          if (!m.hidden && !panel.contains(e.target)) $("radix-input").focus();
+        });
+        panel.addEventListener("focusout", (e) => {
+          if (e.relatedTarget && !panel.contains(e.relatedTarget)) $("radix-input").focus();
+        });
+        document.addEventListener("pointerdown", (e) => {
+          if (!m.hidden && !panel.contains(e.target)) {
+            m.hidden = true;
+            window.closedBy = "outside";
+          }
+        });
+        $("radix-input").focus();
+      };
+      $("open-trap").onclick = () => {
+        const m = $("trap");
+        const panel = m.querySelector(".panel");
+        m.hidden = false;
+        document.addEventListener(
+          "focusin",
+          (e) => {
+            if (!m.hidden && !panel.contains(e.target)) $("trap-input").focus();
+          },
+          true,
+        );
+        document.addEventListener(
+          "mousedown",
+          (e) => {
+            if (!m.hidden && !panel.contains(e.target)) e.preventDefault();
+          },
+          true,
+        );
+        $("trap-input").focus();
+      };
+    </script>
+    <script src="../../dist/pipeup.min.js"></script>
+  </body>
+</html>

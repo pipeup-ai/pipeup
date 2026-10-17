@@ -7,6 +7,13 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Pipeup works while a page's own dialog is open.** In a browser's modal dialog, the comment control, menu and comment boxes were under its backdrop and couldn't be used (the browser makes everything outside the dialog inert); Pipeup now moves its element into the open dialog and back out when it closes. A library's dialog that traps focus no longer pulls the caret out of a comment box, and one that closes on a press outside no longer closes when Pipeup is used. Dialogs that make the rest of the page inert, and overlays at the highest z-index, were already fine and are now tested.
+- **While All comments is open, messages sit inside the panel above its footer**, so comment mode's hint no longer covers a deck's own slide controls beside the panel.
+- The Esc that closes the menu no longer also leaves comment mode when focus is on the page.
+- Pipeup is 57.7 KB gzip; its budget rises from 57.5 to 58 KB.
+
 ## [0.8.0-beta.3] - 2026-10-15
 
 This pre-release fixes what six testers found walking every click and key of beta.2 on documents, slide decks, websites and phones: Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it, focus never drops to the page, decks keep their own controls and make room for All comments, phones get finger-sized targets and a touch hint with Done, and highlights, accents and high-contrast modes stay readable. Pipeup is 57.4 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
