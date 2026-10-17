@@ -1100,21 +1100,42 @@ export function startApp(o: AppOptions): App {
     }, wait);
   }
   /**
-   * A page's modal <dialog> makes everything outside it inert, Pipeup too: while one is open, Pipeup's element lives
-   * in the one opened last (in the page's top layer, above its backdrop), and goes back under <html> once none is
-   * open (closed, or removed with Pipeup in it). The page's own elements are never touched; the dialog only holds
-   * Pipeup's element while it is open.
+   * A page's modal <dialog> makes everything outside it inert, Pipeup too, and an element shown fullscreen is all that
+   * shows: while one is open, Pipeup's element lives in the one opened last (in the page's top layer, above any
+   * backdrop), and goes back under <html> once none is (closed, or removed with Pipeup in it). That includes a modal
+   * dialog in a web component's open shadow root, found where focus is (opening one moves focus into it). The page's
+   * own elements are never touched; the dialog only holds Pipeup's element while it is open.
    */
-  let modals: Element[] = [];
-  function rehome(): void {
-    let open: Element[] = [];
+  let tops: Element[] = [];
+  /** What can't hold Pipeup's element when shown fullscreen (its children aren't drawn). */
+  const SOLID = /^(video|canvas|iframe|img|object|embed|audio)$/;
+  function opened(): Element[] {
+    const found = new Set<Element>();
     try {
-      open = [...document.querySelectorAll("dialog")].filter((d) => d.matches(":modal"));
+      for (const d of document.querySelectorAll("dialog:modal")) found.add(d);
+      for (const t of tops)
+        if (t.localName === "dialog" && t.isConnected && t.matches(":modal")) found.add(t);
+      // Where focus is, through web components' shadow roots: the modal dialog around it in each.
+      let n: Element | null = document.activeElement;
+      while (n?.shadowRoot?.activeElement) n = n.shadowRoot.activeElement;
+      while (n) {
+        const d = n.closest("dialog");
+        if (d?.matches(":modal")) found.add(d);
+        const root = n.getRootNode();
+        n = root instanceof ShadowRoot ? root.host : null;
+      }
     } catch {
-      /* no :modal (an old browser): Pipeup stays under <html> */
+      /* no :modal (an old browser): modal dialogs are left as they are */
     }
-    modals = [...modals.filter((d) => open.includes(d)), ...open.filter((d) => !modals.includes(d))];
-    const into = modals.at(-1) ?? document.documentElement;
+    let f = document.fullscreenElement;
+    while (f?.shadowRoot?.fullscreenElement) f = f.shadowRoot.fullscreenElement;
+    if (f && f !== document.documentElement && f !== document.body && !SOLID.test(f.localName)) found.add(f);
+    return [...found];
+  }
+  function rehome(): void {
+    const open = opened();
+    tops = [...tops.filter((t) => open.includes(t)), ...open.filter((t) => !tops.includes(t))];
+    const into = tops.at(-1) ?? document.documentElement;
     if (host.element.parentNode !== into) into.append(host.element);
   }
   /** A record that only moved Pipeup's own element (into a dialog or back) says nothing about the page. */
@@ -1149,6 +1170,9 @@ export function startApp(o: AppOptions): App {
   // the capture phase, or inside its shadow root, so they still hear everything.
   const ours = (n: EventTarget | null) => n === host.element;
   const guardFocus = (e: FocusEvent) => {
+    // Focus moving into a web component's dialog (one just opened, or focus coming back as one closes): Pipeup goes
+    // where it can be used.
+    if (e.type === "focusin") rehome();
     if (
       e.type === "focusin"
         ? ours(e.target) && !ours(e.relatedTarget)
@@ -1156,10 +1180,67 @@ export function startApp(o: AppOptions): App {
     )
       e.stopImmediatePropagation();
   };
+  /**
+   * The keys Pipeup acts on where focus is in its own UI: every key while typing in it; Esc, Tab, Enter and Space on its
+   * buttons; the moving keys in its menus and lists; and ← → in the menu. Others (← → on the comment control, say)
+   * are the page's, as everywhere.
+   */
+  const ourKey = (e: KeyboardEvent): boolean => {
+    const path = e.composedPath();
+    if (!path.includes(host.element)) return false;
+    const t = path[0];
+    if (t instanceof Element && t.matches(FIELD)) return true;
+    const k = e.key;
+    const at = (sel: string) => path.some((n) => n instanceof Element && n.matches(sel));
+    return (
+      ["Escape", "Tab", "Enter", " "].includes(k) ||
+      (MOVES.includes(k) && at(".menu,.all,.pm,.rxp")) ||
+      (k.startsWith("Arrow") && at(".menu,.rxp"))
+    );
+  };
+  /**
+   * Those keys never reach the page, not even its listeners that hear keys before anything else (on document in the
+   * capture phase: a dialog that closes on Escape, a focus trap that takes Tab). They stop there, and Pipeup's own
+   * elements hear a copy that never leaves its shadow root; what the key does by itself (a letter typed, focus moving
+   * on) still happens, unless Pipeup's handling cancels it. What would then have reached the window (Escape stepping
+   * back, the shortcut) does. Keys a Pipeup listener on window already took (the cursor's, the menu's Escape) never get
+   * this far.
+   */
+  let copy: KeyboardEvent | null = null;
+  let reached = false;
+  host.shadow.addEventListener("keydown", (e) => {
+    if (e === copy) reached = true;
+  });
+  const guardKeys = (e: KeyboardEvent) => {
+    if (!ourKey(e)) return;
+    e.stopImmediatePropagation();
+    if (e.type !== "keydown") return;
+    const c = (copy = new KeyboardEvent("keydown", {
+      key: e.key,
+      code: e.code,
+      location: e.location,
+      repeat: e.repeat,
+      isComposing: e.isComposing,
+      ctrlKey: e.ctrlKey,
+      shiftKey: e.shiftKey,
+      altKey: e.altKey,
+      metaKey: e.metaKey,
+      bubbles: true,
+      cancelable: true,
+    }));
+    reached = false;
+    e.composedPath()[0]!.dispatchEvent(c);
+    copy = null;
+    if (c.defaultPrevented) e.preventDefault();
+    if (reached) onKey(e);
+  };
   const quiet = (e: Event) => e.stopPropagation();
   const QUIET = ["pointerdown", "mousedown", "touchstart", "click", "focusin", "focusout"];
   for (const t of ["focusin", "focusout"]) window.addEventListener(t, guardFocus as EventListener, true);
   for (const t of QUIET) host.element.addEventListener(t, quiet);
+  for (const t of ["keydown", "keyup", "keypress"])
+    document.addEventListener(t, guardKeys as EventListener, true);
+  document.addEventListener("fullscreenchange", rehome);
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);
@@ -1248,6 +1329,9 @@ export function startApp(o: AppOptions): App {
       window.removeEventListener("click", onClick);
       for (const t of ["focusin", "focusout"])
         window.removeEventListener(t, guardFocus as EventListener, true);
+      for (const t of ["keydown", "keyup", "keypress"])
+        document.removeEventListener(t, guardKeys as EventListener, true);
+      document.removeEventListener("fullscreenchange", rehome);
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();
