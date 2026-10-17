@@ -498,7 +498,14 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     taken = "";
     // Escape on the page steps back one level, and the page never hears it (a deck would open its overview). The
     // menu and All comments take their own Escape first.
-    if (e.key === "Escape" && onPage(e) && !e.isComposing && !ctx.state.menu && !ctx.state.listing) {
+    if (
+      e.key === "Escape" &&
+      onPage(e) &&
+      !e.isComposing &&
+      !e.defaultPrevented &&
+      !ctx.state.menu &&
+      !ctx.state.listing
+    ) {
       e.preventDefault();
       e.stopPropagation();
       taken = e.key;

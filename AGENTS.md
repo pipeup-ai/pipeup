@@ -7,7 +7,9 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
 
 ## Rules
 
-- Never mutate the host page's DOM or layout; all UI lives in Pipeup's shadow root.
+- Never mutate the host page's DOM or layout; all UI lives in Pipeup's shadow root. The one exception: while a page's
+  modal `<dialog>` is open, Pipeup's own `<pipeup-root>` moves inside it (otherwise the browser makes Pipeup inert), and
+  moves back when it closes.
 - Comment content is untrusted: render it as text only, never as HTML.
 - No runtime dependencies in `libs/ts/pipeup` or in any add-on (`@pipeup/*`): no third-party code is
   bundled in or loaded at run time. Tools for building and testing are fine as dev dependencies. No

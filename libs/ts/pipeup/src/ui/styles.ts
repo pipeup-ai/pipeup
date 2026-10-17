@@ -353,11 +353,12 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 and above its footer when it fills the screen. */
 .toast{--r:40px;position:fixed;right:var(--r);bottom:calc(4px + var(--pu-lift));max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
 .toast.show{opacity:1;transform:none}
-.layer:is(.listing,:has(.xp.show)) .toast{--r:calc(var(--pu-panel) + 16px)}
+/* While All comments is open, messages sit inside the panel above its footer, on top of it: never over the page,
+nor a deck's own controls in the space beside it. */
+.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px;max-width:min(320px,calc(var(--pu-panel) - 24px));z-index:2}
 /* While the menu is open, beside it (above it on a narrow screen), never under it. */
 .layer:not(.listing):has(.menu.show) .toast{--r:314px}
 @media (max-width:640px){.layer:not(.listing):has(.menu.show) .toast{--r:12px;bottom:auto;top:12px}}
-@media (max-width:480px){.layer:is(.listing,:has(.xp.show)) .toast{--r:12px;bottom:64px}}
 
 /* Touch: everything a finger presses is at least 44 px across. A bubble keeps its small look round a larger hit area.
 The control is 44 px, so the menu and messages sit further from it. Shortcuts aren't shown where there is no keyboard. */

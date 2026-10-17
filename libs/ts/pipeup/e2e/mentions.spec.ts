@@ -189,7 +189,7 @@ test("a mention of you reads inline in its sentence, only bolder", async ({ page
   expect(shape).toEqual({ display: "inline", lines: 1, sameLine: true });
 });
 
-test("messages sit beside the comment control, and beside All comments while it is open", async ({
+test("messages sit beside the comment control, and inside All comments, above its footer, while it is open", async ({
   page,
 }) => {
   await start(page);
@@ -209,8 +209,21 @@ test("messages sit beside the comment control, and beside All comments while it 
   await page.locator(".all.show").getByRole("button", { name: "Resolve", exact: true }).first().click();
   await expect(toast).toContainText("Resolved");
   await settled(toast);
+  // Inside the panel, never over the page beside it (where a deck keeps its own controls).
   const panel = (await page.locator(".all.show").boundingBox())!;
+  const foot = (await page.locator(".all.show .pf").boundingBox())!;
   const u = (await toast.boundingBox())!;
-  expect(u.x + u.width).toBeLessThanOrEqual(panel.x);
-  expect(u.x).toBeGreaterThan(0);
+  expect(u.x).toBeGreaterThanOrEqual(panel.x);
+  expect(u.x + u.width).toBeLessThanOrEqual(panel.x + panel.width);
+  expect(u.y + u.height).toBeLessThanOrEqual(foot.y);
+  expect(
+    await toast.evaluate((el) => {
+      // Hit-tested as if it took the pointer (it doesn't), so what is drawn on top answers.
+      (el as HTMLElement).style.pointerEvents = "auto";
+      const r = el.getBoundingClientRect();
+      return el.contains(
+        (el.getRootNode() as ShadowRoot).elementFromPoint(r.x + r.width / 2, r.y + r.height / 2),
+      );
+    }),
+  ).toBe(true);
 });
