@@ -46,19 +46,34 @@ for (const kind of ["radix", "trap"] as const)
     await expect(page.locator(`#${kind}`)).toBeVisible();
   });
 
+/** Pipeup's element, wherever it is: under <html>, in a page's dialog, or in a web component's dialog. */
+const ROOT = `(() => document.querySelector("pipeup-root") ??
+  [...document.querySelectorAll("*")].map((e) => e.shadowRoot?.querySelector("pipeup-root")).find(Boolean))()`;
 /** Where Pipeup's element is: the id of its parent (a dialog), or its tag (HTML when it is home). */
 const home = (page: Page) =>
-  page.evaluate(() => {
-    const p = document.querySelector("pipeup-root")!.parentElement!;
+  page.evaluate((root) => {
+    const p = (eval(root) as Element).parentElement!;
     return p.id || p.tagName;
-  });
-/** Whether the page hit-tests Pipeup at the middle of `sel` (the comment control, a comment box): it is on top. */
+  }, ROOT);
+/** Whether what is drawn at the middle of `sel` in Pipeup (the comment control, a comment box) is Pipeup: on top. */
 const onTop = (page: Page, sel: string) =>
-  page.evaluate((sel) => {
-    const el = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(sel)!;
-    const r = el.getBoundingClientRect();
-    return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.localName === "pipeup-root";
-  }, sel);
+  page.evaluate(
+    ([root, sel]) => {
+      const host = eval(root) as Element;
+      const el = host.shadowRoot!.querySelector(sel)!;
+      const r = el.getBoundingClientRect();
+      const [x, y] = [r.x + r.width / 2, r.y + r.height / 2];
+      let hit = document.elementFromPoint(x, y);
+      // Into web components' shadow roots, down to what is drawn there.
+      while (hit?.shadowRoot && hit !== host) {
+        const inner = hit.shadowRoot.elementFromPoint(x, y);
+        if (!inner || inner === hit) break;
+        hit = inner;
+      }
+      return hit === host;
+    },
+    [ROOT, sel] as const,
+  );
 const threads = (page: Page) => page.evaluate(() => (window as any).pu.document.threads().length);
 
 test("in a native modal dialog, Pipeup works above it and its backdrop, and its contents can be commented on", async ({
@@ -157,6 +172,69 @@ test("an overlay at the highest z-index never covers Pipeup's control or its com
   await page.locator("#top-p").click();
   await expect(draftLine(page)).toBeFocused();
   expect(await onTop(page, ".draft textarea")).toBe(true);
+});
+
+for (const kind of ["radix", "trap"] as const)
+  test(`in a page's ${kind === "radix" ? "library" : "focus-trapping"} dialog that hears keys first, Esc and Tab in a comment box stay Pipeup's`, async ({
+    page,
+  }) => {
+    await open(page, "modals.html");
+    await page.click(`#open-${kind}`);
+    await startCommenting(page);
+    await page.locator(`#${kind}-p`).click();
+    await page.keyboard.type("Half a thought");
+    // Tab moves within the box (to Cancel), not into the dialog's own field.
+    await page.keyboard.press("Tab");
+    await expect(page.locator(`#${kind}-input`)).not.toBeFocused();
+    await expect(page.locator(".draft").getByRole("button", { name: "Cancel" })).toBeFocused();
+    // Esc in the box throws the words away (with Undo), and the dialog stays open.
+    await draftLine(page).focus();
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".toast.show")).toContainText("Comment discarded");
+    await expect(page.locator(`#${kind}`)).toBeVisible();
+    expect(await page.evaluate(() => (window as any).closedBy)).toBeUndefined();
+    // Typing and Enter still do what they do: the words are written, and Enter sends.
+    await page.locator(`#${kind}-p`).click();
+    await page.keyboard.type("Clearer");
+    await page.keyboard.press("Enter");
+    await expect.poll(() => threads(page)).toBe(1);
+  });
+
+test("in a web component's modal dialog, Pipeup moves in with it and stays usable", async ({ page }) => {
+  await open(page, "modals.html");
+  await seedText(page, "#page-p", "behind the dialogs", "Is this the right page?");
+  await page.click("#open-wc");
+  await expect
+    .poll(() =>
+      page.evaluate(() => !!document.getElementById("wc")!.shadowRoot!.querySelector("dialog > pipeup-root")),
+    )
+    .toBe(true);
+  expect(await onTop(page, ".launch .mode")).toBe(true);
+  // The comment control and All comments work: a reply can be written there.
+  await openAll(page);
+  await page.locator(".all.show .mi").first().click();
+  await page.keyboard.type("Yes");
+  await expect(page.locator(".all.show .rbox textarea")).toHaveValue("Yes");
+  // Closed, Pipeup's element is home again.
+  await page.evaluate(() => (document.getElementById("wc") as any).close());
+  await page.locator("#page-p").click({ force: true });
+  await expect.poll(() => home(page)).toBe("HTML");
+});
+
+test("an element shown fullscreen holds Pipeup while it is, and can be commented on", async ({ page }) => {
+  await open(page, "modals.html");
+  await page.click("#open-fs");
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.id)).toBe("stage");
+  await expect.poll(() => home(page)).toBe("stage");
+  expect(await onTop(page, ".launch .mode")).toBe(true);
+  await startCommenting(page);
+  await page.locator("#stage-p").click();
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.type("Which quarter?");
+  await page.keyboard.press("Enter");
+  await expect.poll(() => threads(page)).toBe(1);
+  await page.evaluate(() => document.exitFullscreen());
+  await expect.poll(() => home(page)).toBe("HTML");
 });
 
 test("the Esc that closes the menu doesn't also leave comment mode, with focus on the page", async ({

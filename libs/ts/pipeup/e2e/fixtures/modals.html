@@ -57,6 +57,8 @@
       <button id="open-plain">Non-modal dialog</button>
       <button id="open-inert">Inert dialog</button>
       <button id="open-top">Top overlay</button>
+      <button id="open-wc">Component dialog</button>
+      <button id="open-fs">Fullscreen</button>
     </main>
     <dialog id="native">
       <h2>Delete project?</h2>
@@ -100,8 +102,36 @@
         <input id="trap-input" placeholder="Name" />
       </div>
     </div>
+    <!-- A web component whose modal dialog is in its own shadow root (as Material Web's md-dialog). -->
+    <x-confirm id="wc"></x-confirm>
+    <!-- Shown fullscreen by itself, as a deck presenting or a player can be. -->
+    <section id="stage" style="padding: 40px; background: #fff">
+      <p id="stage-p">Slide 1: the plan for the quarter.</p>
+      <button id="exit-fs">Exit</button>
+    </section>
     <script>
       const $ = (id) => document.getElementById(id);
+      customElements.define(
+        "x-confirm",
+        class extends HTMLElement {
+          constructor() {
+            super();
+            const r = this.attachShadow({ mode: "open" });
+            r.innerHTML =
+              '<style>dialog::backdrop{background:rgb(0 0 0/.4)}</style><dialog><p>Leave without saving?</p><button>Stay</button> <button id="leave">Leave</button></dialog>';
+            r.getElementById("leave").onclick = () => r.querySelector("dialog").close();
+          }
+          open() {
+            this.shadowRoot.querySelector("dialog").showModal();
+          }
+          close() {
+            this.shadowRoot.querySelector("dialog").close();
+          }
+        },
+      );
+      $("open-wc").onclick = () => $("wc").open();
+      $("open-fs").onclick = () => $("stage").requestFullscreen();
+      $("exit-fs").onclick = () => document.exitFullscreen();
       $("open-native").onclick = () => $("native").showModal();
       $("open-nested").onclick = () => $("nested").showModal();
       $("open-plain").onclick = () => $("plain").show();
@@ -130,6 +160,16 @@
             window.closedBy = "outside";
           }
         });
+        document.addEventListener(
+          "keydown",
+          (e) => {
+            if (e.key === "Escape" && !m.hidden) {
+              m.hidden = true;
+              window.closedBy = "escape";
+            }
+          },
+          true,
+        );
         $("radix-input").focus();
       };
       $("open-trap").onclick = () => {
@@ -147,6 +187,16 @@
           "mousedown",
           (e) => {
             if (!m.hidden && !panel.contains(e.target)) e.preventDefault();
+          },
+          true,
+        );
+        document.addEventListener(
+          "keydown",
+          (e) => {
+            if (e.key === "Tab" && !m.hidden && !panel.contains(e.target)) {
+              e.preventDefault();
+              $("trap-input").focus();
+            }
           },
           true,
         );

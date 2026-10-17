@@ -587,12 +587,16 @@ any of them off.
   as part of the page. It takes the page's accent colour (or the author's) only when words in it are readable
   on Pipeup's surfaces, at least 4.5 to 1; otherwise it uses its own.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
-- **Pipeup keeps working while a page's own dialog is open**, whatever kind it is: a browser's modal dialog, one
-  from a library (which may stop the rest of the page taking clicks, hide it from screen readers, make it inert or
-  trap focus), or an overlay at the highest layer there is. Pipeup's comment control, menu, comment boxes and All
-  comments show above the dialog and its backdrop and can be used; what is in the dialog can be commented on; and the
-  dialog never takes Pipeup's focus or closes because of what is done in Pipeup. While a browser's modal dialog is
-  open, Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open).
+- **Pipeup keeps working while a page's own dialog is open**, whatever kind it is: a browser's modal dialog
+  (including one inside a web component), one from a library (which may stop the rest of the page taking clicks, hide
+  it from screen readers, make it inert, trap focus or close on Escape), an overlay at the highest layer there is, or
+  an element shown fullscreen. Pipeup's comment control, menu, comment boxes and All comments show above it and its
+  backdrop and can be used; what is in it can be commented on (a web component counts as one block, as everywhere);
+  and it never takes Pipeup's focus, nor the keys pressed in Pipeup (Escape doesn't close it, Tab doesn't jump into
+  it), nor closes because of what is done in Pipeup. While a browser's modal dialog or a fullscreen element is open,
+  Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open). A page's
+  popovers (menus and tooltips that float above everything) still draw over Pipeup, and pressing Pipeup closes them as
+  pressing anywhere else does; what is inside a frame can't be commented on.
 - **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
   page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
@@ -1743,3 +1747,6 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   focus-trapping or inert-making dialog, an overlay at the top layer); while a browser's modal dialog is open, Pipeup's
   element sits inside it. While All comments is open, messages sit inside the panel above its footer, so they never
   cover a deck's own slide controls beside it (sections 7 and 9).
+- 2026-10-17 — Pipeup also works in a web component's modal dialog and in an element shown fullscreen, and keys pressed in
+  Pipeup never reach a page's dialog (Escape doesn't close it, Tab doesn't jump into it); page popovers and frames
+  are named as limits (section 9).
