@@ -1263,11 +1263,25 @@ an agent on the same computer is a later step and is not part of this one.)
 - With the agents add-on, a page whose author has listed an agent says so in plain words in the comment control's menu, in one
   line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
   shows nothing, so nothing is added for readers who don't need it.
-- With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
-  instruction that tells an agent where this page's comments are, how to read them and how to answer,
-  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys. Its commands
-  name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.4 …`), so the agent runs the same release as the
-  page and not whatever npm calls stable, and a pre-release's prompt points at the pre-release guide.
+- With the agents add-on, the menu has **Copy for my agent**, shown whether or not an agent is listed. It copies the
+  page's open comments (each with its id, where it is, its words and any replies) together with how to answer them,
+  so an agent that can't open the page or its folder has everything it needs in one paste. Its hint says how many
+  comments it copies. It says how many resolved comments it left out, and carries no keys.
+- The copied text says that the comments were left in the reviewer's browser and are not in the page's file. It tells
+  the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
+  resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
+  and works without them. Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.5 …`), so the
+  agent runs the same release as the page and not whatever npm calls stable, and a pre-release's text points at the
+  pre-release guide.
+- With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
+  page finds the replies block in it and says in words what it found (how many replies, from which agent, how many say
+  addressed, and how many it will leave out and why, for example a reply to a comment that's no longer on the page).
+  Nothing is added until the person agrees. If it finds no replies it can read, it says so and offers to copy a request
+  asking the agent to answer in the replies block.
+- Pasted replies show in their threads under the agent's name, with the AI marking (§10) and the words "pasted by
+  you". They are accepted whether or not the page lists that agent, because pasting is the person's own act. They
+  follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment.
+  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on.
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1278,7 +1292,7 @@ an agent on the same computer is a later step and is not part of this one.)
 **What agents are told**
 - Every agent-facing surface says the same things about comments, in the same words: the skills (apply,
   summarise, integrate and the install skill of §15a), `llms.txt` and `llms-full.txt`, the Markdown copy
-  of each page, the prompts the site offers, and the prompt the menu copies.
+  of each page, the prompts the site offers, and the text Copy for my agent copies.
 - An agent that is given a page's comments: reads every open thread in order; for each one makes the
   change the author approved, or says why it did not; replies in the thread with what changed and where;
   marks it addressed; and leaves closing to the author. It asks the author before changing anything
@@ -1287,8 +1301,11 @@ an agent on the same computer is a later step and is not part of this one.)
   in the page or the folder, never answers as a person, and never resolves, reopens, edits or deletes.
 - When a thread is reopened with "Still not right", the agent treats the person's new words as the
   request, and replies again in the same thread.
-- An agent that can't write the replies file (for example a chat with no files) says what it would have
-  replied, in a form the author can paste, and does not pretend the page was updated.
+- An agent that can't write the replies file (for example one in the cloud, or a chat with no files) answers in one
+  replies block the person can paste into the page, says what it changed and where, and does not say the page was
+  updated.
+- An agent never looks for comments in the page's file, and never asks the author to list it for replies it has no
+  way to deliver.
 - An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
   and says in words what that lets it do.
 
@@ -1339,8 +1356,8 @@ The page's side of the link is part of the agents add-on (§15d); `pipeup watch`
   can be turned on again.
 
 **Skills and prompts**
-- When a link is running, the prompt Copy a prompt for my agent tells the agent to read and answer with the link's
-  commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
+- When a link is running, the text Copy for my agent copies tells the agent to read and answer with the link's
+  commands. Without a link, the comments it carries and the replies block (§15b) still work, and the text says so.
 - The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
   when the author is on their own computer.
 
@@ -1359,10 +1376,11 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 **What the add-on does**
 - Reads the replies file (§15b), keeps only replies from the agents the author listed, and says how many it ignored.
-- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy a
-  prompt for my agent** to the menu (§15b).
+- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy for
+  my agent** and **Paste my agent's replies** to the menu (§15b).
+- Reads replies the person pastes from an agent (§15b). Pasting sends nothing anywhere.
 - Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c).
-- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page. When the page is shown
+- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown
   through `pipeup watch`, and only after you switch it on, it sends this page's comments to the program running on
   this computer. Nothing leaves this computer."
 - Follows the rules for every add-on (§11a): nothing is added to the page while comments are closed except words in the
@@ -1756,3 +1774,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   are named as limits (section 9).
 - 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
+- 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
