@@ -6,7 +6,7 @@ page and Try pages say which pre-release this is, with a link back to the stable
 
   python3 channel.py <built site dir> <version>
 """
-import html, pathlib, sys
+import html, pathlib, re, sys
 
 out, version = pathlib.Path(sys.argv[1]), sys.argv[2]
 STABLE = "https://pipeup-ai.github.io/pipeup/"
@@ -20,6 +20,17 @@ for f in out.rglob("*"):
         text = f.read_text()
         if STABLE in text:
             f.write_text(text.replace(STABLE, NEXT))
+
+# 1b. Commands that run Pipeup name this pre-release: a bare `npx pipeup` fetches npm's stable release, which
+#     wouldn't match the pre-release a page here uses (the pages, their Markdown copies, the skills, llms*.txt, and
+#     the Add-ons page's prompts in addons.js; never the scripts it serves).
+PIN = re.compile(r"\bnpx pipeup(?=[\s`<\"'])")
+for f in out.rglob("*"):
+    if f.suffix in {".html", ".md", ".txt"} or f.name == "addons.js":
+        text = f.read_text()
+        pinned = PIN.sub(f"npx pipeup@{version}", text)
+        if pinned != text:
+            f.write_text(pinned)
 
 # 2. Search engines index only the stable site.
 for f in out.rglob("*.html"):

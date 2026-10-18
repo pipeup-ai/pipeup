@@ -9,6 +9,7 @@ change the API and the stored comment format.
 
 ### Fixed
 
+- **Commands match the page's Pipeup.** The agents add-on's prompt for an agent now names the page's Pipeup version (`npx pipeup@0.8.0-beta.4 comments …`), and a pre-release's prompt points at the pre-release guide; on the pre-release site (`/next/`) every `npx pipeup` command in the pages, skills and `llms.txt` names the pre-release. A bare `npx pipeup` fetched npm's stable release (0.7.0) for pages running a beta.
 - **A comment shows where it is when its content is on the page**, even if the page now reports something else about itself, such as a new revision of a design: it was counted as "in another view", with no bubble and no line to it, whenever its content had also changed (found as Moved). Content that is hidden or gone still counts as elsewhere. The integration skill now says to report only where the reviewer is, never a revision or date.
 
 ## [0.8.0-beta.4] - 2026-10-17

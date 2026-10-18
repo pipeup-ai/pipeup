@@ -1265,7 +1265,9 @@ an agent on the same computer is a later step and is not part of this one.)
   shows nothing, so nothing is added for readers who don't need it.
 - With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
   instruction that tells an agent where this page's comments are, how to read them and how to answer,
-  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
+  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys. Its commands
+  name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.4 …`), so the agent runs the same release as the
+  page and not whatever npm calls stable, and a pre-release's prompt points at the pre-release guide.
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1752,4 +1754,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-17 — Pipeup also works in a web component's modal dialog and in an element shown fullscreen, and keys pressed in
   Pipeup never reach a page's dialog (Escape doesn't close it, Tab doesn't jump into it); page popovers and frames
   are named as limits (section 9).
+- 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).

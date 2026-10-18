@@ -164,6 +164,9 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
   to whom (the same sentence as its card), and what it needs (a browser, a second window).
 - **The add-on is the site's own copy**, the same version the card shows, so a try page never changes under a
   visitor. The pre-release copy's try pages use the pre-release add-ons.
+- **On the pre-release copy, every command that runs Pipeup names its version** (`npx pipeup@0.8.0-beta.4 watch …`), in
+  the pages, their Markdown copies, the skills and `llms.txt`: a bare `npx pipeup` would fetch npm's stable release,
+  which doesn't match the pre-release a page there uses. The stable site keeps the bare command.
 - **Comments stay on the visitor's device** except where the add-on sends them, and the add-on asks first, exactly as
   it would on any page.
 - **Voice**: a page to dictate a comment on. If the browser has no speech engine, the page says so in words instead
@@ -314,3 +317,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-15 — The showcase has a smallest size: never narrower than 440 px beside the headline, scenes never shorter than 400 px, a thinner frame, and a sideways scroll on screens too narrow for it, so no scene is cut off or squeezed. The keyboard scene's heading has room for the naming bar beneath it.
 - 2026-10-15 — The footer and the home page's Markdown no longer state Pipeup's size: it changes with every release, and it had fallen out of date. The facts line keeps "One file".
 - 2026-10-15 — The footer's facts line goes altogether (One file, No dependencies, Works from disk, Stays on your device): it read as marketing. The footer keeps only its Add-ons and For agents links, on the right.
+- 2026-10-17 — On the pre-release copy, commands that run Pipeup (`npx pipeup …`) name the pre-release's version, so an agent following its skills runs the same release as the page.
