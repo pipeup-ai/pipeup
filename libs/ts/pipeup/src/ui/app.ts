@@ -591,12 +591,14 @@ export function startApp(o: AppOptions): App {
       const r = resolved.get(t.id);
       const el = r?.element;
       // On a page, a comment belongs to the view it was made in only when what it is about is inside that view:
-      // content found as it was, showing, and outside every tab panel shows its comments whatever is open.
+      // content found (as it was, or moved, as after a new revision), showing, and outside every tab panel shows its
+      // comments whatever else the page reports (another revision, say).
+      const found = r?.state === "attached" || r?.state === "moved";
       if (
         deck
           ? !here.holds(t.anchor.view)
           : el?.checkVisibility?.({ visibilityProperty: true }) === false ||
-            (!here.holds(t.anchor.view) && !(r?.state === "attached" && !el?.closest("[role=tabpanel]")))
+            (!here.holds(t.anchor.view) && !(found && !el?.closest("[role=tabpanel]")))
       )
         next.add(t.id);
     }

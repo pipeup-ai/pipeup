@@ -136,7 +136,9 @@ Then choose the options (see "Options" below): usually just the defaults.
    a handler so choosing one can go there: `Pipeup.onReveal((view) => showTab(view.tab))`. Pipeup
    never opens tabs or accordions itself; without a handler the comment opens on its own with a
    snapshot of what it was on. The handler receives the whole view (every key you set, plus `slide`
-   on decks); `label` is only a display name.
+   on decks); `label` is only a display name. Report only *where* the reviewer is (a tab, a route, a step),
+   never a revision, version or date: those change for every comment already made, which then counts as
+   somewhere else.
 
 8. **Check, and fix until it passes:** once it ships, run `npx pipeup check page.html`; until then, open the page and check the items below by eye. Fix every `fail`; fix
    `warn` items unless the author says otherwise. Typical fixes:

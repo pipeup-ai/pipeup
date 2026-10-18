@@ -553,7 +553,9 @@ any of them off.
 - Every comment remembers the view it was made in: the slide, and whatever the page reports about
   itself (such as the open tab or route), with a readable name when the page gives one. A comment belongs
   to a view only when what it is about is inside that view; content outside a tab panel or accordion shows
-  its comments whatever is open.
+  its comments whatever is open. A comment whose content Pipeup finds and can see on the page shows there, even
+  when the page now reports something else about itself (a new revision of a design, say), marked Moved when the
+  content changed; only content that is hidden or gone counts as elsewhere.
 - Comments made in a view that is currently hidden (another tab, accordion, route or slide) show
   nothing on the page, are counted as elsewhere on the comment control, and are listed in All
   comments under where they live. Choosing one **reopens that view** when the page tells Pipeup how
@@ -1753,3 +1755,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   Pipeup never reach a page's dialog (Escape doesn't close it, Tab doesn't jump into it); page popovers and frames
   are named as limits (section 9).
 - 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
+- 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
