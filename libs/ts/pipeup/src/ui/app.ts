@@ -12,7 +12,7 @@ import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
-import { narrow, PANEL, popover, touch } from "./layout";
+import { narrow, PANEL, popover, seen as inSight, setPanned, touch } from "./layout";
 import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
@@ -174,12 +174,21 @@ export function startApp(o: AppOptions): App {
    * covering the page): how to use it by touch, and Done, which leaves comment mode in one tap.
    */
   const tapping = () => state.commenting && !state.listing && touch();
+  /** A tap has opened a comment box on this page: the hint's words have done their job, and only Done stays. */
+  let taught = false;
   function tapHint(): void {
-    if (tapping() && !state.menu)
-      toast("Tap what you want to comment on", 0, true, false, {
-        label: "Done",
-        run: () => setCommenting(false),
-      });
+    if (!tapping() || state.menu) return;
+    toast("Tap what you want to comment on", 0, true, false, {
+      label: "Done",
+      run: () => setCommenting(false),
+    });
+    toastEl.classList.add("tap");
+    learnt();
+  }
+  /** By touch, once a tap has opened a comment box, the hint's words fold away (screen readers no longer hear them). */
+  function learnt(): void {
+    toastEl.classList.toggle("taught", taught);
+    toastEl.querySelector(".tw")?.toggleAttribute("aria-hidden", taught);
   }
 
   /**
@@ -191,31 +200,47 @@ export function startApp(o: AppOptions): App {
     ms = TOAST_MS,
     isHint = false,
     quiet = false,
-    action?: { label: string; href?: string; run?: () => void },
+    action?: { label: string; href?: string; run?: () => void; undo?: boolean },
   ): void {
     if (destroyed) return;
     if (isHint && state.menu) return void (hintLater = () => toast(text, ms, true, quiet));
     hint = isHint;
-    toastEl.textContent = text;
+    toastEl.replaceChildren(h("span", { class: "tw" }, text));
+    toastEl.classList.remove("tap", "taught");
     toastEl.classList.toggle("act", Boolean(action));
     const run = action?.run;
-    undoing = run
-      ? () => {
-          undoing = null;
-          toastEl.classList.remove("show");
-          run();
-        }
-      : null;
+    // Only an Undo answers ⌘Z or Ctrl+Z (Done, on the touch hint, never does).
+    undoing =
+      run && action.undo
+        ? () => {
+            undoing = null;
+            toastEl.classList.remove("show");
+            run();
+          }
+        : null;
     if (action) {
       const a = run
-        ? h("button", { class: "ta", type: "button", "aria-keyshortcuts": "Meta+Z Control+Z" }, action.label)
+        ? h(
+            "button",
+            {
+              class: "ta",
+              type: "button",
+              ...(action.undo ? { "aria-keyshortcuts": "Meta+Z Control+Z" } : {}),
+            },
+            action.label,
+          )
         : h(
             "a",
             { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
             action.label,
           );
-      if (undoing) {
-        const take = undoing;
+      if (run) {
+        const take =
+          undoing ??
+          (() => {
+            toastEl.classList.remove("show");
+            run();
+          });
         a.addEventListener("click", (e) => {
           e.stopPropagation();
           take();
@@ -238,7 +263,7 @@ export function startApp(o: AppOptions): App {
 
   /** Words were thrown away (Cancel or Esc): `undo` brings them back, for a few seconds. */
   const offer = (text: string, undo: () => void) =>
-    toast(text, UNDO_MS, false, false, { label: "Undo", run: undo });
+    toast(text, UNDO_MS, false, false, { label: "Undo", run: undo, undo: true });
 
   function hideHint(): void {
     if (tapping()) return;
@@ -570,6 +595,7 @@ export function startApp(o: AppOptions): App {
     toast,
     say,
     hideHint,
+    taps: () => listenForTaps(),
     report,
     pulse,
     render,
@@ -700,6 +726,26 @@ export function startApp(o: AppOptions): App {
     );
   }
 
+  /**
+   * iOS Safari sends a tap on the page as a click only where something listens for clicks (a link, a button): a tap on
+   * words or a picture sends none, and Pipeup never hears it. While Pipeup waits for a tap on the page (comment mode,
+   * its menu, an open thread or box, All comments, words marked with comments), a listener on the page's body that
+   * does nothing makes Safari send it; at rest there is none.
+   */
+  const ignore = () => {};
+  let listening = false;
+  let marked = false;
+  function listenForTaps(): void {
+    const on =
+      !destroyed &&
+      (state.commenting || state.menu || !!state.active || !!state.draft || state.listing || marked);
+    const body = document.body;
+    if (on === listening || !body) return;
+    listening = on;
+    if (on) body.addEventListener("click", ignore);
+    else body.removeEventListener("click", ignore);
+  }
+
   function render(): void {
     if (destroyed) return;
     const threads = threadsNow();
@@ -723,6 +769,11 @@ export function startApp(o: AppOptions): App {
     fadeHighlights(state.hidden ? 0 : 1);
     host.layer.classList.toggle("hidden", state.hidden);
     host.layer.classList.toggle("listing", state.listing);
+    // By touch, once a tap has opened a comment box the hint keeps only Done.
+    if (state.draft && tapping() && !taught) {
+      taught = true;
+      if (toastEl.classList.contains("tap")) learnt();
+    }
     // By touch, comment mode's hint goes while All comments covers the page, and comes back after.
     if (state.commenting && touch()) {
       if (state.listing) hideHint();
@@ -748,6 +799,8 @@ export function startApp(o: AppOptions): App {
       }
     host.layer.style.setProperty("--pu-lift", `${lift}px`);
     paint(threads);
+    marked = !state.hidden && threads.some((t) => !!t.anchor.quote && !t.resolved && !elsewhere.has(t.id));
+    listenForTaps();
     for (const v of views) v.render(threads);
     modeView?.render(threads);
     if (!state.hidden) addons.flush();
@@ -1048,8 +1101,22 @@ export function startApp(o: AppOptions): App {
     if (state.active) putReply(state.active, typing);
   }
 
+  /**
+   * Safari on iOS measures where things are from what can be seen once it has panned the page (to show the field being
+   * typed in above its keyboard, or zoomed in), while Pipeup's layer stays fixed to the window: the layer moves by the
+   * difference, so everything Pipeup draws lands where it measured. Elsewhere the difference is always nothing.
+   */
+  let pan = { x: 0, y: 0 };
+  function followPan(): void {
+    const r = host.layer.getBoundingClientRect();
+    if (!Math.round(r.left) && !Math.round(r.top)) return;
+    pan = { x: pan.x - Math.round(r.left), y: pan.y - Math.round(r.top) };
+    host.layer.style.transform = pan.x || pan.y ? `translate(${pan.x}px,${pan.y}px)` : "";
+    setPanned(pan.y);
+  }
   const frame = () => {
     if (destroyed) return;
+    followPan();
     // A waiting hint never covers a message that came first (someone mentioned you): it waits for it to fade too.
     if (hintLater && !state.menu && !(toastEl.classList.contains("show") && !hint)) {
       const show = hintLater;
@@ -1119,6 +1186,42 @@ export function startApp(o: AppOptions): App {
     if (box && (box.top < 0 || box.bottom > window.innerHeight))
       window.scrollBy({ top: box.top - 16, behavior: reduced ? "auto" : "smooth" });
   }
+  /**
+   * A phone's on-screen keyboard came up (what can be seen got much shorter, though the window didn't): what the open box
+   * is about scrolls up near the top of what is left, so the box fits beside it, above the keyboard.
+   */
+  let seenLast = inSight().bottom;
+  let keyboard = false;
+  let seenTimer = 0;
+  const onSeen = () => {
+    // The keyboard is up for one of Pipeup's own boxes: its control and messages step out of the way.
+    const v = window.visualViewport;
+    const a = focusedIn();
+    host.layer.classList.toggle(
+      "kb",
+      !!v &&
+        window.innerHeight - v.height > 150 &&
+        (a instanceof HTMLTextAreaElement || a instanceof HTMLInputElement),
+    );
+    const now = inSight().bottom;
+    if (now < seenLast - 80) keyboard = true;
+    seenLast = now;
+    // Safari pans the page itself while the keyboard slides up: Pipeup's scroll waits until it has settled.
+    window.clearTimeout(seenTimer);
+    seenTimer = window.setTimeout(() => {
+      if (!keyboard) return;
+      keyboard = false;
+      const s = inSight();
+      const r = state.active ? resolved.get(state.active) : state.draft?.resolved;
+      const box = (r?.range ?? r?.element)?.getBoundingClientRect();
+      const pop = host.layer.querySelector<HTMLElement>(".pop.show")?.offsetHeight ?? 0;
+      if (box && (box.top < s.top || box.bottom + pop + 24 > s.bottom))
+        window.scrollBy({
+          top: box.top - s.top - (touch() ? 76 : 60),
+          behavior: reduced ? "auto" : "smooth",
+        });
+    }, 250);
+  };
   const onResize = () => {
     if (fitting) return;
     if (window.innerWidth !== wide) {
@@ -1324,6 +1427,7 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);
+  for (const t of ["resize", "scroll"]) window.visualViewport?.addEventListener(t, onSeen);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
   // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
@@ -1415,6 +1519,9 @@ export function startApp(o: AppOptions): App {
       for (const t of ["transitionend", "animationend"]) window.removeEventListener(t, settle, true);
       shut.disconnect();
       window.removeEventListener("resize", onResize);
+      for (const t of ["resize", "scroll"]) window.visualViewport?.removeEventListener(t, onSeen);
+      window.clearTimeout(seenTimer);
+      document.body?.removeEventListener("click", ignore);
       modeView?.destroy();
       for (const v of views) v.destroy();
       addons.destroy();
