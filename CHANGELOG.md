@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.0-beta.4] - 2026-10-17
+
+This pre-release makes Pipeup work while a page's own dialog is open: a browser's modal dialog, one inside a web component, a library's dialog that traps focus or closes on Escape (Radix, shadcn/ui, Bootstrap, MUI, Headless UI), and an element shown fullscreen. While All comments is open, messages sit inside the panel, clear of a deck's slide controls. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Fixed
 
 - **Pipeup works while a page's own dialog is open.** In a browser's modal dialog, the comment control, menu and comment boxes were under its backdrop and couldn't be used (the browser makes everything outside the dialog inert); Pipeup now moves its element into the open dialog and back out when it closes. A library's dialog that traps focus no longer pulls the caret out of a comment box, and one that closes on a press outside no longer closes when Pipeup is used. Dialogs that make the rest of the page inert, and overlays at the highest z-index, were already fine and are now tested.
@@ -404,7 +408,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.3...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.4...HEAD
+[0.8.0-beta.4]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.3...v0.8.0-beta.4
 [0.8.0-beta.3]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...v0.8.0-beta.3
 [0.8.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...v0.8.0-beta.2
 [0.8.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0-beta.1
