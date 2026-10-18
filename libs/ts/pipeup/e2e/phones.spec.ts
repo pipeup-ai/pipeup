@@ -342,7 +342,7 @@ test.describe("a phone (375 × 812)", () => {
     expect((await focusInPipeup(page)).tag).not.toBe("TEXTAREA");
   });
 
-  test("the selection's comment icon sits below the words, clear of the phone's own menu above them", async ({
+  test("the selection's comment icon sits at the window's right edge, level with the words: the phone's own menu goes above or below them", async ({
     page,
   }) => {
     await open(page, "phone.html");
@@ -361,7 +361,9 @@ test.describe("a phone (375 × 812)", () => {
     const icon = page.locator(".selbar.show");
     await expect(icon).toHaveCount(1);
     const b = await boxOf(icon);
-    expect(b.y).toBeGreaterThan(sel.bottom);
+    expect(b.y).toBeLessThan(sel.bottom);
+    expect(b.y + b.height).toBeGreaterThan(sel.top);
+    expect(b.x + b.width).toBeGreaterThan(page.viewportSize()!.width - 8);
     inWindow(b, page);
   });
 
@@ -590,5 +592,107 @@ test.describe("a page zoomed far in (320 × 256)", () => {
     const name = page.locator(".menu.show .mi").first();
     await name.scrollIntoViewIfNeeded();
     inWindow((await name.boundingBox())!, page);
+  });
+});
+
+// iPhones: taps reach Pipeup, the menu gets out of the way, and the on-screen keyboard never covers the box.
+test.describe("an iPhone's taps and keyboard", () => {
+  test.use(phone(375, 812));
+
+  /** Click listeners on the page's body: Safari on iOS sends a tap on words as a click only when something listens. */
+  const bodyClicks = async (page: Page) => {
+    const cdp = await page.context().newCDPSession(page);
+    const { result } = await cdp.send("Runtime.evaluate", { expression: "document.body" });
+    const { listeners } = await cdp.send("DOMDebugger.getEventListeners", { objectId: result.objectId! });
+    await cdp.detach();
+    return listeners.filter((l) => l.type === "click").length;
+  };
+
+  test("while Pipeup waits for a tap on the page, the page's body listens for clicks; at rest it doesn't", async ({
+    page,
+  }) => {
+    await open(page, "phone.html");
+    const rest = await bodyClicks(page);
+    await control(page).tap();
+    await expect.poll(() => bodyClicks(page)).toBe(rest + 1);
+    await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
+    await expect(page.locator(".menu.show")).toHaveCount(0, { timeout: 2000 });
+    expect(await bodyClicks(page)).toBe(rest + 1);
+    await page.locator(".toast.show").getByRole("button", { name: "Done" }).tap();
+    await expect.poll(() => bodyClicks(page)).toBe(rest);
+    // Words marked with a comment can be tapped to open it.
+    await seedText(page, "#p1", "July", "Is July firm?");
+    await expect.poll(() => bodyClicks(page)).toBe(rest + 1);
+  });
+
+  test("Start commenting by touch closes the menu once the switch has moved, so the next tap picks a block", async ({
+    page,
+  }) => {
+    await open(page, "phone.html");
+    await control(page).tap();
+    await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
+    await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    await expect(page.locator(".menu.show")).toHaveCount(0, { timeout: 2000 });
+    await page.locator("#p3").tap();
+    await expect(page.locator(".pop.show textarea")).toBeVisible();
+  });
+
+  test("with the on-screen keyboard up, the box and its buttons sit above it, beside what it is about, and the control steps aside", async ({
+    page,
+  }) => {
+    // The keyboard shrinks only the visual viewport, as on iOS: a stand-in that can be told the keyboard's height.
+    await page.addInitScript(() => {
+      const w = window as any;
+      w.kb = 0;
+      const vv = new EventTarget();
+      const props: Record<string, () => number> = {
+        width: () => innerWidth,
+        height: () => innerHeight - w.kb,
+        offsetTop: () => 0,
+        offsetLeft: () => 0,
+        pageTop: () => scrollY,
+        pageLeft: () => 0,
+        scale: () => 1,
+      };
+      for (const [k, get] of Object.entries(props)) Object.defineProperty(vv, k, { get });
+      Object.defineProperty(window, "visualViewport", { configurable: true, get: () => vv });
+      w.keyboard = (h: number) => {
+        w.kb = h;
+        vv.dispatchEvent(new Event("resize"));
+      };
+    });
+    await open(page, "phone.html");
+    // A page long enough to scroll what is commented on up into view.
+    await page.evaluate(() => {
+      const gap = document.createElement("div");
+      gap.style.height = "700px";
+      document.getElementById("p3")!.before(gap);
+      const after = document.createElement("div");
+      after.style.height = "900px";
+      document.querySelector("article")!.append(after);
+    });
+    await commentMode(page);
+    await page.locator("#p3").scrollIntoViewIfNeeded();
+    await page.locator("#p3").tap();
+    const box = page.locator(".pop.show");
+    await expect(box.locator("textarea")).toBeVisible();
+    await box.locator("textarea").focus();
+    await page.evaluate(() => (window as any).keyboard(420));
+    const top = 812 - 420;
+    await expect(page.locator(".launch")).toHaveCSS("opacity", "0");
+    await expect
+      .poll(async () => {
+        const b = (await box.boundingBox())!;
+        const send = (await box.getByRole("button", { name: "Comment" }).boundingBox())!;
+        const block = (await page.locator("#p3").boundingBox())!;
+        return b.y >= 0 && send.y + send.height <= top && block.y >= 0 && apart(b, block);
+      })
+      .toBe(true);
+    // The keyboard goes: so does the stepping aside.
+    await page.evaluate(() => (window as any).keyboard(0));
+    await expect(page.locator(".launch")).not.toHaveCSS("opacity", "0");
   });
 });

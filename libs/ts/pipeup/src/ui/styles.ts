@@ -15,6 +15,9 @@ svg{display:block}
 .layer{transition:opacity .24s var(--eo)}.layer.fading{opacity:0;transition-duration:.16s;transition-timing-function:var(--ei)}
 .layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#9A9892;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
+/* While a phone's on-screen keyboard is up for a Pipeup box, the comment control and its messages fade out of the little
+room left above it. */
+.layer.kb :is(.launch,.toast){opacity:0!important;pointer-events:none!important;transition:opacity var(--out) var(--ei)!important}
 
 .tx{font-size:14px;line-height:1.5;color:var(--k);white-space:pre-wrap;overflow-wrap:anywhere}
 .tx.del,.rest,.ctx,.ago{color:var(--fa)}

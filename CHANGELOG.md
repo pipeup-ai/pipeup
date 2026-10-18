@@ -7,6 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **iPhones: one tap answers.** Safari on iOS sends no click for a tap on words or pictures unless something listens for one, so choosing a block, closing the menu or a thread, and opening a thread from its words took several tries (a tap only worked where it landed on a link or button). While Pipeup waits for a tap on the page, it now listens on the page's body, and Safari sends it.
+- **By touch, Start commenting closes the menu** once the switch has moved, so the next tap chooses a block.
+- **The on-screen keyboard never covers a comment box.** On a phone the box and its buttons stay in the part of the screen the keyboard leaves, beside what the comment is about (which scrolls up into view), and the comment control steps aside while the keyboard is up. When the phone moves the page to show the box, the box, outline and naming bar stay on what they are about (they were drawn off by the phone's pan). The phone no longer offers AutoFill Contact in a comment box.
+- **By touch, the selection's comment icon sits at the window's right edge**, level with the selection, so the phone's own Copy and Look Up menu never covers it.
+- Pipeup is 59.5 KB gzip; its budget rises from 59.5 to 60 KB.
+
 ## [0.8.0] - 2026-10-18
 
 This release is about reading and writing comments, and about Pipeup working wherever it is put. Every thread is the same compact card; All comments is the hub while it is open; you can edit and delete your own comments; comments show without comment mode; and the comment control is a small frosted square in the corner. Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it and focus never drops to the page. Decks keep their own controls and make room for All comments, Pipeup works inside a page's own dialogs and fullscreen elements, and phones get finger-sized targets and a touch hint with Done. Portable identities are an add-on (`@pipeup/identity`), and `pipeup init` and `pipeup read` join `check`. It folds the five betas, 0.8.0-beta.1 to 0.8.0-beta.5.

@@ -189,9 +189,17 @@ any of them off.
   before it deletes, and that second question can't be answered by the same double-click or double tap that
   asked it. **A deleted comment goes away**: nothing is left in its place, and deleting a thread's
   first comment removes the whole thread, replies and all.
-- On touch screens: tap chooses a block, long-press selects text, and the naming bar's **Pin** waits for the
-  next tap and drops the pin there. A tap on the page's blank space closes an empty comment box, as a click
-  does. The selection's comment icon sits below the selection, clear of the phone's own selection menu.
+- On touch screens: **one tap** chooses a block, long-press selects text, and the naming bar's **Pin** waits for
+  the next tap and drops the pin there. A tap on the page's blank space closes an empty comment box, as a click
+  does. Every tap Pipeup answers on the page works the first time on any phone, on words and pictures as on links
+  and buttons: choosing a block, closing the menu or a thread, and opening a thread from its marked words. The
+  selection's comment icon sits at the window's right edge, level with the selection, clear of the phone's own
+  selection menu (which goes above or below it) and of its handles.
+- **The phone's on-screen keyboard never covers a comment box.** While it is up, the box and its buttons sit in
+  the part of the screen it leaves: below what the comment is about when it fits, above it otherwise; what it is
+  about scrolls up into view when the keyboard would hide it. The comment control and its messages step out of
+  the way while the keyboard is up, and come back when it goes. Everything Pipeup draws stays on what it is about
+  when the phone moves the page to show the box. The phone offers no AutoFill in a comment box.
 - **On a touch screen everything Pipeup puts on the page is at least 44 px across**, for a finger: bubbles, the
   naming bar's icons, the selection's icon, a card's actions, menu rows, switches and close buttons. Bubbles,
   the naming bar, comment boxes and threads always fit the screen: the naming bar's words shorten before its
@@ -453,7 +461,8 @@ any of them off.
   - The comment control's name tells screen readers whether comment mode is on.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
   switch; Esc closes the menu), however it was opened, and by touch
-  with no hover needed. Switches ease between their states. The menu always fits in the window; where it
+  with no hover needed. By touch, turning on Start commenting closes the menu once the switch is seen to move,
+  so the next tap chooses a block. Switches ease between their states. The menu always fits in the window; where it
   can't (a phone on its side, a page zoomed far in), it scrolls.
 - Choosing a copy choice or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
   click or tap anywhere outside the menu and the button, or once the pointer has been away from
@@ -1785,3 +1794,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Also from the regression pass: ⌘Z (Ctrl+Z) takes the Undo after Esc or Cancel; Esc while an input method composes keeps the words; replies are kept in All comments, and its Esc throws them away with Undo; opening All comments keeps the caret in a comment being written; the block cursor stays inside an open modal dialog; Pipeup leaves a web component's dialog however it closes, keeps the caret through a dialog's re-render, and waits outside a dialog that is moved with a transform (sections 5, 7, 9).
 - 2026-10-18 — Many comments on one element keep their bubbles in the room they have: side by side to the right, then to the left before the comment column or the window's edge, then on a further row; never over the column's cards or each other, and every one can be clicked (section 7).
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
+- 2026-10-18 — iPhones (0.8.1): one tap answers on the page (Safari sends no click for a tap on words or pictures unless something listens for one); by touch the menu closes after Start commenting; the on-screen keyboard never covers a comment box, and Pipeup's drawings stay on what they are about when the phone moves the page; the selection's icon sits at the right edge beside the phone's own menu; no AutoFill in a comment box (sections 5, 7).

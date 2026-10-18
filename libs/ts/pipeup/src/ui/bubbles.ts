@@ -63,7 +63,11 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
    */
   const vp = (): Viewport => {
     const v = room(ctx.state.listing);
-    const c = ctx.state.listing ? null : ctx.layer.querySelector(".launch .mode")?.getBoundingClientRect();
+    // With a phone's keyboard up the control has stepped aside (`.kb`), so it needn't be kept clear.
+    const c =
+      ctx.state.listing || ctx.layer.classList.contains("kb")
+        ? null
+        : ctx.layer.querySelector(".launch .mode")?.getBoundingClientRect();
     if (c?.width) v.keep = { left: ctx.state.commenting && touch() ? 0 : c.left, top: c.top };
     return v;
   };

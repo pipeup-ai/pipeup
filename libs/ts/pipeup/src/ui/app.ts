@@ -12,7 +12,7 @@ import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
 import { columnSpot, createColumn, GUTTER } from "./column";
-import { narrow, PANEL, popover, touch } from "./layout";
+import { narrow, PANEL, popover, seen as inSight, setPanned, touch } from "./layout";
 import { byPage } from "./order";
 import { createSelection } from "./select";
 import { copyText } from "./files";
@@ -570,6 +570,7 @@ export function startApp(o: AppOptions): App {
     toast,
     say,
     hideHint,
+    taps: () => listenForTaps(),
     report,
     pulse,
     render,
@@ -700,6 +701,26 @@ export function startApp(o: AppOptions): App {
     );
   }
 
+  /**
+   * iOS Safari sends a tap on the page as a click only where something listens for clicks (a link, a button): a tap on
+   * words or a picture sends none, and Pipeup never hears it. While Pipeup waits for a tap on the page (comment mode,
+   * its menu, an open thread or box, All comments, words marked with comments), a listener on the page's body that
+   * does nothing makes Safari send it; at rest there is none.
+   */
+  const ignore = () => {};
+  let listening = false;
+  let marked = false;
+  function listenForTaps(): void {
+    const on =
+      !destroyed &&
+      (state.commenting || state.menu || !!state.active || !!state.draft || state.listing || marked);
+    const body = document.body;
+    if (on === listening || !body) return;
+    listening = on;
+    if (on) body.addEventListener("click", ignore);
+    else body.removeEventListener("click", ignore);
+  }
+
   function render(): void {
     if (destroyed) return;
     const threads = threadsNow();
@@ -748,6 +769,8 @@ export function startApp(o: AppOptions): App {
       }
     host.layer.style.setProperty("--pu-lift", `${lift}px`);
     paint(threads);
+    marked = !state.hidden && threads.some((t) => !!t.anchor.quote && !t.resolved && !elsewhere.has(t.id));
+    listenForTaps();
     for (const v of views) v.render(threads);
     modeView?.render(threads);
     if (!state.hidden) addons.flush();
@@ -1048,8 +1071,22 @@ export function startApp(o: AppOptions): App {
     if (state.active) putReply(state.active, typing);
   }
 
+  /**
+   * Safari on iOS measures where things are from what can be seen once it has panned the page (to show the field being
+   * typed in above its keyboard, or zoomed in), while Pipeup's layer stays fixed to the window: the layer moves by the
+   * difference, so everything Pipeup draws lands where it measured. Elsewhere the difference is always nothing.
+   */
+  let pan = { x: 0, y: 0 };
+  function followPan(): void {
+    const r = host.layer.getBoundingClientRect();
+    if (!Math.round(r.left) && !Math.round(r.top)) return;
+    pan = { x: pan.x - Math.round(r.left), y: pan.y - Math.round(r.top) };
+    host.layer.style.transform = pan.x || pan.y ? `translate(${pan.x}px,${pan.y}px)` : "";
+    setPanned(pan.y);
+  }
   const frame = () => {
     if (destroyed) return;
+    followPan();
     // A waiting hint never covers a message that came first (someone mentioned you): it waits for it to fade too.
     if (hintLater && !state.menu && !(toastEl.classList.contains("show") && !hint)) {
       const show = hintLater;
@@ -1119,6 +1156,42 @@ export function startApp(o: AppOptions): App {
     if (box && (box.top < 0 || box.bottom > window.innerHeight))
       window.scrollBy({ top: box.top - 16, behavior: reduced ? "auto" : "smooth" });
   }
+  /**
+   * A phone's on-screen keyboard came up (what can be seen got much shorter, though the window didn't): what the open box
+   * is about scrolls up near the top of what is left, so the box fits beside it, above the keyboard.
+   */
+  let seenLast = inSight().bottom;
+  let keyboard = false;
+  let seenTimer = 0;
+  const onSeen = () => {
+    // The keyboard is up for one of Pipeup's own boxes: its control and messages step out of the way.
+    const v = window.visualViewport;
+    const a = focusedIn();
+    host.layer.classList.toggle(
+      "kb",
+      !!v &&
+        window.innerHeight - v.height > 150 &&
+        (a instanceof HTMLTextAreaElement || a instanceof HTMLInputElement),
+    );
+    const now = inSight().bottom;
+    if (now < seenLast - 80) keyboard = true;
+    seenLast = now;
+    // Safari pans the page itself while the keyboard slides up: Pipeup's scroll waits until it has settled.
+    window.clearTimeout(seenTimer);
+    seenTimer = window.setTimeout(() => {
+      if (!keyboard) return;
+      keyboard = false;
+      const s = inSight();
+      const r = state.active ? resolved.get(state.active) : state.draft?.resolved;
+      const box = (r?.range ?? r?.element)?.getBoundingClientRect();
+      const pop = host.layer.querySelector<HTMLElement>(".pop.show")?.offsetHeight ?? 0;
+      if (box && (box.top < s.top || box.bottom + pop + 24 > s.bottom))
+        window.scrollBy({
+          top: box.top - s.top - (touch() ? 76 : 60),
+          behavior: reduced ? "auto" : "smooth",
+        });
+    }, 250);
+  };
   const onResize = () => {
     if (fitting) return;
     if (window.innerWidth !== wide) {
@@ -1324,6 +1397,7 @@ export function startApp(o: AppOptions): App {
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);
+  for (const t of ["resize", "scroll"]) window.visualViewport?.addEventListener(t, onSeen);
   observer.observe(o.root, { subtree: true, childList: true, characterData: true });
   // Size changes with no DOM change (images and fonts loading, accordions, class toggles) re-place the threads.
   // The page turns dark or light after Pipeup started (a theme switch): Pipeup follows.
@@ -1415,6 +1489,9 @@ export function startApp(o: AppOptions): App {
       for (const t of ["transitionend", "animationend"]) window.removeEventListener(t, settle, true);
       shut.disconnect();
       window.removeEventListener("resize", onResize);
+      for (const t of ["resize", "scroll"]) window.visualViewport?.removeEventListener(t, onSeen);
+      window.clearTimeout(seenTimer);
+      document.body?.removeEventListener("click", ignore);
       modeView?.destroy();
       for (const v of views) v.destroy();
       addons.destroy();
