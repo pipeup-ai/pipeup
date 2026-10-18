@@ -77,7 +77,8 @@ code (MD-09, MD-10, MD-11, KB-10, LK-06, LK-15). Builds on [words-and-focus.md](
   pointed at anywhere but its icons, it fades to 0.15 (`.namebar:hover:not(:has(.nb:hover))`), easing, so the words
   under it can be read.
 - **One bubble per thread** (MD-10, sites-18). The bubbles' frame steps a bubble right by 22 px while its point is
-  within 22 px of one already placed, so threads on one element sit side by side. On a control (`INTERACTIVE`, now in
+  within 22 px of one already placed, so threads on one element sit side by side (since 0.8.0, within the room they
+  have: see [looks-readable.md](looks-readable.md)). On a control (`INTERACTIVE`, now in
   `geometry.ts`) the bubble's tail is just past the control's right edge, so all of the control stays the page's.
 - **All comments as a list** (LK-06). The panel has a heading for screen readers ("All comments", `role=heading`, so
   a page's own `h2` selectors never meet it); `.list` is `role=list` named "Comments"; each card is a `listitem`; a
