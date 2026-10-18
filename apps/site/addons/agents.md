@@ -4,7 +4,7 @@ Lets an AI agent answer comments: it shows the replies the agent wrote into a re
 
 - **Sends**: nothing, until you switch **Share with my agent** on (only on a page shown with `pipeup watch`); then this page's comments go to the program on your own computer. Nothing leaves the computer.
 - **Asks first**: you, with a switch that is off every time the page loads.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.8.0-beta.5/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.8.0/dist/agents.min.js" integrity="{{SRI:agents}}" crossorigin="anonymous"></script>`. `npx pipeup watch page.html` adds it for the page it shows, without changing the file.
 
 Pin the script with its `integrity` hash as shown; add the add-on's id to `data-pipeup-addons` on the `<html>` element (append to an existing list and keep every entry); and tell the author, in your reply, about a Content-Security-Policy that allows scripts only from the page and the CDN, and connections only where the add-on sends. Add an add-on only when the author asks for it, tell them in plain words what it sends and to whom, and never pick a sharing service for them. Edit only the HTML file, and keep `data-pipeup-doc` exactly as it is.
 

@@ -1,6 +1,6 @@
 {
   "name": "pipeup",
-  "version": "0.8.0-beta.5",
+  "version": "0.8.0",
   "description": "Add Pipeup comments to an HTML page, read the comments, and answer them: add, integrate, apply, summarise, and set up saving reviews in Git.",
   "author": { "name": "Pipeup contributors" },
   "homepage": "https://pipeup-ai.github.io/pipeup/",
