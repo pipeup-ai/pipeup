@@ -1,6 +1,6 @@
 // The Add-ons page and each add-on's own page: Copy buttons and menus, and the looping demos. Spec: docs/WEBSITE_SPEC.md.
 const CDN = "https://cdn.jsdelivr.net/npm/";
-const ADDONS_VERSION = "0.8.0-beta.4"; // tools/set-version.sh keeps this in step with the release
+const ADDONS_VERSION = "0.8.0-beta.5"; // tools/set-version.sh keeps this in step with the release
 // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
 const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}", identity: "{{SRI:identity}}" };
 const tag = (pkg, file) => {

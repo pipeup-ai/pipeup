@@ -5,7 +5,7 @@ description: Use when someone asks you to add comments to an HTML page, make it 
 
 # Add Pipeup to this page
 
-Written for Pipeup 0.8.0-beta.4 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md) (the full reference: layouts, decks, tabs, every option), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md) (answering the comments) and [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 0.8.0-beta.5 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md) (the full reference: layouts, decks, tabs, every option), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md) (answering the comments) and [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place. **When the page already exists, never change its layout, styling or behaviour to make room for Pipeup**: it draws in its own layer, and you only add attributes and one script tag. Edit the HTML file only; don't download, fetch or run anything yourself.
 
@@ -14,7 +14,7 @@ Pipeup lets people comment on an HTML page in place. **When the page already exi
 1. **Pin the script.** Just before `</body>`:
 
    ```html
-   <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0-beta.4/dist/pipeup.min.js"
+   <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0-beta.5/dist/pipeup.min.js"
            integrity="sha384-…" crossorigin="anonymous"></script>
    ```
 
