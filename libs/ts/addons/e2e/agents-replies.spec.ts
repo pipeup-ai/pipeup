@@ -58,10 +58,10 @@ test("an agent reads the comments, answers in the replies file, and the person c
     comments: [{ text: "Is 20% realistic?", agent: false }],
   });
 
-  // Not listed yet: nothing says an agent can answer, but the prompt is offered on every page.
+  // Not listed yet: nothing says an agent can answer, but Copy for my agent is offered on every page.
   await openMenu(page);
   await expect(page.locator(".menu .sec")).toHaveCount(0);
-  await expect(page.getByRole("menuitem", { name: "Copy a prompt for my agent" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Copy for my agent" })).toBeVisible();
   await page.keyboard.press("Escape");
 
   // The author lists the agent; the agent answers into the file next to the page.
@@ -175,8 +175,97 @@ test("a page that lists an agent but has no agents add-on says so once in the co
   await comment(page);
   await expect.poll(() => said.filter((t) => t.includes("agents add-on")).length).toBe(1);
   await openMenu(page);
-  await expect(page.getByRole("menuitem", { name: "Copy a prompt for my agent" })).toHaveCount(0);
+  await expect(page.getByRole("menuitem", { name: "Copy for my agent" })).toHaveCount(0);
   // The comments are untouched, and an agent can still read them.
   const read = await page.evaluate(() => (window as any).Pipeup.comments());
   expect(read.threads).toHaveLength(1);
+});
+
+test("Copy for my agent carries the open comments, the document id and how to sign", async ({ page }) => {
+  const { file } = await setup();
+  await page.goto(`file://${file}`);
+  const id = await comment(page);
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: "Copy for my agent" }).click();
+  const [copied] = await page.evaluate(() => (window as any).__copied as string[]);
+  expect(copied).toContain("They are not in the page's file");
+  expect(copied).toContain(id);
+  expect(copied).toContain("Is 20% realistic?");
+  expect(copied).toContain("reply --print --doc aGeNtFiXtUrE0001");
+  // The document id, never its key.
+  expect(copied).not.toContain("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+});
+
+test("a pasted reply the agent didn't sign shows as pasted by you; a listed agent's signed one as the agent's", async ({
+  page,
+}) => {
+  const { file, pipeup, key } = await setup();
+  await writeFile(file, html(key));
+  await page.goto(`file://${file}`);
+  const id = await comment(page);
+  await showComments(page);
+
+  const paste = async (text: string) => {
+    await openMenu(page);
+    await page.getByRole("menuitem", { name: "Paste my agent's replies" }).click();
+    await page.getByRole("textbox", { name: "Your agent's answer" }).fill(text);
+  };
+
+  // Unsigned: the page says so before adding anything, and the reply says who pasted it.
+  await paste(
+    [
+      "Done. Paste this:",
+      "```pipeup-replies",
+      "agent: Muse",
+      `thread: ${id}`,
+      "reply: Changed it to 15%.",
+      "```",
+    ].join("\n"),
+  );
+  await expect(page.locator(".ag-l")).toContainText("1 reply from Muse is not signed");
+  await page.getByRole("button", { name: "Add 1 reply" }).click();
+  await expect(page.getByRole("textbox", { name: "Your agent's answer" })).toHaveCount(0);
+  await page.locator(".bub").first().dispatchEvent("click");
+  await expect(page.locator(".rps .it .who")).toHaveText("Muse");
+  await expect(page.locator(".rps .it .pst")).toHaveText("pasted by you");
+  await page.keyboard.press("Escape");
+
+  // Signed with the key the page lists: the agent's own, with nothing more.
+  const { stdout } = await pipeup(
+    "reply",
+    "--print",
+    "--doc",
+    "aGeNtFiXtUrE0001",
+    "--thread",
+    id,
+    "And labelled the figure.",
+    "--addressed",
+    "Labelled",
+  );
+  await paste(`Here you go:\n${stdout}`);
+  await expect(page.locator(".ag-l")).toContainText("1 reply signed by Claude, whom this page lists");
+  await page.getByRole("button", { name: "Add 1 reply" }).click();
+  await expect(page.getByRole("textbox", { name: "Your agent's answer" })).toHaveCount(0);
+  await page.locator(".bub").first().dispatchEvent("click");
+  await expect(page.locator(".rps .it")).toHaveCount(2);
+  await expect(page.locator(".rps .it").nth(1).locator(".who")).toHaveText("Claude");
+  await expect(page.locator(".rps .it").nth(1).locator(".pst")).toHaveCount(0);
+  await expect(page.locator(".adr")).toContainText("Labelled");
+
+  // Words changed after signing: shown as pasted, and the page says why.
+  await page.keyboard.press("Escape");
+  await paste(stdout.replace("And labelled the figure.", "And deleted the figure."));
+  await expect(page.locator(".ag-l")).toContainText("was changed after it was signed");
+});
+
+test("an answer with no replies block adds nothing and offers to ask again", async ({ page }) => {
+  const { file } = await setup();
+  await page.goto(`file://${file}`);
+  await comment(page);
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: "Paste my agent's replies" }).click();
+  await page.getByRole("textbox", { name: "Your agent's answer" }).fill("Sure! 1. The rates chart…");
+  await expect(page.getByRole("button", { name: "Add replies" })).toBeDisabled();
+  await page.getByRole("button", { name: "Copy that request" }).click();
+  expect((await page.evaluate(() => (window as any).__copied as string[]))[0]).toContain("```pipeup-replies");
 });

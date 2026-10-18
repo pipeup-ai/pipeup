@@ -133,6 +133,11 @@ export function isAuthentic(op: SignedOp): Promise<boolean> {
   return verify(op.body.author, utf8(canonicalJson(op.body)), op.sig);
 }
 
+/** A change anyone can check: well formed, and signed by the key it names as its writer. */
+export async function checkOp(op: unknown): Promise<boolean> {
+  return isWellFormed(op) && (await isAuthentic(op).catch(() => false));
+}
+
 /**
  * Total order every peer agrees on: by clock, then time written, then author, then id. Time comes
  * before author so one writer's actions keep their order when many ops share a clock (for example

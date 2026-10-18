@@ -9,25 +9,39 @@ const A = "A".repeat(43);
 const B = "B".repeat(43);
 const id = (n: string) => n.padEnd(43, "_");
 
-describe("the prompt for an agent", () => {
+describe("Copy for my agent", () => {
   const meta = {
-    title: "Brief",
-    url: "file:///a/brief.html",
-    replies: "file:///a/brief.replies.js",
+    title: "Daily briefing",
+    url: "https://muse.example/briefing",
+    doc: "doc-id-123",
+    comments: "1. [t-4f2a] On Markets: Put the rates chart first. (Sam)",
+    open: 1,
+    resolved: 2,
+    replies: "https://muse.example/briefing.replies.js",
     listed: true,
   };
 
-  it("says where to read, where to answer and what never to do", () => {
+  it("carries the open comments, says where they live, and how to answer in a replies block", () => {
     const p = agentPrompt(meta);
-    expect(p).toContain("Pipeup.comments()");
-    expect(p).toContain("brief.replies.js");
+    expect(p).toContain("They are not in the page's file");
+    expect(p).toContain("## 1 open comment");
+    expect(p).toContain("Put the rates chart first");
+    expect(p).toContain("(2 resolved comments left out.)");
+    expect(p).toContain("```pipeup-replies");
     expect(p).toContain("Never resolve, reopen, edit or delete");
   });
 
-  it("tells an agent whose key isn't listed how to get it listed, and carries no key", () => {
-    const p = agentPrompt({ ...meta, listed: false });
-    expect(p).toContain("pipeup agent");
+  it("says how to sign with the page's document id, and carries no key", () => {
+    const p = agentPrompt(meta);
+    expect(p).toContain("reply --print --doc doc-id-123");
+    expect(p).toContain("This page lists an agent's key");
     expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
+  });
+
+  it("asks an agent to be listed only if it can keep a key", () => {
+    const p = agentPrompt({ ...meta, listed: false });
+    expect(p).toContain("If you keep a Pipeup key between sessions");
+    expect(p).toContain("don't ask to be listed");
   });
 
   it("points an agent at the link's commands when a link is running", () => {
@@ -37,8 +51,7 @@ describe("the prompt for an agent", () => {
   it("names the page's Pipeup in every command, and a pre-release's own guide", () => {
     const p = agentPrompt({ ...meta, file: "/a/brief.html", listed: false, version: "0.8.0-beta.4" });
     expect(p).toContain("npx pipeup@0.8.0-beta.4 comments /a/brief.html");
-    expect(p).toContain("npx pipeup@0.8.0-beta.4 reply --page");
-    expect(p).toContain("npx pipeup@0.8.0-beta.4 agent --name");
+    expect(p).toContain("npx pipeup@0.8.0-beta.4 reply --print");
     expect(p).not.toMatch(/npx pipeup /);
     expect(p).toContain("https://pipeup-ai.github.io/pipeup/next/skills/pipeup-apply/SKILL.md");
     // A stable release keeps the stable guide.

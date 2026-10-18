@@ -2,8 +2,8 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import { animalName, nameOf } from "../model/animals";
-import type { Mention, Thread } from "../model/types";
+import { animalName, isAiName, isPasted, nameOf } from "../model/animals";
+import type { Comment, Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
@@ -25,7 +25,7 @@ import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
-import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
+import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
@@ -434,6 +434,18 @@ export function startApp(o: AppOptions): App {
         toast(e instanceof UnsavedChangeError ? `Reopened · ${UNSAVED_NOTE}` : message(e));
       }
       focusReply(id);
+    },
+    pasted: (c) => {
+      if (!isPasted(c, listedAgents())) return "";
+      if (c.author === o.doc.me) return "pasted by you";
+      // The name they comment under, or their animal.
+      let name = "";
+      const walk = (x: Comment) => {
+        if (x.author === c.author && x.name && !isAiName(x.name)) name = x.name;
+        x.replies.forEach(walk);
+      };
+      o.doc.threads().forEach((t) => walk(t.root));
+      return `pasted by ${name || animalName(c.author)}`;
     },
     drop: (id, words) =>
       offer("Reply discarded", () => {

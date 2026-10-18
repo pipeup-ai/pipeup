@@ -44,6 +44,7 @@ export const PUBLIC_NAMES = [
   "share",
   "unshare",
   "openDialog",
+  "paste",
   "action",
   "run",
   "overlay",

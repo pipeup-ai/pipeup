@@ -33,7 +33,7 @@
         "the replies file next to this page (this site or this computer)",
         "the program running on this computer, when the page is shown with pipeup watch"
       ],
-      "says": "Reads a replies file next to this page. When the page is shown through pipeup watch, and only after you switch it on, it sends this page's comments to the program running on this computer. Nothing leaves this computer."
+      "says": "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown through pipeup watch, and only after you switch it on, it sends this page's comments to the program running on this computer. Nothing leaves this computer."
     }
   },
   "publishConfig": {

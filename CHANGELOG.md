@@ -7,6 +7,17 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- **Copy for my agent** (agents add-on) replaces Copy a prompt for my agent. It copies the page's open comments together with how to answer them, says the comments live in your browser and not in the page's file, and gives the page's document id so an agent can sign its answer.
+- **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
+- `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
+
+### Changed
+
+- A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
+- Pipeup's budget rises from 60 to 60.5 KB gzip, and the agents add-on's from 5 to 6.5 KB.
+
 ## [0.8.1] - 2026-10-18
 
 This release makes Pipeup work on iPhones as it should: one tap chooses what to comment on, the on-screen keyboard never covers the comment box, and comment mode's touch hint is easier to see and gets out of the way. Pipeup is 59.8 KB gzip.

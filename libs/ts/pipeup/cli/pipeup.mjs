@@ -56,7 +56,11 @@ pipeup comments <page.html> [--all] [--json]
 
 pipeup reply --page <file.html> --thread <id> "<words>" [--addressed "<short note>"]
   Writes a signed reply (and, with --addressed, an addressed note) to <file>.replies.js next to the page.
-  It never resolves, reopens, edits or deletes anything: the author closes threads.`;
+  It never resolves, reopens, edits or deletes anything: the author closes threads.
+
+pipeup reply --print (--doc <document id> | --page <file.html>) --thread <id> "<words>" [--addressed "<short note>"]
+  Prints the same signed reply as a replies block for the person to paste into the page (Paste my agent's replies),
+  for an agent that can't write next to the page. Copy for my agent gives the document id. Nothing is written.`;
 
 function fail(message) {
   console.error(`pipeup: ${message}`);
@@ -132,15 +136,63 @@ async function readReplies(path, doc) {
   }
 }
 
+/** One entry of a replies block, signed: the person pastes it into the page, which checks it against the listed keys. */
+function printBlock(name, thread, words, note, ops) {
+  const field = (key, text) =>
+    text
+      .split("\n")
+      .map((line, i) => (i ? `  ${line}` : `${key}: ${line}`))
+      .join("\n");
+  return [
+    "```pipeup-replies",
+    `agent: ${name}`,
+    `thread: ${thread}`,
+    field("reply", words),
+    ...(note ? [field("addressed", note)] : []),
+    `signed: ${b64u(new TextEncoder().encode(JSON.stringify(ops)))}`,
+    "```",
+  ].join("\n");
+}
+
 async function reply(args) {
   const page = args.page;
   const thread = args.thread;
   const words = args._[0]?.trim();
-  if (typeof page !== "string" || typeof thread !== "string" || !words)
-    fail(`missing words, --page or --thread\n\n${USAGE}`);
+  const print = args.print === true;
+  const given = typeof args.doc === "string" && print ? args.doc.trim() : "";
+  if ((typeof page !== "string" && !given) || typeof thread !== "string" || !words)
+    fail(`missing words, ${print ? "--doc" : "--page"} or --thread\n\n${USAGE}`);
+  if (given && given.length > 64) fail("that isn't a document id");
   const note = typeof args.addressed === "string" ? args.addressed.trim() : "";
-  const { id: doc, listed } = await pageDoc(page);
+  const { id: doc, listed } = given ? { id: given, listed: null } : await pageDoc(page);
   const { identity, name } = await loadAgent();
+  if (print) {
+    let clock = Math.floor(Date.now() / 1000);
+    let at = Date.now();
+    const { computeOpId, signOp } = await core();
+    const make = async (fields) => {
+      const body = {
+        v: 1,
+        ...fields,
+        id: "",
+        doc,
+        author: identity.publicKey,
+        name: signedName(name),
+        clock: clock++,
+        at: at++,
+      };
+      body.id = await computeOpId(body);
+      return signOp(body, identity);
+    };
+    const ops = [await make({ kind: "reply", thread, target: thread, text: words })];
+    if (note) ops.push(await make({ kind: "addressed", thread, text: note }));
+    if (listed && !listed.includes(identity.publicKey))
+      console.error(
+        `pipeup: this page doesn't list your key, so these replies will show as pasted by the person.\n  To be listed: <html data-pipeup-agents="${identity.publicKey}">`,
+      );
+    console.log(printBlock(name, thread, words, note, ops));
+    return;
+  }
   const linked = await readFile(page.replace(/\.[^./\\]*$/, "") + ".comments.json", "utf8").then(
     () => true,
     () => false,

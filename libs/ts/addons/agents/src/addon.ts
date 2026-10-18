@@ -1,5 +1,6 @@
 import type { AddonHost, AgentComments, ItemHandle, PipeupAddon, Thread } from "pipeup";
 import { type Link, startLink } from "./link";
+import { openPaste, STYLES } from "./paste-view";
 import { agentPrompt } from "./prompt";
 import { listedAgents, repliesUrl, startReplies } from "./replies";
 
@@ -14,9 +15,14 @@ const COPY = [
   "M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2",
 ];
 const SEND = ["M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13"];
+const PASTE = [
+  "M7 5h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
+  "M10 3h4a1 1 0 0 1 1 1v2H9V4a1 1 0 0 1 1-1z",
+  "M12 10v7m-3-3 3 3 3-3",
+];
 
 const SAYS =
-  "Reads a replies file next to this page. When the page is shown through pipeup watch, and only after you switch it on, it sends this page's comments to the program running on this computer. Nothing leaves this computer.";
+  "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown through pipeup watch, and only after you switch it on, it sends this page's comments to the program running on this computer. Nothing leaves this computer.";
 
 const words = (e: unknown): string =>
   e instanceof Error ? e.message.replace(/^pipeup: /, "") : "Something went wrong";
@@ -45,10 +51,13 @@ export function createAddon(): PipeupAddon {
     id: "agents",
     api: 1,
     version: "0.6.0",
-    needs: ["menu", "status", "notify", "listnote"],
+    needs: ["menu", "status", "notify", "listnote", "dialog", "styles", "paste"],
     network: { when: "page-configured", to: ["page"], says: SAYS },
     setup(host: AddonHost) {
       const replies = startReplies(host);
+      const offStyles = host.addStyles(STYLES);
+      const openCount = () =>
+        (host.document.threads() as readonly Thread[]).filter((t) => !t.resolved).length;
       const link: Link = startLink({
         snapshot: async () => {
           const c = core();
@@ -60,7 +69,9 @@ export function createAddon(): PipeupAddon {
         refresh: () => paint(),
       });
 
-      const agentName = () => replies.who() || link.agent;
+      /** The agent whose replies were last pasted, until one answers by file or link. */
+      let pasted = "";
+      const agentName = () => replies.who() || link.agent || pasted;
       /** The quiet line in the menu and the control's tooltip, and the sentence under All comments. */
       const paint = () => {
         host.setStatus(
@@ -108,14 +119,24 @@ export function createAddon(): PipeupAddon {
         host.addMenuItem({
           id: "prompt",
           icon: COPY,
-          label: () => "Copy a prompt for my agent",
-          hint: () => "Tells an AI agent where the comments are and how to answer them",
+          label: () => "Copy for my agent",
+          hint: () => {
+            const n = openCount();
+            return `Your ${n} open comment${n === 1 ? "" : "s"}, and how to answer them`;
+          },
           select: async () => {
             try {
+              const c = core();
+              if (!c.comments) throw new Error("pipeup: this page has no Pipeup to read comments from");
+              const [open, all] = await Promise.all([c.comments(), c.comments({ all: true })]);
               await copyText(
                 agentPrompt({
                   title: document.title,
                   url: location.href,
+                  doc: host.document.id,
+                  comments: open.markdown,
+                  open: open.threads.length,
+                  resolved: all.threads.length - open.threads.length,
                   replies: repliesUrl(),
                   file: link.enabled ? link.file : "",
                   listed: listedAgents().length > 0,
@@ -123,11 +144,28 @@ export function createAddon(): PipeupAddon {
                 }),
                 host.overlay(),
               );
-              host.notify("Copied a prompt for your agent");
+              const n = open.threads.length;
+              host.notify(`Copied ${n} open comment${n === 1 ? "" : "s"} for your agent`);
             } catch (e) {
               host.notify(words(e));
             }
           },
+        }),
+        host.addMenuItem({
+          id: "paste",
+          icon: PASTE,
+          label: () => "Paste my agent's replies",
+          hint: () => "Adds the answers your agent gave in a chat",
+          select: () =>
+            openPaste(
+              host,
+              (text) => copyText(text, host.overlay()),
+              (n, who) => {
+                if (who) pasted = who;
+                host.notify(n ? `Added ${n} ${n === 1 ? "reply" : "replies"}` : "No replies added");
+                paint();
+              },
+            ),
         }),
       ];
       if (link.enabled)
@@ -154,6 +192,7 @@ export function createAddon(): PipeupAddon {
       paint();
       return () => {
         off();
+        offStyles();
         replies.destroy();
         link.destroy();
       };
