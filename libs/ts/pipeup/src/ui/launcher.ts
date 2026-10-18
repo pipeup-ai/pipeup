@@ -231,12 +231,16 @@ export function createLauncher(ctx: Ctx): View {
   /** Opens or closes All comments; focus moves in on open, and back to the button when asked. */
   const setList = (on: boolean, back = false) => {
     if (ctx.state.listing === on) return;
-    // A thread open on the page moves into the panel: nothing is open in two places at once.
+    // A thread open on the page moves into the panel: nothing is open in two places at once. What is being written in
+    // a reply goes with it.
+    ctx.keepReplies();
     const was = on ? ctx.state.active : null;
     if (was) ctx.state.active = null;
     ctx.state.listing = on;
     ctx.render();
     if (was && latest.some((t) => t.id === was)) toggle(was, true);
+    // A comment being written moves into the panel, and the caret stays in it.
+    else if (on && ctx.state.draft) ctx.focusDraft();
     else if (on) (items(list)[0] ?? close).focus({ preventScroll: true });
     else if (back) btn.focus({ preventScroll: true });
   };
@@ -631,10 +635,13 @@ export function createLauncher(ctx: Ctx): View {
     if (openId === id) return closeRow(true);
     const t = latest.find((x) => x.id === id);
     if (!t) return;
+    // What is being written in the card that closes waits for it; this card's comes back.
+    ctx.keepReplies();
     openId = going = id;
     railView = threadView(t, { ...ctx.actions, close: () => closeRow(true) }, threadOptions(t));
     ctx.seen(t);
     buildAll();
+    ctx.putReply(id);
     // On a touch screen the reply line waits to be tapped, so the keyboard doesn't cover the thread.
     if (!touch()) railView.element.querySelector("textarea")?.focus({ preventScroll: true });
     // The row comes into view in the panel, wherever it is in the list.
@@ -653,6 +660,7 @@ export function createLauncher(ctx: Ctx): View {
   function closeRow(back = false): void {
     if (!openId) return;
     const id = openId;
+    ctx.keepReplies();
     openId = railView = null;
     ctx.hot(null);
     buildAll();
@@ -1111,10 +1119,12 @@ export function createLauncher(ctx: Ctx): View {
   // Capture phase + stopPropagation: Escape closes the menu, then the thread open in the panel, then the panel,
   // one at a time, and never also an open thread on the page. A reply line outside the panel keeps its own Escape.
   const onEscape = (e: KeyboardEvent) => {
-    if (e.key !== "Escape" || endEdit) return;
+    if (e.key !== "Escape" || e.isComposing || endEdit) return;
     // The emoji picker and a comment's ⋯ menu take their own Escape.
     if (e.composedPath().some((n) => n instanceof Element && n.matches(".rxp,.pm"))) return;
     const at = e.composedPath()[0];
+    // Words in a box or a reply line: its own Escape throws them away, with Undo.
+    if (at instanceof HTMLTextAreaElement && at.value.trim()) return;
     // In a closed card's actions, Escape goes back to the card; a box opened there (Edit) takes its own Escape.
     const card = at instanceof Element && at.closest(".cd:not(.open,.new)");
     if (menuOpen && copyChoices.contains(at as Node)) setCopy(false);

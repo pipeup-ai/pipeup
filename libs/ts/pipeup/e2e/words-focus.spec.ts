@@ -487,3 +487,136 @@ test("in All comments, a thread resolved from the keyboard hands focus to the ne
   await expect(page.locator(".all .cd")).toHaveCount(1);
   await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("mi") });
 });
+
+// From the regression pass on 0.8.0-beta.5.
+
+test("Esc while an input method is composing cancels the composition, never the comment or the reply", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await shortcut(page);
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Words ");
+  const composingEsc = (sel: string) =>
+    page.evaluate((sel) => {
+      const t = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(sel)!;
+      for (const type of ["keydown", "keyup"])
+        t.dispatchEvent(
+          new KeyboardEvent(type, {
+            key: "Escape",
+            isComposing: true,
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+          }),
+        );
+    }, sel);
+  await composingEsc(".draft textarea");
+  await expect(draftLine(page)).toHaveValue("Words ");
+  await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
+  await page.keyboard.press("Enter");
+  const th = page.locator(".th.on, .pop.show .thread").first();
+  await expect(th).toHaveCount(1);
+  await th.locator(".rbox textarea").focus();
+  await page.keyboard.type("Not sure");
+  await composingEsc(".rbox textarea");
+  await expect(th.locator(".rbox textarea")).toHaveValue("Not sure");
+  await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
+});
+
+test("in comment mode, ⌘Z or Ctrl+Z takes the Undo offered after Esc; once faded, Undo is no longer a Tab stop", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await shortcut(page);
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Keep these words");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Comment discarded");
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("ControlOrMeta+KeyZ");
+  await expect(draftLine(page)).toHaveValue("Keep these words");
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Comment discarded");
+  await expect(page.locator(".toast.show")).toHaveCount(0, { timeout: 8000 });
+  await expect(page.locator(".toast .ta")).toBeHidden();
+});
+
+test("Copy thread keeps focus on its ⋯, also when the browser's clipboard can't be used", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error("blocked")) },
+    }),
+  );
+  await showComments(page);
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const th = page.locator(".th");
+  await th.locator(".tx").first().click();
+  const more = th.locator(".root").getByRole("button", { name: "More" });
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await expect(th.getByRole("menuitem", { name: "Copy thread" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".toast.show")).toHaveCount(1);
+  await expect(more).toBeFocused();
+});
+
+test("in All comments, a reply being written is kept when its card closes, another opens, or Esc throws it away (with Undo)", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await seedText(page, "#p3", "pricing work", "Which pricing work?");
+  await openAll(page);
+  const rows = page.locator(".all .cd");
+  await rows.first().locator("button.mi").click();
+  const line = page.locator(".all .rbox textarea");
+  await expect(line).toBeFocused();
+  await page.keyboard.type("Ada agrees");
+  await rows.nth(1).locator("button.mi").click();
+  await expect(line).toHaveValue("");
+  await rows.first().locator("button.mi").click();
+  await expect(line).toHaveValue("Ada agrees");
+  // Esc in the line throws the words away first, with Undo; the card stays open.
+  await line.focus();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Reply discarded");
+  await expect(line).toHaveValue("");
+  await page.locator(".toast.show").getByRole("button", { name: "Undo" }).click();
+  await expect(line).toHaveValue("Ada agrees");
+});
+
+test("a thread open on the page moves into All comments with the reply being written in it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await showComments(page);
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const th = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await th.locator(".tx").first().click();
+  await expect(th.locator(".rbox textarea")).toBeFocused();
+  await page.keyboard.type("Ada agrees");
+  await openAll(page);
+  await expect(page.locator(".all .rbox textarea")).toHaveValue("Ada agrees");
+});
+
+test("opening All comments while writing a comment keeps the caret in it", async ({ page }) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p3", "pricing work", "Which pricing work?");
+  await toggleCommenting(page);
+  await page.locator("#p1").click();
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.type("We should name the flow");
+  await control(page).click();
+  await expect(page.locator(".all.show")).toHaveCount(1);
+  await page.keyboard.type(" so readers know which one");
+  await expect(draftLine(page)).toHaveValue("We should name the flow so readers know which one");
+  await expect(page.locator(".all .rbox textarea")).toHaveCount(0);
+});

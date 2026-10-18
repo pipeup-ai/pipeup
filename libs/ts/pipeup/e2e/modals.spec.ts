@@ -221,6 +221,55 @@ test("in a web component's modal dialog, Pipeup moves in with it and stays usabl
   await expect.poll(() => home(page)).toBe("HTML");
 });
 
+test("a web component's dialog closed by its own button, with focus going nowhere, gives Pipeup back to the page", async ({
+  page,
+}) => {
+  await open(page, "modals.html");
+  // Opened by the page's script, with nothing focused before it.
+  await page.evaluate(() => (document.getElementById("wc") as any).open());
+  await expect.poll(() => home(page)).not.toBe("HTML");
+  await page.locator("#wc #leave").click();
+  await expect.poll(() => home(page)).toBe("HTML");
+  expect(await onTop(page, ".launch .mode")).toBe(true);
+});
+
+test("a dialog centred with a transform never holds Pipeup inside its own box: Pipeup waits outside it", async ({
+  page,
+}) => {
+  await open(page, "modals.html");
+  await page.click("#open-moved");
+  await expect(page.locator("#moved")).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(await home(page)).toBe("HTML");
+  // The comment control is still in the window's corner, not the dialog's.
+  const c = (await control(page).boundingBox())!;
+  const vp = page.viewportSize()!;
+  expect(c.x + c.width).toBeGreaterThan(vp.width - 2);
+  expect(c.y + c.height).toBeGreaterThan(vp.height - 2);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#moved")).toBeHidden();
+  expect(await onTop(page, ".launch .mode")).toBe(true);
+});
+
+test("a dialog that renders its contents again keeps the caret in the comment box", async ({ page }) => {
+  await open(page, "modals.html");
+  await page.click("#open-native");
+  await expect.poll(() => home(page)).toBe("native");
+  await startCommenting(page);
+  await page.locator("#native-p").click();
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.type("Say what ");
+  // The page puts its dialog's contents back, taking Pipeup's element out with them.
+  await page.evaluate(() => {
+    const d = document.getElementById("native")!;
+    const kept = [...d.children].filter((c) => c.localName !== "pipeup-root");
+    d.replaceChildren(...kept);
+  });
+  await expect.poll(() => home(page)).toBe("native");
+  await page.keyboard.type("is lost");
+  await expect(draftLine(page)).toHaveValue("Say what is lost");
+});
+
 test("an element shown fullscreen holds Pipeup while it is, and can be commented on", async ({ page }) => {
   await open(page, "modals.html");
   await page.click("#open-fs");
@@ -278,4 +327,39 @@ test("while All comments is open, messages sit inside the panel, above its foote
     );
   });
   expect(onTop).toBe(true);
+});
+
+test("with a modal dialog or an inert overlay open, the block cursor only visits what is in it", async ({
+  page,
+}) => {
+  await open(page, "modals.html");
+  /** Whether the block the cursor is on is inside `sel`. */
+  const cursorIn = (sel: string) =>
+    page.evaluate(
+      ([root, sel]) => {
+        const a = (eval(root) as Element).shadowRoot!.activeElement;
+        if (!a?.matches(".km")) return null;
+        const el = a.ariaLabelledByElements?.[1]?.matches("span")
+          ? a.ariaDescribedByElements?.at(-1)
+          : a.ariaLabelledByElements?.[1];
+        return !!el?.closest(sel);
+      },
+      [ROOT, sel] as const,
+    );
+  await page.click("#open-native");
+  await expect.poll(() => home(page)).toBe("native");
+  await page.keyboard.press("Shift+Alt+KeyC");
+  for (let i = 0; i < 6; i++) {
+    await expect.poll(() => cursorIn("#native")).toBe(true);
+    await page.keyboard.press("Tab");
+  }
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#native")).toBeHidden();
+  await page.click("#open-inert");
+  await page.keyboard.press("Shift+Alt+KeyC");
+  for (let i = 0; i < 4; i++) {
+    await expect.poll(() => cursorIn("#inertd")).toBe(true);
+    await page.keyboard.press("Tab");
+  }
 });

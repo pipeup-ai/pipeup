@@ -9,9 +9,20 @@ change the API and the stored comment format.
 
 ### Fixed
 
+- **On a deck, the comment control stays in its corner** when the deck is shown fullscreen, inside a page's dialog, and beside a layer over the whole window that the page asks Pipeup to ignore: it went off the top of the screen.
+- **On reveal.js, a comment goes under the slide it is on**, and the block cursor leaves a slide as the deck turns, even while it is still sliding away. A page that sets its own width (`html { width: 100% }`, as reveal.js and many resets do) now makes room for All comments.
+- **Replies are kept in All comments**: a reply being written there was thrown away when its card closed, another card opened, or a thread moved into the panel. Esc in it now throws the words away with Undo, as everywhere else.
+- **Opening All comments while writing a comment keeps the caret in it**: the next keys went to another thread's row, and could post a reply there.
+- **Esc while an input method is composing** (Japanese, Chinese, Korean) only cancels the composition; it threw the whole comment or reply away.
+- **⌘Z (Ctrl+Z) takes the Undo** after Esc or Cancel, so it can be reached from the block cursor; once the message fades, its Undo is no longer a Tab stop.
+- On a deck, Tab or a click on nothing in particular leaves a waiting comment on its own slide (it turned the deck back), and going back to it puts the caret in it. On a deck Pipeup can't turn, Pipeup says which slide the waiting comment is on.
+- With a page's modal dialog or inert overlay open, the block cursor only visits what is in it. Pipeup leaves a web component's dialog however it closes, keeps the caret when a dialog renders its contents again, and waits outside a dialog moved with a transform (it was trapped in the dialog's box).
+- Copy thread keeps focus on its ⋯, and copying without the browser's clipboard keeps focus where it was.
+- A change of look fades instead of blinking.
 - **A closed card's hidden actions never take a click or tap.** On a touch tablet, a tap on a closed column card where its Resolve, React or ⋯ would be resolved the thread or opened them (the tap hovers the card as it lands); it now opens the card. With a mouse, a click on a closed card's corner as the pointer arrives no longer resolves the thread before Resolve shows: a card's actions take presses once they have eased in.
 - **After Resolve in the column, a second click with the pointer still opens the next card** instead of resolving it too. The keyboard still reaches and sees its actions at once.
 - **On a deck, comment mode's touch hint, Pipeup's other messages and the comment control sit above the deck's own controls anywhere along the bottom**, not only in the bottom-right corner: on a phone the hint no longer covers a bottom-centre "← 1 / 3 →" bar.
+- Pipeup is 58.8 KB gzip; its budget rises from 58.5 to 59.5 KB.
 
 ## [0.8.0-beta.5] - 2026-10-18
 

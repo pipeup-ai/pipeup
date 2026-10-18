@@ -108,6 +108,10 @@ export interface Ctx {
   open(id: string | null): void;
   /** Puts the cursor in thread `id`'s reply line, unless the reader is typing elsewhere. */
   focusReply(id: string): void;
+  /** What is written in reply lines waits for their threads (before a thread closes or its card is rebuilt). */
+  keepReplies(): void;
+  /** Puts back what was being written in thread `id`'s reply line. */
+  putReply(id: string): void;
   hot(id: string | null): void;
   startDraft(d: Draft): void;
   /** Moves the open draft to another block, keeping its words (starts one if none is open). */
