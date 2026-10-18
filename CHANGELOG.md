@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Many comments on one element keep their bubbles in the room they have.** Side-by-side bubbles ran on to the right, over the comment column's first cards, and near the window's edge piled onto one spot, so some couldn't be clicked. They now step left before the column or the window's edge, and onto a further row when a row is full; each one is clear of the others and can be clicked.
+
 ## [0.8.0-beta.5] - 2026-10-18
 
 This pre-release shows a comment where it is whenever its content is on the page, even after a page reports a new revision of itself, and makes the commands an agent is given name the page's Pipeup, so a beta page never fetches the stable command line. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
