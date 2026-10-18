@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.0-beta.5] - 2026-10-18
+
+This pre-release shows a comment where it is whenever its content is on the page, even after a page reports a new revision of itself, and makes the commands an agent is given name the page's Pipeup, so a beta page never fetches the stable command line. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+
 ### Fixed
 
 - **Commands match the page's Pipeup.** The agents add-on's prompt for an agent now names the page's Pipeup version (`npx pipeup@0.8.0-beta.4 comments …`), and a pre-release's prompt points at the pre-release guide; on the pre-release site (`/next/`) every `npx pipeup` command in the pages, skills and `llms.txt` names the pre-release. A bare `npx pipeup` fetched npm's stable release (0.7.0) for pages running a beta.
@@ -413,7 +417,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.4...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.5...HEAD
+[0.8.0-beta.5]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.4...v0.8.0-beta.5
 [0.8.0-beta.4]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.3...v0.8.0-beta.4
 [0.8.0-beta.3]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...v0.8.0-beta.3
 [0.8.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...v0.8.0-beta.2

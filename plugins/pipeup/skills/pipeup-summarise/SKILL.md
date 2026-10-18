@@ -5,7 +5,7 @@ description: Use when someone has Pipeup feedback on an HTML page — text a rev
 
 # Summarise Pipeup feedback
 
-Written for Pipeup 0.8.0-beta.4 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.8.0-beta.5 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 ## 1. Get the feedback as text
 
