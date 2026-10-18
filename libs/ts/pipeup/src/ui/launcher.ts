@@ -214,6 +214,7 @@ export function createLauncher(ctx: Ctx): View {
   let foldCopy = () => {};
   const setMenu = (on: boolean) => {
     menuOpen = ctx.state.menu = on;
+    ctx.taps();
     if (on) ctx.addons.flush();
     window.clearTimeout(away);
     away = 0;
@@ -879,6 +880,11 @@ export function createLauncher(ctx: Ctx): View {
       const keys = !ctx.state.commenting && e.detail === 0;
       ctx.setCommenting(!ctx.state.commenting, keys);
       if (keys) setMenu(false);
+      // By touch the menu covers much of the page: once the switch is seen to move, it closes, so the next tap picks.
+      else if (ctx.state.commenting && touch()) {
+        window.clearTimeout(away);
+        away = window.setTimeout(() => menuOpen && closeToControl(), 600);
+      }
     },
     true,
     h("span", { class: "kc ks", "aria-hidden": "true" }, SHORTCUT_LABEL),

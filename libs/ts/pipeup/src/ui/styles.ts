@@ -15,6 +15,9 @@ svg{display:block}
 .layer{transition:opacity .24s var(--eo)}.layer.fading{opacity:0;transition-duration:.16s;transition-timing-function:var(--ei)}
 .layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#9A9892;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
+/* While a phone's on-screen keyboard is up for a Pipeup box, the comment control and its messages fade out of the little
+room left above it. */
+.layer.kb :is(.launch,.toast){opacity:0!important;pointer-events:none!important;transition:opacity var(--out) var(--ei)!important}
 
 .tx{font-size:14px;line-height:1.5;color:var(--k);white-space:pre-wrap;overflow-wrap:anywhere}
 .tx.del,.rest,.ctx,.ago{color:var(--fa)}
@@ -112,6 +115,13 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .toast.act{display:flex;align-items:center}.toast.show .ta{pointer-events:auto}
 /* Faded, its button is no longer a Tab stop (hidden once the fade is over). */
 .toast .ta{transition:visibility 0s .3s}.toast:not(.show) .ta{visibility:hidden}.toast.show .ta{transition-delay:0s}
+/* By touch, comment mode's hint is filled with the accent; once a tap has opened a box its words fold away (their column
+eases to nothing) and Done stays. */
+.toast.tap{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;background:var(--pu-accent);border-color:var(--pu-accent);color:var(--pu-on,#fff);font-size:15px;font-weight:500;transition:opacity .3s var(--eo),transform .3s var(--eo),grid-template-columns var(--mv) var(--eio),padding var(--mv) var(--eio)}
+.toast.tap .tw{min-width:0;max-height:4em;overflow:hidden;text-wrap:balance;transition:opacity var(--out) var(--ei),max-height var(--mv) var(--eio)}
+.toast.tap .ta{color:inherit;font-weight:600}
+.toast.tap.taught{grid-template-columns:minmax(0,0fr) auto;padding-left:4px}
+.toast.tap.taught .tw{opacity:0;max-height:0}
 .ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
 .rx .n{font-size:11px;font-variant-numeric:tabular-nums}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}

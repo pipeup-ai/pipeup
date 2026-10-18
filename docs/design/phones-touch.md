@@ -83,8 +83,9 @@ as the reviewer asked to write.
 
 ## The selection's icon (T11)
 
-`placeIcon(..., below)` centres the icon under the selection, 20 px down, clear of the phone's selection menu above
-and of its handles at the selection's ends; above when there's no room below.
+`placeIcon(..., below)` centred the icon under the selection, 20 px down, clear of the phone's selection menu above
+and of its handles at the selection's ends. Since 0.8.1 it sits at the window's right edge, level with the selection,
+because iOS puts its menu below the selection as often as above ([iphone-taps-keyboard.md](iphone-taps-keyboard.md)).
 
 ## The menu fits (T12)
 
@@ -126,3 +127,4 @@ budget is 56.5 KB (`scripts/size.mjs` and the add-ons' `CORE`).
 - 2026-10-15 — Merged with the looks batch: Pipeup is 56.2 KB, budget 56.5 KB.
 - 2026-10-18 — The hint sits above a deck's own controls anywhere along the bottom (U03); a tap on a closed column
   card opens it, never its hidden actions (U04). Pipeup is 58.2 KB, inside its 58.5 KB budget.
+- 2026-10-18 — The selection's icon moves to the window's right edge (0.8.1, iphone-taps-keyboard.md).

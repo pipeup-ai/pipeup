@@ -7,6 +7,20 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-18
+
+This release makes Pipeup work on iPhones as it should: one tap chooses what to comment on, the on-screen keyboard never covers the comment box, and comment mode's touch hint is easier to see and gets out of the way. Pipeup is 59.8 KB gzip.
+
+### Fixed
+
+- **iPhones: one tap answers.** Safari on iOS sends no click for a tap on words or pictures unless something listens for one, so choosing a block, closing the menu or a thread, and opening a thread from its words took several tries (a tap only worked where it landed on a link or button). While Pipeup waits for a tap on the page, it now listens on the page's body, and Safari sends it.
+- **By touch, Start commenting closes the menu** once the switch has moved, so the next tap chooses a block.
+- **Comment mode's touch hint is easier to see and gets out of the way**: it is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done beside the comment control.
+- ⌘Z (Ctrl+Z) no longer also presses the touch hint's Done.
+- **The on-screen keyboard never covers a comment box.** On a phone the box and its buttons stay in the part of the screen the keyboard leaves, beside what the comment is about (which scrolls up into view), and the comment control steps aside while the keyboard is up. When the phone moves the page to show the box, the box, outline and naming bar stay on what they are about (they were drawn off by the phone's pan). The phone no longer offers AutoFill Contact in a comment box.
+- **By touch, the selection's comment icon sits at the window's right edge**, level with the selection, so the phone's own Copy and Look Up menu never covers it.
+- Pipeup is 59.8 KB gzip; its budget rises from 59.5 to 60 KB.
+
 ## [0.8.0] - 2026-10-18
 
 This release is about reading and writing comments, and about Pipeup working wherever it is put. Every thread is the same compact card; All comments is the hub while it is open; you can edit and delete your own comments; comments show without comment mode; and the comment control is a small frosted square in the corner. Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it and focus never drops to the page. Decks keep their own controls and make room for All comments, Pipeup works inside a page's own dialogs and fullscreen elements, and phones get finger-sized targets and a touch hint with Done. Portable identities are an add-on (`@pipeup/identity`), and `pipeup init` and `pipeup read` join `check`. It folds the five betas, 0.8.0-beta.1 to 0.8.0-beta.5.
@@ -395,7 +409,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
