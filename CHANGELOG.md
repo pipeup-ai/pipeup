@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Commands match the page's Pipeup.** The agents add-on's prompt for an agent now names the page's Pipeup version (`npx pipeup@0.8.0-beta.4 comments …`), and a pre-release's prompt points at the pre-release guide; on the pre-release site (`/next/`) every `npx pipeup` command in the pages, skills and `llms.txt` names the pre-release. A bare `npx pipeup` fetched npm's stable release (0.7.0) for pages running a beta.
+
 ## [0.8.0-beta.4] - 2026-10-17
 
 This pre-release makes Pipeup work while a page's own dialog is open: a browser's modal dialog, one inside a web component, a library's dialog that traps focus or closes on Escape (Radix, shadcn/ui, Bootstrap, MUI, Headless UI), and an element shown fullscreen. While All comments is open, messages sit inside the panel, clear of a deck's slide controls. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
