@@ -18,7 +18,7 @@ export function createHost(theme: Theme, styles: string, doc: Document = documen
   const element = doc.createElement("pipeup-root");
   element.setAttribute("data-pipeup-ignore", "");
   element.style.cssText =
-    "position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;display:block!important;margin:0!important;visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important;";
+    "position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;display:block!important;margin:0!important;visibility:visible!important;opacity:1!important;transform:none!important;translate:none!important;scale:none!important;rotate:none!important;filter:none!important;clip-path:none!important;mask:none!important;zoom:1!important;";
   const shadow = element.attachShadow({ mode: "open" });
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in shadow) {

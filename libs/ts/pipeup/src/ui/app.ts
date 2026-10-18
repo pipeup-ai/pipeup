@@ -139,6 +139,8 @@ export function startApp(o: AppOptions): App {
     pinning: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
+  /** What the message's Undo does while it shows, also on ⌘Z or Ctrl+Z (the block cursor has no Tab stop for it). */
+  let undoing: (() => void) | null = null;
   // What screen readers are told, separate from the toast: visually hidden, never inert.
   const sr = h("div", { class: "sr", "aria-live": "polite" });
   host.layer.append(toastEl, sr);
@@ -196,21 +198,29 @@ export function startApp(o: AppOptions): App {
     hint = isHint;
     toastEl.textContent = text;
     toastEl.classList.toggle("act", Boolean(action));
+    const run = action?.run;
+    undoing = run
+      ? () => {
+          undoing = null;
+          toastEl.classList.remove("show");
+          run();
+        }
+      : null;
     if (action) {
-      const { run } = action;
       const a = run
-        ? h("button", { class: "ta", type: "button" }, action.label)
+        ? h("button", { class: "ta", type: "button", "aria-keyshortcuts": "Meta+Z Control+Z" }, action.label)
         : h(
             "a",
             { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
             action.label,
           );
-      if (run)
+      if (undoing) {
+        const take = undoing;
         a.addEventListener("click", (e) => {
           e.stopPropagation();
-          toastEl.classList.remove("show");
-          run();
+          take();
         });
+      }
       toastEl.append(" ", a);
     }
     if (quiet) toastEl.setAttribute("aria-hidden", "true");
@@ -219,6 +229,7 @@ export function startApp(o: AppOptions): App {
     window.clearTimeout(toastTimer);
     if (ms)
       toastTimer = window.setTimeout(() => {
+        undoing = null;
         toastEl.classList.remove("show");
         // By touch, comment mode's hint comes back once another message has faded.
         toastTimer = window.setTimeout(tapHint, 320);
@@ -283,6 +294,14 @@ export function startApp(o: AppOptions): App {
     if (words && !line.value) {
       line.value = words;
       line.dispatchEvent(new Event("input", { bubbles: true }));
+      // The words are in one line only: the thread's other copy (on the page, behind the panel) lets them go.
+      for (const l of host.layer.querySelectorAll<HTMLTextAreaElement>(
+        `[data-thread="${id}"] .rbox textarea`,
+      ))
+        if (l !== line && l.value) {
+          l.value = "";
+          l.dispatchEvent(new Event("input", { bubbles: true }));
+        }
     }
     if (focus) line.focus({ preventScroll: true });
   }
@@ -515,6 +534,8 @@ export function startApp(o: AppOptions): App {
     claimed: (e) => claimed.has(e),
     open,
     focusReply: (id) => focusReply(id),
+    keepReplies,
+    putReply: (id) => putReply(id),
     hot,
     startDraft,
     moveDraft,
@@ -758,13 +779,11 @@ export function startApp(o: AppOptions): App {
     line.focus({ preventScroll: true });
   }
 
-  /** A draft with words holds the reviewer: true, after going back to its slide or view if that is gone. */
-  function held(): boolean {
-    const d = state.draft;
-    if (!d || ctx.draftEmpty()) return false;
-    if (!here.holds(d.anchor.view)) void here.navigate(d.anchor.view ?? {});
-    return true;
-  }
+  /**
+   * A draft with words is kept: a click on nothing in particular, or Tab moving the block cursor on, leaves it waiting
+   * where it is, even on another slide (choosing another block is what goes back to it).
+   */
+  const held = () => !!state.draft && !ctx.draftEmpty();
 
   /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
   /** After words that name people who chose to be reached by email, offers to open the reviewer's own mail to tell them. */
@@ -1059,7 +1078,18 @@ export function startApp(o: AppOptions): App {
   // Escape steps back one level at a time (stepBack). The menu (capture phase), Pipeup's own fields and the
   // block cursor stop Escape before it gets here.
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === "Escape") return stepBack();
+    if (e.key === "Escape") return e.isComposing ? undefined : stepBack();
+    // ⌘Z or Ctrl+Z while Undo is offered takes it, unless typing in a field that has its own undo.
+    if (undoing && e.code === "KeyZ" && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
+      const t = e.composedPath()[0];
+      if (
+        !typing(e) ||
+        (t instanceof HTMLTextAreaElement && t.getRootNode() === host.shadow && t.value === "")
+      ) {
+        e.preventDefault();
+        return undoing();
+      }
+    }
     // Shift+Option+C (Shift+Alt+C) (matched on the key's code: Option changes its character on a Mac), unless
     // the page's own shortcut (defaultPrevented) or an IME already took it: comment mode off → on with the
     // block cursor; the cursor put away by the mouse → back; otherwise off.
@@ -1146,11 +1176,40 @@ export function startApp(o: AppOptions): App {
     if (f && f !== document.documentElement && f !== document.body && !SOLID.test(f.localName)) found.add(f);
     return [...found];
   }
+  /**
+   * An element whose own styles would make it the box Pipeup's fixed layer is placed and clipped in (a transform, a
+   * filter or containment: a dialog centred with translate, or one still animating open). Pipeup waits outside it, and
+   * looks again as transitions and animations end.
+   */
+  const traps = (el: Element) => {
+    const s = getComputedStyle(el);
+    const has = (p: string, none = "none") => ![none, ""].includes(s.getPropertyValue(p));
+    return (
+      ["transform", "translate", "scale", "rotate", "perspective", "filter", "backdrop-filter"].some((p) =>
+        has(p),
+      ) ||
+      has("container-type", "normal") ||
+      /paint|layout|strict|content/.test(s.contain) ||
+      /transform|translate|scale|rotate|perspective|filter/.test(s.willChange)
+    );
+  };
+  /** A web component's dialog closing changes nothing the page's observer sees: the dialog itself is watched. */
+  const shut = new MutationObserver(() => rehome());
+  /** Pipeup's own element that last had focus; `outAt`: when focus last left Pipeup (Infinity: it hasn't). */
+  let lastIn: HTMLElement | null = null;
+  let outAt = 0;
   function rehome(): void {
     const open = opened();
     tops = [...tops.filter((t) => open.includes(t)), ...open.filter((t) => !tops.includes(t))];
-    const into = tops.at(-1) ?? document.documentElement;
-    if (host.element.parentNode !== into) into.append(host.element);
+    const top = tops.at(-1);
+    const into = top && !traps(top) ? top : document.documentElement;
+    shut.disconnect();
+    for (const t of tops) if (t.getRootNode() !== document) shut.observe(t, { attributeFilter: ["open"] });
+    if (host.element.parentNode === into) return;
+    // Taken out with the page's own content (a dialog that renders itself again): what had focus in Pipeup gets it back.
+    const lost = !host.element.isConnected;
+    into.append(host.element);
+    if (lost && lastIn?.isConnected && performance.now() - outAt < 100) lastIn.focus({ preventScroll: true });
   }
   /** A record that only moved Pipeup's own element (into a dialog or back) says nothing about the page. */
   const moved = (r: MutationRecord) =>
@@ -1187,6 +1246,10 @@ export function startApp(o: AppOptions): App {
     // Focus moving into a web component's dialog (one just opened, or focus coming back as one closes): Pipeup goes
     // where it can be used.
     if (e.type === "focusin") rehome();
+    if (ours(e.target)) {
+      if (e.type === "focusin") lastIn = e.composedPath()[0] as HTMLElement;
+      outAt = e.type === "focusin" ? Infinity : performance.now();
+    }
     if (
       e.type === "focusin"
         ? ours(e.target) && !ours(e.relatedTarget)
@@ -1255,6 +1318,8 @@ export function startApp(o: AppOptions): App {
   for (const t of ["keydown", "keyup", "keypress"])
     document.addEventListener(t, guardKeys as EventListener, true);
   document.addEventListener("fullscreenchange", rehome);
+  const settle = () => tops.length && rehome();
+  for (const t of ["transitionend", "animationend"]) window.addEventListener(t, settle, true);
   window.addEventListener("keydown", onKey);
   window.addEventListener("click", onClick);
   window.addEventListener("resize", onResize);
@@ -1271,10 +1336,10 @@ export function startApp(o: AppOptions): App {
     dark = next;
     window.clearTimeout(lookFade);
     // Every part switches together: the whole layer fades out, switches, and fades back in.
-    host.layer.classList.add("sw");
+    host.layer.classList.add("fading");
     lookFade = window.setTimeout(() => {
       applyTheme(host.layer, readTheme(o.root, look));
-      host.layer.classList.remove("sw");
+      host.layer.classList.remove("fading");
     }, 170);
   };
   // The page's colours may have changed: highlights look again at the words under them.
@@ -1346,6 +1411,8 @@ export function startApp(o: AppOptions): App {
       for (const t of ["keydown", "keyup", "keypress"])
         document.removeEventListener(t, guardKeys as EventListener, true);
       document.removeEventListener("fullscreenchange", rehome);
+      for (const t of ["transitionend", "animationend"]) window.removeEventListener(t, settle, true);
+      shut.disconnect();
       window.removeEventListener("resize", onResize);
       modeView?.destroy();
       for (const v of views) v.destroy();

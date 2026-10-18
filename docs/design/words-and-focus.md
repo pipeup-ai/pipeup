@@ -80,6 +80,25 @@ to the page after most actions on a comment.
   click chose (and its empty box). The quick row closes when focus leaves its card.
 - Screen readers hear "Reply sent" and "Comment added". The edit box is named "Edit comment".
 
+## From the regression pass on beta.5
+
+- An input method's Esc (`isComposing`) is left alone by the composer, the name field, the panel's Escape and
+  `stepBack`: it cancels the composition, never the words.
+- `undoing` (app) is the showing message's Undo; `onKey` takes ⌘Z or Ctrl+Z for it unless typing in a field (Pipeup's
+  own empty line counts as not typing). The button carries `aria-keyshortcuts`. A faded message's button is
+  `visibility: hidden` once its fade is over, so it is no longer a Tab stop.
+- `held()` no longer navigates: Tab on the cursor and a click on nothing (`dismiss`) leave a waiting box on its own
+  slide. `backToDraft` says which slide when the box isn't here, and `focusDraft(there)` runs `toDraft` only once the
+  deck is there, then restores the caret.
+- Replies in All comments: `ctx.keepReplies()`/`ctx.putReply(id)` around the panel's `toggle`, `closeRow` and
+  `setList`; `putReply` empties the thread's other copy of the line (the page's, behind the panel). The panel's
+  Escape leaves a box or line with words to its own Esc (drop, with Undo). `setList` puts the caret back in a draft
+  that moved into the panel instead of focusing the first row.
+- Copy thread refocuses its ⋯ when the menu closed and the choice took no focus; `copyText`'s fallback gives focus
+  back after selecting its hidden copy.
+- The layer's look fade is `.fading` (it was `.sw`, which the menu's switch rule also matched, so the fade-out
+  snapped and the layer took the switch's size).
+
 ## Size
 
 Pipeup is 53.8 KB gzip (+1.7 KB); the budget rises from 53 to 54 KB (`scripts/size.mjs` and the add-ons' `CORE`).
@@ -87,3 +106,5 @@ Pipeup is 53.8 KB gzip (+1.7 KB); the budget rises from 53 to 54 KB (`scripts/si
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-18 — From the regression pass on beta.5: IME Esc, Undo by keyboard, waiting boxes on decks, replies in All
+  comments, Copy thread's focus, the look fade.

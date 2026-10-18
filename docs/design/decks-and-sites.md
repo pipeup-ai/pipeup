@@ -92,8 +92,19 @@ When merged with the phones batch, its own "hint waits for the menu" (`hintLater
 `toast()` defers a hint into `hintLater` while the menu is open, `hideHint()` drops a waiting hint (except by touch),
 and the menu's bottom offset (`--b`) carries the deck's lift.
 
+## From the regression pass on beta.5
+
+- The lift above a deck's corner controls skips Pipeup's own element (inside the page's while a dialog or fullscreen
+  element is open) and anything whose top is above the middle of the window (a layer over the whole window).
+- `here.view(at)` on reveal.js gives content in an unmarked slide that slide (`.slides > section` by index, or its
+  marked slide), not the one showing, so the block cursor leaves a slide as it turns and a comment is filed there.
+- The panel's room also sets `width: auto` on `<html>`, so a page's `html { width: 100% }` gives it up.
+- A deck shown fullscreen can't make room: the browser's own `:fullscreen` rules win over any page rule.
+
 ## Change log
 
 - 2026-10-15 — First version.
 - 2026-10-15 — Merged with the looks and phones batches: one waiting hint, the menu's `--b` with the deck's lift, All
   comments' groups as list items holding their own lists, and rows that fold and grow; Pipeup 57.4 KB, budget 57.5 KB.
+- 2026-10-18 — From the regression pass on beta.5: the corner lift, reveal.js slides by content, room with a set
+  width.

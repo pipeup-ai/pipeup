@@ -303,7 +303,8 @@ export function composer(o: ComposerOptions): Composer {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       void submit();
-    } else if (e.key === "Escape") {
+    } else if (e.key === "Escape" && !e.isComposing) {
+      // Esc while an input method is composing cancels the composition, never the words.
       e.preventDefault();
       stop();
     }

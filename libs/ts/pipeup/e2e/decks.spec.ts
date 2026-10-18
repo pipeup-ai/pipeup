@@ -265,3 +265,38 @@ test("on a deck Pipeup can't turn, a waiting comment on another slide isn't draw
   await expect(page.locator(".pick.show")).toHaveCount(0);
   await expect(page.locator(".namebar.show")).toHaveCount(0);
 });
+
+test("on a deck Pipeup can turn, going back to a waiting box on another slide puts the caret in it", async ({
+  page,
+}) => {
+  await page.goto(new URL("../examples/review-deck.html", import.meta.url).href);
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await page.evaluate(() => {
+    (window as any).heard = [];
+    addEventListener("keydown", (e) => (window as any).heard.push(e.key));
+  });
+  await page.waitForTimeout(300);
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await page.waitForTimeout(300);
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  await page.keyboard.type("Slide one words");
+  // Cancel, Comment, then on: the box waits on slide 1.
+  for (let i = 0; i < 3; i++) {
+    await page.keyboard.press("Tab");
+    await page.waitForTimeout(150);
+  }
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(600);
+  await expect(page.locator("#count")).toHaveText("2 / 3");
+  await page.keyboard.press("Tab");
+  await page.waitForTimeout(300);
+  await page.evaluate(() => ((window as any).heard.length = 0));
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(2000);
+  await expect(page.locator("#count")).toHaveText("1 / 3");
+  await page.keyboard.type(" more");
+  expect(await page.evaluate(() => (window as any).heard)).toEqual([]);
+  await expect(draft(page).locator("textarea")).toHaveValue("Slide one words more");
+  await expect(page.locator("#count")).toHaveText("1 / 3");
+});

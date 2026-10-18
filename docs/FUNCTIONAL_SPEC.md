@@ -175,7 +175,11 @@ any of them off.
 - **Typed words are never lost unless the reviewer chooses it.** Clicking or tapping elsewhere, moving to
   another block, opening All comments, resizing the window and the slide changing all keep what is typed in a
   comment or reply box. Only **Cancel**, or **Esc** in the box itself, throws words away, and then a message
-  offers **Undo** for a few seconds, which brings the box back where it was with the words in it.
+  offers **Undo** for a few seconds, which brings the box back where it was with the words in it. **⌘Z** (Ctrl+Z)
+  takes the Undo too, from anywhere but a field with words in it, so it can be reached from the block cursor;
+  once the message has faded, its Undo is gone. Esc while an input method is still composing (Japanese, Chinese,
+  Korean) only cancels the composition. On a deck, Tab or a click on nothing in particular leaves a waiting box
+  where it is, on its own slide.
 - **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
   their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
@@ -357,8 +361,10 @@ any of them off.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
   elsewhere on the page, or by opening another thread. **A reply being written is kept** when its thread
   closes, however it closes, and is back in its reply box when the thread opens again, until it is sent,
-  cancelled or thrown away with Esc (§5). Esc in a reply box with words throws them away first (with Undo);
-  the next Esc closes the thread.
+  cancelled or thrown away with Esc (§5), in All comments too: when its card closes, when another card opens, and
+  when a thread open on the page moves into the panel. Esc in a reply box with words throws them away first (with
+  Undo), in All comments as anywhere; the next Esc closes the thread. Opening All comments while writing a comment
+  moves the box into the panel with the caret still in it. After Copy thread, focus stays on the comment's ⋯.
 - An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
   **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
   opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
@@ -601,9 +607,14 @@ any of them off.
   backdrop and can be used; what is in it can be commented on (a web component counts as one block, as everywhere);
   and it never takes Pipeup's focus, nor the keys pressed in Pipeup (Escape doesn't close it, Tab doesn't jump into
   it), nor closes because of what is done in Pipeup. While a browser's modal dialog or a fullscreen element is open,
-  Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open). A page's
+  Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open), and goes
+  back out when it closes, however it closes; a dialog that renders its own contents again leaves the caret where it
+  was in Pipeup. While a modal dialog or an inert overlay is open, the block cursor only visits what is in it. A page's
   popovers (menus and tooltips that float above everything) still draw over Pipeup, and pressing Pipeup closes them as
-  pressing anywhere else does; what is inside a frame can't be commented on.
+  pressing anywhere else does; what is inside a frame can't be commented on, nor what is inside a web component's
+  own dialog. A modal dialog that is moved, animated or drawn with a transform, a filter or containment (one centred
+  with `translate`, say) would hold Pipeup inside its own box: Pipeup waits outside it until it closes, so it can't be
+  used while that dialog is open. A page's own script clicking an element in comment mode is taken as a click there.
 - **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
   page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
@@ -1762,3 +1773,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
 - 2026-10-18 — From the regression pass on 0.8.0-beta.5: on a deck, the comment control stays in its corner in fullscreen, in a page's dialog and beside a layer over the window; a page that sets its own width still makes room for All comments; on reveal.js a comment is filed under its own slide; a waiting comment on a slide Pipeup can't turn to says which slide it is on (sections 5, 6).
+- 2026-10-18 — Also from the regression pass: ⌘Z (Ctrl+Z) takes the Undo after Esc or Cancel; Esc while an input method composes keeps the words; replies are kept in All comments, and its Esc throws them away with Undo; opening All comments keeps the caret in a comment being written; the block cursor stays inside an open modal dialog; Pipeup leaves a web component's dialog however it closes, keeps the caret through a dialog's re-render, and waits outside a dialog that is moved with a transform (sections 5, 7, 9).

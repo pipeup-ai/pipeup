@@ -6,6 +6,8 @@ export async function copyText(text: string, container: HTMLElement): Promise<vo
   } catch {
     // Older browsers or blocked permission: fall back below.
   }
+  // Selecting the hidden copy moves focus; it goes back where it was.
+  const was = (container.getRootNode() as ShadowRoot).activeElement ?? document.activeElement;
   const area = document.createElement("textarea");
   area.value = text;
   area.setAttribute("readonly", "");
@@ -14,5 +16,6 @@ export async function copyText(text: string, container: HTMLElement): Promise<vo
   area.select();
   const ok = document.execCommand("copy");
   area.remove();
+  if (was instanceof HTMLElement) was.focus({ preventScroll: true });
   if (!ok) throw new Error("pipeup: your browser blocked copying");
 }
