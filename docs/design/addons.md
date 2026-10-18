@@ -301,6 +301,10 @@ export interface AddonHost {
   /** A quiet line under the All comments header, with an optional text button; null removes it. Capability `listnote`. */
   setListNote(note: { text: string; action?: { label: string; run(): Promise<void> } } | null): void;
   overlay(): HTMLElement;
+  /** A small dialog over the page, labelled `label`; Escape closes it. Capability `dialog`. */
+  openDialog(content: Node, label: string): { close(): void };
+  /** The reviewer's identity: whether it is portable, its seed, using another key, sharing a way to be reached. Capability `identity`. */
+  identity: IdentityAccess;
   onFrame(fn: () => void): Off;
   where(at?: Node): ViewState | undefined;   // what a comment on `at` would save (Here.view)
   isHere(view?: ViewState): boolean;         // the rule threads follow (Here.holds)
@@ -345,7 +349,9 @@ export interface ItemHandle { update(): void; remove(): void }
 ### 3.2 Notices, announcements and the composer note (stage 1)
 
 **"Comments are closed"** means Pipeup shows only its control: no menu, panel, column, thread or
-comment mode. Spec §1 promises the page looks unchanged then; §11a extends that to add-ons.
+comment mode. Since 2026-10-14 comments show at rest, so they are closed only while the reviewer has chosen
+Hide comments and nothing is showing them for a while ([comments-at-rest.md](comments-at-rest.md)); the
+core's `hidden` state, which `onUi().shown` mirrors, is unchanged. Spec §1 promises the page looks unchanged then; §11a extends that to add-ons.
 
 - **`notify(text)`** uses the single toast.
   - While comments are open, it shows at once. It never replaces the "This browser can't keep
@@ -1777,3 +1783,4 @@ gets into the core").
 - 2026-10-09: `host.setThreadNote(thread, text | null)` shows an add-on's reply as it is being written at the end of a thread (not a comment until the add-on merges the signed op). The name "AI assistant" (and "AI assistant …") is kept for AI replies: a person can't choose it, and a reply under it is drawn with a gently glowing AI ring. `signOp`, `computeOpId`, `AI_NAME` and `isAiName` are exported so an add-on can author replies under its own key. Cost: +0.4 KB gzip. For the Assist add-on ([assist.md](assist.md)).
 - 2026-10-12: styling hooks `data-pipeup-ai` and `data-pipeup-writing` (row, words); the AI avatar's pulse and the writing dots moved from core to the assist add-on's own styles.
 - 2026-10-12: `setListNote` and the `listnote` capability (additive, `ADDON_API` stays 1): a line under the All comments header with an optional button, eased in and out, removed with the add-on. First user: the agents add-on ([agents-addon.md](agents-addon.md)).
+- 2026-10-13: `openDialog` (capability `dialog`) and `identity` (capability `identity`), additive, `ADDON_API` stays 1. `identity.use(key)` takes only an extractable Ed25519 private key; any add-on given the capability can read a portable identity's seed, as any script on the page could. First user: the identity add-on ([size-pass.md](size-pass.md)).

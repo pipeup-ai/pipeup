@@ -1,15 +1,20 @@
 import { expect, test, type Page } from "@playwright/test";
-import { fixture, open, openMenu, seedView, selectWords, showComments, stubClipboard } from "./helpers";
+import {
+  copyAs,
+  fixture,
+  open,
+  openAll,
+  openMenu,
+  seedView,
+  selectWords,
+  showComments,
+  stubClipboard,
+} from "./helpers";
 
 const list = (page: Page) => page.locator(".all.show");
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(list(page)).toBeVisible();
-}
 const choose = (page: Page, words: string) =>
   list(page)
-    .getByRole("menuitem", { name: new RegExp(words) })
+    .getByRole("button", { name: new RegExp(words) })
     .click();
 /** The thread opens out in the panel; nothing opens on the page. */
 const openedInPlace = (page: Page) => page.locator(".all .xr");
@@ -31,10 +36,10 @@ test("All comments groups a deck's threads by slide, in deck order, this slide m
     "Slide 2 · 1 openThis slide",
     "Slide 3 · 2 open",
   ]);
-  await expect(list(page).getByRole("group", { name: "Slide 2 · 1 open · This slide" })).toContainText(
+  await expect(list(page).getByRole("list", { name: "Slide 2 · 1 open · This slide" })).toContainText(
     "Bar on two",
   );
-  await expect(list(page).locator(".hd .pn")).toHaveText("4");
+  await expect(list(page).locator(".cd")).toHaveCount(4);
 });
 
 test("choosing a thread on another slide goes there with the page's onReveal, then opens it in the panel", async ({
@@ -118,12 +123,12 @@ test("on a tabbed page, other views are grouped by name and choosing one reveals
   await expect(list(page).locator(".sec")).toHaveText(["Plans tab"]);
 });
 
-test("Copy as Markdown names a non-slide view in the Where line", async ({ page }) => {
+test("Copy comments as Markdown names a non-slide view in the Where line", async ({ page }) => {
   await stubClipboard(page);
   await open(page, "tabs.html");
   await seedView(page, "#refunds", "Say it up top", { tab: "faq", label: "FAQ tab" });
   await openMenu(page);
-  await page.getByRole("menuitem", { name: "Copy as Markdown" }).click();
+  await copyAs(page, "As Markdown");
   await expect
     .poll(() => page.evaluate(() => (window as any).__copied.at(-1) as string))
     .toContain('- **Where:** FAQ tab › Section "FAQ" › Paragraph · Refunds within 30 days.');

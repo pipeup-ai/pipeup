@@ -112,11 +112,37 @@ export function pickSlide(slides: readonly Element[], look: SlideLook, was: Elem
 }
 
 /**
- * On a deck, a thread is here when it is on this slide (or on none); on other pages, when every key of its
- * saved view but `label` matches the page's state (always, until the page reports one).
+ * The marked slides showing above or below `best` on a deck that scrolls: shown, partly in the window, and clear of it
+ * (a deck that stacks its slides in one place never has any).
  */
-export function isHere(saved: ViewState | undefined, slide: string | null, state: ViewState | null): boolean {
-  if (slide !== null) return saved?.slide === undefined || saved.slide === slide;
+export function besides(slides: readonly Element[], look: SlideLook, best: Element | null): Element[] {
+  const b = best && look.box(best);
+  const h = look.viewport().height;
+  return slides.filter((el) => {
+    const r = look.box(el);
+    return (
+      !!b &&
+      look.shown(el) &&
+      r.top < h &&
+      r.top + r.height > 0 &&
+      (r.top >= b.top + b.height || r.top + r.height <= b.top)
+    );
+  });
+}
+
+/**
+ * On a deck, a thread is here when it is on this slide, on another one showing (`also`, on a deck that scrolls), or
+ * on none; on other pages, when every key of its saved view but `label` matches the page's state (always, until the
+ * page reports one).
+ */
+export function isHere(
+  saved: ViewState | undefined,
+  slide: string | null,
+  state: ViewState | null,
+  also: readonly string[] = [],
+): boolean {
+  if (slide !== null)
+    return saved?.slide === undefined || saved.slide === slide || also.includes(saved.slide);
   if (!saved || !state) return true;
   return Object.entries(saved).every(([k, v]) => k === "label" || k === "slide" || state[k] === v);
 }
@@ -147,6 +173,8 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let shown: Element | null = null;
   let slide: string | null = null;
+  /** Other slides showing beside the current one, on a deck that scrolls. */
+  let also: string[] = [];
   let raf = 0;
   let destroyed = false;
   const marked = () => [...root.querySelectorAll(SLIDE)];
@@ -155,8 +183,14 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
   const fit = (s: unknown): string | null =>
     typeof s === "string" && s.length > 0 && s.length <= LIMITS.viewValue ? s : null;
   const numberOf = (el: Element | null | undefined) => fit(el?.getAttribute("data-pipeup-slide"));
+  /** reveal.js's slide `h` (0-based): its marked slide, else its place. */
+  const revealNumber = (h: number) => {
+    const sec = sections()[h];
+    return numberOf(sec?.matches(SLIDE) ? sec : sec?.querySelector(SLIDE)) ?? fit(String(h + 1));
+  };
 
   function find(): string | null {
+    also = [];
     // The page's own functions may fail; then Pipeup falls back to what it can see.
     if (hook) {
       let s: string | null = null;
@@ -170,14 +204,17 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     if (r) {
       let s: string | null = null;
       safely(() => {
-        const h = r.getIndices().h;
-        const sec = sections()[h];
-        s = numberOf(sec?.matches(SLIDE) ? sec : sec?.querySelector(SLIDE)) ?? fit(String(h + 1));
+        s = revealNumber(r.getIndices().h);
       });
       if (s !== null) return s;
     }
     if (shown && !shown.isConnected) shown = null;
-    shown = pickSlide(marked(), look, shown) ?? shown;
+    const all = marked();
+    shown = pickSlide(all, look, shown) ?? shown;
+    for (const el of besides(all, look, shown)) {
+      const n = numberOf(el);
+      if (n) also.push(n);
+    }
     return numberOf(shown);
   }
 
@@ -190,7 +227,7 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     if (!raf && !destroyed) raf = requestAnimationFrame(check);
   };
 
-  const holds = (saved: ViewState | undefined) => isHere(saved, slide, page);
+  const holds = (saved: ViewState | undefined) => isHere(saved, slide, page, also);
 
   function navigate(view: ViewState): Promise<boolean> {
     if (holds(view)) return Promise.resolve(true);
@@ -238,7 +275,9 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     slide: () => slide,
     view(at) {
       const el = at instanceof Element ? at : at?.parentElement;
-      const s = numberOf(el?.closest(SLIDE)) ?? slide;
+      // On reveal.js, content in an unmarked slide is on that slide, not the one showing.
+      const h = el && revealJs() ? sections().findIndex((sec) => sec.contains(el)) : -1;
+      const s = numberOf(el?.closest(SLIDE)) ?? (h >= 0 ? revealNumber(h) : slide);
       const v: ViewState = { ...(s !== null ? { slide: s } : {}), ...page };
       return Object.keys(v).length ? v : undefined;
     },

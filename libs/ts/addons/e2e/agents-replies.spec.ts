@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { expect, test, type Page } from "@playwright/test";
-import { openMenu, showComments, stubClipboard } from "./helpers";
+import { closePanel, openMenu, showComments, stubClipboard } from "./helpers";
 
 const run = promisify(execFile);
 const dist = new URL("../../pipeup/dist/pipeup.min.js", import.meta.url).href;
@@ -85,16 +85,16 @@ test("an agent reads the comments, answers in the replies file, and the person c
   await expect
     .poll(async () => (await page.evaluate(() => (window as any).Pipeup.comments())).threads[0].state)
     .toBe("addressed");
-  await page.locator(".bub").first().dispatchEvent("click");
-  await expect(page.locator(".pop .rps .it .tx")).toHaveText("Changed it to 15 to 20%.");
-  await expect(page.locator(".pop .rps .it .who")).toContainText("Claude · ");
-  await expect(page.locator(".pop .adr")).toContainText("addressed in revision 2");
-  const state = await page.evaluate(() => (window as any).Pipeup.comments());
-  expect(state.threads[0].state).toBe("addressed");
-
   await openMenu(page);
   await expect(page.locator(".menu .sec").getByText("Claude can answer comments here")).toBeVisible();
   await page.keyboard.press("Escape");
+  await closePanel(page);
+  await page.locator(".bub").first().dispatchEvent("click");
+  await expect(page.locator(".pop .rps .it .tx")).toHaveText("Changed it to 15 to 20%.");
+  await expect(page.locator(".pop .rps .it .who")).toHaveText("Claude");
+  await expect(page.locator(".pop .adr")).toContainText("addressed in revision 2");
+  const state = await page.evaluate(() => (window as any).Pipeup.comments());
+  expect(state.threads[0].state).toBe("addressed");
 
   // Addressed still means open: the person resolves it, nobody else.
   await page.locator(".pop .adr").getByRole("button", { name: "Resolve" }).click();
@@ -149,7 +149,7 @@ test("a reply written while the page is open appears by itself", async ({ page }
   await page.locator(".bub").first().dispatchEvent("click");
   await pipeup("reply", "--page", file, "--thread", id, "Done, no refresh needed.");
   await expect(page.locator(".pop .rps .it .tx")).toHaveText("Done, no refresh needed.", { timeout: 12000 });
-  await expect(page.locator(".pop .rps .it .who")).toContainText("Claude · ");
+  await expect(page.locator(".pop .rps .it .who")).toHaveText("Claude");
 });
 
 test("a reply for a comment this page doesn't have is reported, not silent", async ({ page }) => {

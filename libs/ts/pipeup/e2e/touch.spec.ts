@@ -1,5 +1,5 @@
 import { devices, expect, test } from "@playwright/test";
-import { fixture, seedText } from "./helpers";
+import { fixture, seedElement, seedText, settled } from "./helpers";
 
 /** Taps the highlighted words of the first text comment, as a reader's finger would. */
 const tapHighlight = async (page: import("@playwright/test").Page) => {
@@ -77,8 +77,17 @@ test("on a phone, All comments takes the whole width and its threads open in pla
   await page.getByRole("menuitem", { name: /All comments/ }).tap();
   const panel = (await page.locator(".all.show").boundingBox())!;
   expect(panel.width).toBeGreaterThanOrEqual(page.viewportSize()!.width - 2);
+  // The two filters fit on one line across the phone.
+  const hd = page.locator(".all.show .hd");
+  expect(await hd.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+  expect((await hd.boundingBox())!.height).toBeLessThan(56);
+  // With no hover, a closed card shows no actions (nothing to press by accident); opened, it has them.
+  await expect(page.locator(".all.show .cd .acts")).toBeHidden();
   await page.locator(".all.show .mi").first().tap();
   await expect(page.locator(".all.show")).toContainText("Is this the plan?");
+  await expect(
+    page.locator(".all.show .cd.open").getByRole("button", { name: "Resolve", exact: true }),
+  ).toBeVisible();
 });
 
 test("on a phone, a thread's buttons and the reaction row are finger-sized", async ({ page }) => {
@@ -96,4 +105,20 @@ test("on a phone, a thread's buttons and the reaction row are finger-sized", asy
   );
   expect(sizes.length).toBeGreaterThan(5);
   for (const s of sizes) expect(s).toBeGreaterThanOrEqual(36);
+});
+
+test("on a phone, a comment opened from its bubble sits below or above what it's about, never over it", async ({
+  page,
+}) => {
+  await start(page);
+  await seedElement(page, "#p2", "Is this the plan?");
+  await page.locator(".bub").first().tap();
+  const pop = page.locator(".pop.show");
+  await expect(pop).toContainText("Is this the plan?");
+  await settled(pop);
+  const p = (await pop.boundingBox())!;
+  const el = (await page.locator("#p2").boundingBox())!;
+  expect(p.y >= el.y + el.height || p.y + p.height <= el.y).toBe(true);
+  expect(p.x).toBeGreaterThanOrEqual(0);
+  expect(p.x + p.width).toBeLessThanOrEqual(page.viewportSize()!.width);
 });

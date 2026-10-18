@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { open, openMenu, seedText, showComments } from "./helpers";
+import { control, open, openAll, seedText, settled, showComments } from "./helpers";
 
 /** Someone else replies, naming this reviewer: a second identity signs a reply op, merged as if it came from elsewhere. */
 const sayAs = (page: Page, name: string, words: string, mention: "me" | "none" = "me") =>
@@ -88,9 +88,8 @@ test("someone mentioning you is said once, filters All comments, and opening the
   await sayAs(page, "Sam", "Over to you @Me", "me");
   // Said once, in words.
   await expect(page.locator(".toast.show")).toHaveText("Sam mentioned you in 1 comment");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  const filter = page.getByRole("switch", { name: "Mentions of me" });
+  await openAll(page);
+  const filter = page.getByRole("button", { name: "For you" });
   await expect(filter).toBeVisible();
   // A second thread that names nobody is hidden by the filter.
   await page.evaluate(() => {
@@ -102,7 +101,7 @@ test("someone mentioning you is said once, filters All comments, and opening the
   });
   await expect(page.locator(".all.show .mi")).toHaveCount(2);
   await filter.click();
-  await expect(filter).toHaveAttribute("aria-checked", "true");
+  await expect(filter).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator(".all.show .mi")).toHaveCount(1);
   await expect(page.locator(".all.show .mi")).toContainText("Is this the plan?");
   // Opening it marks the mention seen on this device, as a signed op other devices learn from.
@@ -118,7 +117,8 @@ test("someone mentioning you is said once, filters All comments, and opening the
     .toBe(true);
   // Mentions that were seen aren't said again.
   await page.evaluate(() => (window as any).pu.document.resolve((window as any).pu.document.threads()[0].id));
-  await expect(page.locator(".toast.show")).toHaveCount(0);
+  await page.waitForTimeout(300);
+  await expect(page.locator(".toast.show", { hasText: "mentioned" })).toHaveCount(0);
 });
 
 test("a person who shared an email can be told: the offer opens the reviewer's own mail, with the words and the page", async ({
@@ -169,20 +169,61 @@ test("a person who shared an email can be told: the offer opens the reviewer's o
   expect(body).toContain("Q3 plan");
 });
 
-test("sharing your own email is a choice in My identity, and can be taken back", async ({ page }) => {
-  await open(page, "doc.html");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /My identity/ }).click();
-  const dialog = page.getByRole("dialog", { name: "Your identity" });
-  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("not an address");
-  await dialog.getByRole("button", { name: "Share", exact: true }).click();
-  await expect(dialog).toContainText("isn't an email address or a GitHub name");
-  await dialog.getByRole("textbox", { name: "Email or GitHub name" }).fill("ada@example.test");
-  await dialog.getByRole("button", { name: "Share", exact: true }).click();
-  await expect(dialog).toContainText("Shared with everyone");
-  expect(await page.evaluate(() => [...(window as any).pu.document.contacts().values()])).toEqual([
-    "ada@example.test",
-  ]);
-  await dialog.getByRole("button", { name: "Stop sharing" }).click();
-  expect(await page.evaluate(() => (window as any).pu.document.contacts().size)).toBe(0);
+test("a mention of you reads inline in its sentence, only bolder", async ({ page }) => {
+  await start(page);
+  await showComments(page);
+  await sayAs(page, "Sam", "Thanks, over to you @Me", "me");
+  await page.locator(".th .tx").first().click();
+  const mention = page.locator(".th .mn.me").first();
+  await expect(mention).toBeVisible();
+  const shape = await mention.evaluate((el) => {
+    const words = el.previousSibling!;
+    const r = document.createRange();
+    r.selectNodeContents(words);
+    return {
+      display: getComputedStyle(el).display,
+      lines: el.getClientRects().length,
+      sameLine: Math.abs(el.getBoundingClientRect().top - r.getBoundingClientRect().top) < 4,
+    };
+  });
+  expect(shape).toEqual({ display: "inline", lines: 1, sameLine: true });
+});
+
+test("messages sit beside the comment control, and inside All comments, above its footer, while it is open", async ({
+  page,
+}) => {
+  await start(page);
+  await showComments(page);
+  await sayAs(page, "Sam", "Over to you @Me", "me");
+  const toast = page.locator(".toast.show");
+  await expect(toast).toBeVisible();
+  await settled(toast);
+  const t = (await toast.boundingBox())!;
+  const b = (await control(page).boundingBox())!;
+  // Level with the control and to its left: nowhere near the middle of the page's bottom edge.
+  expect(t.x + t.width).toBeLessThanOrEqual(b.x);
+  expect(t.x).toBeGreaterThan(page.viewportSize()!.width / 2);
+  expect(Math.abs(t.y + t.height / 2 - (b.y + b.height / 2))).toBeLessThan(8);
+  await openAll(page);
+  await page.locator(".all.show .mi").first().click();
+  await page.locator(".all.show").getByRole("button", { name: "Resolve", exact: true }).first().click();
+  await expect(toast).toContainText("Resolved");
+  await settled(toast);
+  // Inside the panel, never over the page beside it (where a deck keeps its own controls).
+  const panel = (await page.locator(".all.show").boundingBox())!;
+  const foot = (await page.locator(".all.show .pf").boundingBox())!;
+  const u = (await toast.boundingBox())!;
+  expect(u.x).toBeGreaterThanOrEqual(panel.x);
+  expect(u.x + u.width).toBeLessThanOrEqual(panel.x + panel.width);
+  expect(u.y + u.height).toBeLessThanOrEqual(foot.y);
+  expect(
+    await toast.evaluate((el) => {
+      // Hit-tested as if it took the pointer (it doesn't), so what is drawn on top answers.
+      (el as HTMLElement).style.pointerEvents = "auto";
+      const r = el.getBoundingClientRect();
+      return el.contains(
+        (el.getRootNode() as ShadowRoot).elementFromPoint(r.x + r.width / 2, r.y + r.height / 2),
+      );
+    }),
+  ).toBe(true);
 });

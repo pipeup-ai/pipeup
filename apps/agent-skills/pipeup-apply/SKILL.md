@@ -5,7 +5,7 @@ description: Use when someone asks you to act on Pipeup feedback for an HTML pag
 
 # Apply Pipeup feedback
 
-Written for Pipeup 0.7.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 0.8.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 ## 1. Read the comments
 
@@ -19,7 +19,7 @@ Use the first of these that works:
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
    comment with `by`, `agent` and `text`). Pass `{ all: true }` to include resolved threads.
-2. **The pasted Markdown**: the author clicks **Copy as Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
+2. **The pasted Markdown**: the author clicks **Copy comments › As Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
 
 Each thread has a `- **Thread:** <id>` line: you need it to answer the thread.
 

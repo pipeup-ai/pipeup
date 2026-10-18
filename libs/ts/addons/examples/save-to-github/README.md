@@ -6,7 +6,7 @@ reviewer signs in to GitHub as themselves and presses GitHub's commit button (or
 repository). There is no service to run, and nothing holds a token: GitHub's own page and the reviewer's own sign-in do the
 saving. It never posts, edits or resolves a comment.
 
-The file is the Markdown that **Copy as Markdown** makes: each open thread says where it is on the page and what was said, ready for an AI to
+The file is the Markdown that **Copy comments › As Markdown** makes: each open thread says where it is on the page and what was said, ready for an AI to
 act on. Its path is chosen from the page's name and the time (`reviews/<page>/<time>-<reviewer>.md`); the reviewer can rename it in GitHub.
 
 ## Use it
@@ -38,7 +38,7 @@ node examples/send-to-git/demo.mjs   # serves libs/ts on http://localhost:8789; 
 # http://localhost:8789/addons/examples/save-to-github/page/index.html   (change your-org/reviews to a repository you can write to)
 ```
 
-**Lowest friction:** copy the prompt on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons.html#save-to-github) (the Save to
+**Lowest friction:** copy the prompt on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons/save-to-github.html) (the Save to
 GitHub card) and give it to your AI agent. It follows the `pipeup-send-to-git-setup` skill, which needs only your repository's name.
 
 ## Handing it out and keeping it intentional

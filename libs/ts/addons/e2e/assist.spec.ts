@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { addon, blank, CORE, load, mount, openMenu } from "./helpers";
+import { addon, blank, closePanel, CORE, hideComments, load, mount, openMenu } from "./helpers";
 
 /** A scripted stand-in for a model: it decides by the comment's words and writes one short reply, piece by piece. */
 const FAKE = () => {
@@ -58,6 +58,7 @@ async function turnOn(page: Page) {
   await expect(panel).toContainText("Test model");
   await panel.getByRole("button", { name: "Turn on" }).click();
   await expect(page.locator(".xp")).toHaveCount(0);
+  await closePanel(page);
 }
 
 test("turned on, it replies to a comment that deserves one, in its own name, and stays quiet on the rest", async ({
@@ -119,7 +120,8 @@ test("its reply is drawn with the AI ring, and streams in while it is written", 
   expect(await ring.evaluate((el) => getComputedStyle(el, "::after").animationName)).toBe("assist-ring");
   const words = pop.locator("[data-pipeup-writing=words]");
   expect(await words.evaluate((el) => getComputedStyle(el, "::after").animationName)).toBe("assist-dots");
-  await expect(pop.locator(".ghost")).toContainText("AI assistant · writing now");
+  await expect(pop.locator(".ghost .who")).toHaveText("AI assistant");
+  await expect(pop.locator(".ghost .ago")).toHaveText("writing now");
   // Finished: a real reply with the ring, no longer a preview.
   await expect(pop.locator(".ghost")).toHaveCount(0, { timeout: 15000 });
   await expect(pop.locator(".it .av.ai")).toHaveText("AI");
@@ -157,7 +159,9 @@ test("with no model on this device, the row says it is not available", async ({ 
   await expect(page.locator(".menu.show")).toContainText("Not available");
 });
 
-test("the AI ring sits at the reply's top right, like any avatar, not over its words", async ({ page }) => {
+test("the AI ring sits at the start of the reply's top line, like any avatar, not over its words", async ({
+  page,
+}) => {
   await start(page);
   await comment(page, "[data-pipeup-id=p1]", "Is the 20% lift right?");
   await turnOn(page);
@@ -165,12 +169,19 @@ test("the AI ring sits at the reply's top right, like any avatar, not over its w
   await expect(ring).toHaveCount(1, { timeout: 15000 });
   const box = (await ring.boundingBox())!;
   const reply = (await page.locator(".layer .it").boundingBox())!;
-  // Right edge of the reply's box, where every avatar sits.
-  expect(box.x + box.width).toBeGreaterThan(reply.x + reply.width - 12);
+  const words = (await page.locator(".layer .it > .tx").boundingBox())!;
+  // The left of the reply's top line, where every avatar sits, above its words.
+  expect(box.x - reply.x).toBeLessThan(2);
+  expect(box.y + box.height).toBeLessThanOrEqual(words.y + 1);
 });
 
-test("the Assistant replies row is in the menu only while commenting is on", async ({ page }) => {
+test("the Assistant replies row is in the menu only while comments show", async ({ page }) => {
   await start(page);
+  // Comments show at rest, and so does the row; hidden, it goes.
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).toContainText("Assistant replies");
+  await page.keyboard.press("Escape");
+  await hideComments(page);
   await openMenu(page);
   await expect(page.locator(".menu.show")).not.toContainText("Assistant replies");
   await page.keyboard.press("Escape");
@@ -179,6 +190,7 @@ test("the Assistant replies row is in the menu only while commenting is on", asy
   await openMenu(page);
   await expect(page.locator(".menu.show")).toContainText("Assistant replies");
   await page.keyboard.press("Escape");
+  await closePanel(page);
   await page.keyboard.press("Shift+Alt+KeyC");
   await expect(page.locator(".launch .mode.on")).toHaveCount(0);
   await openMenu(page);

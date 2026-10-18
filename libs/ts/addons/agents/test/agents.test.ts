@@ -33,6 +33,19 @@ describe("the prompt for an agent", () => {
   it("points an agent at the link's commands when a link is running", () => {
     expect(agentPrompt({ ...meta, file: "/a/brief.html" })).toContain("npx pipeup comments /a/brief.html");
   });
+
+  it("names the page's Pipeup in every command, and a pre-release's own guide", () => {
+    const p = agentPrompt({ ...meta, file: "/a/brief.html", listed: false, version: "0.8.0-beta.4" });
+    expect(p).toContain("npx pipeup@0.8.0-beta.4 comments /a/brief.html");
+    expect(p).toContain("npx pipeup@0.8.0-beta.4 reply --page");
+    expect(p).toContain("npx pipeup@0.8.0-beta.4 agent --name");
+    expect(p).not.toMatch(/npx pipeup /);
+    expect(p).toContain("https://pipeup-ai.github.io/pipeup/next/skills/pipeup-apply/SKILL.md");
+    // A stable release keeps the stable guide.
+    expect(agentPrompt({ ...meta, version: "0.8.0" })).toContain(
+      "https://pipeup-ai.github.io/pipeup/skills/",
+    );
+  });
 });
 
 describe("a page's list of agents and its replies file", () => {

@@ -2,6 +2,7 @@
 import { isAnchor } from "../../src/model/ops";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  besides,
   createHere,
   isHere,
   onReveal,
@@ -81,12 +82,35 @@ describe("pickSlide", () => {
   });
 });
 
+describe("besides", () => {
+  it("on a deck that scrolls, other slides partly in the window show too", () => {
+    const s = deck(`
+      <section data-pipeup-slide="1" data-box="0,-300,1000,800"></section>
+      <section data-pipeup-slide="2" data-box="0,500,1000,800"></section>
+      <section data-pipeup-slide="3" data-box="0,1300,1000,800"></section>`);
+    expect(besides(s, look, s[0]!).map(id)).toEqual(["2"]);
+    s[1]!.setAttribute("data-hidden", "");
+    expect(besides(s, look, s[0]!)).toEqual([]);
+  });
+
+  it("a deck that stacks its slides in one place has none, even mid cross-fade", () => {
+    const s = deck(`
+      <section data-pipeup-slide="1" data-opacity="0.4" data-box="100,100,800,450"></section>
+      <section data-pipeup-slide="2" data-opacity="0.6" data-box="100,100,800,450"></section>`);
+    expect(besides(s, look, s[1]!)).toEqual([]);
+    expect(besides(s, look, null)).toEqual([]);
+  });
+});
+
 describe("isHere", () => {
   it("on a deck, only the slide counts; threads with no slide are here", () => {
     expect(isHere({ slide: "2" }, "2", null)).toBe(true);
     expect(isHere({ slide: "3" }, "2", { tab: "a" })).toBe(false);
     expect(isHere(undefined, "2", null)).toBe(true);
     expect(isHere({ tab: "b" }, "2", { tab: "a" })).toBe(true);
+    // Another slide showing on a deck that scrolls.
+    expect(isHere({ slide: "3" }, "2", null, ["3"])).toBe(true);
+    expect(isHere({ slide: "4" }, "2", null, ["3"])).toBe(false);
   });
 
   it("elsewhere, every saved key but label must match the page's state", () => {
@@ -178,6 +202,19 @@ describe("createHere", () => {
     window.dispatchEvent(new Event("slidechanged"));
     await frames();
     expect(here.slide()).toBe("3");
+  });
+
+  it("on reveal.js, content in an unmarked slide is on that slide, whichever shows", () => {
+    deck(`<div class="reveal"><div class="slides">
+      <section><p id="a">One</p></section><section><p id="b">Two</p></section>
+    </div></div><p id="c">Notes</p>`);
+    (window as { Reveal?: unknown }).Reveal = { getIndices: () => ({ h: 1, v: 0 }), slide: () => {} };
+    here = createHere(document.body, () => {}, look);
+    expect(here.view(document.getElementById("a")!)).toEqual({ slide: "1" });
+    expect(here.holds(here.view(document.getElementById("a")!))).toBe(false);
+    expect(here.view(document.getElementById("b")!.firstChild!)).toEqual({ slide: "2" });
+    // Outside the slides: the one showing.
+    expect(here.view(document.getElementById("c")!)).toEqual({ slide: "2" });
   });
 
   it("asks the page to reveal a view it reported, and resolves once the page says it is there", async () => {

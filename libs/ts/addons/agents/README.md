@@ -5,7 +5,7 @@ next to the page, is the page's side of the **live link** that `pipeup watch` st
 my agent**. Pages that don't have an agent don't need it. Spec: [FUNCTIONAL_SPEC §15d](../../../../docs/FUNCTIONAL_SPEC.md);
 design: [docs/design/agents-addon.md](../../../../docs/design/agents-addon.md).
 
-What stays in Pipeup itself: the page's comments for an agent (`Pipeup.comments()`), Copy as Markdown, the
+What stays in Pipeup itself: the page's comments for an agent (`Pipeup.comments()`), Copy comments › As Markdown, the
 **addressed** note with Resolve and Still not right, and the AI marking on a reply.
 
 ## Add it

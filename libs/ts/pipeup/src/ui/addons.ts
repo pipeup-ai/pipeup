@@ -1,3 +1,4 @@
+import type { Identity } from "../crypto/identity";
 import type { Listener, PipeupDocument } from "../document";
 import { animalName } from "../model/animals";
 import type { SignedOp, Thread } from "../model/types";
@@ -28,7 +29,9 @@ export type Capability =
   | "here"
   | "sign"
   | "listnote"
-  | "reactions";
+  | "reactions"
+  | "identity"
+  | "dialog";
 
 const CAPABILITIES: readonly Capability[] = [
   "sync",
@@ -44,6 +47,8 @@ const CAPABILITIES: readonly Capability[] = [
   "sign",
   "listnote",
   "reactions",
+  "identity",
+  "dialog",
 ];
 
 export interface NetworkUse {
@@ -149,6 +154,24 @@ import type { ReactionPicker } from "./reactions";
 export type { ReactionPicker } from "./reactions";
 export type { ComposerHandle, ComposerTool, Dictation } from "./composer";
 
+export interface DialogHandle {
+  close(): void;
+}
+
+/** This reviewer's identity, for an add-on that backs it up or replaces it (the add-on is trusted with it, as with any script on the page). */
+export interface IdentityAccess {
+  /** The identity was made portable: its key can be backed up. An ordinary one can't leave the browser. */
+  readonly portable: boolean;
+  /** The 32-byte seed of a portable identity; null for an ordinary one. */
+  seed(): Promise<Uint8Array | null>;
+  /** Keeps `key`, an extractable Ed25519 private key, as this browser's identity from the next load on. */
+  use(key: CryptoKey): Promise<void>;
+  /** Shares how to reach this reviewer (an email address or `gh:name`) with everyone who has the comments; false if it isn't one. */
+  share(contact: string): Promise<boolean>;
+  /** Stops sharing it. */
+  unshare(): Promise<void>;
+}
+
 export interface AddonHost {
   readonly api: number;
   /** The core's version, for diagnostics only. */
@@ -196,6 +219,9 @@ export interface AddonHost {
   onUi(fn: (ui: UiSnapshot) => void): Off;
   avatar(key: string, name: string): HTMLElement;
   sign(name: string, data: string): Promise<string>;
+  readonly identity: IdentityAccess;
+  /** A small dialog over the page, labelled `label`; Escape closes it, and it goes with the add-on. */
+  openDialog(content: Node, label: string): DialogHandle;
 }
 
 const ID = /^[a-z][a-z0-9-]{1,23}$/;
@@ -533,6 +559,32 @@ export class Surface {
     return { close: end };
   }
 
+  dialog(id: string, content: Node, label: string): DialogHandle {
+    this.ctx.layer.querySelector(".dlg")?.remove();
+    const box = h("div", { class: "dlg", role: "dialog", "aria-label": label }, content);
+    let off: Off = () => {};
+    const close = () => {
+      box.classList.remove("show");
+      box.inert = true;
+      window.setTimeout(off, 260);
+    };
+    box.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+      }
+    });
+    this.ctx.layer.append(box);
+    void box.offsetWidth;
+    box.classList.add("show");
+    (box.querySelector("textarea, button.primary, button") as HTMLElement | null)?.focus({
+      preventScroll: true,
+    });
+    off = this.own(id, () => box.remove());
+    return { close };
+  }
+
   /** Removes everything one add-on added. */
   clear(id: string): void {
     for (const off of [...(this.undo.get(id) ?? [])]) off();
@@ -575,6 +627,8 @@ interface Live {
   ephemeral: boolean;
   version: string;
   active: boolean;
+  /** Keeps another identity for this browser, used from the next load. */
+  onIdentity(identity: Identity): Promise<void>;
 }
 
 const entries = new Map<string, Entry>();
@@ -741,6 +795,23 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       return el;
     },
     sign: (name, data) => doc.sign(`${id}/${name}`, data),
+    identity: {
+      portable: doc.portable,
+      seed: () => doc.seed(),
+      use: async (key) => {
+        if (key.type !== "private" || key.algorithm.name !== "Ed25519" || !key.extractable)
+          throw new Error("pipeup: an identity is an extractable Ed25519 private key");
+        const { x } = await crypto.subtle.exportKey("jwk", key);
+        await l.onIdentity({ publicKey: x!, privateKey: key });
+      },
+      share: (contact) =>
+        doc.contact(contact).then(
+          () => true,
+          () => false,
+        ),
+      unshare: () => doc.uncontact(),
+    },
+    openDialog: live((content, label) => surface.dialog(id, content, label)),
   };
   let teardown: void | Teardown;
   let offReason: string | undefined;

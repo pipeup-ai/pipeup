@@ -5,7 +5,7 @@ import {
   fixture,
   leaveReply,
   open,
-  openMenu,
+  openAll,
   seedElement,
   seedText,
   seedView,
@@ -228,13 +228,41 @@ test("a bubble clicked while a draft with words is away goes back to the draft; 
   await page.evaluate(() => (window as any).deck.go(1));
   await expect(page.locator("#count")).toHaveText("2 / 3");
   // A row chosen in All comments opens out in the panel and leaves the draft where it is.
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
+  await openAll(page);
   await page
     .locator(".all.show")
-    .getByRole("menuitem", { name: /Bar on two/ })
+    .getByRole("button", { name: /Bar on two/ })
     .click();
   await expect(page.locator(".all.show .xr")).toContainText("Bar on two");
   await expect(page.locator("#count")).toHaveText("2 / 3");
   await expect(line).toHaveValue(/./);
+});
+
+test("a comment whose content is found and showing shows on the page, even when the page's view differs in another way (a new revision)", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  const at = (revision: string) =>
+    page.evaluate(
+      (revision) => (window as any).Pipeup.setViewState({ screen: "plan", revision, label: "Plan" }),
+      revision,
+    );
+  await at("r54");
+  await seedView(page, "#p1", "Keep this on the card", { screen: "plan", revision: "r54", label: "Plan" });
+  // A new revision: the page reports it, and the commented paragraph's words changed (found, but Moved).
+  await at("r55");
+  await page.evaluate(() => {
+    document.querySelector("#p1")!.textContent += " Now with Polish.";
+  });
+  const card = page.locator(".th", { hasText: "Keep this on the card" });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("Moved");
+  // From All comments it opens on its place, with the line to it.
+  await openAll(page);
+  await page.locator(".all.show .mi").first().click();
+  await expect(page.locator(".cx.show")).toHaveCount(1);
+  // Content that is hidden still counts as elsewhere.
+  await page.locator(".all.show").getByRole("button", { name: "Close" }).click();
+  await page.evaluate(() => ((document.querySelector("#p1") as HTMLElement).style.display = "none"));
+  await expect(card).toHaveCount(0);
 });

@@ -3,7 +3,7 @@ import type { PipeupAddon, Thread } from "pipeup";
 /**
  * "Send to Git": an example of an add-on a company writes for itself. It is NOT from the Pipeup project, and nothing
  * in it is published under the Pipeup names. It adds one menu row that sends the review, as the same AI-ready Markdown
- * that Copy as Markdown makes, to a service the company runs; that service files it in Git. The add-on never holds a
+ * that Copy comments › As Markdown makes, to a service the company runs; that service files it in Git. The add-on never holds a
  * Git password or token, never writes to the page, and never posts, edits or resolves a comment for anyone.
  *
  * The page names the service: <html data-pipeup-send-to-git-url="https://reviews.example.com/reviews">.
@@ -101,7 +101,7 @@ export function createAddon(): PipeupAddon {
           el(
             "p",
             "stg-p stg-note",
-            "Only what you see in Copy as Markdown is sent. It never posts, changes or resolves a comment.",
+            "Only what Copy comments › As Markdown shows is sent. It never posts, changes or resolves a comment.",
           ),
         );
         const say = el("p", "stg-p");

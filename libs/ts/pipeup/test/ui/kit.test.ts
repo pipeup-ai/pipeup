@@ -54,9 +54,19 @@ describe("theme", () => {
   });
 
   it("reads the accent from --pipeup-accent and darkness from the background", () => {
-    document.documentElement.style.setProperty("--pipeup-accent", "#ff0066");
+    document.documentElement.style.setProperty("--pipeup-accent", "rgb(255, 102, 153)");
     document.body.style.backgroundColor = "rgb(20, 20, 20)";
-    expect(readTheme(document.body, "dark")).toMatchObject({ accent: "#ff0066", dark: true });
+    expect(readTheme(document.body, "dark")).toMatchObject({
+      accent: "rgb(255, 102, 153)",
+      dark: true,
+      on: "#111",
+    });
+    // An author's accent whose words wouldn't read at 4.5 to 1 on Pipeup's surface gives way to Pipeup's own.
+    document.documentElement.style.setProperty("--pipeup-accent", "rgb(255, 0, 102)");
+    expect(readTheme(document.body, "dark").accent).toBe("#9A94EE");
+    expect(readTheme(document.body, "light").accent).toBe("#534AB7");
+    document.documentElement.style.setProperty("--pipeup-accent", "rgb(245, 196, 0)");
+    expect(readTheme(document.body, "light").accent).toBe("#534AB7");
     expect(pageIsDark(document)).toBe(true);
     document.body.style.backgroundColor = "rgb(255, 255, 255)";
     expect(pageIsDark(document)).toBe(false);
@@ -78,6 +88,9 @@ describe("theme", () => {
     a.style.color = "rgb(40, 90, 200)";
     document.body.style.backgroundColor = "rgb(255, 255, 255)";
     expect(readTheme(document.body, "light")).toMatchObject({ accent: "rgb(40, 90, 200)", on: "#fff" });
+    // A mid blue reads at 3.7 to 1 on white, too little for words: Pipeup's own accent instead.
+    a.style.color = "rgb(59, 130, 246)";
+    expect(readTheme(document.body, "light").accent).toBe("#534AB7");
     a.remove();
     document.body.style.backgroundColor = "";
   });
@@ -110,7 +123,7 @@ describe("styles", () => {
 
 describe("host", () => {
   it("adds one ignored, fixed, click-through root with an open shadow and a layer", () => {
-    const host = createHost({ font: "serif", accent: "#123456", dark: true, on: "#fff" });
+    const host = createHost({ font: "serif", accent: "#123456", dark: true, on: "#fff" }, "");
     expect(host.element.tagName).toBe("PIPEUP-ROOT");
     expect(host.element.parentElement).toBe(document.documentElement);
     expect(host.element.hasAttribute("data-pipeup-ignore")).toBe(true);

@@ -4,12 +4,13 @@ import { fixture, open, openMenu, seedText, showComments } from "./helpers";
 const layer = (page: Page) => page.locator(".layer");
 const night = (page: Page, on: boolean) =>
   page.evaluate((on) => document.getElementById("app")!.classList.toggle("night", on), on);
-/** The colour of the quote highlight as the page sheet paints it: "r, g, b" (its strength changes as it fades in). */
+/** The colour the first text comment's words are highlighted with, as the page sheet paints it: "r, g, b". */
 const highlightColour = (page: Page) =>
   page.evaluate(() => {
+    const name = [...CSS.highlights].find(([n, h]) => n.startsWith("pipeup-quote") && h.size)?.[0];
     const rule = [...document.adoptedStyleSheets]
       .flatMap((s) => [...s.cssRules])
-      .find((r) => r.cssText.includes("highlight(pipeup-quote)"));
+      .find((r) => r.cssText.includes(`highlight(${name})`));
     return (/rgba?\(([^)]*)\)/.exec(rule?.cssText ?? "")?.[1] ?? "").split(",").slice(0, 3).join(",");
   });
 
@@ -25,7 +26,7 @@ test("Pipeup follows a page whose own switch is a class on a wrapper, not on htm
   await expect(layer(page)).not.toHaveClass(/dark/);
 });
 
-test("the highlights switch together with the rest of Pipeup", async ({ page }) => {
+test("the highlights follow the page's colours when it turns dark and back", async ({ page }) => {
   await open(page, "hostile.html");
   await showComments(page);
   await seedText(page, "#p1", "feature development", "Why pause?");
@@ -215,9 +216,9 @@ test("with forced colours on, Pipeup's words still read against their backing", 
   await settledRatio(page);
 });
 
-test("the Look row in the menu overrides the page, and the choice is kept", async ({ page }) => {
+test("the Theme row in the menu overrides the page, and the choice is kept", async ({ page }) => {
   await pageWith(page);
-  const row = page.locator(".mi", { hasText: "Look" });
+  const row = page.locator(".mi", { hasText: "Theme" });
   await openMenu(page);
   await expect(row).toContainText("Automatic");
   await row.click();
@@ -249,7 +250,7 @@ test("a reviewer's choice beats the author's setting", async ({ page }) => {
   });
   await expect(layer(page)).toHaveClass(/dark/);
   await openMenu(page);
-  await page.locator(".mi", { hasText: "Look" }).click(); // Light
+  await page.locator(".mi", { hasText: "Theme" }).click(); // Light
   await expect(layer(page)).not.toHaveClass(/dark/);
 });
 

@@ -26,8 +26,8 @@ they would in Google Docs or Figma.
 
 Principles:
 
-- **The page stays the author's.** Pipeup never changes how the page looks or behaves when
-  comments are closed, and never covers its content.
+- **The page stays the author's.** Pipeup never changes how the page behaves outside comment mode,
+  never changes how it looks when comments are hidden, and never covers its content.
 - **Private by default.** Without any setup, comments stay on the reviewer's own machine. Pipeup itself
   never sends anything anywhere. Only add-ons the author chooses to include can send anything, and each
   one says what it sends.
@@ -47,7 +47,7 @@ Principles:
 
 1. *I made an HTML deck and want feedback.* I add Pipeup to it, send the file or link, and get
    comments pinned to the exact slide and spot.
-2. *Several people reviewed my file separately.* Each copies their comments (Copy as Markdown) and sends
+2. *Several people reviewed my file separately.* Each copies their comments (Copy comments › As Markdown) and sends
    them to me; I paste them into my AI agent, which knows exactly where each comment is.
 3. *I want a live review session.* I create a room on my own relay, share an invite link, and
    everyone sees who is here, which slide they are on and where their cursor is.
@@ -59,7 +59,7 @@ Principles:
 5. *Someone sent me an HTML file.* I open it, choose "Comment", select a sentence and type. I
    don't need an account.
 6. *I'm reviewing a deck.* I click anywhere on a slide to drop a pin and comment, Figma style.
-7. *I'm done.* I press "Copy as Markdown" and send what I copied back however I like — or, in a
+7. *I'm done.* I press "Copy comments › As Markdown" and send what I copied back however I like — or, in a
    room, my comments are already shared.
 
 **Agents**
@@ -116,14 +116,16 @@ any of them off.
 
 | Way | Gesture | Best for |
 |---|---|---|
-| **Text** | In comment mode, select words. A small comment control eases in above the selection. | Wording, specific claims |
+| **Text** | In comment mode, select words. A small comment control eases in beside them. | Wording, specific claims |
 | **Block** | In comment mode, hover: an outline glides to the most obvious thing under the pointer — a paragraph, card, image, table, chart or a single button. Click it and the comment box opens straight away. | Whole elements, including controls |
 | **Pin** | In comment mode, Option-click an exact spot, or choose a block and press **Pin** on its naming bar. | Slides, charts, canvases, designs |
 | **General** | Comment on the page or slide as a whole. | Overall reactions |
 
 - **Selecting text offers commenting only in comment mode.** Outside it, selecting text offers
-  nothing and the page behaves as normal. The control is a single comment icon; it never covers
-  the selection.
+  nothing and the page behaves as normal. The control is a single comment icon, just past the end of
+  the paragraph's text, level with the selection's last line. It never covers the selection or the words
+  around it, such as a headline's line above; where there's no room beside the text it sits above the
+  selection (below it at the top of the window).
 - **Comment mode** is switched on and off from the comment control or with **⇧⌥C** on a Mac
   (**Shift+Alt+C** elsewhere) — a shortcut chosen not to clash with common browser and page
   shortcuts. **Esc** steps back out of it. Outside comment mode the page behaves exactly as normal.
@@ -133,11 +135,26 @@ any of them off.
   instead of things that act. Nothing on the page fires, submits or navigates when clicked or tapped.
   From the keyboard, while the block cursor (below) is not in use, Enter and Space on a focused control
   of the page do what the page expects, and Pipeup does nothing with them.
+- **Holding Space pauses comment mode** for as long as it is held, on every platform. The outline and the
+  picking cursor go and the page works as normal, so a reviewer can click through it to reach what they
+  want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so. Space is
+  the key because it changes nothing about a click (⌘, Ctrl, Shift and Option all make a click on a link do
+  something else, such as open a new tab or download it). While Space is held the page doesn't hear it, so it
+  doesn't scroll or turn a slide. Space keeps its usual job where it has one: typing in a field, and a link,
+  button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
+  keep it). On the block cursor, Enter comments and Space pauses.
+- **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
+  tab) and never counts it as a click elsewhere, and a click that started while paused finishes paused even if
+  Space is let go first (one that started unpaused stays Pipeup's). Enter in a page's field after such a click
+  submits the form, as the page expects.
 - **Clicking a block opens the comment box at once** — no second click. A small bar above it names
-  the block ("Button · Start free trial") and offers three icons, each named on hover and to screen
+  the block by what it is and its own words ("Button · Start free trial", "Checkbox · Email me updates",
+  "Dropdown · Monthly"; a block with no words is a "Bar" or a "Shape") and offers three icons, each named on hover and to screen
   readers: **Around it** moves the comment to the block around it, **Inside it** to a block inside it,
   both keeping anything already typed, and **Pin** turns it into a pin at the block's centre (on touch
-  screens, at the next spot tapped). The bar uses icons, not words.
+  screens, at the next spot tapped). The bar uses icons, not words. It never covers the block it names; where
+  it has to sit over the page's words next to it, it fades while the pointer is over them.
+- Clicking another block while the comment box is empty moves the box there, with the cursor in it.
 - Pipeup skips invisible wrappers and very large containers when choosing the obvious block, and
   prefers anything the author marked with a stable identifier.
 - Besides paragraphs, headings, images, tables and controls, the obvious blocks include page
@@ -148,18 +165,42 @@ any of them off.
   is still the page, not a block.
 - **While text is selected in comment mode**, no block is outlined or named on hover, wherever the
   pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
-  selection is cleared or its comment is started or cancelled.
+  selection is cleared or its comment is started or cancelled. Double- or triple-clicking words selects them
+  without choosing the block they are in, and Esc with words selected clears the selection first.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
-- Writing a comment: type and press **Enter** to send (**Shift+Enter** for a new line, **Esc** to
-  cancel). A small paper-plane send icon, pointing right, appears once there is text. There is no
-  placeholder text and no "Post" button.
-- **A name is never required.** A reviewer can comment straight away. Next to the comment box, their
-  avatar shows who they are and invites them to add a name ("You're Otter · add your name").
+- Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
+  with @"**. **Cancel** and **Comment** buttons sit beneath it while you write. **Enter** also sends,
+  **Shift+Enter** starts a new line and **Esc** cancels. Comment stays grey until there are words.
+- **Typed words are never lost unless the reviewer chooses it.** Clicking or tapping elsewhere, moving to
+  another block, opening All comments, resizing the window and the slide changing all keep what is typed in a
+  comment or reply box. Only **Cancel**, or **Esc** in the box itself, throws words away, and then a message
+  offers **Undo** for a few seconds, which brings the box back where it was with the words in it. **⌘Z** (Ctrl+Z)
+  takes the Undo too, from anywhere but a field with words in it, so it can be reached from the block cursor;
+  once the message has faded, its Undo is gone. Esc while an input method is still composing (Japanese, Chinese,
+  Korean) only cancels the composition. On a deck, Tab or a click on nothing in particular leaves a waiting box
+  where it is, on its own slide.
+- **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
+  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
-- The writer of a comment can **edit** or **delete** it; edits are marked as edited.
-- On touch screens: tap chooses a block, long-press selects text, and the naming bar's Pin drops a pin.
+- The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
+  words back in a box with **Cancel** and **Save**; edits are marked as edited. Delete asks once more
+  before it deletes, and that second question can't be answered by the same double-click or double tap that
+  asked it. **A deleted comment goes away**: nothing is left in its place, and deleting a thread's
+  first comment removes the whole thread, replies and all.
+- On touch screens: tap chooses a block, long-press selects text, and the naming bar's **Pin** waits for the
+  next tap and drops the pin there. A tap on the page's blank space closes an empty comment box, as a click
+  does. The selection's comment icon sits below the selection, clear of the phone's own selection menu.
+- **On a touch screen everything Pipeup puts on the page is at least 44 px across**, for a finger: bubbles, the
+  naming bar's icons, the selection's icon, a card's actions, menu rows, switches and close buttons. Bubbles,
+  the naming bar, comment boxes and threads always fit the screen: the naming bar's words shorten before its
+  icons go, and nothing sits under the comment control.
+- **Comment mode on a touch screen says how to use it by touch** ("Tap what you want to comment on"), not the
+  keyboard and mouse hints. Its hint stays beside the comment control while comment mode is on, with
+  **Done**, which leaves comment mode in one tap. On a deck it sits above the deck's own slide controls along the
+  bottom (§6), so on a phone it never covers them. Only Done takes a tap: what is under the hint's words can
+  still be tapped. A screen with only touch shows no keyboard shortcuts, in the menu or the panel's footer.
 
 **From the keyboard and with a screen reader**
 
@@ -176,7 +217,12 @@ any of them off.
   a mouse move took over), the first Tab starts it after the block last clicked, commented on or
   outlined under the pointer, and Shift+Tab before it; with none of those, both start on the first block
   in view. This holds from the page and from the Comment control and its menu (the menu closes). Inside
-  a comment box, a thread, the name field and All comments, Tab moves through their own buttons as usual.
+  a thread, the name field and All comments, Tab moves through their own buttons as usual.
+- **From a comment box, Tab moves on.** From an empty box, Tab and Shift+Tab close it and move the block
+  cursor to the next or previous block in one press: Enter sends and Esc cancels, so its buttons need no stop.
+  From a box with words, Tab and Shift+Tab go through the box's own controls (add your name, Cancel,
+  Comment) and then on to the next or previous block. The naming bar, bubbles and the comment control are not
+  stops on the way, and Tab never leaves a comment box for the page.
   Tab never reaches the page's own links and fields in comment mode; turning comment mode off gives them
   back. The mouse hint says Tab moves between blocks.
 - Moving the mouse onto another block while the block cursor is out hands the outline to the mouse; the
@@ -196,18 +242,30 @@ any of them off.
   comment on block after block. Moving it closes an open thread, as a click elsewhere does.
 - **Esc** steps back as with the mouse (a comment being written, then an open thread), then leaves
   comment mode, with focus back where it was before the block cursor started (the Comment control when
-  that was nowhere on the page). Esc always gets a keyboard user out. After a click, a selection or a
+  that was nowhere on the page). Esc always gets a keyboard user out. Esc only steps back from what has focus:
+  on the block cursor, a bubble or the naming bar it never throws away a waiting comment's words. After a click, a selection or a
   mouse move took the block cursor's place, the comment mode shortcut brings it back; otherwise the
-  shortcut leaves comment mode. How to move and how to leave are said when it starts.
+  shortcut leaves comment mode. How to move, how to pause (holding Space) and how to leave are said when it
+  starts.
 - Words can be selected with the browser's caret browsing (F7) or a screen reader's own selection. The
   comment icon appears once the selection stops changing, and **Enter** comments on it. A mouse drag that is still going is not a settled selection, and selecting words
   while the block cursor is out puts it away.
 - With the block cursor not in use, Enter on a focused page control does what the page expects, even when
   words are selected, and Enter in a page's form field submits the form. Moving the block cursor off the
-  block a comment box is on leaves the box waiting there with its words; the cursor's keys move the cursor,
-  and Enter returns to the box. Modifier+↑/↓ are left to the page.
-- Resolving a thread returns focus to the block cursor, or to the Comment control when there is none; Send
-  keeps focus in the reply line.
+  block a comment box is on leaves the box **waiting** there with its words: it stays beside its block,
+  dimmed, and the block keeps a faint outline, so it is always clear where the comment will go. The cursor's
+  keys move the cursor. Enter on another block, a click on another block, or Enter on a bubble takes the
+  reviewer back to the waiting box: its block is outlined and named again, the page scrolls to it when it is
+  out of view, focus is in the box, and Pipeup says "Finish or cancel this comment first". When the box is on
+  another slide of a deck Pipeup can't turn, nothing of it is drawn over the slide showing, and Pipeup says which
+  slide it is on ("Finish or cancel your comment on slide 1 first"). Modifier+↑/↓ are left to the page.
+- **Keys Pipeup acts on stay with Pipeup.** Keys used in its menus, its panel, a card, a box or the block
+  cursor never also reach the page, pressed or let go, so a deck never turns a slide because of them; keys
+  Pipeup doesn't use always reach the page. The Esc that leaves comment mode is Pipeup's too.
+- **Focus never drops to the page.** Resolving or deleting a thread returns focus to the block cursor when it is
+  out; otherwise to the next thread where it was (the next card in the column or in All comments), or the
+  Comment control when there is none. After React, choosing an emoji, Edit (saved or cancelled) and deleting
+  a reply, focus stays on the same card. Send keeps focus in the reply line.
 - Pins are dropped with the naming bar's Pin, at the centre of the block.
 
 ## 6. Commenting on slides
@@ -222,6 +280,20 @@ any of them off.
   while the keyboard's block cursor is in use, ↑ and ↓ choose the block around it and a block inside it,
   so decks that use ↑ and ↓ for vertical slides wait while it is out (a click hands them back). ← and →
   always reach the deck.
+- **A deck's own controls keep working in comment mode** (its arrows, progress bar and slide number) without
+  the author marking them, as areas marked to ignore do.
+- **Any slide that is showing can be commented on**, including slides scrolled into view on a deck that
+  scrolls; the block cursor starts on what is in view.
+- A comment being written on a slide that goes away leaves nothing drawn over the next slide: it steps aside
+  with its words (§8), and comment mode carries on.
+- **On a deck that fits itself to the window**, opening All comments makes the deck refit into the space
+  beside the panel, and closing it gives the space back, even when the page sets its own width. Where a deck
+  keeps its own controls along the bottom where the comment control or its messages would be (a slide number,
+  arrows, a "← 1 / 3 →" bar; on a phone, anywhere along the bottom), the comment control and its messages sit just
+  above them, and stay there in fullscreen, in a page's dialog and beside a layer over the window. A deck shown
+  fullscreen can't be made smaller: All comments sits over its right side.
+- On reveal.js, a comment is filed under the slide its content is on, and the block cursor leaves a slide as
+  the deck turns, even while it is still sliding away.
 - The comment control's number counts the open threads **here** (on this slide); a small mark on the
   control shows when other slides have open threads, and its label says how many ("2 here · 5 on
   other slides").
@@ -236,24 +308,39 @@ any of them off.
 
 **When comments show**
 
-- **Comments show only while you are reviewing**: in comment mode, while the All comments panel is
-  open, and while a comment is being written. With comment mode off, highlights, bubbles, pins, the
-  column and open threads are all out of sight; the comment control still shows the number of open
-  threads. Pages open with comments hidden, since comment mode starts off.
-- Choosing a thread from All comments shows the comments while the panel stays open. When the panel
-  closes and comment mode is off, they hide again.
+- **Comments show whether comment mode is on or off.** Highlights, bubbles, pins and the column can be
+  read, hovered and opened. Outside comment mode the rest of the page behaves as normal. Pages open with
+  comments showing.
+- **Hide comments** in the comment control's menu puts them out of sight until it is turned off. Highlights, bubbles,
+  pins, the column and open threads all go; the comment control still shows the number of open threads.
+  The choice is remembered for that page in this browser. Comment mode, the All comments panel and a
+  comment being written still show the comments while they last, and the comments hide again when they end.
 - Showing and hiding **eases**; nothing snaps. With reduced motion they only fade.
-- In comment mode, hovering a highlight previews its thread and clicking it opens the thread, rather
-  than choosing the block, unless a comment is being written.
+- Hovering a highlight previews its thread and clicking it opens the thread, unless a comment is being
+  written. In comment mode that click opens the thread instead of choosing the block. Outside comment mode,
+  a highlight on one of the page's links or controls leaves the click to the page.
 
-**What you see at rest — the words lead**
+**What you see at rest — compact cards**
 
 - On documents, threads sit in a **column beside the content, level with what they are about**.
   When threads would overlap they stack, and they glide when space changes.
-- A thread at rest shows **the comment's words**, a faint reply count, and a small **avatar at the
-  comment's top right** that never moves or narrows the words. No names, boxes or buttons.
+- Each thread is a **compact card**: the writer's avatar and name, **how long ago** it was written (just
+  now, 5m ago, 2h ago, with the exact time on hover), the comment's words, and its reply count. Cards are
+  close to the comment cards people know from other editors, with less padding.
+- **A long comment shows its first few lines at rest**, ending with **more**; the open thread shows all of it,
+  so one long comment never pushes the others out of reach.
+- **The same card is used everywhere a thread shows**: in the column, beside a bubble, in All comments
+  and in the drawer. In All comments the card also shows the words it is about; beside the page it sits
+  level with them instead.
 - On slides and rich pages without a free column, element and pin comments show as **small
-  bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it.
+  bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it. Where there's
+  no room beside it (on a phone, or near the window's edge), the preview and the thread sit **below what
+  they're about, or above it, never over it**, and always on screen. Bubbles themselves are always wholly on
+  screen, and threads on the same element each have their own bubble, never one on top of another. Bubbles that
+  would meet sit side by side in a row: to the right while there is room, to the left once the row would reach the
+  comment column (when it shows) or the window's edge, and on a further row below once a row is full. A bubble never
+  covers the column's cards or another bubble, and every bubble can be clicked. Turning a
+  phone (or resizing the window) with a thread or new comment open brings what it is about back into view.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
   click; its thread opens just below the line so the words stay visible.
 - A hover preview **waits for you**: it stays open while the pointer moves from the highlight or
@@ -262,20 +349,29 @@ any of them off.
 
 **Hover shows more**
 
-- Hovering a comment reveals **who wrote it, when, and its actions**, easing open **underneath**
-  the words — never on top of them. These details **take no space until hovered**; nothing holds
-  an empty row for them. Only real content, such as a reply count, shows at rest.
+- Hovering a card shows its **actions** at its top right; the open card always shows them. Nothing
+  opens beneath the words or moves them.
 - Hovering a comment or its highlight gives the commented content **one slow, soft pulse**, so you
-  can see what it belongs to; the two light up together.
+  can see what it belongs to; the two light up together. The pulse stays on its content if the page scrolls
+  meanwhile (as it does when a thread is opened from All comments).
 
 **Opening a thread**
 
-- Clicking a highlight, bubble, preview or thread opens it: it gains a thin line on its left (no
-  background), lines up with its content, and other threads dim and step aside.
+- Clicking a highlight, bubble, preview or card opens it: the card lifts slightly with a soft shadow,
+  lines up with its content, and other threads dim and step aside.
+- An open card, a new comment or a thread beside a bubble is **never under the comment control**, in the
+  column or on a phone: when it would reach the control's corner, it moves up just enough to clear it, so its
+  buttons can always be pressed. A new comment's box and buttons are always in the window, even on a page's
+  last lines.
 - Clicking again **never closes** a thread. An open thread closes with **Esc**, by clicking
-  elsewhere on the page, or by opening another thread.
-- An open thread always ends with a quiet **reply line**. **Opening a thread puts the cursor in its
-  reply line**, so the reader can type a reply straight away; Esc still closes the thread. A new comment
+  elsewhere on the page, or by opening another thread. **A reply being written is kept** when its thread
+  closes, however it closes, and is back in its reply box when the thread opens again, until it is sent,
+  cancelled or thrown away with Esc (§5), in All comments too: when its card closes, when another card opens, and
+  when a thread open on the page moves into the panel. Esc in a reply box with words throws them away first (with
+  Undo), in All comments as anywhere; the next Esc closes the thread. Opening All comments while writing a comment
+  moves the box into the panel with the caret still in it. After Copy thread, focus stays on the comment's ⋯.
+- An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
+  **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
   opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
   is in use, with focus back on the block cursor.
 - Every thread can be opened from the keyboard: bubbles and threads at rest in the column are buttons,
@@ -290,23 +386,49 @@ any of them off.
 - There is **no reply to a reply**: every reply is to the original comment, written in the reply
   line at the end of the thread.
 
-**Actions** (shown on hover, as icons with names, right after who wrote it and when)
+**Actions** (icons with names at the card's top right, on hover and on the open card)
 
-- **Copy** and **Resolve / Reopen** — on the thread. Copy takes the **whole thread** (see §7a);
+- **React**, **✓ Resolve** (or **Reopen**) and **⋯**, which holds **Copy thread** and, on your own
+  comments, **Edit** and **Delete**. Replies have React and ⋯. Copy takes the **whole thread** (see §7a);
   resolving fades the thread and its highlight away.
-- The thread is answered from its reply line, which lines up with the indented replies. It is a
-  plain line to write on, with no mark or placeholder before it: clicking anywhere on it puts the
-  caret at the end of what is there, and on hover the line darkens slightly and shows a text
-  cursor.
+- A card's actions can only be pressed while they show, and only once they have eased in: a click that lands on a
+  closed card's corner as the pointer arrives presses none of them (in the document column it opens the card),
+  and on touch screens, tablets included, the first tap on a closed card opens it, wherever on the card it lands.
+  After Resolve, the card that moves into its place shows its actions only once the pointer moves, even though
+  focus has moved to it, so a second click never resolves a different thread; moved there from the keyboard,
+  focus shows them at once. React's quick row closes when its thread does.
+- The **⋯** menu works from the keyboard like the comment control's menu (arrows move, Enter chooses), and Esc
+  closes it before the thread.
+- The thread is answered from its reply box, which lines up with the indented replies. Clicking
+  anywhere on it puts the caret at the end of what is there.
 
 **The comment control**
 
-- The comment control is **one round button** in a corner. It takes no extra space and never
-  slides open.
+- The comment control is **one small square of frosted glass tucked into the page's bottom-right corner**:
+  flush with the window's right and bottom edges, only its top-left corner rounded, with no border. What is
+  behind it shows through, softened, so it covers as little of the page as it can. It is 32 px across (44 on
+  touch screens, for fingers).
   - With no open threads it shows the comment icon, Pipeup's mark, drawn in a thin line.
-  - With open threads it shows **their number inside the comment bubble**, slightly larger.
-  - Hovering it shows a **tooltip**: "Comment" and the shortcut.
-- **Clicking it opens its menu**, which rises above the button. Each item is **one line**; what it
+  - With open threads it shows **their number inside the comment bubble**, which nearly fills the square: up to 9,
+    then **9+**, so it is never more than two characters and fits in any font. The exact number is in its name for
+    screen readers and in what it shows when pointed at.
+  - In comment mode the glass turns the accent colour.
+  - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
+    add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
+    leaves, and while the menu is open. The control itself never moves. Its name, state and shortcut are read
+    out by screen readers, and the menu shows the shortcut beside Start commenting.
+- **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
+  **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
+  the footer back into the control. Both shapes ease into each other.
+- **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
+  appear **beside the comment control**, never at the bottom centre where decks keep their slide controls and
+  phones show the page's last lines; on a deck they sit above its own controls along the bottom (§6), so they never
+  cover them, on a phone either. While All comments is open they sit inside the panel, above its footer, so
+  they never cover the page beside it (nor a deck's own slide controls there). Nothing of Pipeup's covers a message: comment mode's hint waits
+  until the menu has closed, then shows for its usual time.
+- **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
+  **⋯** for the rest of the menu.
+- **Otherwise, clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
@@ -314,19 +436,26 @@ any of them off.
     (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
     and leaves the menu open; the row then shows the name and avatar again. The menu never closes
     while the name is being edited;
-  - **Copy as Markdown** — every open thread as Markdown for AI, in order, with where each one is (§7a);
-  - **Copy as Text** — the same threads as plain text: where it is, then just the names and
-    words (§7a). Each copy row has a one-line tooltip. There is no copy-format setting;
+  - **Copy comments**, one row that opens to its two choices beneath it (a second click, or → from the
+    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown for
+    AI, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
+    then just the names and words (§7a). Each has a one-line tooltip, and the choices are folded each time the
+    menu opens. There is no copy-format setting;
+  - **Theme**, showing Automatic, Light or Dark; each press moves on to the next, and the menu stays open so
+    the page is seen to change (*Which look*, §9);
   - **All comments**, with the number of open threads;
+  - **Hide comments**, with a **switch**. When it is on, comments are out of sight (*When comments
+    show*, above). Toggling it leaves the menu open, so the switch is seen to move;
   - nearest the button, **Start commenting**, with its shortcut and a **switch** that shows whether
     comment mode is on. Toggling it starts or stops comment mode and **leaves the menu open**, so
     the switch is seen to move — except that turning it on from the keyboard closes the menu as the
     switch moves and puts the block cursor on the page (§5).
   - The comment control's name tells screen readers whether comment mode is on.
 - The menu works from the keyboard (arrows, Home and End move; Enter chooses; Space toggles a
-  switch; Esc closes the menu) and by touch
-  with no hover needed. Switches ease between their states.
-- Choosing a copy row or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
+  switch; Esc closes the menu), however it was opened, and by touch
+  with no hover needed. Switches ease between their states. The menu always fits in the window; where it
+  can't (a phone on its side, a page zoomed far in), it scrolls.
+- Choosing a copy choice or All comments closes the menu. Otherwise the menu closes on **Esc**, on a
   click or tap anywhere outside the menu and the button, or once the pointer has been away from
   both for **3 seconds** (coming back sooner keeps it open). On touch screens, where there is no
   hover, only a tap outside or Esc closes it. In comment mode, a click outside the menu only closes
@@ -336,35 +465,64 @@ any of them off.
   views and ones whose content is gone (§8), with each author's avatar.
   - The page **moves over to make room** for the panel, easing into the narrower space and back when
     the panel closes, so the panel covers none of the page's content (§9).
-  - **Show resolved** is a small switch in the panel's header: it brings resolved threads back,
-    muted, each with **Reopen**, in the panel and on the page.
-  - A row is a **preview**: the first words of the thread and where it is. Choosing a row **opens the
-    thread out in the panel** as the thread itself: its comments and replies, who and when, Copy,
-    Resolve (or Reopen) and a reply line, all usable there. Nothing opens on the page.
+  - The panel has no title. Its top line holds two **filters** and the close button. Each filter is a small
+    pill with an icon and a word, so it reads as something that is on or off: **@ For you** shows only
+    comments that mention me ("No comments mention you" when there are none), and **✓ Resolved** brings
+    resolved threads back, muted, each with **Reopen**, in the panel and on the page. Both always show,
+    whether or not there are any yet, and each has a **tooltip** that says what it does, easing in on hover
+    and keyboard focus. Clicking a filter turns it on; clicking again turns it off. Off, it is grey words and
+    icon with nothing behind them; on, it is filled with a soft tint of the accent colour, its words and icon
+    in the accent colour, like a chosen filter in a mail or document app. Hovering an off filter shows a
+    light fill, and every change between the states eases. Screen readers hear each filter's word and
+    whether it is on. The light and dark looks both show the two states plainly. Nothing in the panel wraps
+    onto a second line, at the panel's width or across a narrow screen.
+  - Each thread is a **card** (§7, *compact cards*), with the words it is about. Choosing a card **opens it
+    out in place**: its top line, the words it is about (once), its comments and replies, its actions and its
+    reply box, all usable there. Clicking its top line closes it again. Nothing opens on the page.
+  - **Hovering a closed card shows its actions** at its top right, as on any card (*Actions*, above), and so
+    does moving keyboard focus into it: **React**, **✓ Resolve** (**Reopen** on a resolved thread) and **⋯**,
+    with Copy thread, and Edit and Delete on your own comment. They work as they do on the open card, and
+    using one never opens or closes the card: Resolve resolves the thread, which eases out of the list unless
+    resolved threads are shown; React's quick row and Edit's box open inside the closed card. The actions
+    ease in and out, and the card neither moves nor changes size when they appear. On touch screens, which
+    have no hover, a closed card shows no actions; opening it shows them.
+  - **A thread is never open in two places.** One open on the page when the panel opens moves into the panel,
+    open there with the cursor in its reply box; while the panel is open, nothing opens beside the page.
+  - **New comments are written in the panel while it is open.** Turning comment mode on leaves the panel
+    open; choosing something on the page then adds a new card to the list where it falls in page order,
+    joined to its place by the same line as an open thread. Sending turns it into a thread there.
   - Choosing a row also **reveals where the thread is**: the page scrolls to it, its words are marked,
     and a thin line eases in from the open row to that place, following scrolling, until the row is
     closed. Threads with no place to point at (content gone, or on another slide or view) open the
     same way with no line, and say where they are.
   - One thread is open at a time. Choosing another closes the first; choosing the open row, or Esc,
     closes it. A thread resolved while open stays open to be reopened, and goes when closed unless
-    Show resolved is on.
-  - The panel closes with its close button, Esc (after any open thread), or a click on the page.
-  - On narrow screens the panel takes the full width and opens threads out the same way, with no line.
+    ✓ Resolved is on.
+  - **The panel stays open until it is closed**, with its close button or Esc (after any open thread). A
+    click on the page never closes it: in comment mode that click chooses something to comment on, and
+    otherwise the page handles it.
+    A click on a comment on the page (its highlighted words, bubble, pin or column thread) doesn't count as
+    a click on the page: it opens that thread in the panel, as choosing its row does, and the panel stays open.
+  - On narrow screens the panel takes the full width and opens threads out the same way, with no line. There,
+    an open card keeps the words it is about and where it is, since the page can't be seen beside it.
+  - From the keyboard, the panel's filters and close button come first, then its cards, then its footer.
+    Screen readers hear the panel as a list of comments under a heading.
 - **Every counted thread can be reached** through All comments, so a thread whose content is
   hidden, moved off screen or gone is never counted without a way to it.
 
 ## 7a. Copying comments for AI
 
 - Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy as Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
+- **Copy comments › As Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
   for each one: where it is (slide or section, then the element), the element's stable identifier,
   the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copy as Markdown adds the page title and address, the export time, the number of open threads
+  as a list. Copying all comments as Markdown adds the page title and address, the export time, the number of open threads
   (noting resolved ones are left out) and a one-line instruction to work through them and say what
   changed.
-- **Copy as Text** gives **plain text** — where it is, then just the names and words.
+- **Copy comments › As text** gives **plain text** — where it is, then just the names and words.
+- Where a thread is and the words it quotes are copied the same whether or not its slide or view is showing.
 - There is no copy-format setting.
-- Resolved threads are left out of both copy rows.
+- Resolved threads are left out of both copy choices.
 
 ## 7b. Reactions
 
@@ -382,7 +540,8 @@ any of them off.
   control to add one appears with the other details when the pointer is over the comment or focus is on
   it, and beside the reply and resolve controls inside an open thread.
 - Your own reactions are marked. **Pointing at or focusing a reaction shows who gave it**, by name as
-  shown elsewhere, with "You" first.
+  shown elsewhere, with "You" first. On a touch screen a long press on it does the same, without taking
+  your reaction back; the names go with the next touch.
 - Adding, changing and removing a reaction **ease**; counts roll, as other counts do. Reduced motion
   turns them into soft fades.
 - **Everywhere comments show:** the column, bubbles, the open thread and All comments (as counts,
@@ -412,7 +571,11 @@ any of them off.
   - **Orphaned** — its content is gone; the comment remains in the panel with a **snapshot** of
     what the reviewer was looking at.
 - Every comment remembers the view it was made in: the slide, and whatever the page reports about
-  itself (such as the open tab or route), with a readable name when the page gives one.
+  itself (such as the open tab or route), with a readable name when the page gives one. A comment belongs
+  to a view only when what it is about is inside that view; content outside a tab panel or accordion shows
+  its comments whatever is open. A comment whose content Pipeup finds and can see on the page shows there, even
+  when the page now reports something else about itself (a new revision of a design, say), marked Moved when the
+  content changed; only content that is hidden or gone counts as elsewhere.
 - Comments made in a view that is currently hidden (another tab, accordion, route or slide) show
   nothing on the page, are counted as elsewhere on the comment control, and are listed in All
   comments under where they live. Choosing one **reopens that view** when the page tells Pipeup how
@@ -439,12 +602,28 @@ any of them off.
   - **Bubbles** — on slides and rich pages, on the element or spot they belong to.
 - **Documents designed for review** keep a **gutter on the right** for comments: the reading area
   stays centred in the space beside it, and threads sit in the gutter. When comments are hidden
-  (comment mode is off), while the All comments panel makes its own room, or when there is no room
+  (Hide comments), while the All comments panel makes its own room, or when there is no room
   for the column, the gutter closes and the content eases back to the true centre.
   This happens only on pages that reserve the gutter (§4); Pipeup never shifts a page that doesn't.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
-  as part of the page.
+  as part of the page. It takes the page's accent colour (or the author's) only when words in it are readable
+  on Pipeup's surfaces, at least 4.5 to 1; otherwise it uses its own.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
+- **Pipeup keeps working while a page's own dialog is open**, whatever kind it is: a browser's modal dialog
+  (including one inside a web component), one from a library (which may stop the rest of the page taking clicks, hide
+  it from screen readers, make it inert, trap focus or close on Escape), an overlay at the highest layer there is, or
+  an element shown fullscreen. Pipeup's comment control, menu, comment boxes and All comments show above it and its
+  backdrop and can be used; what is in it can be commented on (a web component counts as one block, as everywhere);
+  and it never takes Pipeup's focus, nor the keys pressed in Pipeup (Escape doesn't close it, Tab doesn't jump into
+  it), nor closes because of what is done in Pipeup. While a browser's modal dialog or a fullscreen element is open,
+  Pipeup's own element sits inside it (the one change Pipeup makes to the page, and only while it is open), and goes
+  back out when it closes, however it closes; a dialog that renders its own contents again leaves the caret where it
+  was in Pipeup. While a modal dialog or an inert overlay is open, the block cursor only visits what is in it. A page's
+  popovers (menus and tooltips that float above everything) still draw over Pipeup, and pressing Pipeup closes them as
+  pressing anywhere else does; what is inside a frame can't be commented on, nor what is inside a web component's
+  own dialog. A modal dialog that is moved, animated or drawn with a transform, a filter or containment (one centred
+  with `translate`, say) would hold Pipeup inside its own box: Pipeup waits outside it until it closes, so it can't be
+  used while that dialog is open. A page's own script clicking an element in comment mode is taken as a click there.
 - **Pipeup looks the same on every site.** Whatever the page's styles say (sizes, colours,
   spacing, text direction, opacity, filters, blending, zoom, transforms, resets, `!important` rules, a
   page's own light/dark switch), every part of Pipeup keeps its own look. The two things it takes from the page
@@ -457,7 +636,7 @@ any of them off.
 - **Pipeup is light or dark as a whole, never mixed.** Every part switches together, and changes with a
   fade.
 - **Which look.** Pipeup follows the page's light or dark appearance when the page makes it clear, and is
-  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Look row in the menu; the choice is
+  light when it doesn't. The reviewer can choose Automatic, Light or Dark with the Theme row in the menu; the choice is
   remembered in their browser and beats everything else. The author can set a look for the page (`data-pipeup-theme="light"` or `"dark"` on `<html>`), which
   beats detection. If the page changes appearance later (a switch on the page), Pipeup follows however
   the page makes the change, not only when it changes the page's top-level elements.
@@ -467,7 +646,10 @@ any of them off.
   Words that sit directly on the page (a thread at rest in the column) keep their soft, boxless look but
   always sit on their own soft backing, so they stay readable whatever the page behind them is. The only
   parts that sit over the page's content (highlights and pins) are tuned so the page's own text stays
-  readable under them in both looks.
+  readable under them in both looks, whatever colour is behind the words (a dark footer or button on a light
+  page, or the reverse) and whichever look the reviewer chose.
+- **Each comment is shown in its own text direction**, so Arabic and Hebrew read right to left whatever the
+  page's direction; so is the box it is written in.
 - **Pipeup says what the page does to it.** Styles on the page's top-level element that fade, filter, blend,
   transform or zoom everything under it reach Pipeup too, and can't be undone from inside it. Pipeup
   notes them once in the browser console, says when its words may be hard to read under them, and reports the same
@@ -478,8 +660,10 @@ any of them off.
 - Pipeup is fully usable with a **keyboard and screen reader**: every way to start a comment (§5),
   every thread, the menu and All comments can be reached and used without a pointer; focus is never
   lost after sending, cancelling or closing; and screen readers are told which block a comment is
-  being written on, when it changes, and when comment mode ends. Pipeup's focus marks stay visible in
-  high-contrast (forced colours) modes.
+  being written on, when it changes, when a comment or reply is sent, and when comment mode ends. Keyboard
+  focus is always plainly visible on every part of Pipeup (at least 3 to 1). In high-contrast (forced
+  colours) modes, focus marks, switches, the filters' on and off states, your own reactions and whether
+  comment mode is on all stay visible.
 
 **Motion — nothing switches on or off abruptly**
 
@@ -487,7 +671,8 @@ any of them off.
 - Outlines and bars **glide between targets** rather than vanishing and reappearing.
 - Entrances ease out, movement eases in and out, with short durations and no overshoot or bounce.
 - Pins settle into place; threads open smoothly and the ones around them shift to make room;
-  counts roll; "typing" indicators breathe.
+  counts roll; "typing" indicators breathe. Lists ease too: cards a filter takes away or brings back, a card
+  opening out in All comments, and a new thread taking its comment box's place.
 - Other people's cursors glide between updates instead of jumping.
 - The one exception: anything the reviewer **drags** follows the pointer exactly.
 - With **reduced motion** on, movement becomes soft cross-fades — still eased, never instant.
@@ -524,7 +709,8 @@ the page, and reaches people outside the page only in ways the reviewer or the a
   - people the page's author supplies (below);
   - people from an add-on's directory, when the page has one.
 - A mention **points at a person**, not only a name: it keeps working if they rename themselves, and two
-  people called Sam stay apart. It reads as the name, softly tinted, in the comment; copying keeps
+  people called Sam stay apart. It reads as the name, softly tinted, inline in the comment's words (a
+  mention of you is also bolder); copying keeps
   `@Name`. An `@` that matches nobody stays plain words.
 - Comment words are still text only; a mention is never a link, markup or a way to run anything.
 
@@ -564,7 +750,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
   that stays the same across their comments in a document and across documents. A short form of the ID
   (like "Sam · 4F2A") is shown only where two people share a name. Pipeup never merges two people because
   their names match.
-- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
+- **An ordinary identity can't be exported** (its key never leaves the browser). **My identity** in the menu (from the identity add-on, §16a) lets a reviewer *make it portable*: Pipeup makes a new identity from a seed they keep as a recovery code or file; comments written before stay under the old one. Ordinary identities are unchanged. (The next paragraphs describe what portable identities can do.)
 - **Keeping the ID.** Pipeup asks the browser to keep it from being cleared. For a portable identity, **My identity**
   has **Back up my identity**, which gives a recovery code and a file (the same secret in both forms) the person keeps
   themselves, and **Use my identity**, which
@@ -606,7 +792,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 
 **Returning feedback (for now)**
 
-- A reviewer sends feedback back to the author by pressing **Copy as Markdown** and sending what they copied
+- A reviewer sends feedback back to the author by pressing **Copy comments › As Markdown** and sending what they copied
   any way they like: a message, an email, or pasted straight into a conversation with an AI
   assistant.
 - **Sealed feedback files** remain part of the design for sharing later: a single small file of the
@@ -745,8 +931,8 @@ which Pipeup discards. It also can't tell when something is missing.
 - Authors and agents can see which add-ons a page has, and whether each one is on.
 - Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
   dark appearance and reduced motion, and keep every rule that words being written are never lost.
-- **While comments are closed, add-ons add nothing to the page except words in the comment control's
-  label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
+- **While comments are closed (hidden with Hide comments, and nothing showing them), add-ons add nothing
+  to the page except words in the comment control's label and tooltip.** A message an add-on raises meanwhile waits, and is shown once when the reviewer
   next opens Pipeup.
 
 ### Making your own add-on
@@ -801,7 +987,7 @@ permission, a registration, or a place in its npm scope.
   system, over a secure connection, needs no crypto. The guide says so, and says when sealing is worth writing (a
   store the company doesn't control).
 - **The review as a Markdown file.** Pipeup already writes a review as Markdown that says exactly where each comment
-  is, ready for an AI to act on (what Copy as Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
+  is, ready for an AI to act on (what Copy comments › As Markdown copies). An add-on can ask Pipeup for that same Markdown, so a
   company's add-on saves exactly what its AI tools already know how to read, and nothing has to be reinvented.
 - **A worked example from "another company".** The repository holds a complete example add-on written the way a
   company would write one, outside the Pipeup project's names and carrying no real company's name: "Send to Git". It adds one row to the menu, "Send
@@ -866,7 +1052,7 @@ permission, a registration, or a place in its npm scope.
   1. **"Send to Git"** (needs the company's own service): the reviewer's comments go to a service the company runs, which
      files them in Git. For teams: sign-in, a record of who saved what, pull requests.
   2. **"Save to GitHub"** (needs no server and no token): one menu row opens GitHub's own "new file" page in a new tab with
-     the review already filled in (the Markdown that Copy as Markdown makes, in a file path chosen from the page's name
+     the review already filled in (the Markdown that Copy comments › As Markdown makes, in a file path chosen from the page's name
      and the time). The reviewer signs in to GitHub as themselves and presses GitHub's commit button (or "propose
      changes", when they can't write to the repository). It asks first, saying what will be filled in and where. The
      page names the repository, and optionally the branch and folder, and, for GitHub Enterprise Server, the host. When
@@ -876,7 +1062,7 @@ permission, a registration, or a place in its npm scope.
 - **Choosing a way, written down.** The guide's company section lists the ways to get a review into Git and when each fits: the
   company's service using the GitHub API (pull requests, sign-in, records); the same service running Git itself with a
   deploy key (any Git host); the host's API for another host (GitLab, Bitbucket, Azure DevOps, Gitea); GitHub's prefilled new-file or new-issue
-  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy as Markdown pasted to an
+  page (nothing to run); saving into a local clone; downloading the file and committing it; and Copy comments › As Markdown pasted to an
   agent or an issue. It names what needs a server and says which of them the examples show.
 - **As little friction as possible: the agent does the setting up.** Each example has one Copy prompt that gives the person's AI
   agent everything it needs (the setup skill). The setup skill covers both examples and starts by asking which fits (no server,
@@ -1022,7 +1208,7 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
   Its overlap checks include add-on surfaces.
 - Check output is readable by people and parseable by agents, and the check fails clearly so an
   agent knows to keep fixing.
-- Agents read comments a reviewer copied (Copy as Markdown), and can read and reply in a page's shared
+- Agents read comments a reviewer copied (Copy comments › As Markdown), and can read and reply in a page's shared
   copy. Later they will also read and write feedback files and, with an invite, take part in rooms on
   a relay.
 - An agent taking part in a shared copy does so under **its own identity and a name that shows it is
@@ -1104,7 +1290,9 @@ an agent on the same computer is a later step and is not part of this one.)
   shows nothing, so nothing is added for readers who don't need it.
 - With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
   instruction that tells an agent where this page's comments are, how to read them and how to answer,
-  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys.
+  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys. Its commands
+  name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.4 …`), so the agent runs the same release as the
+  page and not whatever npm calls stable, and a pre-release's prompt points at the pre-release guide.
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1189,7 +1377,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 **What stays in Pipeup itself**
 - The page's comments for an agent that is looking at it (§15b, Reading): as Markdown, and as data, open threads or all.
-- Copy as Markdown and Copy as Text (§7a); the Markdown still ends with the one-line instruction to work through the
+- Copy comments, as Markdown or as text (§7a); the Markdown still ends with the one-line instruction to work through the
   threads and say what changed.
 - A thread an agent has marked **addressed** shows its note with **Resolve** and **Still not right** (§15b), and an AI
   reply keeps the AI marking (§10), whichever add-on or file the reply came from.
@@ -1231,6 +1419,63 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - Check reports a page that lists an agent without the add-on, a replies file that can't be read, and replies for
   threads that no longer exist, and lists the add-on among the page's add-ons (§15).
 
+### 15e. Setting a page up: `pipeup init`
+
+*Built (0.8).* One command does what the `pipeup-add` skill asks an agent to do by hand, so an author (or an agent)
+can add Pipeup to a page without looking anything up.
+
+- **`pipeup init <page.html>`** adds Pipeup to the page: the script for the version the command comes with, pinned to
+  that exact version and its integrity hash, and a **document identity** if the page has none. It never changes an
+  identity the page already has, since that would orphan every comment.
+- **It says what it will change before it changes anything**, in plain words, and asks; `--yes` goes ahead without
+  asking and `--dry-run` only says. Afterwards it says what it changed. Every other byte of the file stays as it was:
+  no reformatting, no reordering, nothing removed.
+- **Running it again changes nothing.** On a page that already has Pipeup it says which version the page uses; with
+  `--update` it moves the page to this version (script and integrity only) and says what that version changes. It
+  never moves a page to an older version.
+- **`--offline`** puts Pipeup inside the file instead, so the page works with no network at all (§4).
+- **Add-ons on request only.** `--addon <id>` (once per add-on) adds that add-on, pinned like Pipeup, and adds it to the
+  page's list of allowed add-ons (adding to the list, never removing from it). Before it does, it shows the add-on's
+  one-sentence statement of what it sends and to whom. An add-on that needs something from the author (an inbox
+  address, a repository) asks for it, or with `--yes` refuses and says what to pass; it never guesses or picks a service.
+- **An agent, on request.** `--agent` lists this computer's agent (made with `pipeup agent`) on the page and adds the
+  agents add-on (§15d).
+- **It offers to mark the page's blocks, charts and slides** with stable names, so comments stay attached when the
+  page changes (§4). It proposes a short name for each part it finds, says what it took each part to be, and the author
+  accepts, renames or skips each one; nothing is marked without that. It never renames a mark the page already has.
+  `--yes` skips this step (it marks nothing) and `--marks` goes straight to it on a page already set up.
+- It makes no network request, works the same for a page on disk or in a project, and never writes a stop key or
+  anything secret into the page.
+- Exit codes: 0 done (or nothing to do), 1 a file couldn't be read or written, 2 the command wasn't understood or needs
+  something first.
+
+### 15f. Reading a page's comments without a browser: `pipeup read`
+
+*Built (0.8).* `pipeup comments` (§15c) reads what an open page shares over the live link. `pipeup read` reads
+the comments an author can reach **without opening the page**: what reviewers sent back, the page's shared copy, and an
+agent's replies.
+
+- **`pipeup read <page.html>`** prints the page's comments as Markdown, the same as **Copy comments › As Markdown**, or with
+  `--json` as data in the same form as `Pipeup.comments()` (§15b). Open threads only, unless `--all`.
+- **Where it reads from:**
+  - **feedback files** the author passes with `--from <file or folder>` (once per file or folder): sealed feedback files
+    (§11), opened with the page's document identity, and files of exported comments. Given a folder, it reads every
+    feedback file in it (not in folders inside it unless `--deep`), says how many it read, and names any it skipped
+    and why (not a feedback file, another document's, unreadable);
+  - **the page's shared copy**, when the page has a sharing line (§11): it asks the service the page names, and only
+    that service; `--no-share` reads nothing from the network;
+  - **the page's replies file**, if there is one: replies from agents the page lists (§15b).
+- **Every comment is checked as strictly as the page checks one** (§11a, §14): one that is forged, altered or meant for
+  another document is left out, and the command says how many, and why, in words. The same comment from two sources
+  is shown once.
+- **It can't read what is only in a reviewer's browser,** and says so when it finds nothing: those comments reach the
+  author by Copy comments › As Markdown, a feedback file or sharing.
+- It never writes to the page, the shared copy or the files it reads. With `--out <file>` it writes one merged feedback
+  file the page can open, sealed for the document like any other.
+- Before it contacts a shared copy it says which service it is about to ask; nothing else is sent anywhere.
+- Exit codes: 0 done (including no comments), 1 a source couldn't be read, 2 the command wasn't understood or needs
+  something first.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -1253,6 +1498,28 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
   skills at a separate address, clearly marked as a pre-release and not indexed by search engines.
   A pre-release never changes what a plain install gets, the stable website or the stable CDN
   address.
+
+## 16a. Keeping Pipeup small
+
+Pipeup's size is part of what it promises (§16). It grew from 36.8 KB (gzip) in 0.4.1 to 52.3 KB in 0.7.0, because reactions, mentions,
+portable identities and the one-look-everywhere work all landed in it, and the budget rose to 56 KB to make room. 0.8 starts with a size pass.
+
+- **Nothing a person relies on changes.** Every comment saved by any released version stays readable and verifiable; every
+  control, shortcut, export and add-on slot works as before; the page and its authors see no difference except a smaller
+  download. A size pass that changes behaviour is a different change and is specified on its own.
+- **A lower budget.** The size of Pipeup alone (and of the file that includes it) comes down to **at most 50 KB (gzip)**, and
+  the budget is lowered to match, so a later release can't quietly grow back. The add-ons' budgets stay as they are, except
+  where a feature moves into one (below).
+- **Features that few pages or people use may move into an add-on**, as agent support did in 0.7, but only with the maintainer's
+  agreement and only if the move is invisible to anyone who doesn't use the feature:
+  - **Portable identities** (the *My identity* menu row, recovery codes and files, sharing a way to be reached) become an add-on (approved; built)
+    that the author includes when they want it. Without it the menu has no such row, the ordinary identity works exactly as today,
+    and comments written under a portable identity are still shown and verified by Pipeup itself.
+  - Reactions, mentions and the appearance work stay in Pipeup: most reviewers use them, and they shape what every page looks like.
+- **Growth has to be paid for.** A change that adds more than 1 KB (gzip) to Pipeup says in its pull request what it removes or
+  why it can't live in an add-on, and a budget increase is stated in the release notes (§16).
+- **The size is reported in words.** Each release says the size of Pipeup, of each add-on, and of each combined file, and what the
+  change was since the last release.
 
 ## 17. Out of scope for now
 
@@ -1281,7 +1548,7 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
    - live review and presence.
 4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
 5. **Touch and narrow pages, and agents as an add-on** (0.7): §15d.
-6. **The rest of the command-line tool** (0.8): `init`, `check`, `read`.
+6. **The rest of the command-line tool** (0.8): `init` (§15e) and `read` (§15f) (`check` shipped in 0.7). **A size pass** (§16a).
 7. **The author's relay** (later):
    - rooms on a relay the author owns;
    - invites shared separately;
@@ -1463,3 +1730,58 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - 2026-10-12 — Built: the agents add-on, `pipeup watch` adding it and refusing pages before 0.6, and the skills and site pages (section 15d).
 - 2026-10-13 — Built (0.7): reactions with the `emoji` add-on; mentions, seen marks, same-name tags, portable identities (an ordinary identity still can't be exported, so *Make it portable* makes a new one), contacts and the by-hand email offer; the `github` add-on; the age line, the signing tools and the `updates` add-on. Not built: the inbox (section 10a) and `pipeup check`.
 - 2026-10-13 — Built (0.7): the inbox, as the `inbox` add-on and the reference mailbox server's `pm2` (section 10a). Not built: `pipeup check`.
+- 2026-10-13 — Draft for review: a size pass for 0.8 (section 16a): Pipeup alone down to 50 KB gzip, behaviour unchanged, portable identities possibly moving to an add-on. 0.8 also lists `check` as shipped in 0.7.
+- 2026-10-13 — Approved: the 0.8 size pass (section 16a), with portable identities moving to an add-on.
+- 2026-10-13 — Built (0.8): portable identities moved into the identity add-on (sections 10a and 16a); Pipeup alone is 49.9 KB gzip and its budget is 50 KB. The My identity row now sits with the add-ons' rows in the menu.
+- 2026-10-13 — Draft for review: `pipeup init` (section 15e) and `pipeup read` (section 15f), the rest of the command line for 0.8.
+- 2026-10-13 — Approved: `pipeup init` offers to mark blocks, charts and slides, the author accepting, renaming or skipping each (section 15e); `pipeup read` reads a folder of feedback files (section 15f).
+- 2026-10-13 — Built (0.8): `pipeup init` (section 15e). Add-ons can't yet go inside the page with `--offline`; the command says so.
+- 2026-10-13 — Built (0.8): `pipeup read` (section 15f). Without the page open, a thread's place comes from what the comment saved (slide, block name, quote), not from the page's layout.
+- 2026-10-14 — Comments show whether comment mode is on or off, and **Hide comments** (a menu switch, remembered per page in this browser) puts them out of sight; this reverses the 2026-10-06 rule that comments show only while reviewing. Holding ⌘ (Ctrl elsewhere) pauses comment mode so the page can be used. With All comments open, clicking a comment on the page opens it in the panel instead of closing the panel (sections 5, 7 and 9).
+- 2026-10-14 — All comments becomes the hub: the round button becomes the panel's footer while it is open, new comments are written in the panel, and comment mode leaves it open. Every thread is the same compact card (avatar, name, how long ago, words; actions at its top right, with ⋯ for Copy thread, Edit and Delete), in the column, beside a bubble, in the panel and in the drawer. The comment and reply boxes say "Comment (Reply) or add others with @" and have Cancel and Comment (Reply) buttons. The panel's header has no title: @ and ✓ are icon toggles (sections 5 and 7).
+- 2026-10-14 — Built: the hub, the cards, Edit and Delete from ⋯, and the comment and reply boxes (sections 5 and 7). They add 1.6 KB to Pipeup (50.8 KB gzip), so its budget rises from 50 to 51 KB (section 16a): it is Pipeup's own UI, which every page shows, so it can't move to an add-on.
+- 2026-10-14 — From review of the build: the panel stays open until it is closed (× or Esc), and a click on the page never closes it. @ and ✓ always show, with tooltips. An open card shows its quote once. A deleted comment goes away, and deleting a thread's first comment removes the thread. The pulse follows its content while the page scrolls (sections 5 and 7).
+- 2026-10-14 — A thread open on the page moves into All comments when it opens, so the same thread is never shown twice (section 7).
+- 2026-10-14 — Fixes from the walkthrough of every feature in every format: a mention of you stays inline in its sentence; Pipeup's messages appear beside the round button instead of the bottom centre (over decks' slide controls and phones' text); an open card or new comment in the column moves up clear of the round button; with no room beside a bubble (a phone, or the window's edge) the preview and thread sit below or above what they're about, never over it; the selection's comment icon sits past the end of the paragraph's text, so it never covers the line above. They add 0.4 KB to Pipeup (51.1 KB gzip), so its budget rises from 51 to 52 KB (section 16a).
+- 2026-10-15 — All comments' two filters read plainly as on or off: each is a pill with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and tinted with the accent colour when on. Hovering a closed card in the panel, or focusing into it, shows its actions (React, ✓ Resolve and ⋯) at its top right, as on every other card; they work without opening the card (section 7). They add 0.5 KB to Pipeup (51.6 KB gzip), inside its 52 KB budget.
+- 2026-10-15 — The menu gets shorter and plainer: **Copy comments** is one row that opens to its two choices (As Markdown, As text), a second click instead of two rows, and **Look** is renamed **Theme** (section 7). Comment mode's pause moves from holding ⌘ (Ctrl elsewhere) to holding **Space** (section 5): ⌘-click opens a link in a new tab, Option-click pins (and downloads a link in some browsers), and Space is the one key that leaves a click alone. On the block cursor Space now pauses; Enter comments.
+- 2026-10-15 — The comment control becomes a small square of frosted glass tucked into the bottom-right corner (flush with the edges, its top left rounded, no border), with the count inside a larger bubble; pointed at, it reaches left to show its shortcut instead of a tooltip above it (section 7). It covers much less of the page than the round button did.
+- 2026-10-15 — In comment mode the comment control opens All comments (its footer has the switch and ⋯ for the menu); outside it, the menu as before. In All comments' filters, the @ and ✓ icons stand the same height, and each sits on the middle line of its word.
+- 2026-10-15 — From the click-path review of 0.8.0-beta.2 (six testers: keyboard, mouse, slides, websites, touch,
+  looks and assistive settings). **Tab from a comment box moves on**: an empty box closes on Tab or Shift+Tab and
+  the block cursor moves in one press; a box with words goes through its own controls, then waits beside its
+  block, dimmed, with a faint outline, and Enter or a click elsewhere takes you back to it. **Typed words are
+  never lost** unless Cancel or Esc in the box throws them away, with Undo; replies being written are kept
+  when their thread closes. Keys Pipeup acts on never reach the page; focus never drops to the page after an
+  action; Delete can't be confirmed by a double-click; a card's hidden actions can't be pressed. On touch: 44 px
+  targets, things fit the screen, Pin waits for the next tap, a touch hint with **Done**, and threads open
+  without the keyboard. Decks: their own controls keep working in comment mode, any showing slide can be
+  commented on, and decks that fit the window refit beside All comments. Long comments show a few lines at
+  rest. Highlights stay readable over any colour, a page's accent is used only when readable, comments keep
+  their text direction, and high-contrast modes keep every state visible (sections 5, 6, 7, 7a, 8 and 9).
+- 2026-10-15 — Built from the click-path review's deck and website findings: a deck's own controls (reveal.js's arrows,
+  progress bar and slide number) keep working in comment mode, any showing slide of a deck that scrolls can be
+  commented on, decks refit beside All comments, the comment control sits above a deck's bottom-right controls, and
+  copying reads the same whether or not a slide shows. On websites a click made while Space is held is the page's
+  alone, Moved is shown, comment mode's hint waits for the menu and says how to pause, a new comment's box stays in
+  the window, a comment outside a tab panel shows whichever tab is open, where-labels take the right section, and the
+  naming bar names controls plainly (section 5); each thread has its own bubble, and All comments is a list under a
+  heading (sections 5, 6, 7, 7a and 8).
+- 2026-10-15 — Touch details found while building the phone fixes: only Done takes a tap on comment mode's touch
+  hint, a screen with only touch shows no keyboard shortcuts, turning a phone brings an open thread or new comment
+  back into view, and a long press on a reaction shows who gave it (sections 5, 7 and 7b).
+- 2026-10-15 — The comment control's count stops at **9+** (it went to 99+), so it is never more than two characters
+  and stays clear of the bubble's outline in any font; the exact number is in its name and its slide-out (section 7).
+- 2026-10-17 — Pipeup keeps working while a page's own dialog is open, of any kind (a browser's modal dialog, a library's
+  focus-trapping or inert-making dialog, an overlay at the top layer); while a browser's modal dialog is open, Pipeup's
+  element sits inside it. While All comments is open, messages sit inside the panel above its footer, so they never
+  cover a deck's own slide controls beside it (sections 7 and 9).
+- 2026-10-17 — Pipeup also works in a web component's modal dialog and in an element shown fullscreen, and keys pressed in
+  Pipeup never reach a page's dialog (Escape doesn't close it, Tab doesn't jump into it); page popovers and frames
+  are named as limits (section 9).
+- 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
+- 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
+- 2026-10-18 — From the regression pass on 0.8.0-beta.5: on a deck, the comment control stays in its corner in fullscreen, in a page's dialog and beside a layer over the window; a page that sets its own width still makes room for All comments; on reveal.js a comment is filed under its own slide; a waiting comment on a slide Pipeup can't turn to says which slide it is on (sections 5, 6).
+- 2026-10-18 — Also from the regression pass: ⌘Z (Ctrl+Z) takes the Undo after Esc or Cancel; Esc while an input method composes keeps the words; replies are kept in All comments, and its Esc throws them away with Undo; opening All comments keeps the caret in a comment being written; the block cursor stays inside an open modal dialog; Pipeup leaves a web component's dialog however it closes, keeps the caret through a dialog's re-render, and waits outside a dialog that is moved with a transform (sections 5, 7, 9).
+- 2026-10-18 — Many comments on one element keep their bubbles in the room they have: side by side to the right, then to the left before the comment column or the window's edge, then on a further row; never over the column's cards or each other, and every one can be clicked (section 7).
+- 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).

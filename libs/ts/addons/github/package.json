@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/github",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Offers to tell people on GitHub when a comment mentions them: opens a new issue on the author's repository with their @name in it.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.7.0"
+    "pipeup": "0.8.0"
   },
   "pipeup": {
     "network": {
@@ -33,6 +33,12 @@
         "github.com"
       ],
       "says": "Only when you press Mention on GitHub: your browser opens GitHub's new-issue page with the person's @name and the comment's words filled in; nothing is sent until you submit it there."
+    },
+    "asks": {
+      "attr": "data-pipeup-github-repo",
+      "flag": "github-repo",
+      "what": "the repository the issues go to (owner/repo)",
+      "pattern": "^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$"
     }
   },
   "publishConfig": {

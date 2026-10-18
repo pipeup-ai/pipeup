@@ -4,9 +4,15 @@ export const SHORTCUT = {
   code: "KeyC",
 } as const;
 
+const MAC = typeof navigator !== "undefined" && /Mac|iP(hone|ad|od)/.test(navigator.platform);
 /** The key's label: symbols on Apple platforms, words elsewhere. */
-export const SHORTCUT_LABEL: string =
-  typeof navigator !== "undefined" && /Mac|iP(hone|ad|od)/.test(navigator.platform) ? "⇧⌥C" : "Shift+Alt+C";
+export const SHORTCUT_LABEL: string = MAC ? "⇧⌥C" : "Shift+Alt+C";
+/**
+ * The key held to pause comment mode (`KeyboardEvent.key`), and its label: Space, the one key that changes nothing about
+ * a click (Command, Ctrl, Shift and Option all make a click on a link do something else).
+ */
+export const HOLD = " ";
+export const HOLD_LABEL = "Space";
 export const SHORTCUT_ARIA = "Shift+Alt+C";
 
 /**

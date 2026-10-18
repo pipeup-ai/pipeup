@@ -1,21 +1,50 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { fixture, open, selectWords, settled, showComments } from "./helpers";
 
-test("selecting text offers one comment icon that never covers the selection", async ({ page }) => {
+/** True when the selection's comment icon covers none of the words in `selector` (the selection included). */
+const clearOfWords = async (page: Page, selector: string) => {
+  const bar = page.locator(".selbar.show");
+  // The bar eases in from 4px lower; measure it where it comes to rest, not mid-transition.
+  await settled(bar);
+  const b = (await bar.boundingBox())!;
+  return page.locator(selector).evaluate((el, b) => {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    return [...r.getClientRects()].every(
+      (q) => b.x >= q.right || b.x + b.width <= q.left || b.y >= q.bottom || b.y + b.height <= q.top,
+    );
+  }, b);
+};
+
+test("selecting text offers one comment icon, beside the words, never over them", async ({ page }) => {
   await open(page, "doc.html");
   await showComments(page);
   await selectWords(page, "#p1", "pricing changes");
   const bar = page.locator(".selbar.show");
   await expect(bar).toBeVisible();
   await expect(bar.getByRole("button")).toHaveAttribute("aria-label", "Comment");
-  // The bar eases in from 4px lower; measure it where it comes to rest, not mid-transition.
-  await settled(bar);
+  expect(await clearOfWords(page, "#p1")).toBe(true);
+  // Level with the selection's last line.
   const b = (await bar.boundingBox())!;
-  const sel = await page.evaluate(() => {
-    const r = getSelection()!.getRangeAt(0).getBoundingClientRect();
-    return { top: r.top, bottom: r.bottom };
+  const line = await page.evaluate(() => {
+    const r = [...getSelection()!.getRangeAt(0).getClientRects()].at(-1)!;
+    return (r.top + r.bottom) / 2;
   });
-  expect(b.y + b.height <= sel.top || b.y >= sel.bottom).toBe(true);
+  expect(Math.abs(b.y + b.height / 2 - line)).toBeLessThan(4);
+});
+
+test("the selection's icon never covers the line above, on a headline or a slide title", async ({ page }) => {
+  await open(page, "site.html", { name: "Sam" });
+  await showComments(page);
+  await selectWords(page, "h1", "not meetings");
+  await expect(page.locator(".selbar.show")).toBeVisible();
+  expect(await clearOfWords(page, "h1")).toBe(true);
+  await open(page, "deck.html", { name: "Sam" });
+  await showComments(page);
+  await selectWords(page, "#s1p", "Growth, retention");
+  await expect(page.locator(".selbar.show")).toBeVisible();
+  expect(await clearOfWords(page, '[data-pipeup-slide="1"] h1')).toBe(true);
+  expect(await clearOfWords(page, "#s1p")).toBe(true);
 });
 
 test("the first comment needs no name: it posts, shows in place, and names its writer by their animal", async ({
@@ -34,7 +63,7 @@ test("the first comment needs no name: it posts, shows in place, and names its w
   const th = page.locator(".th", { hasText: "Which changes?" });
   await expect(th).toBeVisible();
   await th.locator(".root").hover();
-  await expect(th.locator(".who").first()).toHaveText(`${me} · just now`);
+  await expect(th.locator(".who").first()).toHaveText(me);
   expect(await page.evaluate(() => (window as any).pu.document.name)).toBe("");
 
   await page.mouse.click(900, 700);
@@ -138,7 +167,7 @@ test("a name added from the draft is used even when it can't be remembered, and 
   await draft.getByRole("textbox", { name: "Comment" }).press("Enter");
   const th = page.locator(".th", { hasText: "Which changes?" });
   await th.locator(".root").hover();
-  await expect(th.locator(".who").first()).toHaveText("Sam · just now");
+  await expect(th.locator(".who").first()).toHaveText("Sam");
 });
 
 const T0 = Date.UTC(2026, 0, 1);

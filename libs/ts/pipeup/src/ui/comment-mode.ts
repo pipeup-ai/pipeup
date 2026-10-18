@@ -4,9 +4,10 @@ import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
 import { fit, h, inert, selected } from "./dom";
 import { icon, type IconName } from "./icons";
-import { placeBar } from "./layout";
+import { placeBar, touch } from "./layout";
 import { byPage, nodeOf } from "./order";
-import { blockTree, childBlocks, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
+import { blockTree, childBlocks, IGNORED, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
+import { HOLD } from "./shortcut";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -30,11 +31,13 @@ const MUTED = [
   "touchend",
   "touchcancel",
 ];
+/** A press ends: its click (if any) follows. */
+const LIFTS = ["pointerup", "pointercancel"];
 /** How long a move counts as a glide: must cover `--mv` (0.34 s), the glide's duration in the stylesheet. */
 const GLIDE_MS = 400;
 /** The keyboard's hint: shown as a toast, and read with the block cursor's first landing. */
 export const KEYS_HINT =
-  "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Esc to finish · F7 selects text";
+  "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Hold Space to use the page · Esc to finish · F7 selects text";
 /** Pointer movement, in px, the cursor ignores before the mouse takes the outline from it. */
 const NUDGE = 4;
 /** A block with at most this many characters is read whole as the cursor's name; a longer one as its description. */
@@ -52,6 +55,10 @@ export interface CommentMode extends View {
   resume(): boolean;
   /** Focuses the block cursor on its block again, as a move, so its name is read afresh. */
   refocus(): void;
+  /** Back to the open draft's block: it is outlined and named again, and the cursor (when out) is on it. */
+  toDraft(): void;
+  /** A draft brought back (Undo) belongs to its block again. */
+  adopt(d: Draft): void;
 }
 
 /**
@@ -60,13 +67,15 @@ export interface CommentMode extends View {
  * handlers never run while Pipeup's other window listeners (selection, the menu) still do, whatever their order.
  *
  * Known limits: the page's CSS `:hover` still applies; page listeners on window in the capture phase that were
- * added before comment mode started still hear events; Escape still reaches the page's own handlers.
+ * added before comment mode started still hear events.
  */
 export function createCommentMode(ctx: Ctx): CommentMode {
   const look = pageLook();
   // The hint, read once as part of the cursor's first landing.
   const hintText = h("span", { hidden: true }, KEYS_HINT);
   const outline = h("div", { class: "pick" }, hintText);
+  // A comment with words left waiting while the cursor moved on: its block keeps a faint outline.
+  const waitAt = h("div", { class: "pkw" });
   // The keyboard's block cursor: two invisible markers over the outlined block take turns to hold focus, so
   // every move is a real focus change that screen readers announce and magnifiers follow. Never in Tab's order.
   const markers = [0, 1].map(() => {
@@ -89,18 +98,22 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   });
   const label = h("span", { class: "lbl" });
   /** A naming-bar button: an icon, with a name for screen readers and a tooltip. */
-  const nb = (name: string, tip: string, ic: IconName, run: () => void) => {
+  const nb = (name: string, tip: string, ic: IconName, run: (e: MouseEvent) => void) => {
     const b = h("button", { class: "nb", type: "button", "aria-label": name, title: tip }, icon(ic, 16));
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      run();
+      run(e);
     });
     return b;
   };
   const up = nb("Around it", "Select the block around it", "expand", around);
   const down = nb("Inside it", "Select a block inside it", "shrink", inside);
-  const pinner = nb("Pin", "Pin its centre", "pin", () =>
-    ctx.keepCaret(() => commentOn((chosen ?? cur)!, { x: 0.5, y: 0.5 })),
+  // Tapped on a touch screen, Pin waits for the next tap and the pin goes there (a second tap on it lets go); from the
+  // keyboard, and with a mouse (which has Option-click for a spot), it pins the block's centre.
+  const pinner = nb("Pin", "Pin its centre", "pin", (e) =>
+    e.detail && touch()
+      ? wait(!pinning)
+      : ctx.keepCaret(() => commentOn((chosen ?? cur)!, { x: 0.5, y: 0.5 })),
   );
   // A group, not a toolbar: it has no arrow keys of its own.
   const bar = h(
@@ -114,7 +127,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   bar.inert = true;
   // Before the control, so Tab from a draft reaches the bar before the corner control.
   const launch = ctx.layer.querySelector(".launch");
-  for (const el of [outline, ...markers, bar]) ctx.layer.insertBefore(el, launch);
+  for (const el of [waitAt, outline, ...markers, bar]) ctx.layer.insertBefore(el, launch);
   // Pressing the bar must not move the page's focus or drop its selection.
   bar.addEventListener("mousedown", (e) => e.preventDefault());
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
@@ -151,10 +164,13 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let tree: Block[] | null = null;
   /** The page control Enter or Space was pressed on while the cursor wasn't in use: its click is the page's. */
   let passed: EventTarget | null = null;
+  /** Tab is moving the cursor on from a box: the draft closing doesn't first bring focus back to the old block. */
+  let moving = false;
+  /** Pin was tapped: the next tap on the page drops the pin there. */
+  let pinning = false;
 
   /** The event is the page's, outside the areas the author asked Pipeup to leave alone. */
-  const onPage = (e: Event) =>
-    !ctx.owns(e) && !(e.target instanceof Element && e.target.closest("[data-pipeup-ignore]"));
+  const onPage = (e: Event) => !ctx.owns(e) && !(e.target instanceof Element && e.target.closest(IGNORED));
 
   /** Keeps the outline on its block: gliding just after it moved there, tracking scroll otherwise. */
   function place(): void {
@@ -163,17 +179,27 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     fit(outline, at.getBoundingClientRect(), 4);
   }
 
-  /** The bar sits above the chosen block (below it near the top), centred, never over it; glides with the outline. */
+  /**
+   * The bar sits above the chosen block (below it near the top), centred, never over it; glides with the outline. A
+   * block that leaves no room for both (a phone) has its comment box over it: the bar sits just above the box.
+   */
   function positionBar(): void {
     if (!barAt) return;
     bar.classList.toggle("glide", performance.now() < glideUntil && bar.classList.contains("show"));
-    const { left, top } = placeBar(
-      barAt.getBoundingClientRect(),
-      { width: bar.offsetWidth || 200, height: bar.offsetHeight || 34 },
-      { width: window.innerWidth, height: window.innerHeight },
-    );
-    bar.style.left = `${left}px`;
-    bar.style.top = `${top}px`;
+    const size = { width: bar.offsetWidth || 200, height: bar.offsetHeight || 34 };
+    const p = placeBar(barAt.getBoundingClientRect(), size, { width: innerWidth, height: innerHeight });
+    const box = ctx.layer.querySelector(".pop.show")?.getBoundingClientRect();
+    const tall = size.height;
+    if (
+      box &&
+      p.top < box.bottom &&
+      p.top + tall > box.top &&
+      p.left < box.right &&
+      p.left + size.width > box.left
+    )
+      p.top = box.top - tall - 8 >= 8 ? box.top - tall - 8 : box.bottom + 8;
+    bar.style.left = `${p.left}px`;
+    bar.style.top = `${p.top}px`;
   }
 
   function moveTo(el: Element, glide: boolean): void {
@@ -229,7 +255,16 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     }
   }
 
+  /** Pin waits for the next tap (or lets go): the bar says so, and so do screen readers. */
+  function wait(on: boolean): void {
+    pinning = ctx.state.pinning = on;
+    pinner.classList.toggle("on", on);
+    if (on) ctx.say((label.textContent = "Tap where to pin"));
+    else if (barAt) label.textContent = labelOf(barAt);
+  }
+
   function choose(el: Element | null): void {
+    if (pinning) wait(false);
     chosen = el;
     outline.classList.toggle("on", el !== null);
     show(el);
@@ -294,6 +329,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     choose(point ? null : el);
     drafted = open ?? next;
     ctx.moveDraft(next);
+    // A box moved to another block (a click there, or Enter) takes the caret with it.
+    if (open) ctx.focusDraft();
     ctx.say(point ? next.label : `Commenting on ${next.label}`);
   }
 
@@ -312,14 +349,19 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   }
 
   function onPick(e: MouseEvent): void {
+    // Pin is waiting: this tap is where the pin goes, keeping any words already typed.
+    if (pinning) return pin(e);
     // A finished text selection: its own comment icon takes it from here.
     const sel = window.getSelection();
-    if (sel && !sel.isCollapsed) return;
-    // A draft with words in it keeps them: a click elsewhere only drops an empty one.
-    if (ctx.state.draft && (e.altKey || !ctx.draftEmpty())) {
-      ctx.dismiss();
+    if (sel && !sel.isCollapsed) {
+      // Words picked with a double or triple click: the block the first click chose, and its empty box, let go.
+      if (e.detail > 1 && drafted && ctx.state.draft === drafted && ctx.draftEmpty()) ctx.cancelDraft();
       return;
     }
+    const block = e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
+    // A draft with words in it keeps them: a click on another block goes back to it, and elsewhere leaves it be.
+    if (ctx.state.draft && !ctx.draftEmpty()) return block || e.altKey ? ctx.backToDraft() : ctx.dismiss();
+    if (ctx.state.draft && e.altKey) return ctx.dismiss();
     // A click on a highlight reads its thread (the comment views open it), never picks the block under it.
     if (!e.altKey && ctx.readsAt(e.clientX, e.clientY)) return;
     if (ctx.state.active) ctx.open(null);
@@ -329,7 +371,6 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       pin(e);
       return;
     }
-    const block = e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
     if (block) was = block;
     if (block) commentOn(block);
     else {
@@ -338,8 +379,49 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     }
   }
 
+  /** Pauses comment mode while Space is held, or brings it back: the outline goes, and the page hears every click. */
+  function pause(on: boolean): void {
+    if (ctx.state.paused === on) return;
+    ctx.state.paused = on;
+    if (on && !chosen) show(null);
+    // Let go: the block cursor's outline comes back where it was.
+    else if (!on && cur && !chosen) show(cur);
+    ctx.render();
+  }
+  /**
+   * Space pauses where it has no other job: not while typing, and not on a control reached from the keyboard (Space
+   * presses it), on the page or in Pipeup. A control that has focus only because it was clicked doesn't keep it, so
+   * a button pressed during one pause doesn't take Space from the next. The page doesn't hear it either, so it
+   * doesn't scroll or turn a slide. Which way focus came is tracked here, not read from :focus-visible: the browser
+   * counts Space's own key-up as a key, which would hand a clicked button the next Space.
+   */
+  const holds = (e: KeyboardEvent): boolean => {
+    if (e.key !== HOLD || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return false;
+    const t = e.composedPath()[0];
+    // The block cursor comments with Enter; Space pauses there too.
+    if (markers.some((m) => m === t)) return true;
+    const c = t instanceof Element ? t.closest(CONTROL) : null;
+    return (
+      !c || (!byKeys && !c.matches("input,textarea,select,[contenteditable]:not([contenteditable=false])"))
+    );
+  };
+  /** The reviewer's last move was a key other than Space (so focus was likely moved with the keyboard), not a press. */
+  let byKeys = false;
+  /**
+   * A press under way began paused (true) or not (false); null between presses. The click it makes finishes as it
+   * began, whenever Space is let go: the page gets a whole click, or Pipeup does, never half of one each.
+   */
+  let press: boolean | null = null;
+  const quiet = () => press ?? ctx.state.paused;
+  const pressed = () => {
+    byKeys = false;
+    press = ctx.state.paused;
+  };
+  // The click comes just after the button is let go, in the same task.
+  const lifted = () => setTimeout(() => (press = null));
+
   const onMove = (e: PointerEvent) => {
-    if (ctx.owns(e)) return;
+    if (ctx.owns(e) || ctx.state.paused) return;
     if (!onPage(e)) {
       if (!chosen) show(null);
       return;
@@ -368,7 +450,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
 
   const mute = (e: Event) => {
-    if (!onPage(e)) return;
+    if (!onPage(e) || quiet()) return;
     e.stopPropagation();
     // Pressing a control would focus, open or toggle it. Pressing text starts a selection, which still works.
     if (
@@ -381,6 +463,9 @@ export function createCommentMode(ctx: Ctx): CommentMode {
 
   const swallow = (e: Event) => {
     if (!onPage(e)) return;
+    // A click made while paused is the page's alone: Pipeup never takes it as a click elsewhere (which could undo
+    // what the page did, such as switching a tab, to go back to a waiting comment).
+    if (quiet()) return ctx.claim(e);
     // The click a key made on a page control while the cursor isn't in use is the page's, and so is the submit;
     // Enter in a form's field clicks its submit button.
     const t = e.target as HTMLButtonElement;
@@ -400,9 +485,38 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
   // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
+    if (e.key !== HOLD) byKeys = true;
+    // Once paused, Space stays Pipeup's until it is let go, even on a control the click has just focused.
+    if (holds(e) || (e.key === HOLD && ctx.state.paused)) {
+      if (!e.repeat) pause(true);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     passed = null;
     // A keyup lost on the way (focus left the window) never swallows a later one.
     taken = "";
+    // Escape on the page steps back one level, and the page never hears it (a deck would open its overview). The
+    // menu and All comments take their own Escape first.
+    if (
+      e.key === "Escape" &&
+      onPage(e) &&
+      !e.isComposing &&
+      !e.defaultPrevented &&
+      !ctx.state.menu &&
+      !ctx.state.listing
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      taken = e.key;
+      return ctx.back();
+    }
+    if (e.key === "Tab" && moveOn(e)) {
+      e.preventDefault();
+      e.stopPropagation();
+      taken = e.key;
+      return;
+    }
     if (e.key === "Tab" && tabs(e)) {
       e.preventDefault();
       e.stopPropagation();
@@ -423,8 +537,10 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       }
       e.preventDefault();
       e.stopPropagation();
-      // Enter in a page field with a form submits it, as the page expects.
-    } else if (e.key === "Enter" && !cur && (e.target as HTMLInputElement).form) passed = e.target;
+      // Enter in a page field with a form submits it, as the page expects, whether or not the cursor is out: focus
+      // is in the field (a click with Space held put it there), so the browser's click on the submit button is the
+      // page's, never a block chosen.
+    } else if (e.key === "Enter" && (e.target as HTMLInputElement).form) passed = e.target;
   };
 
   /**
@@ -437,19 +553,65 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const t = e.composedPath()[0];
     if (!(t instanceof Element) || markers.some((m) => m === t)) return false;
     // Ignored areas, also from inside a web component's own shadow root.
-    if (!ctx.owns(e))
-      return !e.composedPath().some((n) => n instanceof Element && n.hasAttribute("data-pipeup-ignore"));
+    if (!ctx.owns(e)) return !e.composedPath().some((n) => n instanceof Element && n.matches(IGNORED));
     return !!t.closest(".launch,.menu") && !t.closest("input,textarea,select,[contenteditable]");
   };
+
+  /**
+   * Tab from a comment box, or from a thread on the page, moves the cursor on. From an empty box at once: the box
+   * closes. From a box with words, or a thread, once Tab has been through its own buttons: the box waits beside its
+   * block with its words; the thread closes. Never on to the page, the naming bar, bubbles or the comment control.
+   * The `@` list and the name field keep their own Tab. False: Tab moves within.
+   */
+  function moveOn(e: KeyboardEvent): boolean {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing || !ctx.owns(e)) return false;
+    const t = e.composedPath()[0];
+    const box = t instanceof Element ? t.closest(".draft,.thread") : null;
+    const draft = !!box?.classList.contains("draft");
+    // All comments' threads keep their own Tab; so do the `@` list and the name field.
+    if (
+      !box ||
+      (!draft && box.closest(".all")) ||
+      box.querySelector(".mnl.show") ||
+      box.querySelector(".nf :focus")
+    )
+      return false;
+    const by = e.shiftKey ? -1 : 1;
+    moving = true;
+    if (draft && ctx.draftEmpty()) ctx.cancelDraft();
+    else {
+      const stops = [...box.querySelectorAll<HTMLElement>("button,textarea,input,a[href]")].filter(
+        (b) => b.tabIndex >= 0 && !b.closest("[inert],[hidden]") && b.getClientRects().length > 0,
+      );
+      const i = stops.indexOf(t as HTMLElement);
+      if (i >= 0 && (by > 0 ? i < stops.length - 1 : i > 0)) {
+        moving = false;
+        return false;
+      }
+      if (!draft) ctx.open(null);
+    }
+    moving = false;
+    land(by);
+    return true;
+  }
 
   /** Pipeup's own element with focus, if any; a marker has it. */
   const focused = () => (ctx.layer.getRootNode() as ShadowRoot).activeElement;
   const onMarker = () => markers.some((m) => m === focused());
-  /** Only what the reviewer can see here: shown, and on the current slide (a `display: contents` box has none). */
-  const keep = (el: Element) =>
-    (el.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false ||
-      getComputedStyle(el).display === "contents") &&
-    ctx.here.holds(ctx.here.view(el));
+  /**
+   * Only what the reviewer can see and use here: shown (a `display: contents` box has none), not inert, inside the
+   * page's open modal dialog or fullscreen element (where Pipeup's own root then is), and on the current slide.
+   */
+  const keep = (el: Element) => {
+    const over = (ctx.layer.getRootNode() as ShadowRoot).host?.parentElement;
+    return (
+      (el.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false ||
+        getComputedStyle(el).display === "contents") &&
+      !el.closest("[inert]") &&
+      (!over || over === document.documentElement || over.contains(el)) &&
+      ctx.here.holds(ctx.here.view(el))
+    );
+  };
   /** The blocks; read afresh when one of them has left the page, so the cursor never lands on a removed element. */
   const blocks = () => {
     if (tree?.some((b) => !b.el.isConnected)) tree = null;
@@ -527,7 +689,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const back = blockOf(was);
     const b =
       back ??
-      (page && page !== document.body && ctx.root.contains(page) && !page.closest("[data-pipeup-ignore]")
+      (page && page !== document.body && ctx.root.contains(page) && !page.closest(IGNORED)
         ? blocks()
             .filter((x) => x.el.contains(page))
             .pop()
@@ -652,20 +814,33 @@ export function createCommentMode(ctx: Ctx): CommentMode {
 
   /** The keys the cursor takes while a marker has focus: stopped, so the page (and a deck) never hears them. */
   function onMarkerKey(e: KeyboardEvent): void {
-    if (!["Tab", "ArrowUp", "ArrowDown", "Enter", " ", "Escape"].includes(e.key)) return;
+    if (!["Tab", "ArrowUp", "ArrowDown", "Enter", "Escape"].includes(e.key)) return;
     // ⌘↑, Ctrl↑ and Alt↑ are the page's (top, bottom).
     if (e.key.startsWith("Arrow") && (e.metaKey || e.ctrlKey || e.altKey)) return;
     e.preventDefault();
     e.stopPropagation();
     taken = e.key;
     if (e.key === "Escape") return void ctx.back();
-    if (e.key === "Enter" || e.key === " ") return act(e.shiftKey && e.key === "Enter");
+    if (e.key === "Enter") return act(e.shiftKey);
     // Moving on closes an open thread or an empty draft, as a click elsewhere does.
     if (e.key === "Tab") ctx.dismiss();
     if (ctx.state.active) ctx.open(null);
     if (e.key === "Tab") step(e.shiftKey ? -1 : 1);
     else if (e.key === "ArrowUp") around();
     else inside();
+  }
+
+  /**
+   * A draft with words waits while the block cursor is elsewhere: its block keeps a faint outline, and the box dims
+   * until focus comes back to it.
+   */
+  function waiting(): void {
+    const d = ctx.state.draft;
+    const on = !!cur && !!d && !ctx.draftEmpty();
+    const el = on && d === drafted && d.resolved.element !== cur ? d.resolved.element : null;
+    waitAt.classList.toggle("show", !!el && keep(el));
+    if (el) fit(waitAt, el.getBoundingClientRect(), 4);
+    ctx.layer.querySelector(".draft")?.classList.toggle("wait", on && d?.resolved.element !== cur);
   }
 
   /** Focus is nowhere: on the page's body, or on Pipeup's own element that has gone inert. */
@@ -680,13 +855,24 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let ended = false;
   const onKeyUp = (e: KeyboardEvent) => {
     if (ended) window.removeEventListener("keyup", onKeyUp, true);
+    if (e.key === HOLD && ctx.state.paused) {
+      pause(false);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if (e.key !== taken) return;
     taken = "";
     e.preventDefault();
     e.stopPropagation();
   };
+  // Leaving the window (⌘-Tab, say) loses the key-up: the pause ends with it.
+  const onBlur = () => pause(false);
   window.addEventListener("keyup", onKeyUp, true);
+  window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
+  window.addEventListener("pointerdown", pressed, true);
+  for (const type of LIFTS) window.addEventListener(type, lifted, true);
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
@@ -715,18 +901,44 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       // The views were rebuilt (a new control): the outline, markers and bar go back before it, unless in use.
       const l = ctx.layer.querySelector(".launch");
       if (l && bar.nextElementSibling !== l && !onMarker() && !bar.contains(focused()))
-        for (const el of [outline, ...markers, bar]) ctx.layer.insertBefore(el, l);
+        for (const el of [waitAt, outline, ...markers, bar]) ctx.layer.insertBefore(el, l);
       const d = ctx.state.draft;
       // The box closed (Esc, sent, dropped) or another one took over: the block lets go with it. An open thread
       // takes the place too, so the outline and the naming bar never sit over its popover.
       if (drafted && d !== drafted) {
         drafted = null;
         choose(null);
-        // With the cursor in use it comes back on its block, and takes focus back if the draft left it nowhere.
-        if (cur) go(cur, lost());
+        // With the cursor in use it comes back on its block, and takes focus back if the draft left it nowhere
+        // (unless Tab is moving it on from there).
+        if (cur) go(cur, lost() && !moving);
       } else if ((d || ctx.state.active) && !drafted && (target || chosen)) choose(null);
+      // The chosen block went with its slide or view: nothing of it is left drawn over the next one; it comes back
+      // with it.
+      const el = drafted?.anchor.point ? null : drafted?.resolved.element;
+      if (chosen && !keep(chosen)) choose(null);
+      else if (!chosen && !cur && el && d === drafted && keep(el)) choose(el);
+      waiting();
+    },
+    toDraft() {
+      const d = drafted;
+      const el = d?.resolved.element;
+      if (!d || !el || ctx.state.draft !== d) return;
+      if (cur) {
+        cur = el;
+        nth = -1;
+      }
+      was = el;
+      choose(d.anchor.point ? null : el);
+      el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduced ? "auto" : "smooth" });
+    },
+    adopt(d) {
+      drafted = d;
+      const el = d.resolved.element;
+      if (cur && el) cur = el;
+      choose(d.anchor.point ? null : el);
     },
     frame() {
+      waiting();
       place();
       positionBar();
       if (cur) fit(markers[turn]!, cur.getBoundingClientRect(), 4);
@@ -735,11 +947,17 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       // Focus on the cursor goes back where it was before the markers leave.
       if (stow()) giveBack();
       for (const m of markers) m.remove();
+      waitAt.remove();
+      ctx.layer.querySelector(".draft")?.classList.remove("wait");
       stopFade();
       stopBar();
+      ctx.state.pinning = false;
       ended = true;
       if (!taken) window.removeEventListener("keyup", onKeyUp, true);
+      window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
+      window.removeEventListener("pointerdown", pressed, true);
+      for (const type of LIFTS) window.removeEventListener(type, lifted, true);
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);

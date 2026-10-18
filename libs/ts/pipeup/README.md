@@ -2,7 +2,7 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.7.0).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (0.8.0).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
@@ -21,7 +21,7 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 Each release's notes on GitHub give the `integrity` value
@@ -47,6 +47,9 @@ pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 Pages designed for review can reserve a comment gutter: add `data-pipeup-reserve` to `<html>` and lay the
 page out with `var(--pipeup-gutter, 0px)`. While All comments is open the page is moved over for it and its
 width is published as `--pipeup-panel`, so fixed bars can use `right: var(--pipeup-panel, 0px)` — see [examples/review-document.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-document.html).
+A deck refits into the room beside the panel: Pipeup sends resize events while the room opens and closes (reveal.js
+lays itself out again on them), and a deck sized in CSS should take its width from the page (`%`), not the window
+(`vw`), as [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) does.
 
 Comments belong to where they were made. On a deck (slides marked `data-pipeup-slide`, or reveal.js) only the
 current slide's comments show; the control counts those and a small dot marks comments on other slides, and All
@@ -61,25 +64,34 @@ Examples in the source repository, one per kind of page, each following the agen
 - [examples/review-site.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-site.html) — a site: clear blocks with stable ids for comment mode and pins; navigation ignored.
 - [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) — a deck: one marked element per slide; slide controls ignored so they keep working, and one line so Pipeup can go to a comment's slide.
 
-Comments show only while someone is reviewing: in comment mode, while All comments is open, or while a comment
-is being written. With comment mode off (as every page opens) the page is the author's alone; the control still
-counts the open threads.
+Comments show whether comment mode is on or off: highlights, bubbles and the column can be read and opened, and
+outside comment mode the rest of the page works as normal. **Hide comments** in the control's menu puts them out
+of sight on that page (remembered in the browser); the control still counts the open threads, and comment mode,
+All comments or a comment being written show them again while they last.
 
-The comment control is one round button in the corner: the comment icon, or the number of open threads inside
-a comment bubble. Hovering it shows a tooltip with its shortcut; clicking (or tapping) it opens its menu of
+The comment control is a small square of frosted glass tucked into the bottom-right corner: the comment icon, or
+the number of open threads inside a comment bubble. Pointed at, it reaches left to show its shortcut; clicking (or tapping) it opens its menu of
 one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
-Add name, edited in place in that row), Copy as Markdown (for AI), Copy as Text, All comments, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
-**All comments** is a panel on the right that moves the page over to make room: every thread in page order with
-where it is, threads whose content is gone under "No longer on the page", and a Show resolved switch in its
-header. Choosing one scrolls to it and opens it while the panel stays open (or opens it beside the panel when it
-has nowhere to show); the panel closes with its close button, Esc or a click on the page. Elements the page
+Add name, edited in place in that row), Copy comments (as Markdown for AI, or as text), Theme, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
+**All comments** is a panel on the right that moves the page over to make room: every thread in page order as a
+card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
+of me) and **✓** (show resolved). While it is open the comment control is its footer (who you are, Comment, and ⋯ for the
+menu), comment mode leaves it open, and a new comment is written in it, in page order. Choosing a card scrolls to its
+place and opens it in the panel; clicking a comment on the page opens it there too. The panel stays open until you
+close it with its × or Esc; a click on the page never closes it.
+
+Every thread is the same compact card, beside the page, from a bubble or in the panel: avatar, name and how long ago,
+the words, and its actions (React, ✓ Resolve, and ⋯ for Copy thread, and Edit and Delete on your own). A deleted
+comment goes away; deleting a thread's first comment removes the thread. The comment and
+reply boxes have Cancel and Comment (Reply) buttons; Enter also sends. Elements the page
 fixes to the window don't move over with the page.
 
 Comment mode (press **Shift+Alt+C**, or **⇧⌥C** on a Mac, or switch on Start commenting in the control's menu) lets reviewers comment on blocks and drop pins
 (Option-click, Alt-click, or the naming bar's Pin) on any page. While it is on, clicks and submits on the page do
 nothing, and selecting text offers a comment icon, clicking a highlight opens its thread, and
 clicking a block opens its comment box at once (a bar names the block; Around it and Inside it move the box to the
-block around it or inside it, keeping what you typed, and Pin makes it a pin at the block's centre). Esc steps back: the box and its block together, then comment mode (or an open
+block around it or inside it, keeping what you typed, and Pin makes it a pin at the block's centre). Hold **Space**
+to use the page as normal for a moment; letting go brings comment mode back. Esc steps back: the box and its block together, then comment mode (or an open
 comment, then comment mode). It is a quiet page, not a
 sandbox:
 

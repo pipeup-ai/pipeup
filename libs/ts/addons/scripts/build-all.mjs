@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { copyFileSync, existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 
 // Gzip budgets (add-ons design §15); a combined file is checked against core + add-on.
@@ -13,8 +14,9 @@ const BUDGETS = {
   github: 3 * 1024,
   updates: 4 * 1024,
   inbox: 8 * 1024,
+  identity: 4 * 1024,
 };
-const CORE = 56 * 1024;
+const CORE = 59.5 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.
@@ -41,6 +43,20 @@ for (const id of Object.keys(BUDGETS)) {
     }
   }
 }
+// `pipeup init` pins add-ons without the network: the pipeup package carries each add-on's hash, its sentence about
+// what it sends, and what it needs from the author (docs/design/cli-init.md).
+const table = {};
+for (const id of Object.keys(BUDGETS)) {
+  const file = `${here}../${id}/dist/${id}.min.js`;
+  if (!existsSync(file)) continue;
+  const pkg = JSON.parse(readFileSync(`${here}../${id}/package.json`, "utf8"));
+  table[id] = {
+    integrity: `sha384-${createHash("sha384").update(readFileSync(file)).digest("base64")}`,
+    says: pkg.pipeup?.network?.says ?? "",
+    ...(pkg.pipeup?.asks ? { asks: pkg.pipeup.asks } : {}),
+  };
+}
+writeFileSync(`${here}../../pipeup/dist/addons.json`, `${JSON.stringify(table, null, 2)}\n`);
 // `pipeup watch` serves the agents add-on from the pipeup package, so the package carries a copy of it.
 if (existsSync(`${here}../agents/dist/agents.min.js`))
   copyFileSync(`${here}../agents/dist/agents.min.js`, `${here}../../pipeup/dist/pipeup.agents.js`);

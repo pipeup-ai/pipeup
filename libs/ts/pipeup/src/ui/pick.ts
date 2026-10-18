@@ -32,6 +32,11 @@ const ROLES = (
 )
   .split(" ")
   .map((r) => `[role=${r}]`);
+/**
+ * What comment mode leaves to the page: areas the author marked to ignore, and a deck framework's own controls
+ * (reveal.js's arrows, progress bar and slide number), which keep working without being marked.
+ */
+export const IGNORED = "[data-pipeup-ignore],.reveal>:is(.controls,.progress,.slide-number)";
 /** Things that are obviously "a thing" to comment on. */
 const OBVIOUS = [
   "button,a,input,select,textarea,label,summary,details,img,svg,canvas,video,picture,figure,figcaption,table,th,td",
@@ -74,7 +79,7 @@ export function isBlock(el: Element, look: Look): boolean {
 
 /** The obvious block under `from`: what the outline glides to in comment mode. */
 export function pickBlock(from: Element, root: Element, look: Look): Element | null {
-  if (from === root || !root.contains(from) || from.closest("[data-pipeup-ignore]")) return null;
+  if (from === root || !root.contains(from) || from.closest(IGNORED)) return null;
   let found: Element | null = null;
   for (let el: Element | null = from; el && el !== root && !found; el = el.parentElement)
     if (isBlock(el, look)) found = el;
@@ -177,8 +182,7 @@ export function blockTree(root: Element, look: Look, keep: (el: Element) => bool
     inLine: boolean,
   ): void => {
     for (const el of parent.children) {
-      if (el.hasAttribute("data-pipeup-ignore") || el.getAttribute("aria-hidden") === "true" || !keep(el))
-        continue;
+      if (el.matches(IGNORED) || el.getAttribute("aria-hidden") === "true" || !keep(el)) continue;
       const f = look.flow?.(el) ?? FLOWING;
       // Fixed boxes, and absolute ones placed against something outside the clipper, aren't clipped by it.
       const offParent = (el as HTMLElement).offsetParent;

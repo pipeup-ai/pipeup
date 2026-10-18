@@ -9,7 +9,6 @@ import { threadMarks, threadNotes } from "../../src/ui/notes";
 import type { Comment, Thread } from "../../src/model/types";
 
 const NOW = 1_000_000_000_000;
-const PLANE = "M21 12L3.5 4.5 6.2 12l-2.7 7.5zM6.2 12H13";
 const c = (
   id: string,
   name: string,
@@ -54,6 +53,9 @@ const actions = (): ThreadActions & { calls: string[] } => {
     reopen: vi.fn(async (id: string) => void calls.push(`reopen ${id}`)),
     notRight: vi.fn(async (id: string) => void calls.push(`notRight ${id}`)),
     copy: vi.fn((id: string) => void calls.push(`copy ${id}`)),
+    edit: vi.fn(async (id: string, t: string) => void calls.push(`edit ${id} ${t}`)),
+    remove: vi.fn(async (id: string) => void calls.push(`remove ${id}`)),
+    drop: vi.fn(),
     close: vi.fn(),
   };
 };
@@ -61,12 +63,12 @@ const key = (el: Element, k: string, shift = false) =>
   el.dispatchEvent(new KeyboardEvent("keydown", { key: k, shiftKey: shift, bubbles: true }));
 
 describe("composer", () => {
-  it("sends trimmed text on Enter, keeps Shift+Enter, cancels on Escape, shows the arrow only with text", async () => {
+  it("sends trimmed text on Enter, keeps Shift+Enter, cancels on Escape, and Reply is ready only with text", async () => {
     const onSend = vi.fn(async () => {});
     const onCancel = vi.fn();
-    const comp = composer({ label: "Reply", onSend, onCancel });
+    const comp = composer({ label: "Reply", placeholder: "Reply or add others with @", onSend, onCancel });
     const send = comp.element.querySelector(".send")!;
-    expect(comp.input.getAttribute("placeholder")).toBeNull();
+    expect(comp.input.getAttribute("placeholder")).toBe("Reply or add others with @");
     expect(send.classList.contains("show")).toBe(false);
     comp.input.value = "  hello  ";
     comp.input.dispatchEvent(new Event("input"));
@@ -82,9 +84,14 @@ describe("composer", () => {
     expect(comp.input.value).toBe("");
   });
 
-  it("sends with a paper plane pointing right, not an arrow", () => {
-    const send = composer({ label: "Reply", onSend: vi.fn() }).element.querySelector(".send")!;
-    expect([...send.querySelectorAll("path")].map((p) => p.getAttribute("d"))).toEqual([PLANE]);
+  it("names its send button for what it does, and Cancel ends it as Esc does", () => {
+    const onSend = vi.fn();
+    const onCancel = vi.fn();
+    const el = composer({ label: "Reply", onSend, onCancel }).element;
+    expect(el.querySelector(".send")!.textContent).toBe("Reply");
+    (el.querySelector(".cnl") as HTMLElement).click();
+    expect(onCancel).toHaveBeenCalled();
+    expect(onSend).not.toHaveBeenCalled();
   });
 
   it("keeps the text when sending fails", async () => {
@@ -102,12 +109,48 @@ describe("composer", () => {
 });
 
 describe("threadView", () => {
-  it("shows the words, a reply count, replies one level in, one reply line and the thread's actions", () => {
+  it("offers Edit and Delete from ⋯ on your own comments only; Edit saves new words, Delete asks once more", async () => {
+    const a = actions();
+    const mine = thread({ root: c("t1", "me", "My words", [c("r1", "Sam", "Not mine")]) });
+    const view = threadView(mine, a, { variant: "popover", now: () => NOW });
+    const el = view.element;
+    const choices = () => [...el.querySelectorAll(".pm button")].map((b) => b.textContent);
+    const choose = (word: string) =>
+      ([...el.querySelectorAll(".pm button")].find((b) => b.textContent === word) as HTMLElement).click();
+    // A reply someone else wrote has no ⋯ at all.
+    expect(el.querySelector('.it [aria-label="More"]')).toBeNull();
+    (el.querySelector('.root [aria-label="More"]') as HTMLElement).click();
+    expect(choices()).toEqual(["Copy thread", "Edit", "Delete"]);
+    choose("Delete");
+    expect(choices()).toEqual(["Copy thread", "Edit", "Delete for everyone"]);
+    // At once (the second click of a double-click), the question ignores it; a moment later, it deletes.
+    choose("Delete for everyone");
+    expect(choices()).toEqual(["Copy thread", "Edit", "Delete for everyone"]);
+    expect(a.calls).toEqual([]);
+    const now = vi.spyOn(performance, "now").mockReturnValue(performance.now() + 600);
+    choose("Delete for everyone");
+    now.mockRestore();
+    await vi.waitFor(() => expect(a.calls).toEqual(["remove t1"]));
+    expect(el.querySelector(".pm")).toBeNull();
+    // Edit puts the words back in a box; Save changes them.
+    (el.querySelector('.root [aria-label="More"]') as HTMLElement).click();
+    choose("Edit");
+    const box = el.querySelector(".root .edit textarea") as HTMLTextAreaElement;
+    expect(box.value).toBe("My words");
+    expect(el.querySelector(".root .edit .send")!.textContent).toBe("Save");
+    box.value = "Better words";
+    key(box, "Enter");
+    await vi.waitFor(() => expect(a.calls).toEqual(["remove t1", "edit t1 Better words"]));
+    await vi.waitFor(() => expect(el.querySelector(".root .edit")).toBeNull());
+  });
+
+  it("shows who and how long ago, the words, a reply count, replies one level in, one reply box and the actions", () => {
     const el = threadView(thread(), actions(), { variant: "column", now: () => NOW }).element;
     expect(el.dataset.thread).toBe("t1");
     expect(el.querySelector(".root .tx")!.textContent).toBe("Is 20% realistic?");
     expect(el.querySelector(".root .rest")!.textContent).toBe("3 replies");
-    expect(el.querySelector(".root .who")!.textContent).toBe("Jamie · 5m ago");
+    expect(el.querySelector(".root .who")!.textContent).toBe("Jamie");
+    expect(el.querySelector(".root .ago")!.textContent).toBe("5m ago");
     expect([...el.querySelectorAll(".rps .it .tx")].map((x) => x.textContent)).toEqual([
       "Fair point",
       "Thanks",
@@ -117,7 +160,7 @@ describe("threadView", () => {
     expect(el.querySelectorAll(".rbox.always")).toHaveLength(1);
     expect(el.querySelector('.ib[aria-label="Reply"]')).toBeNull();
     const labels = [...el.querySelectorAll(".root .acts .ib")].map((b) => b.getAttribute("aria-label"));
-    expect(labels).toEqual(["React", "Copy thread", "Resolve"]);
+    expect(labels).toEqual(["React", "Resolve", "More"]);
   });
 
   it("renders text as text, never HTML", () => {
@@ -151,7 +194,10 @@ describe("threadView", () => {
   it("wires actions: copy, resolve and replying to the thread", async () => {
     const a = actions();
     const el = threadView(thread(), a, { variant: "popover", now: () => NOW }).element;
-    (el.querySelector('[aria-label="Copy thread"]') as HTMLElement).click();
+    (el.querySelector('.root [aria-label="More"]') as HTMLElement).click();
+    (
+      [...el.querySelectorAll(".pm button")].find((b) => b.textContent === "Copy thread") as HTMLElement
+    ).click();
     (el.querySelector('[aria-label="Resolve"]') as HTMLElement).click();
     const line = el.querySelector(".rbox.always textarea") as HTMLTextAreaElement;
     line.value = "to the thread";
@@ -273,13 +319,13 @@ describe("renderDraft", () => {
     const { d } = draft();
     const animal = animalName(ME);
     expect(d.element.querySelector(".say")!.textContent).toBe(`You're ${animal} · add your name`);
-    const face = d.element.querySelector(".row .me .av")!;
+    const face = d.element.querySelector(".hdr .me .av")!;
     expect(face.getAttribute("data-animal")).toBe(animal);
     expect(face.classList.contains(`c${colourOf(ME)}`)).toBe(true);
     expect(face.querySelector("path")!.getAttribute("d")).toBe(ANIMAL_ICONS[ANIMALS[animalOf(ME)]!]);
     const named = draft("Sam").d;
     expect(named.element.querySelector(".say")!.textContent).toBe("Sam · change");
-    expect(named.element.querySelector(".row .me .av")!.textContent).toBe("S");
+    expect(named.element.querySelector(".hdr .me .av")!.textContent).toBe("S");
   });
 
   it("takes the name on one line, and a click on the avatar never focuses it", () => {
@@ -287,7 +333,7 @@ describe("renderDraft", () => {
     expect(d.element.querySelector(".nf input")).not.toBeNull();
     expect(d.element.querySelector(".nf textarea")).toBeNull();
     const down = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
-    d.element.querySelector(".row .me")!.dispatchEvent(down);
+    d.element.querySelector(".hdr .me")!.dispatchEvent(down);
     expect(down.defaultPrevented).toBe(true);
   });
 
@@ -304,7 +350,7 @@ describe("renderDraft", () => {
     expect(nf.inert).toBe(true);
     expect(me.renamed).toEqual([]);
 
-    (d.element.querySelector(".row .me") as HTMLElement).click();
+    (d.element.querySelector(".hdr .me") as HTMLElement).click();
     expect(shadowless(field).activeElement).toBe(field);
     field.value = "  Sam ";
     key(field, "Enter");
@@ -312,7 +358,7 @@ describe("renderDraft", () => {
     await vi.waitFor(() => expect(nf.inert).toBe(true));
     expect(d.element.querySelector(".say")!.textContent).toBe("Sam · change");
     // The new face eases in over the old one, which leaves once covered.
-    const faces = [...d.element.querySelectorAll(".row .me .av")];
+    const faces = [...d.element.querySelectorAll(".hdr .me .av")];
     expect(faces.map((f) => f.textContent)).toEqual(["", "S"]);
     expect(shadowless(field).activeElement).toBe(d.element.querySelector(".row textarea"));
   });
@@ -371,28 +417,28 @@ describe("threadView avatars", () => {
     });
     const el = threadView(t, actions(), { variant: "column", now: () => NOW }).element;
     const root = el.querySelector(".root")!;
-    expect(root.querySelector(":scope > .av")!.getAttribute("data-animal")).toBe(animalName(ME));
-    expect(root.querySelector(".who")!.textContent).toBe(`${animalName(ME)} · 5m ago`);
+    expect(root.querySelector(".hdr > .av")!.getAttribute("data-animal")).toBe(animalName(ME));
+    expect(root.querySelector(".who")!.textContent).toBe(animalName(ME));
     const items = [...el.querySelectorAll(".rps .it")];
-    expect(items.map((it) => it.querySelector(":scope > .av")!.textContent)).toEqual(["", "S"]);
-    expect(items[0]!.querySelector(".who")!.textContent).toBe(`${animalName("Z".repeat(43))} · 5m ago`);
+    expect(items.map((it) => it.querySelector(".hdr > .av")!.textContent)).toEqual(["", "S"]);
+    expect(items[0]!.querySelector(".who")!.textContent).toBe(animalName("Z".repeat(43)));
   });
 
   it("keeps an avatar across updates, and swaps it when the writer adds a name", () => {
     const anon = { ...c("t1", "", "words"), author: ME };
     const view = threadView(thread({ root: anon }), actions(), { variant: "column", now: () => NOW });
-    const first = view.element.querySelector(".root > .av");
+    const first = view.element.querySelector(".root > .hdr > .av");
     view.update(thread({ root: { ...anon, text: "more words" } }));
-    expect(view.element.querySelector(".root > .av")).toBe(first);
+    expect(view.element.querySelector(".root > .hdr > .av")).toBe(first);
     view.update(thread({ root: { ...anon, name: "Sam" } }));
     // The new face eases in over the old one, which stays beneath it until it is covered.
-    const both = [...view.element.querySelectorAll(".root > .av")];
+    const both = [...view.element.querySelectorAll(".root > .hdr > .av")];
     expect(both[0]).toBe(first);
     const named = both[1]!;
     expect(named.textContent).toBe("S");
     view.update(thread({ root: { ...anon, name: "Sam", text: "again" } }));
-    expect([...view.element.querySelectorAll(".root > .av")].at(-1)).toBe(named);
-    expect(view.element.querySelector(".root .who")!.textContent).toBe("Sam · 5m ago");
+    expect([...view.element.querySelectorAll(".root > .hdr > .av")].at(-1)).toBe(named);
+    expect(view.element.querySelector(".root .who")!.textContent).toBe("Sam");
   });
 });
 
@@ -413,7 +459,8 @@ describe("an AI's replies", () => {
     expect(ghost.getAttribute("data-pipeup-writing")).toBe("row");
     expect(ghost.querySelector("[data-pipeup-writing=words]")?.textContent).toContain("Writing so far");
     expect(ghost.querySelector("[data-pipeup-ai]")).not.toBeNull();
-    expect(ghost.textContent).toContain("AI assistant · writing now");
+    expect(ghost.querySelector(".who")!.textContent).toBe("AI assistant");
+    expect(ghost.querySelector(".ago")!.textContent).toBe("writing now");
     threadNotes.delete("t1");
     view.update(t);
     expect(view.element.querySelector(".ghost")).toBeNull();

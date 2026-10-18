@@ -26,8 +26,8 @@ test("an open thread's popover shows who and when without hovering, and the bloc
   await expect(pop).toHaveCount(1);
   await page.waitForTimeout(600); // eased in
   const height = (await pop.boundingBox())!.height;
-  await expect(pop.locator(".ft .who")).toBeVisible();
-  await expect(pop.getByRole("button", { name: "Resolve" })).toBeVisible();
+  await expect(pop.locator(".hdr .who")).toBeVisible();
+  await expect(pop.getByRole("button", { name: "Resolve", exact: true })).toBeVisible();
   await pop.locator(".tx").hover();
   await page.waitForTimeout(500);
   expect(Math.abs((await pop.boundingBox())!.height - height)).toBeLessThan(1);

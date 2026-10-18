@@ -1,4 +1,4 @@
-"""Puts each add-on's integrity hash into the Add-ons page's prompts and script tags.
+"""Puts each add-on's integrity hash into the Add-ons pages' prompts and script tags (addons.js) and their Markdown copies.
 
 Run by `apps/site/build.sh`. The hash is of the file the CDN serves for the pinned version (so a pinned page loads),
 read when the site is built; offline, or if the CDN can't be reached, it falls back to the file built here (the same
@@ -8,7 +8,7 @@ import base64, hashlib, json, pathlib, re, sys, urllib.request
 
 root = pathlib.Path(__file__).resolve().parents[2]
 out = pathlib.Path(sys.argv[1])
-pages = [out / "addons.html", out / "addons.html.md"]
+pages = [out / "addons.js", out / "addons.html.md", *sorted((out / "addons").glob("*.html.md"))]
 text = pages[0].read_text()
 version = re.search(r'const ADDONS_VERSION = "([^"]+)"', text).group(1)
 
@@ -16,7 +16,7 @@ def sri(data: bytes) -> str:
     return "sha384-" + base64.b64encode(hashlib.sha384(data).digest()).decode()
 
 values = {}
-for id_ in ("share", "voice", "live", "assist", "agents", "emoji", "github", "updates", "inbox"):
+for id_ in ("share", "voice", "live", "assist", "agents", "emoji", "github", "updates", "inbox", "identity"):
     value = ""
     try:
         with urllib.request.urlopen(f"https://cdn.jsdelivr.net/npm/@pipeup/{id_}@{version}/dist/{id_}.min.js", timeout=10) as r:

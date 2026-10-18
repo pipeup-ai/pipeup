@@ -1,13 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { open, openMenu, seedElement, seedText } from "./helpers";
+import { open, openAll, seedElement, seedText } from "./helpers";
 
 const panel = (page: Page) => page.locator(".all.show");
-async function openAll(page: Page): Promise<void> {
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(panel(page)).toBeVisible();
-}
-const row = (page: Page, words: RegExp) => panel(page).getByRole("menuitem", { name: words });
+const row = (page: Page, words: RegExp) => panel(page).getByRole("button", { name: words });
 
 test("a row is a preview; clicking it opens the thread out in the panel, with a line to its place", async ({
   page,
@@ -23,7 +18,7 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   const thread = panel(page).locator(".xr");
   await expect(thread).toHaveCount(1);
   await expect(thread).toContainText("Love this line.");
-  await expect(thread.getByRole("button", { name: "Resolve" })).toBeVisible();
+  await expect(thread.getByRole("button", { name: "Resolve", exact: true })).toBeVisible();
   await expect(page.locator(".pop.show")).toHaveCount(0);
   // The line runs from the open row to its place on the page.
   await expect(page.locator(".cx.show")).toHaveCount(1);
@@ -31,8 +26,8 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   await row(page, /Match the nav/).click();
   await expect(panel(page).locator(".xr")).toHaveCount(1);
   await expect(panel(page).locator(".xr")).toContainText("Match the nav?");
-  // Clicking the open row closes it again.
-  await panel(page).locator(".mi.open").click();
+  // Clicking the open card's top line closes it again.
+  await panel(page).locator(".cd.open .root > .hdr .who").click();
   await expect(panel(page).locator(".xr")).toHaveCount(0);
   await expect(page.locator(".cx.show")).toHaveCount(0);
 });
@@ -48,12 +43,12 @@ test("a thread can be replied to and resolved in the panel, and it stays until i
   await thread.locator("textarea").fill("Agreed");
   await page.keyboard.press("Enter");
   await expect(thread.locator(".rps")).toContainText("Agreed");
-  await thread.getByRole("button", { name: "Resolve" }).click();
-  // Resolved, but still open here to be reopened; closing it lets it go (Show resolved is off).
+  await thread.getByRole("button", { name: "Resolve", exact: true }).click();
+  // Resolved, but still open here to be reopened; closing it lets it go (✓ Resolved is off).
   await expect(thread.getByRole("button", { name: "Reopen" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(panel(page).locator(".xr")).toHaveCount(0);
-  await expect(panel(page).getByRole("menuitem")).toHaveCount(0);
+  await expect(panel(page).locator(".cd")).toHaveCount(0);
 });
 
 test("the line from an open row ends at the comment's bubble when the page shows one", async ({ page }) => {

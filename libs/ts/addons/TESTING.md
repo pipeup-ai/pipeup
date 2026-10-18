@@ -10,7 +10,7 @@ npm run demo        # a local mailbox and relay, and the page at http://localhos
 
 Open the page in two browsers (Chrome and Firefox or Safari, or a normal and a private window). Each is a reviewer.
 
-- **Share.** Menu (the round button, bottom right) → Start commenting → click a paragraph → comment. The other browser shows
+- **Share.** Menu (the comment button in the bottom-right corner) → Start commenting → click a paragraph → comment. The other browser shows
   it within about 30 seconds; the menu row says "Shared · up to date". Turn "Send my comments" off, comment, and
   check it does not arrive; turn it on again.
 - **Live.** Menu → Go live → Go live, in both. Comments appear in about a second; a cursor with a name shows while comments
@@ -42,7 +42,7 @@ whole flow can be tried without a model.
 
 1. Open a page with the add-on (`pipeup+assist.min.js`) and write two comments: "Is the 20% lift right?" on a
    paragraph with that number, and "Love the title." on the heading.
-2. Turn comment mode on (Shift+Option+C); the row is in the menu only while commenting is on. Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
+2. Turn comment mode on (Shift+Option+C); the row is in the menu only while comments show (Hide comments takes it away, comment mode brings it back). Menu, **Assistant replies**: the panel names the model, says nothing leaves the device, and has **Turn on** (or
    **Download and turn on** with a progress bar). Turn it on.
 3. The first comment should get a short reply streaming into its thread under "AI assistant (on this device)", with
    the gently glowing ring. The compliment should get nothing.

@@ -4,13 +4,15 @@ import type { Thread } from "../model/types";
 import type { Ctx, Draft, View } from "./context";
 import { clip, fit, h, inert, linkify, reorder } from "./dom";
 import { draftBox, type DraftBox } from "./draft-view";
-import { bubblePoint, popoverAnchor } from "./geometry";
-import { placeDraft, placePopover, popover, room, type AnchorPoint } from "./layout";
+import { bubblePoint, INTERACTIVE, popoverAnchor } from "./geometry";
+import { placeDraft, placePopover, popover, room, touch, type AnchorPoint, type Viewport } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { threadView, type ThreadView } from "./thread-view";
+import { columnSpot, moved } from "./column";
+import { replies, threadView, type ThreadView } from "./thread-view";
 
-const INTERACTIVE = "a,button,input,select,textarea,label,summary,[role=button],[contenteditable]";
+/** How far apart bubbles' points must be (a bubble is 20 px): closer, the later one steps aside. */
+const APART = 22;
 /** How long a preview waits after the pointer leaves, so the pointer can reach it and click. */
 export const PREVIEW_GRACE_MS = 400;
 
@@ -32,8 +34,9 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   let threads: readonly Thread[] = [];
   let shown: Thread | null = null;
   let shownView: ThreadView | null = null;
-  /** The reply an add-on was writing into the shown thread when it was last drawn. */
+  /** The reply an add-on was writing into the shown thread when it was last drawn, and whether it was flagged Moved. */
   let shownNote: string | undefined;
+  let shownMoved = false;
   let draft: { box: DraftBox; of: Draft; at: unknown; above: boolean | null } | null = null;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
   let gliding = 0;
@@ -54,12 +57,21 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const r = ctx.resolved.get(t.id);
     return r ? popoverAnchor(t.anchor, r) : null;
   };
+  /**
+   * The window a popover may use: never under All comments, nor under the comment control (in comment mode on a touch
+   * screen, nor under its hint, which stays beside the control all along the bottom).
+   */
+  const vp = (): Viewport => {
+    const v = room(ctx.state.listing);
+    const c = ctx.state.listing ? null : ctx.layer.querySelector(".launch .mode")?.getBoundingClientRect();
+    if (c?.width) v.keep = { left: ctx.state.commenting && touch() ? 0 : c.left, top: c.top };
+    return v;
+  };
   function put(el: HTMLElement, where: AnchorPoint, width: number): void {
-    // Never under All comments.
     const { left, top } = placePopover(
       where,
       { width: el.offsetWidth || width, height: el.offsetHeight },
-      room(ctx.state.listing),
+      vp(),
     );
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
@@ -76,9 +88,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       return;
     }
     if (tipFor !== t.id) {
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       tip.replaceChildren(
-        h("div", { class: "tx clamp" }, ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text))),
+        h(
+          "div",
+          { class: "tx clamp", dir: "auto" },
+          ...(t.root.deleted ? ["Deleted"] : linkify(t.root.text)),
+        ),
         h("div", { class: "who" }, `${nameOf(t.root)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`),
       );
       tipFor = t.id;
@@ -145,10 +161,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const block = draft && d && !d.anchor.quote && !d.anchor.point ? d.resolved.element : null;
     if (block) {
       // A block's box sits below it (above if no room), so it never covers what it is about.
+      // The naming bar is taller on a touch screen, where its icons are finger-sized.
       const { left, top, above } = placeDraft(
         block.getBoundingClientRect(),
         { width: pop.offsetWidth || popover(), height: pop.offsetHeight },
-        { width: window.innerWidth, height: window.innerHeight },
+        vp(),
+        12,
+        touch() ? 60 : 44,
       );
       const flipped = draft?.above !== null && draft?.above !== above;
       if (draft) draft.above = above;
@@ -232,7 +251,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (listing !== ctx.state.listing && pop.classList.contains("show") && !reduced) move();
     listing = ctx.state.listing;
 
-    const d = opts.popovers ? ctx.state.draft : null;
+    // While All comments is open, a new comment is written there instead.
+    const d = opts.popovers && !ctx.state.listing ? ctx.state.draft : null;
     if (d) {
       const where = d.anchor.point ?? d.resolved.element;
       if (draft?.of !== d) {
@@ -275,7 +295,8 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       ctx.registerDraft(null);
     }
 
-    const next = pops() && ctx.state.active ? byId(ctx.state.active) : null;
+    // While All comments is open, threads open in it, never also beside the page.
+    const next = pops() && !ctx.state.listing && ctx.state.active ? byId(ctx.state.active) : null;
     if (!next || !ctx.visible(next)) {
       shown = null;
       shownView = null;
@@ -283,24 +304,37 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       inert(pop, true);
       return;
     }
-    const quote = next.anchor.quote?.exact ?? null;
+    const o = {
+      variant: "popover" as const,
+      quote: next.anchor.quote?.exact ?? null,
+      moved: moved(ctx, next),
+    };
     if (!shown || !shownView || shown.id !== next.id) {
-      shownView = threadView(next, ctx.actions, { variant: "popover", quote });
+      shownView = threadView(next, ctx.actions, o);
       pop.replaceChildren(shownView.element);
       shown = next;
       shownNote = notesKey(next.id);
+      shownMoved = o.moved;
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next || shownNote !== notesKey(next.id)) {
+    } else if (shown !== next || shownNote !== notesKey(next.id) || shownMoved !== o.moved) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
-      shownView.update(next, { quote });
+      shownView.update(next, o);
       shown = next;
       shownNote = notesKey(next.id);
+      shownMoved = o.moved;
     }
   }
 
+  /** A bubble is always wholly on screen (with room for a finger round it), however near the edge its point is. */
+  const across = (x: number) => Math.min(Math.max(x, 20), window.innerWidth - 30);
+
   function frame(): void {
+    // Threads on the same element (or spots close together) each keep a bubble of their own, side by side: rightward
+    // while there is room before the column (when it shows) or the window's edge, then leftward, then a row lower.
+    const taken: { x: number; y: number }[] = [];
+    const col = pops() ? null : columnSpot(ctx.root, true);
     for (const [id, b] of bubbles) {
       const t = byId(id);
       const r = ctx.resolved.get(id);
@@ -309,6 +343,23 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         b.style.visibility = "hidden";
         continue;
       }
+      const x = (p.x = across(p.x));
+      // A bubble's own spot stands; only its steps aside keep out of the column.
+      const end = Math.max(x, (col ? col.x : window.innerWidth) - 30);
+      let step = APART;
+      while (taken.some((q) => Math.abs(q.x - p.x) < APART && Math.abs(q.y - p.y) < APART)) {
+        p.x += step;
+        if (p.x > end) {
+          step = -APART;
+          p.x = x - APART;
+        }
+        if (p.x < 20) {
+          step = APART;
+          p.x = x;
+          p.y += APART;
+        }
+      }
+      taken.push(p);
       b.style.visibility = "";
       b.style.left = `${p.x}px`;
       b.style.top = `${p.y}px`;
@@ -320,7 +371,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const d = ctx.state.draft;
     const g = d?.anchor.point && ctx.here.holds(d.anchor.view) ? bubblePoint(d.anchor, d.resolved) : null;
     if (g) {
-      ghost.style.left = `${g.x}px`;
+      ghost.style.left = `${across(g.x)}px`;
       ghost.style.top = `${g.y}px`;
       if (!ghost.classList.contains("in")) {
         ctx.layer.insertBefore(ghost, mark);
@@ -347,7 +398,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       onQuote = null;
       return;
     }
-    // Comments only show in comment mode, so highlights preview there too, unless a comment is being written.
+    // Highlights preview wherever comments show, unless a comment is being written.
     const id = ctx.readsAt(e.clientX, e.clientY)?.id ?? null;
     if (id === onQuote) return;
     onQuote = id;
@@ -358,8 +409,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (ctx.owns(e)) return;
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed) return;
-    // In comment mode the page's controls are quiet, so a highlight on one still opens; Option-click pins.
-    if (ctx.state.commenting ? e.altKey : e.target instanceof Element && e.target.closest(INTERACTIVE))
+    // In comment mode the page's controls are quiet, so a highlight on one still opens; Option-click pins. Outside
+    // it, and while it is paused, a highlight on a link or control leaves the click to the page.
+    if (
+      ctx.state.commenting && !ctx.state.paused
+        ? e.altKey
+        : e.target instanceof Element && e.target.closest(INTERACTIVE)
+    )
       return;
     // A draft with words in it keeps them (the same rule as hovering). Comment mode leaves a click on a
     // highlight to this listener, whichever was added first, so it reads the thread instead of picking a block.

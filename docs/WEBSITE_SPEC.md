@@ -32,7 +32,10 @@ visitor how to add it. Functional requirements only.
    a comment is typed), Enter (Send) and Esc (Done). Key captions ease in and out; the shortcut is
    shown the way the visitor's keyboard labels it. Each scene's page is laid out at
    full width; when the comment opens, the view slides sideways to make room, like a horizontal
-   scroll. Visitors can **pause** it, jump to any of the four, or swipe on a touch screen. With
+   scroll. **It has a smallest size**, so its scenes are never cut off or squeezed: beside the headline it is never
+   narrower than 440 px (a narrower window puts it under the headline instead), its scenes are never shorter than
+   400 px, and its frame is a thin margin, so the scenes get the room. On a screen too narrow even for its
+   smallest width (under about 350 px) it scrolls sideways rather than shrink further. Visitors can **pause** it, jump to any of the four, or swipe on a touch screen. With
    reduced motion it doesn't move on its own. In comment mode the showcase is commented on as one whole block (its moving parts are never
    picked on their own), while its tabs, pause and Try keep working.
    Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
@@ -47,8 +50,8 @@ visitor how to add it. Functional requirements only.
      says it is done. Then an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a channel, a file
      card with a download button), is downloaded, and goes into Codex the same way. Each agent has its highlight
      colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses, and each
-     press shows a ring. The steps: open it (if a round comment button shows, skip ahead); if not, **Copy prompt**
-     and paste it into an AI assistant along with the file; comment; send it back with **Copy as Markdown**. It says
+     press shows a ring. The steps: open it (if a comment button shows in the corner, skip ahead); if not, **Copy prompt**
+     and paste it into an AI assistant along with the file; comment; send it back with **Copy comments › As Markdown**. It says
      comments stay in the browser until copied and sent.
    - **Create comment-enabled HTML** ("You're creating an HTML page to share"). The scene shows a conversation with an AI
      agent (Claude, then Codex, in turn): "Make me a report to share" typed in the message box and sent, the agent's
@@ -103,22 +106,37 @@ use. The page:
 
 - Says first that the core needs none of them and sends nothing anywhere, and that an add-on is an extra step the page's
   author chooses, never something a reviewer is moved into.
-- Has one short card per add-on (Share, Voice, Live, Assist), each in plain words: what it does, **what it sends and to
-  whom**, what the reviewer is asked first, and its script tag. Share also says the author picks the service (a
+- **Is a page of small cards, not one long scroll.** Each add-on is a card with its **title**, **one sentence** on what it
+  does, and a **picture** of it at work, in the site's look. The cards sit in a grid in three groups: **From Pipeup** (Share,
+  Voice, Live, Assist, Agents, Emoji, Inbox, GitHub, Identity, Updates), **Run your own** (Your own mailbox, Make your own)
+  and **Examples from another company** (Save to GitHub, Send to Git, each labelled "Example: not from Pipeup").
+- **Each card has a Copy button.** With one thing to copy it copies it straight away (Copy prompt, Copy command); with more,
+  it opens a small menu to choose from: **Copy prompt**, **Copy script tag**, and for Share **Copy command to try it here**.
+  The button says "Copied" for a moment. The menu works from the keyboard (arrows, Esc) and closes on a click elsewhere.
+- **Clicking anywhere else on a card opens that add-on's own page** (Make your own opens the guide page). The whole card
+  responds to the pointer, and its title is the link for the keyboard and screen readers. Old links to an add-on's place on
+  the long page (`addons.html#voice`) land on its card.
+- **Each add-on has a page of its own** (`addons/<id>.html`), with a back link ("← Add-ons") and, in plain words: what it
+  does, **what it sends and to whom**, what the reviewer is asked first, what it needs, its buttons (Copy prompt, Copy script
+  tag, Try it, and where they apply Read the guide or Read the source), and its animated demo or, for one without, its
+  picture. Each page has its own Markdown copy (`addons/<id>.html.md`), and the Add-ons page's Markdown copy lists every
+  add-on in one line with a link to its own.
+- What some add-on pages also say: Share, that the author picks the service (a
   PrivateBin or their own mailbox) and that it never picks one for them; Live says it is peer to peer and asks each
   reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
   maker; Assist says nothing is sent (the model runs on the reviewer's device, and the browser may download it once) and that each reviewer is asked first.
-- Ends with a plain card, "Your own mailbox" (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's card links to it.
-- Shows each add-on with a short looping animated demo in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, the assistant reading, then a reply that is only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
+  - **Your own mailbox** (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's page links to it.
+- Shows the add-ons that have one with a short looping animated demo on their page, in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, then inside its card, under the comment as Pipeup shows replies: the assistant's quiet reading line, then its reply, only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
 - Says, in one line near the top, that people can make and publish their own add-ons, and links the guide (docs/ADDONS_GUIDE.md); Pipeup's own list is unchanged.
-- Has a **Try it** link on each add-on card, leading to a try page for that add-on (see "Add-on try pages" below).
-- Flows the full width of the window like the home page, text beside its demo.
+- Has a **Try it** link on each add-on's page, leading to a try page for that add-on (see "Add-on try pages" below), whose bar leads back to the add-on's page.
+- Flows the full width of the window like the home page: the cards fill the width in as many columns as fit (one on a phone),
+  and an add-on's page has its words beside its demo or picture.
 - Carries a "beta" note while the add-ons are pre-releases, and says the core alone stays the stable choice.
-- Ends with a **Make your own** card, plain like the mailbox card (no demo): who it is for (anyone, including a company
+- The **Make your own** card leads to the guide page, and its Copy button copies the template command. The guide says: who it is for (anyone, including a company
   with its own add-ons), that nothing needs the Pipeup project's permission and that Pipeup doesn't vouch for add-ons
   from anyone else; a **Read the guide** button to the guide page, and a **Copy command** button that copies the one
   command that makes a copy of the template.
-- Shows, under it, **two examples from another company**, each a card clearly labelled "Example: not from Pipeup", with a
+- The **two examples from another company** are each clearly labelled "Example: not from Pipeup"; each one's page has a
   short animated scene of its menu row and consent note, a **Try it** link to its try page, a link to its source in the
   repository, and a **Copy prompt** button (a prompt for the person's AI agent that sets the example up with them, following
   the setup skill: it asks which repository, never asks for a token in the chat or a page, and leaves approvals to the
@@ -134,7 +152,7 @@ use. The page:
   to tell the author about a content security policy; the Markdown copy of the page, llms.txt and the agent skill say
   the same.
 - Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
-  choose a sharing service for them.
+  choose a sharing service for them. llms.txt names each add-on's own Markdown copy, so an agent reads only the one it needs.
 
 ### Add-on try pages
 
@@ -146,6 +164,9 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
   to whom (the same sentence as its card), and what it needs (a browser, a second window).
 - **The add-on is the site's own copy**, the same version the card shows, so a try page never changes under a
   visitor. The pre-release copy's try pages use the pre-release add-ons.
+- **On the pre-release copy, every command that runs Pipeup names its version** (`npx pipeup@0.8.0-beta.4 watch …`), in
+  the pages, their Markdown copies, the skills and `llms.txt`: a bare `npx pipeup` would fetch npm's stable release,
+  which doesn't match the pre-release a page there uses. The stable site keeps the bare command.
 - **Comments stay on the visitor's device** except where the add-on sends them, and the add-on asks first, exactly as
   it would on any page.
 - **Voice**: a page to dictate a comment on. If the browser has no speech engine, the page says so in words instead
@@ -219,6 +240,11 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 - The page never claims what isn't true yet: no install command or CDN address until Pipeup is
   published, and later features (shared rooms, live presence) are not promised.
+- **The animations show Pipeup as the version the site carries draws it.** In the home showcase and the add-on demos,
+  the comment box, the card a sent comment becomes, the selection's comment icon, the block outline and its naming bar
+  look and sit where Pipeup puts them: today the box with its rounded line and Cancel and Comment, the compact card
+  (who, how long ago, its actions at the top right, the words, and a line to reply), the icon just past the end of the
+  paragraph's text, and the naming bar with Around it and Pin. When Pipeup's look changes, the animations change with it.
 
 ## 6. Running it
 
@@ -286,5 +312,9 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-11 — Proposed (not built): the install commands (plugin and one-command installer) come first wherever the site offers the copy-and-paste prompt, which stays as the fallback; llms.txt and the Markdown copies lead with the install line too (FUNCTIONAL_SPEC 15a).
 - 2026-10-12 — Proposed (not built): llms.txt, llms-full.txt, the Markdown copies and the site prompts carry the same instructions for answering comments (FUNCTIONAL_SPEC 15b).
 - 2026-10-12 — Built: the install commands in the README, llms.txt and the Markdown copies lead with the prompt as the fallback; on the "create HTML" walkthrough the one-command install sits as a quiet line under the steps, below the Copy prompt step, so the page still fits one screen.
+- 2026-10-15 — The home showcase and the add-on demos draw Pipeup as the current version does: the comment box with its rounded line and Cancel and Comment, settling into the compact card once sent (how long ago, actions at the top right, a line to reply); the selection's icon just past the end of the paragraph's text; the naming bar with Around it and Pin. In the Assist demo the reading line and the reply sit inside the comment's card, not in boxes of their own. A new rule keeps the animations in step with Pipeup's look (section 5).
+- 2026-10-15 — The Add-ons page becomes a page of small cards in three groups (From Pipeup, Run your own, Examples from another company): each card has a title, one sentence, a picture and a Copy button (straight away for one thing to copy, a menu for more); a click anywhere else opens the add-on's own page. Each add-on's page holds what the long page said about it (what it sends, what it asks, its buttons and demo), with its own Markdown copy; llms.txt and the Markdown copies point to them, and the add-on try pages lead back to their add-on's page.
+- 2026-10-15 — The showcase has a smallest size: never narrower than 440 px beside the headline, scenes never shorter than 400 px, a thinner frame, and a sideways scroll on screens too narrow for it, so no scene is cut off or squeezed. The keyboard scene's heading has room for the naming bar beneath it.
 - 2026-10-15 — The footer and the home page's Markdown no longer state Pipeup's size: it changes with every release, and it had fallen out of date. The facts line keeps "One file".
 - 2026-10-15 — The footer's facts line goes altogether (One file, No dependencies, Works from disk, Stays on your device): it read as marketing. The footer keeps only its Add-ons and For agents links, on the right.
+- 2026-10-17 — On the pre-release copy, commands that run Pipeup (`npx pipeup …`) name the pre-release's version, so an agent following its skills runs the same release as the page.

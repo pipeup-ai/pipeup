@@ -6,13 +6,17 @@ import { anchorTop } from "./geometry";
 import { stackColumn, type StackItem } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { plural, threadView, type ThreadView } from "./thread-view";
+import { plural, replies, threadView, type ThreadView } from "./thread-view";
 
 /** Free width needed beside the content before comments get their own column. */
 export const COLUMN_MIN = 300;
 const GAP_FROM_CONTENT = 32;
 /** The exit motion (0.20 s) plus a frame, before a faded-out element is removed. */
 const EXIT_MS = 220;
+/** The comment control's corner: a 32 px square flush with the window's edges (44 on touch screens). */
+const CORNER = 44;
+/** A comment taller than this at rest (four lines and a little) shows its first lines, then "more". */
+const LONG = 88;
 
 /** Width of the gutter that pages with data-pipeup-reserve keep for comments. */
 export const GUTTER = 320;
@@ -52,6 +56,7 @@ interface Item {
   el: HTMLElement;
   thread: Thread;
   lost: boolean;
+  moved: boolean;
   /** The reply an add-on was writing into this thread when it was last drawn. */
   note?: string;
   view: ThreadView;
@@ -65,6 +70,9 @@ export function lost(ctx: Ctx, t: Thread): boolean {
   return !r || (r.state === "orphaned" && !ctx.pending.has(t.id));
 }
 
+/** The thread's content was found changed, or nearby: it is flagged Moved, for someone to confirm. */
+export const moved = (ctx: Ctx, t: Thread): boolean => ctx.resolved.get(t.id)?.state === "moved";
+
 /** Threads beside the document, level with what they're about; the open one aligns exactly. */
 export function createColumn(ctx: Ctx): View {
   const col = h("div", { class: "col" });
@@ -72,6 +80,7 @@ export function createColumn(ctx: Ctx): View {
   const items = new Map<string, Item>();
   let draft: { el: HTMLElement; box: DraftBox; of: Draft } | null = null;
   const sizes = new ResizeObserver(() => restack());
+  const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
   const isLost = (t: Thread) => lost(ctx, t);
 
@@ -81,9 +90,39 @@ export function createColumn(ctx: Ctx): View {
     return top === null ? Number.POSITIVE_INFINITY : top + window.scrollY - 4;
   }
 
+  /**
+   * Moves a thread (or the draft) to `y`. With reduced motion it never slides: it fades out, moves while unseen and fades
+   * back in, and moves asked for meanwhile join that one.
+   */
+  const hops = new WeakMap<HTMLElement, string>();
+  function moveTo(el: HTMLElement, y = 0): void {
+    const t = `translateY(${Math.round(y)}px)`;
+    if (!reduced || !el.style.transform) return void (el.style.transform = t);
+    if (el.style.transform === t && !hops.has(el)) return;
+    if (!hops.has(el)) {
+      el.classList.add("hop");
+      // It moves once it has faded right out (a busy page can start the fade late).
+      const land = () => {
+        if (+getComputedStyle(el).opacity > 0.01) return void requestAnimationFrame(land);
+        el.style.transform = hops.get(el)!;
+        hops.delete(el);
+        el.classList.remove("hop");
+      };
+      window.setTimeout(land, 200);
+    }
+    hops.set(el, t);
+  }
+
   function restack(): void {
     const finite: StackItem[] = [];
     const lost: { id: string; height: number }[] = [];
+    // A long comment at rest shows its first lines, then "more": measured here, where the cards are laid out anyway.
+    for (const { el } of items.values()) {
+      const tx = el.querySelector<HTMLElement>(".root>.tx");
+      if (!tx) continue;
+      tx.style.setProperty("--full", `${tx.scrollHeight}px`);
+      el.classList.toggle("long", tx.scrollHeight > LONG);
+    }
     for (const [id, item] of items) {
       let w = want(item.thread);
       if (Number.isFinite(w)) item.placed = w;
@@ -101,53 +140,71 @@ export function createColumn(ctx: Ctx): View {
     const top = d ? anchorTop(d.anchor, d.resolved) : null;
     if (draft && top !== null)
       finite.push({ id: "draft", want: top + window.scrollY - 4, height: draft.el.offsetHeight });
-    const pos = stackColumn(finite, draft ? "draft" : ctx.state.active);
+    // The open thread or draft lines up with its words, nudged up if the comment control would cover it. A new
+    // comment's box and buttons are always in the window, even on the page's last lines.
+    const lead = draft ? "draft" : ctx.state.active;
+    const f = finite.find((x) => x.id === lead);
+    const corner = col.getBoundingClientRect().right > window.innerWidth - CORNER ? CORNER : 0;
+    if (f && (corner || draft))
+      f.want = Math.max(
+        window.scrollY + 8,
+        Math.min(f.want, window.scrollY + window.innerHeight - corner - 10 - f.height),
+      );
+    const pos = stackColumn(finite, lead);
     let y = Math.max(0, ...finite.map((f) => (pos.get(f.id) ?? 0) + f.height)) + 24;
     for (const l of lost) {
       pos.set(l.id, y);
       y += l.height + 10;
     }
-    for (const [id, item] of items) {
-      if (item.el.classList.contains("wait")) {
-        if (!pos.has(id)) continue;
+    for (const [id, el] of [
+      ...[...items].map(([id, i]) => [id, i.el] as const),
+      ["draft", draft?.el] as const,
+    ]) {
+      if (!el) continue;
+      if (el.classList.contains("wait")) {
+        if (!pos.has(id) && el !== draft?.el) continue;
         // First placement: appear in place (fading in), don't glide in from the top.
-        item.el.style.transition = "none";
-        item.el.style.transform = `translateY(${Math.round(pos.get(id)!)}px)`;
-        void item.el.offsetWidth;
-        item.el.style.transition = "";
-        item.el.classList.remove("wait");
+        el.style.transition = "none";
+        el.style.transform = `translateY(${Math.round(pos.get(id) ?? 0)}px)`;
+        void el.offsetWidth;
+        el.style.transition = "";
+        el.classList.remove("wait");
         continue;
       }
-      item.el.style.transform = `translateY(${Math.round(pos.get(id) ?? 0)}px)`;
+      moveTo(el, pos.get(id));
     }
-    if (draft) draft.el.style.transform = `translateY(${Math.round(pos.get("draft") ?? 0)}px)`;
   }
 
   function fill(item: Item, t: Thread): void {
     item.thread = t;
     item.note = notesKey(t.id);
     item.lost = isLost(t);
-    item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null });
+    item.moved = moved(ctx, t);
+    item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null, moved: item.moved });
   }
 
   function create(t: Thread): Item {
     const lost = isLost(t);
-    const view = threadView(t, ctx.actions, { variant: "column", lost: lost ? t.anchor.snapshot : null });
+    const view = threadView(t, ctx.actions, {
+      variant: "column",
+      lost: lost ? t.anchor.snapshot : null,
+      moved: moved(ctx, t),
+    });
     // A closed thread opens from the keyboard with its button, which has no box of its own (the thread shows its
     // focus); `data-thread`: Esc in the open thread comes back to it.
+    // It waits unseen until it is first placed, then fades in there.
     const el = h(
       "div",
-      { class: "th", "data-thread": t.id },
+      { class: "th wait", "data-thread": t.id },
       h("button", { class: "opn sr", type: "button", "data-thread": t.id }),
       view.element,
     );
-    el.style.transition = "none";
     el.addEventListener("mouseenter", () => ctx.hot(t.id));
     el.addEventListener("mouseleave", () => ctx.hot(null));
     el.addEventListener("click", () => ctx.open(t.id));
     col.append(el);
     sizes.observe(el);
-    return { el, thread: t, lost, placed: null, view };
+    return { el, thread: t, lost, moved: moved(ctx, t), placed: null, view };
   }
 
   /** Fades an element out (no longer measured) and removes it. */
@@ -158,7 +215,8 @@ export function createColumn(ctx: Ctx): View {
   }
 
   function syncDraft(): void {
-    const d = ctx.state.draft;
+    // While All comments is open, a new comment is written there instead.
+    const d = ctx.state.listing ? null : ctx.state.draft;
     if (draft && draft.of !== d) {
       leave(draft.el);
       draft = null;
@@ -169,8 +227,7 @@ export function createColumn(ctx: Ctx): View {
     if (draft) draft.box.setLabel(d.label);
     else {
       const box = draftBox(ctx, d);
-      const el = h("div", { class: "th on" }, box.element);
-      el.style.transition = "none";
+      const el = h("div", { class: "th on wait" }, box.element);
       col.append(el);
       sizes.observe(el);
       draft = { el, box, of: d };
@@ -183,24 +240,29 @@ export function createColumn(ctx: Ctx): View {
     // Under All comments the column steps aside (faded, out of reach); chosen threads open as popovers.
     inert(col, ctx.state.listing);
     const live = new Set<string>();
-    const fresh: HTMLElement[] = [];
     const focused = ctx.state.active !== null || ctx.state.draft !== null;
     for (const t of list) {
       if (!ctx.visible(t)) continue;
-      live.add(t.id);
       let item = items.get(t.id);
+      // A comment just sent waits for its draft to go, then takes the draft's place.
+      if (!item && ctx.state.draft?.sending) continue;
+      live.add(t.id);
       if (!item) {
         item = create(t);
         items.set(t.id, item);
-        fresh.push(item.el);
-      } else if (item.thread !== t || item.lost !== isLost(t) || item.note !== notesKey(t.id)) {
+      } else if (
+        item.thread !== t ||
+        item.lost !== isLost(t) ||
+        item.moved !== moved(ctx, t) ||
+        item.note !== notesKey(t.id)
+      ) {
         fill(item, t);
       }
       const el = item.el;
       const on = ctx.state.active === t.id;
       el.classList.toggle("on", on);
       const opn = el.firstElementChild as HTMLElement;
-      const n = t.root.replies.length;
+      const n = replies(t).length;
       opn.setAttribute("aria-label", `Open thread: ${clip(t.root.text, 60)}, ${plural(n)}`);
       opn.setAttribute("aria-expanded", String(on));
       inert(opn, on);
@@ -231,11 +293,6 @@ export function createColumn(ctx: Ctx): View {
     )
       void col.offsetWidth;
     restack();
-    if (draft) fresh.push(draft.el);
-    for (const el of fresh) {
-      void el.offsetWidth;
-      el.style.transition = "";
-    }
   }
 
   function frame(): void {

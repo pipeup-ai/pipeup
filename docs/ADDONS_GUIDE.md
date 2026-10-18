@@ -15,7 +15,7 @@ git clone --depth 1 https://github.com/pipeup-ai/pipeup pipeup-src && cp -R pipe
 A page's author includes Pipeup, then your script, with one script tag each:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0/dist/pipeup.min.js"></script>
 <script src="https://example.org/my-addon.min.js"></script>
 ```
 
@@ -126,7 +126,7 @@ An add-on is a script on the page. **It runs with the page's full power, so noth
 
 - **List the add-ons that may run.** Put one attribute on the page: `<html data-pipeup-addons="share,myteam-hello">`. When it is there, only those add-ons run; any other is ignored, shows as off with the reason "this page doesn't allow it", and writes one plain line to the console. `none` lets no add-on run. Without the attribute every add-on runs, as before. Ids must match exactly.
 - **Pin each script.** Use a fixed version and an integrity hash: `<script src="…" integrity="sha384-…" crossorigin="anonymous">`. Or host one bundled file and pin that.
-- **Set a content security policy.** An add-on's "what it sends" sentence is a statement; a policy that allows scripts and connections only to the hosts you intend is what enforces it. For Pipeup's own add-ons, the hosts each declares are in the `network.to` of its page on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons.html).
+- **Set a content security policy.** An add-on's "what it sends" sentence is a statement; a policy that allows scripts and connections only to the hosts you intend is what enforces it. For Pipeup's own add-ons, the hosts each declares are in its `network.to`, and its page on the site says where it sends ([Add-ons](https://pipeup-ai.github.io/pipeup/addons.html) has a card for each, leading to its page).
 - **One bundled file.** For a company, host one file that holds Pipeup and the add-on together. The template's build makes it and prints its integrity hash.
 - **A name can't prove who made an add-on.** The first add-on with a name wins. Listing the add-ons you expect, and pinning them, covers this.
 
@@ -152,7 +152,7 @@ For your own add-on, the script is one file your company hosts, in any of these 
 | GitHub's prefilled "new issue" page                                          | No              | The reviewer                                                | Reviews as issues that an agent or workflow picks up |
 | Save into a local clone (the browser's file saving, Chrome and Edge)         | No              | The reviewer, or a hook                                     | A developer on their own machine                     |
 | Download the file and commit it                                              | No              | The reviewer, by hand                                       | Zero setup, rarely done consistently                 |
-| **Copy as Markdown**, pasted to an agent or an issue                         | No              | The agent or the reviewer                                   | What works today                                     |
+| **Copy comments › As Markdown**, pasted to an agent or an issue                      | No              | The agent or the reviewer                                   | What works today                                     |
 
 The two examples show the first and fourth. Start with Save to GitHub if you want to see it work in minutes; use Send to Git when reviews are long or you need sign-in and a record.
 
@@ -162,7 +162,7 @@ The two examples show the first and fourth. Start with Save to GitHub if you wan
 
 ### Example: Send to Git
 
-[Send to Git](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git) is a complete add-on written the way a company would write one. **It is not from the Pipeup project.** It adds a **Send to Git** row. It asks first, then sends the review as the Markdown that Copy as Markdown makes to a service your company runs, which files it in Git for later processing and for AI to work from. It never holds a Git token, never changes the page, and never posts, edits or resolves a comment.
+[Send to Git](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/examples/send-to-git) is a complete add-on written the way a company would write one. **It is not from the Pipeup project.** It adds a **Send to Git** row. It asks first, then sends the review as the Markdown that Copy comments › As Markdown makes to a service your company runs, which files it in Git for later processing and for AI to work from. It never holds a Git token, never changes the page, and never posts, edits or resolves a comment.
 
 The page names the service: `<html data-pipeup-send-to-git-url="https://reviews.example.com/reviews">`. The request is `POST` with `{ title, url, exportedAt, openThreads, markdown }`; the answer is `201` with `{ path, commit }` (and `pr` when it opened a pull request). The service must choose the file's path itself, know who is sending, answer the browser's check, limit size and rate, and hold the Git credentials. The example's README has the whole contract, a stand-in service that saves each review in a local Git repository (so you can see the whole path), and a **checker** that tells you in words whether your own service follows the contract.
 

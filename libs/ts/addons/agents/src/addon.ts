@@ -119,6 +119,7 @@ export function createAddon(): PipeupAddon {
                   replies: repliesUrl(),
                   file: link.enabled ? link.file : "",
                   listed: listedAgents().length > 0,
+                  version: (globalThis as { Pipeup?: { VERSION?: string } }).Pipeup?.VERSION,
                 }),
                 host.overlay(),
               );

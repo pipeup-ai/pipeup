@@ -16,7 +16,8 @@ export interface DraftOptions {
   /** Saves a new name (the same path as the menu's Your name). */
   rename(name: string): Promise<void>;
   onSend(text: string, mentions: Mention[]): Promise<void>;
-  onCancel(): void;
+  /** `words`: what Cancel or Esc threw away ("" for an empty box). */
+  onCancel(words: string): void;
   /** Who can be mentioned with `@`. */
   people?(): Person[];
 }
@@ -30,12 +31,13 @@ export interface DraftBox {
   /** Remembers the caret; the returned function focuses the box and puts it back. */
   caret(): () => void;
   isEmpty(): boolean;
+  /** Puts words back in the box (Undo), with the caret after them. */
+  fill(words: string): void;
 }
 
 /**
- * The box for a new comment: what it's on, then the writing line with the writer's avatar beside it. Nobody
- * has to give a name; a quiet line says who they are ("You're Otter · add your name") and opens a name
- * field in its place.
+ * The box for a new comment, as a card: who is writing, what it's on, then the writing box. Nobody has to give a
+ * name; the top line says who they are ("You're Otter · add your name") and opens a name field in its place.
  */
 export function renderDraft(o: DraftOptions): DraftBox {
   // The avatar is a shortcut for the mouse; keyboards and screen readers use the line's own button.
@@ -44,8 +46,8 @@ export function renderDraft(o: DraftOptions): DraftBox {
   me.addEventListener("mousedown", (e) => e.preventDefault());
   const comp = composer({
     label: "Comment",
+    placeholder: "Comment or add others with @",
     kind: "comment",
-    before: me,
     onSend: o.onSend,
     onCancel: o.onCancel,
     people: o.people,
@@ -113,7 +115,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   field.addEventListener("keydown", (e) => {
     // The name field's keys are its own: Escape here must not also drop the draft.
     e.stopPropagation();
-    if (e.key === "Escape") {
+    if (e.key === "Escape" && !e.isComposing) {
       e.preventDefault();
       closeName();
     } else if (e.key === "Enter") {
@@ -133,7 +135,14 @@ export function renderDraft(o: DraftOptions): DraftBox {
   sync();
   setNaming(false);
   const ctxLine = h("div", { class: "ctx" }, o.label);
-  const element = h("div", { class: "draft" }, ctxLine, note, comp.element, you);
+  const element = h(
+    "div",
+    { class: "draft" },
+    h("div", { class: "hdr" }, me, you),
+    ctxLine,
+    note,
+    comp.element,
+  );
   element.addEventListener(SOURCE_CHANGED, syncNote);
   return {
     element,
@@ -152,8 +161,17 @@ export function renderDraft(o: DraftOptions): DraftBox {
     },
     focus: () => comp.focus(),
     isEmpty: () => comp.input.value.trim() === "",
+    fill: (words) => {
+      comp.input.value = words;
+      comp.input.dispatchEvent(new Event("input"));
+      comp.focus();
+      comp.input.setSelectionRange(words.length, words.length);
+    },
   };
 }
+
+/** Each draft keeps one box, so it can move between the page and All comments with its words, caret and name field. */
+const boxes = new WeakMap<Draft, DraftBox>();
 
 /**
  * The box for the app's current draft. While it holds words, a click elsewhere won't throw them away.
@@ -161,15 +179,18 @@ export function renderDraft(o: DraftOptions): DraftBox {
  * already moved on, taking their typing or the new selection they just made.
  */
 export function draftBox(ctx: Ctx, d: Draft): DraftBox {
-  const box = renderDraft({
-    label: d.label,
-    me: ctx.doc.me,
-    name: () => ctx.menu.name(),
-    rename: (name) => ctx.menu.rename(name),
-    onSend: (text, mentions) => ctx.postDraft(text, mentions),
-    people: () => ctx.people(),
-    onCancel: () => ctx.cancelDraft(),
-  });
+  const box =
+    boxes.get(d) ??
+    renderDraft({
+      label: d.label,
+      me: ctx.doc.me,
+      name: () => ctx.menu.name(),
+      rename: (name) => ctx.menu.rename(name),
+      onSend: (text, mentions) => ctx.postDraft(text, mentions),
+      people: () => ctx.people(),
+      onCancel: (words) => ctx.cancelDraft(words),
+    });
+  boxes.set(d, box);
   ctx.registerDraft(box);
   return box;
 }

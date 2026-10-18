@@ -200,7 +200,7 @@ test("hostile page styles can't break or hide Pipeup's own UI", async ({ page })
   expect(look.size).toBe("14px");
   // The page's text moved (its own styles), so the thread follows it; the launcher stays put and works.
   await openMenu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(7);
+  await expect(page.locator(".menu.show .mi:not(.subs .mi)")).toHaveCount(6);
   expect(
     await page
       .locator(".menu .mi")
@@ -223,7 +223,6 @@ test("Escape closes an open thread even while the pointer is still on it", async
 
 test("Escape closes the comment menu and returns focus to its button", async ({ page }) => {
   await open(page, "doc.html");
-  await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.locator(".th .tx").first().click();
   await expect(page.locator(".th.on")).toHaveCount(1);

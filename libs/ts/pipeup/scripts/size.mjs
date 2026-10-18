@@ -1,14 +1,38 @@
 import { readFileSync } from "node:fs";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
-// 56 KB: it was 42 KB while add-on support was in (+3.8 KB over 0.4.1's 36.8 KB), then agents reading and answering comments
+// 50 KB: it was 42 KB while add-on support was in (+3.8 KB over 0.4.1's 36.8 KB), then agents reading and answering comments
 // added 2.6 KB and the live link to an agent 0.4 KB (design: docs/design/agent-replies.md); then reading the
 // page's light or dark look reliably and the reviewer's Look choice added 0.3 KB (design: docs/design/page-isolation.md); the budget
 // went to 50 KB for reactions and mentions, and to 56 KB when reactions, the picker slot, mentions, portable
-// identities and the page-isolation work all landed in core (agent support had left it).
+// identities and the page-isolation work all landed in core (agent support had left it); then back to 50 KB in 0.8,
+// when portable identities moved out to @pipeup/identity (docs/design/size-pass.md); then 51 KB for one compact card
+// everywhere, the panel's footer and new comments written in it, editing and deleting from ⋯, and Cancel and Comment
+// buttons: +1.6 KB of Pipeup's own UI, which every page shows (docs/design/panel-hub.md); then 52 KB for the
+// walkthrough's fixes (+0.4 KB): messages beside the round button, popovers and the selection's icon that never cover
+// what they're about, and new comments clear of the button (docs/design/walkthrough-fixes.md); then 53 KB for the
+// panel's filter pills and actions on hover, one Copy comments row with Theme, Space to pause, and the frosted corner
+// control that opens All comments in comment mode (+1.0 KB of Pipeup's own UI; docs/design/corner-control.md); then
+// 54 KB for the click-path review's words and focus: Tab moving on from a comment box, a waiting box beside its
+// block, Undo for thrown-away words, kept replies, keys kept from the page, and focus after every action (+1.7 KB;
+// docs/design/words-and-focus.md); then 55.5 KB for the looks review's fixes (+1.3 KB): highlights that follow the
+// colour behind their words, readable accents, forced-colour states, focus rings, long comments at rest, the wider
+// count bubble, and lists, cards and menus that ease (docs/design/looks-readable.md); then 56.5 KB for phones and
+// touch: 44 px targets, everything fitting the screen and clear of the control, Pin waiting for a tap, comment mode's
+// touch hint with Done, threads that open without the keyboard, a menu that scrolls, and a long press for who reacted
+// (+1.1 KB; docs/design/phones-touch.md); then 57.5 KB for the click-path review's decks and websites: a deck's own
+// controls left to it, any showing slide commented on, decks refitting beside All comments, Moved flagged, a click
+// made while Space is held left to the page, plain names for controls, where-labels from the right section, one
+// bubble per thread, and All comments as a list (+1.2 KB; docs/design/decks-and-sites.md); then 58 KB for working
+// in a page's own dialogs (Pipeup moves into a modal <dialog>, and keeps its focus and presses from focus traps)
+// and messages inside All comments (+0.3 KB); then 58.5 KB for keys kept ahead of a dialog's capture listeners, web
+// components' modal dialogs and fullscreen elements (+0.4 KB; docs/design/page-dialogs.md); then 59.5 KB for the
+// regression pass on 0.8.0-beta.5: decks' corner control and reveal.js slides, replies kept in All comments, Undo by
+// keyboard, an input method's Esc, the block cursor in a dialog, and dialogs that are moved, closed or re-rendered
+// (+0.7 KB; docs/design/words-and-focus.md, page-dialogs.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 56 * 1024,
-  "dist/pipeup.esm.js": 56 * 1024,
+  "dist/pipeup.min.js": 59.5 * 1024,
+  "dist/pipeup.esm.js": 59.5 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

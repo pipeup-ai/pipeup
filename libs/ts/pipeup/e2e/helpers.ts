@@ -120,17 +120,48 @@ export async function leaveReply(page: Page): Promise<void> {
   );
 }
 
-/** The comment control: one round button in the corner. */
+/** The comment control: one small square in the corner. */
 export const control = (page: Page): Locator => page.locator(".launch .mode");
 
-/** Opens the comment control's menu: a click on the one round button. */
+/** Comment mode is on: the control shows it. */
+const isCommenting = (page: Page) => control(page).evaluate((b) => b.classList.contains("on"));
+
+/**
+ * Opens the comment control's menu: a click on it. In comment mode the control opens All comments instead, and the
+ * menu is its footer's ⋯.
+ */
 export async function openMenu(page: Page): Promise<void> {
-  await control(page).click();
+  const panelOpen = (await page.locator(".all.show").count()) > 0;
+  if (panelOpen || (await isCommenting(page))) {
+    if (!panelOpen) await control(page).click();
+    await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
+  } else await control(page).click();
   await expect(page.locator(".menu.show")).toHaveCount(1);
 }
 
-/** Turns comment mode on or off from the menu's Start commenting switch, then closes the menu with Esc. */
+/** Opens All comments: from the menu, or in comment mode straight from the control. */
+export async function openAll(page: Page): Promise<void> {
+  if (await isCommenting(page)) await control(page).click();
+  else {
+    await openMenu(page);
+    await page.getByRole("menuitem", { name: /All comments/ }).click();
+  }
+  await expect(page.locator(".all.show")).toHaveCount(1);
+}
+
+/**
+ * Turns comment mode on from the menu's Start commenting switch (the menu closes with Esc), or off from the
+ * Comment switch in All comments' footer (the panel then closes with ×).
+ */
 export async function toggleCommenting(page: Page): Promise<void> {
+  if (await isCommenting(page)) {
+    await control(page).click();
+    const panel = page.locator(".all.show");
+    await panel.getByRole("switch", { name: /Comment/ }).click();
+    await panel.getByRole("button", { name: "Close" }).click();
+    await expect(page.locator(".all.show")).toHaveCount(0);
+    return;
+  }
   await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
   // The menu stays open so the switch is seen to move.
@@ -142,6 +173,32 @@ export async function toggleCommenting(page: Page): Promise<void> {
 export async function showComments(page: Page): Promise<void> {
   await page.keyboard.press("Shift+Alt+KeyC");
   await commenting(page);
+}
+
+/** Turns Hide comments on (or off) from the menu's switch, then closes the menu with Esc. */
+export async function hideComments(page: Page, on = true): Promise<void> {
+  await openMenu(page);
+  const sw = page.getByRole("menuitemcheckbox", { name: "Hide comments" });
+  if ((await sw.getAttribute("aria-checked")) !== String(on)) await sw.click();
+  await expect(sw).toHaveAttribute("aria-checked", String(on));
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+}
+
+/** The middle of the first highlighted words on the page (a text comment's highlight). */
+export const quoteSpot = (page: Page): Promise<{ x: number; y: number }> =>
+  page.evaluate(() => {
+    const q = ([...CSS.highlights.get("pipeup-quote")!][0] as Range).getClientRects()[0]!;
+    return { x: q.left + q.width / 2, y: q.top + q.height / 2 };
+  });
+
+/** The key held to pause comment mode: Space, on every platform. */
+export const HOLD_KEY = "Space";
+
+/** From the open menu: Copy comments, then one of its two choices. */
+export async function copyAs(page: Page, as: "As Markdown" | "As text"): Promise<void> {
+  await page.getByRole("menuitem", { name: "Copy comments" }).click();
+  await page.getByRole("menuitem", { name: as, exact: true }).click();
 }
 
 /** Comment mode is on (or off): the control shows it. */

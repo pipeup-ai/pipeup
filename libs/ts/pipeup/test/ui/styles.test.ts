@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { STYLES } from "../../src/ui/styles";
 
-/** The custom properties Pipeup's host writes onto its layer from script (theme.ts, host.ts). */
-const SET_BY_SCRIPT = ["--pu-accent", "--pu-font", "--pu-on", "--pu-panel", "--pu-pop"];
+/** The custom properties Pipeup's host writes onto its layer from script (theme.ts, host.ts, app.ts). */
+const SET_BY_SCRIPT = ["--pu-accent", "--pu-font", "--pu-lift", "--pu-on", "--pu-panel", "--pu-pop"];
+/** And on its own elements: a column comment's full height, for easing it open (column.ts). */
+const SET_ON_ELEMENTS = ["--full"];
 /** The public tokens add-ons may use: aliases of the short internal ones (add-ons design §3.4). */
 const PUBLIC = [
   "--pu-ease",
@@ -20,10 +22,12 @@ describe("the stylesheet", () => {
   it("uses only custom properties it defines, or that the host sets", () => {
     const defined = new Set([...STYLES.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));
     const used = [...new Set([...STYLES.matchAll(/var\((--[\w-]+)/g)].map((m) => m[1]!))];
-    expect(used.filter((v) => !defined.has(v) && !SET_BY_SCRIPT.includes(v))).toEqual([]);
+    expect(
+      used.filter((v) => !defined.has(v) && ![...SET_BY_SCRIPT, ...SET_ON_ELEMENTS].includes(v)),
+    ).toEqual([]);
   });
 
-  it("keeps its own tokens short: only the host's five and the public set carry the --pu- prefix", () => {
+  it("keeps its own tokens short: only the host's six and the public set carry the --pu- prefix", () => {
     expect([...new Set(STYLES.match(/--pu-[\w-]+/g))].sort()).toEqual([...SET_BY_SCRIPT, ...PUBLIC].sort());
   });
 

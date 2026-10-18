@@ -5,7 +5,7 @@ by the company, hosted by the company, named by the company. Nothing here is pub
 scope, and the Pipeup project doesn't vouch for add-ons from anyone else (see the [guide](../../../../docs/ADDONS_GUIDE.md)).
 
 It adds one row to Pipeup's menu, **Send to Git**. It asks first, then sends the review, as the same AI-ready Markdown
-that **Copy as Markdown** makes, to a service your company runs, which files it in Git. The add-on never holds a Git
+that **Copy comments › As Markdown** makes, to a service your company runs, which files it in Git. The add-on never holds a Git
 password or token, never changes the page, and never posts, edits or resolves a comment for anyone.
 
 ## See it work, on your computer
@@ -22,7 +22,7 @@ file appears in a real Git repository (a temporary one; the path is printed) and
 
 ## Make it save into a real GitHub repository
 
-**Lowest friction:** copy the prompt on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons.html#send-to-git) (the Send to Git card) and give it to your AI agent. It follows the `pipeup-send-to-git-setup` skill and does the steps below with you. Or do them by hand, to see the real thing with a repository you can open on GitHub:
+**Lowest friction:** copy the prompt on the [Add-ons page](https://pipeup-ai.github.io/pipeup/addons/send-to-git.html) (the Send to Git card) and give it to your AI agent. It follows the `pipeup-send-to-git-setup` skill and does the steps below with you. Or do them by hand, to see the real thing with a repository you can open on GitHub:
 
 1. **Make a test repository** (for example `your-org/reviews`) with a `main` branch.
 2. **Make an access token**: on GitHub, Settings, Developer settings, Fine-grained personal access tokens. Choose **only that
@@ -81,7 +81,7 @@ The address must be `https:` (or `http:` on this computer, for trying it). `demo
 }
 ```
 
-`markdown` is exactly what Copy as Markdown copies: each open thread says where it is on the page (the slide or section,
+`markdown` is exactly what Copy comments › As Markdown copies: each open thread says where it is on the page (the slide or section,
 the element's `data-pipeup-id`, the quoted text) and what was said. Resolved threads are left out.
 
 **The answer.** `201` with JSON: `{ "path": "reviews/launch-plan/20261010-093005-sam-ab12.md", "commit": "<sha>" }`, and

@@ -16,6 +16,8 @@ export interface Draft {
   ranges: Range[];
   /** Where the draft's content is: its range for text, its element for blocks and pins. */
   resolved: Resolved;
+  /** It has been sent and is becoming its thread: the column keeps the new thread for its place. */
+  sending?: boolean;
 }
 
 export interface UiState {
@@ -24,18 +26,24 @@ export interface UiState {
   showResolved: boolean;
   /** All comments shows only the threads that name this reviewer. */
   mine: boolean;
-  /** Comments are out of sight: comment mode is off and All comments is closed. */
+  /** The reviewer chose Hide comments (remembered for this page in this browser). */
+  hide: boolean;
+  /** Comments are out of sight: Hide comments is on, and nothing is showing them for a while (comment mode, All comments, a draft). */
   hidden: boolean;
   mode: "column" | "bubbles";
   draft: Draft | null;
   /** Comment mode: the page is quiet and a click chooses a block to comment on. */
   commenting: boolean;
+  /** Comment mode is paused while Space is held: the page works as normal. */
+  paused: boolean;
   /** All comments is open on the right: in the column layout it takes the column's place. */
   listing: boolean;
   /** A thread chosen from All comments on a narrow screen is open: comments show until it closes. */
   reading: boolean;
   /** The comment control's menu is open: in comment mode a click outside it only closes it. */
   menu: boolean;
+  /** Pin was tapped on a touch screen: the next tap on the page is where the pin goes, even on a highlight. */
+  pinning: boolean;
 }
 
 /** Something that draws: rebuilt on render, repositioned every frame. */
@@ -49,8 +57,8 @@ export interface MenuActions {
   copyAll(as: CopyAs): Promise<void>;
   toggleResolved(): void;
   toggleMine(): void;
-  /** Opens the dialog for making the identity portable, backing it up, or using one that was backed up. */
-  identity(): void;
+  /** Hide comments on or off, remembered for this page in this browser. */
+  setHide(on: boolean): void;
   rename(name: string): Promise<void>;
   /** The reviewer's name; "" until they add one. */
   name(): string;
@@ -100,6 +108,10 @@ export interface Ctx {
   open(id: string | null): void;
   /** Puts the cursor in thread `id`'s reply line, unless the reader is typing elsewhere. */
   focusReply(id: string): void;
+  /** What is written in reply lines waits for their threads (before a thread closes or its card is rebuilt). */
+  keepReplies(): void;
+  /** Puts back what was being written in thread `id`'s reply line. */
+  putReply(id: string): void;
   hot(id: string | null): void;
   startDraft(d: Draft): void;
   /** Moves the open draft to another block, keeping its words (starts one if none is open). */
@@ -109,18 +121,26 @@ export interface Ctx {
   /** Runs `fn`, then puts focus and the caret back in the open draft as they were. */
   keepCaret(fn: () => void): void;
   /** Goes back to the open draft: to its slide or view if that has gone, then focus and the caret into it. */
+  focusDraft(): void;
+  /**
+   * The open draft has words and something else was asked for: back to it (its block outlined and named again), and
+   * the reviewer is told to finish or cancel it first.
+   */
   backToDraft(): void;
   postDraft(text: string, mentions?: Mention[]): Promise<void>;
   /** This reviewer has read the comments in `t` that name them: marks them seen, so every device knows. */
   seen(t: Thread): void;
   /** Who can be mentioned with `@`: people in this document, agents the page lists, and people supplied. */
   people(): Person[];
-  cancelDraft(): void;
-  /** Turns comment mode on or off; comments show while it is on. `keys`: from the keyboard (the block cursor starts). */
+  /** Closes the open draft; `words` thrown away with it are offered back (Undo) for a few seconds. */
+  cancelDraft(words?: string): void;
+  /** Turns comment mode on or off. `keys`: from the keyboard (the block cursor starts). */
   setCommenting(on: boolean, keys?: boolean): void;
   /** What a click on the page does: cancels an empty draft (back to one with words), else closes the open thread. */
   dismiss(): void;
   registerDraft(box: DraftBox | null): void;
+  /** All comments opens thread `id` in its panel (while the panel is open, opening a thread goes there). */
+  registerList(open: ((id: string) => void) | null): void;
   toast(message: string): void;
   /** Tells screen readers (a polite live region), once. */
   say(text: string): void;

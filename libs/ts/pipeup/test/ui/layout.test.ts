@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { anchorTop, bubblePoint, hit, popoverAnchor } from "../../src/ui/geometry";
-import { placeBar, placePopover, stackColumn } from "../../src/ui/layout";
+import { placeBar, placeDraft, placeIcon, placePopover, stackColumn } from "../../src/ui/layout";
 import type { Anchor } from "../../src/model/types";
 
 const vp = { width: 1000, height: 800 };
@@ -43,28 +43,106 @@ describe("stackColumn", () => {
 });
 
 describe("placement", () => {
+  const line = { left: 100, top: 180, width: 200, height: 20 };
   it("puts popovers below quotes, flipping above near the bottom", () => {
-    expect(placePopover({ x: 100, y: 200, below: true }, { width: 300, height: 120 }, vp)).toEqual({
-      left: 100,
-      top: 208,
-    });
-    expect(placePopover({ x: 100, y: 750, below: true }, { width: 300, height: 120 }, vp).top).toBe(
-      750 - 120 - 40,
+    expect(placePopover({ x: 100, y: 200, below: true, box: line }, { width: 300, height: 120 }, vp)).toEqual(
+      {
+        left: 100,
+        top: 208,
+      },
     );
+    expect(
+      placePopover({ x: 100, y: 750, below: true, box: line }, { width: 300, height: 120 }, vp).top,
+    ).toBe(750 - 120 - 40);
   });
 
-  it("puts popovers beside elements, flipping left near the right edge, inside the margins", () => {
-    expect(placePopover({ x: 100, y: 200, below: false }, { width: 300, height: 120 }, vp)).toEqual({
+  it("puts popovers beside elements, inside the margins", () => {
+    expect(
+      placePopover({ x: 100, y: 200, below: false, box: line }, { width: 300, height: 120 }, vp),
+    ).toEqual({
       left: 114,
       top: 188,
     });
-    expect(placePopover({ x: 900, y: 200, below: false }, { width: 300, height: 120 }, vp).left).toBe(
-      900 - 300 - 28,
-    );
-    expect(placePopover({ x: 5, y: 2, below: false }, { width: 300, height: 120 }, vp)).toEqual({
+    expect(placePopover({ x: 5, y: 2, below: false, box: line }, { width: 300, height: 120 }, vp)).toEqual({
       left: 19,
       top: 12,
     });
+  });
+
+  it("with no room beside, puts the popover below the element, or above it, never over it", () => {
+    const size = { width: 300, height: 120 };
+    const at = (box: { left: number; top: number; width: number; height: number }) =>
+      placePopover({ x: 900, y: box.top + 8, below: false, box }, size, vp);
+    expect(at({ left: 600, top: 180, width: 310, height: 40 })).toMatchObject({ left: 600, top: 228 });
+    expect(at({ left: 600, top: 700, width: 310, height: 60 })).toMatchObject({ left: 600, top: 572 });
+    // A phone: the popover takes the width it can, and still stays off the element.
+    expect(
+      placePopover(
+        { x: 300, y: 408, below: false, box: { left: 40, top: 400, width: 280, height: 44 } },
+        size,
+        {
+          width: 390,
+          height: 844,
+        },
+      ),
+    ).toMatchObject({ left: 40, top: 452 });
+    // Too tall for either: as low as it fits, on screen.
+    expect(at({ left: 0, top: 50, width: 1000, height: 740 })).toMatchObject({ top: 800 - 120 - 12 });
+  });
+
+  it("puts the selection's icon past its block's text, level with the last line, or above when there's no room", () => {
+    const sel = { left: 100, top: 300, width: 200, height: 44 };
+    const last = { left: 100, top: 322, width: 120, height: 22 };
+    expect(placeIcon(sel, last, 640, { width: 36, height: 34 }, vp)).toEqual({ left: 648, top: 316 });
+    expect(placeIcon(sel, last, 980, { width: 36, height: 34 }, vp)).toEqual({ left: 182, top: 256 });
+  });
+
+  it("keeps boxes clear of the comment control's corner, and in the window", () => {
+    const size = { width: 300, height: 160 };
+    const phone = { width: 320, height: 568, keep: { left: 276, top: 524 } };
+    // A block taller than the screen: the box sits as low as it can, just above the control.
+    expect(placeDraft({ left: 0, top: 0, width: 320, height: 440 }, size, phone, 12, 60)).toEqual({
+      left: 12,
+      top: 524 - 8 - 160,
+      above: false,
+    });
+    // Narrower than the gap beside the control: it can go lower.
+    expect(
+      placeDraft({ left: 0, top: 0, width: 320, height: 440 }, { width: 200, height: 160 }, phone, 12, 60)
+        .top,
+    ).toBe(568 - 12 - 160);
+    // By touch in comment mode the hint runs along the bottom beside the control: nothing goes under either.
+    const hint = { ...phone, keep: { left: 0, top: 524 } };
+    expect(
+      placeDraft({ left: 0, top: 0, width: 320, height: 440 }, { width: 200, height: 160 }, hint, 12, 60).top,
+    ).toBe(524 - 8 - 160);
+    // A thread on words that have gone below the window (a phone turned) still shows, at the bottom.
+    expect(
+      placePopover(
+        { x: 20, y: 700, below: true, box: { left: 20, top: 680, width: 100, height: 20 } },
+        size,
+        {
+          width: 812,
+          height: 375,
+        },
+      ).top,
+    ).toBe(375 - 12 - 160);
+  });
+
+  it("puts the selection's icon below the words on a touch screen", () => {
+    const sel = { left: 100, top: 300, width: 200, height: 44 };
+    const last = { left: 100, top: 322, width: 120, height: 22 };
+    expect(placeIcon(sel, last, 640, { width: 48, height: 48 }, vp, true)).toEqual({ left: 176, top: 364 });
+    // No room below: above it.
+    expect(placeIcon({ ...sel, top: 730 }, last, 640, { width: 48, height: 48 }, vp, true).top).toBeLessThan(
+      730,
+    );
+  });
+
+  it("puts the naming bar at the window's top over a block too tall for room above or below", () => {
+    expect(placeBar({ left: 0, top: 0, width: 320, height: 760 }, { width: 200, height: 50 }, vp).top).toBe(
+      8,
+    );
   });
 
   it("centres the selection bar above, or below when there's no room", () => {
@@ -100,7 +178,18 @@ describe("geometry", () => {
     expect(bubblePoint(anchor({ point: { x: 0.5, y: 0.25 } }), r)).toEqual({ x: 200, y: 225 });
     expect(anchorTop(anchor({ point: { x: 0.5, y: 0.25 } }), r)).toBe(225);
     expect(anchorTop(anchor({}), r)).toBe(200);
-    expect(popoverAnchor(anchor({ point: { x: 0, y: 0 } }), r)).toEqual({ x: 100, y: 200, below: false });
+    expect(popoverAnchor(anchor({ point: { x: 0, y: 0 } }), r)).toMatchObject({
+      x: 100,
+      y: 200,
+      below: false,
+    });
+    // What it is about, for when there's no room beside: a pin's own spot.
+    expect(popoverAnchor(anchor({ point: { x: 0.5, y: 0.25 } }), r)?.box).toMatchObject({
+      left: 188,
+      top: 213,
+      width: 24,
+      height: 24,
+    });
   });
 
   it("gives no bubble to text comments or orphaned ones", () => {

@@ -1,6 +1,16 @@
 import { expect, test } from "@playwright/test";
 import type { MountOptions } from "../src/ui/mount";
-import { fixture, open, seedText, selectWords, showComments, stubClipboard, openMenu } from "./helpers";
+import {
+  copyAs,
+  fixture,
+  hideComments,
+  open,
+  seedText,
+  selectWords,
+  showComments,
+  stubClipboard,
+  openMenu,
+} from "./helpers";
 
 const lastCopy = (page: import("@playwright/test").Page) =>
   page.evaluate(() => (window as any).__copied.at(-1) ?? "");
@@ -14,31 +24,34 @@ test("the control shows the open count and a menu", async ({ page }) => {
   await seedText(page, "#p2", "second designer", "Why Q4?");
   await expect(page.locator(".launch .mode .n.on")).toHaveText("2");
   await menu(page);
-  await expect(page.locator(".menu.show .mi")).toHaveCount(7);
+  await expect(page.locator(".menu.show .mi:not(.subs .mi)")).toHaveCount(6);
 });
 
-test("Copy as Markdown copies Markdown with locations; Copy as Text copies the words", async ({ page }) => {
+test("Copy comments: as Markdown copies Markdown with locations; as text copies the words", async ({
+  page,
+}) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy as Markdown", exact: true }).click();
+  await copyAs(page, "As Markdown");
   await expect.poll(() => lastCopy(page)).toContain("# Review comments: Q3 plan");
   const md = await lastCopy(page);
   expect(md).toContain("- **Thread:** ");
   expect(md).toContain('- **Quoted text:** "20% lift"');
   await menu(page);
-  await page.getByRole("menuitem", { name: "Copy as Text", exact: true }).click();
+  await copyAs(page, "As text");
   await expect.poll(() => lastCopy(page)).toMatch(/^Section "Q3 plan"/);
   expect(await lastCopy(page)).not.toContain("**Thread:**");
 });
 
-test("a thread's own copy button always gives Markdown", async ({ page }) => {
+test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ page }) => {
   await open(page, "doc.html");
   await showComments(page);
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   const th = page.locator(".th");
   await th.locator(".tx").first().hover();
-  await th.getByRole("button", { name: /^Copy/ }).first().click();
+  await th.locator(".root").getByRole("button", { name: "More" }).click();
+  await th.getByRole("menuitem", { name: "Copy thread" }).click();
   await expect.poll(() => lastCopy(page)).toContain("- **Thread:** ");
 });
 
@@ -81,7 +94,7 @@ test("mount no longer takes copyAs", () => {
   expect(options).toBeTruthy();
 });
 
-test("resolved threads hide; Show resolved brings them back with Reopen", async ({ page }) => {
+test("resolved threads hide; ✓ Resolved brings them back with Reopen", async ({ page }) => {
   await open(page, "doc.html");
   const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await page.evaluate((id) => (window as any).pu.document.resolve(id), id);
@@ -89,7 +102,7 @@ test("resolved threads hide; Show resolved brings them back with Reopen", async 
   await expect(page.locator(".th")).toHaveCount(0);
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("switch", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Resolved", exact: true }).click();
   await page.keyboard.press("Escape");
   const th = page.locator(".th.resolved");
   await expect(th).toHaveCount(1);
@@ -97,18 +110,17 @@ test("resolved threads hide; Show resolved brings them back with Reopen", async 
   await expect(th.getByRole("button", { name: "Reopen" })).toBeVisible();
 });
 
-test("leaving comment mode hides threads and highlights, fades the column, and selecting offers nothing", async ({
+test("Hide comments hides threads and highlights and fades the column; outside comment mode selecting offers nothing", async ({
   page,
 }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await showComments(page);
+  // Comments show with comment mode off.
   await expect(page.locator(".th")).toHaveCount(1);
   expect(await page.locator(".col").evaluate((el) => getComputedStyle(el).transitionProperty)).toContain(
     "opacity",
   );
-  await menu(page);
-  await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
+  await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await expect(page.locator(".th")).toHaveCount(0);
   await selectWords(page, "#p2", "second designer");
@@ -158,14 +170,14 @@ test("resolving and reopening still succeed when the save fails, with a not-save
   await page.evaluate(() => (window as any).failNextSave());
   const th = page.locator(".th");
   await th.locator(".tx").first().hover();
-  await th.getByRole("button", { name: "Resolve" }).click();
+  await th.getByRole("button", { name: "Resolve", exact: true }).click();
   await expect(page.locator(".toast.show")).toContainText("Resolved");
   await expect(page.locator(".toast.show")).toContainText("not saved yet");
   expect(await page.evaluate(() => (window as any).pu.document.threads()[0].resolved)).toBe(true);
 
   await menu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("switch", { name: "Show resolved" }).click();
+  await page.getByRole("button", { name: "Resolved", exact: true }).click();
   await page.keyboard.press("Escape");
   await page.evaluate(() => (window as any).failNextSave());
   const done = page.locator(".th.resolved");

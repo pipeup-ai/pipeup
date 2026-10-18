@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { build, transform } from "esbuild";
 import { minify } from "terser";
 import { MANGLED } from "./mangle.mjs";
@@ -35,14 +35,36 @@ const common = {
   mangleProps: MANGLED,
 };
 
-// Classic script for <script> tags (also works from file://): core + UI + auto-mount.
-await build({
+// Classic script for <script> tags (also works from file://): core + UI + auto-mount. It is built as a module and
+// wrapped by hand, rather than as esbuild's IIFE, which carries CommonJS interop the page never uses (about 0.5 KB
+// gzip). The global keeps its shape: the same names, enumerable, read-only and non-configurable, on an extensible
+// object with the hidden `__esModule` marker; auto-mount still runs before the global is assigned.
+// Written by hand below, so dist/ must exist first (esbuild makes it only when it writes).
+await mkdir("dist", { recursive: true });
+const classic = await build({
   ...common,
   entryPoints: ["src/auto.ts"],
-  format: "iife",
-  globalName: "Pipeup",
+  format: "esm",
   outfile: "dist/pipeup.min.js",
+  write: false,
 });
+for (const out of classic.outputFiles) {
+  if (out.path.endsWith(".map")) {
+    await writeFile(out.path, out.text);
+    continue;
+  }
+  const found = /export\s*\{([^}]*)\};?\s*(\/\/# sourceMappingURL=\S*\s*)?$/.exec(out.text);
+  if (!found) throw new Error("build: the classic script's module must end with one export list");
+  const names = found[1]
+    .split(",")
+    .map((p) => p.trim().split(/\s+as\s+/))
+    .map(([local, name]) => `${JSON.stringify(name ?? local)}:${local}`);
+  // One line of wrapper before the body, so the source map's lines move by none.
+  await writeFile(
+    out.path,
+    `"use strict";var Pipeup=(()=>{${out.text.slice(0, found.index)};const o=Object.defineProperty({},"__esModule",{value:!0});for(const[k,v]of Object.entries({${names.join(",")}}))Object.defineProperty(o,k,{value:v,enumerable:!0});return o})();\n`,
+  );
+}
 // ESM for bundlers: core + UI, no side effects.
 await build({ ...common, entryPoints: ["src/index.ts"], format: "esm", outfile: "dist/pipeup.esm.js" });
 // Core only, for tools that never draw UI (CLI, servers).
@@ -62,7 +84,8 @@ for (const [file, module] of [
     ecma: 2022,
     compress: { passes: 2, drop_debugger: true },
     mangle: true,
-    format: { comments: false },
+    // ASCII only: non-ASCII characters are escaped, which compresses better and is safe in any page encoding.
+    format: { comments: false, ascii_only: true },
     sourceMap: { content: await readFile(`${path}.map`, "utf8") },
   });
   await writeFile(path, result.code);

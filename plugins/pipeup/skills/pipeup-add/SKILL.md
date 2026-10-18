@@ -5,7 +5,7 @@ description: Use when someone asks you to add comments to an HTML page, make it 
 
 # Add Pipeup to this page
 
-Written for Pipeup 0.7.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md) (the full reference: layouts, decks, tabs, every option), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md) (answering the comments) and [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 0.8.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md) (the full reference: layouts, decks, tabs, every option), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md) (answering the comments) and [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place. **When the page already exists, never change its layout, styling or behaviour to make room for Pipeup**: it draws in its own layer, and you only add attributes and one script tag. Edit the HTML file only; don't download, fetch or run anything yourself.
 
@@ -14,7 +14,7 @@ Pipeup lets people comment on an HTML page in place. **When the page already exi
 1. **Pin the script.** Just before `</body>`:
 
    ```html
-   <script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"
+   <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0/dist/pipeup.min.js"
            integrity="sha384-…" crossorigin="anonymous"></script>
    ```
 
@@ -30,7 +30,7 @@ Pipeup lets people comment on an HTML page in place. **When the page already exi
 4. **Add-ons: none unless the author asks.** Pipeup itself sends nothing anywhere. If they want sharing, voice, live
    comments, the assistant, the full emoji set for reactions (`@pipeup/emoji`), notes for mentioned people (`@pipeup/inbox`,
    which needs an inbox service address the author gives you), GitHub issues for mentions (`@pipeup/github`, which needs
-   `data-pipeup-github-repo`) or update notices (`@pipeup/updates`), ask first, say in plain words what it sends and to whom, and pin it like the core script.
+   `data-pipeup-github-repo`), update notices (`@pipeup/updates`) or recovery codes so reviewers can move their identity (`@pipeup/identity`), ask first, say in plain words what it sends and to whom, and pin it like the core script.
    Then list its id in `data-pipeup-addons` on `<html>` (append, never remove an entry) so only chosen add-ons run, and
    tell the author about a Content-Security-Policy that allows scripts only from the page and the CDN. Don't apply the
    policy yourself: a strict one can break a page.
@@ -49,5 +49,5 @@ When you rewrite or regenerate a page, keep `data-pipeup-doc`, `data-pipeup-shar
 ## Tell the author
 
 What you added (one script, a few attributes), how to comment (**⇧⌥C** on a Mac, **Shift+Alt+C** elsewhere, or the round
-button), how comments come back (**Copy as Markdown**, or, with the agents add-on, **Copy a prompt for my agent**), and that nothing leaves their
+button), how comments come back (**Copy comments › As Markdown**, or, with the agents add-on, **Copy a prompt for my agent**), and that nothing leaves their
 browser unless they choose it.

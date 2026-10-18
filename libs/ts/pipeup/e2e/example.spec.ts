@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { SHORTCUT } from "../src/ui/shortcut";
-import { control, openMenu, seedView } from "./helpers";
+import { control, openAll, seedView } from "./helpers";
 
 const example = new URL("../examples/review-document.html", import.meta.url).href;
 
@@ -61,9 +61,11 @@ test("the example deck shows each slide's comments and goes to another slide's",
   });
   await seedView(page, '[data-pipeup-id="s3-next"] li', "Name the designer", { slide: "3" });
   await expect(control(page)).toHaveAttribute("aria-label", "Comment, 0 here · 1 on other slides");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await page.getByRole("menuitem", { name: /Name the designer/ }).click();
+  await openAll(page);
+  await page
+    .locator(".all.show")
+    .getByRole("button", { name: /Name the designer/ })
+    .click();
   await expect(page.locator("#count")).toHaveText("3 / 3");
   await expect(page.locator(".all .xr")).toContainText("Name the designer");
 });

@@ -16,7 +16,7 @@ filled in. Nothing is sent until you submit the issue there, and GitHub tells th
 
 `data-pipeup-github-repo` is where the issue goes; the add-on stays off, saying why, on a page without it.
 `data-pipeup-github-people` lists GitHub names that appear in the `@` list. Someone who shared `gh:<name>` as how to
-reach them (My identity in the menu) can also be told this way.
+reach them (My identity in the menu, from `@pipeup/identity`) can also be told this way.
 
 ## What it sends, and to whom
 

@@ -629,7 +629,8 @@ excluded) and a one-line instruction, then `## Thread N` blocks in page/slide or
   button (`.launch .mode`): the comment-plus icon (`.plus`) and, while threads are open, a larger comment
   bubble (`.cnt`, the `bubble` icon) with the count inside, cross-fading between the two. The count is two
   stacked spans (`.n`); a change writes the hidden one and swaps `.on`, so the old number fades out as the new
-  one fades in; above 99 it reads "99+". Nothing about the button changes size. A CSS tooltip (`.ttip`,
+  one fades in; above 9 it reads "9+" (the exact number is in its
+  name and its slide-out). Nothing about the button changes size. A CSS tooltip (`.ttip`,
   "Comment" and `SHORTCUT_LABEL`) eases in after 0.5 s on hover or keyboard focus, hidden while the menu is
   open and on `hover:none` screens. The slide-out words and the "more" button are gone. A click opens the menu
   (`aria-haspopup="menu"`), which rises above the button and is built top down so **Comment** (or Stop
@@ -823,3 +824,5 @@ The design is [keyboard.md](keyboard.md). In short:
 - 2026-10-08 — §7: add-ons spike S2, first half: the kit's own BIP-340 signer passes the BIP-340 vectors and a 2,000-key cross-check against noble (1,041 B gzip); a local nostr-rs-relay accepts, delivers and doesn't store its ephemeral events from `file://` in Chrome, Firefox and Safari, and two peers meet through it and open a data channel. Public relays and other networks still to test.
 - 2026-10-08 — §7: S2 public relays — damus, nos.lol and primal accept and deliver the kit's events with no auth or proof of work; all run strfry, which keeps ephemeral events for 300 s and refuses ones older than 60 s. Cross-network rates still to test.
 - 2026-10-08 — §7: add-ons spike S4 passed: GitHub Actions runs PrivateBin 2.0.6 and nostr-rs-relay in Docker, and PrivateBin under PHP's built-in server.
+- 2026-10-14 — §11 *Visibility* is superseded by [comments-at-rest.md](comments-at-rest.md): comments show at rest, Hide comments is the reviewer's choice, and holding ⌘ (Ctrl) pauses comment mode.
+- 2026-10-14 — The card, the writing box and the panel are described in [panel-hub.md](panel-hub.md); it supersedes the hover footers and the panel rows in §11.

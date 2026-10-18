@@ -9,6 +9,8 @@ import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
 import type { Appearance } from "./legible";
+// Last, so the bundles carry the stylesheet after the code: it compresses better there.
+import { STYLES } from "./styles";
 
 export interface MountOptions {
   /** The area people can comment on. Default: document.body. */
@@ -107,14 +109,11 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   try {
     app = startApp({
       doc,
+      styles: STYLES,
       root: o.root ?? document.body,
       onName: async (name) => {
         doc.name = name;
         profile = { ...profile, name };
-        await kept.saveProfile(profile);
-      },
-      onIdentity: async (identity) => {
-        profile = { ...profile, identity };
         await kept.saveProfile(profile);
       },
     });
@@ -124,7 +123,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   }
   if (ephemeral)
     app.ctx.toast(
-      "This browser can't keep comments for this page — copy the comments (Copy as Markdown) to keep them",
+      "This browser can't keep comments for this page — copy the comments (Copy comments › As Markdown) to keep them",
     );
   const onHide = () => void doc.flush().catch((e: unknown) => globalThis.reportError?.(e));
   // Add-ons set up now, after the "can't keep comments" notice, in registration order.
@@ -134,6 +133,10 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     root: o.root ?? document.body,
     ephemeral,
     version: VERSION,
+    onIdentity: async (identity) => {
+      profile = { ...profile, identity };
+      await kept.saveProfile(profile);
+    },
   });
   // Agent support is an add-on: a page that lists an agent without it is told once, in the console, and loses nothing else.
   const agentsWarning = /\S/.test(document.documentElement.getAttribute("data-pipeup-agents") ?? "")

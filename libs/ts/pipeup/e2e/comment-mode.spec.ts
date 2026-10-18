@@ -3,6 +3,8 @@ import { SHORTCUT } from "../src/ui/shortcut";
 import {
   commenting,
   control,
+  hideComments,
+  HOLD_KEY,
   leaveReply,
   open,
   seedElement,
@@ -75,11 +77,12 @@ test("the shortcut typed in a page textarea types its character and doesn't togg
   await commenting(page, false);
 });
 
-test("with comments hidden on load, the shortcut and Start commenting both start comment mode and show them", async ({
+test("with comments hidden, the shortcut and Start commenting both start comment mode and show them", async ({
   page,
 }) => {
   await open(page, "controls.html");
   await seedElement(page, "[data-pipeup-id=tile-mrr]", "Use a real number");
+  await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
@@ -226,9 +229,11 @@ test("entering comment mode closes an open thread; Escape steps back one level a
   await leaveReply(page);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page, false);
-  await expect(page.locator(".pop.show")).toHaveCount(0);
+  // Comments show either way, so leaving comment mode keeps the thread open; entering it closes the thread.
+  await expect(page.locator(".pop.show")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
   await page.mouse.move(5, 790);
   await page.locator("#go").click();
   await expect(page.locator(".pick.on")).toHaveCount(1);
@@ -246,6 +251,80 @@ test("entering comment mode closes an open thread; Escape steps back one level a
   await commenting(page);
   await page.keyboard.press("Escape");
   await commenting(page, false);
+});
+
+/** Comment mode on from its shortcut, so focus stays on the page; the pointer on the page's button. */
+async function onTheButton(page: Page): Promise<void> {
+  await open(page, "controls.html");
+  await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
+  await commenting(page);
+  await page.locator("#go").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+}
+
+test("holding Space pauses comment mode: the page works, and letting go brings it back", async ({ page }) => {
+  await onTheButton(page);
+  await page.keyboard.down(HOLD_KEY);
+  // The outline goes at once, and the page hears the click.
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await page.locator("#go").click();
+  expect(await fired(page)).toContain("go");
+  await expect(page.locator(".pick.on, .pop.show")).toHaveCount(0);
+  await commenting(page);
+  // Letting go: the page is quiet again, and a click comments.
+  await page.keyboard.up(HOLD_KEY);
+  const before = (await fired(page)).length;
+  await page.locator("#go").click();
+  expect((await fired(page)).length).toBe(before);
+  await expect(page.locator(".pick.on")).toHaveCount(1);
+});
+
+test("while Space is held the page neither scrolls nor hears it, and a button clicked in one pause doesn't take the next", async ({
+  page,
+}) => {
+  await onTheButton(page);
+  await page.evaluate(() => {
+    const w = window as any;
+    w.spaces = 0;
+    document.addEventListener("keydown", (e) => e.key === " " && w.spaces++);
+  });
+  const y = await page.evaluate(() => scrollY);
+  await page.keyboard.down(HOLD_KEY);
+  await page.locator("#go").click();
+  await page.keyboard.up(HOLD_KEY);
+  // The click left focus on the page's button; holding Space again still pauses rather than pressing it.
+  const clicks = (await fired(page)).filter((f) => f === "go").length;
+  await page.keyboard.down(HOLD_KEY);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await page.keyboard.up(HOLD_KEY);
+  expect((await fired(page)).filter((f) => f === "go").length).toBe(clicks);
+  expect(await page.evaluate(() => scrollY)).toBe(y);
+  expect(await page.evaluate(() => (window as any).spaces)).toBe(0);
+});
+
+test("Space keeps its own job: typing in a field, and pressing a control reached from the keyboard", async ({
+  page,
+}) => {
+  await onTheButton(page);
+  await page.locator("#email").focus();
+  await page.keyboard.type("a b");
+  await expect(page.locator("#email")).toHaveValue("a b");
+  await expect(page.locator(".pick.show")).toHaveCount(1);
+  // The page's own button reached from the keyboard: Space presses it, as the page expects.
+  await page.locator("#nav-btn").focus();
+  await page.keyboard.press("Shift");
+  await page.keyboard.press(HOLD_KEY);
+  expect(await fired(page)).toContain("nav");
+});
+
+test("a pause ends when the window loses focus while Space is down", async ({ page }) => {
+  await onTheButton(page);
+  await page.keyboard.down(HOLD_KEY);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  // Switching away loses the key-up: the pause ends with the window's blur.
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await page.locator("#cta").hover();
+  await expect(page.locator(".pick.show")).toHaveCount(1);
 });
 
 test("with the menu open in comment mode, Escape closes only the menu", async ({ page }) => {
@@ -345,13 +424,13 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
     const q = ([...CSS.highlights.get("pipeup-quote")!][0] as Range).getClientRects()[0]!;
     return { x: q.left + q.width / 2, y: q.top + q.height / 2 };
   });
-  // Comments are hidden outside comment mode: nothing to preview.
+  // Comments show outside comment mode too, so the highlight previews there.
   await page.mouse.move(spot.x, spot.y);
-  await page.waitForTimeout(100);
-  await expect(page.locator(".tip.show")).toHaveCount(0);
+  await expect(page.locator(".tip.show")).toHaveCount(1);
   await page.mouse.move(5, 790);
+  await expect(page.locator(".tip.show")).toHaveCount(0);
   await commentMode(page);
-  // Comments only show in comment mode, so their highlights preview and open there.
+  // In comment mode the highlight previews and opens its thread, rather than choosing the block.
   await page.mouse.move(spot.x, spot.y);
   await expect(page.locator(".tip.show")).toHaveCount(1);
   await page.mouse.click(spot.x, spot.y);

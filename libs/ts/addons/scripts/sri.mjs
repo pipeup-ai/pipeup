@@ -3,7 +3,18 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 
 const here = new URL("../", import.meta.url).pathname;
-for (const id of ["share", "voice", "live", "assist", "agents", "emoji", "github", "updates", "inbox"]) {
+for (const id of [
+  "share",
+  "voice",
+  "live",
+  "assist",
+  "agents",
+  "emoji",
+  "github",
+  "updates",
+  "inbox",
+  "identity",
+]) {
   for (const f of [`${id}.min.js`, `pipeup+${id}.min.js`]) {
     const path = `${here}${id}/dist/${f}`;
     if (!existsSync(path)) continue;

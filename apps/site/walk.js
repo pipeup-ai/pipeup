@@ -1,6 +1,6 @@
 // The walkthrough pages: each plays its scene, has its own prompt, and the footer menu.
 (() => {
-const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.7.0/dist/pipeup.min.js"><\/script>';
+const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.0/dist/pipeup.min.js"><\/script>';
 const SITE = "https://pipeup-ai.github.io/pipeup/"; // The canonical address.
 const base = location.protocol.startsWith("http") ? new URL(".", location.href).href : SITE; // From disk: the published site.
 const GUIDE = `${base}skills/pipeup-integrate/SKILL.md`;
@@ -23,7 +23,7 @@ const prompts = {
     "3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.",
     "4. Don't change the page's layout to make room for Pipeup.",
     "",
-    "Later I will paste comments copied from Pipeup (Copy as Markdown); apply each one to the page.",
+    "Later I will paste comments copied from Pipeup (Copy comments › As Markdown); apply each one to the page.",
     `The full guide: ${GUIDE}`,
   ].join("\n"),
 };

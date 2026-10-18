@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- The page every add-on has (addons/<id>.html): this shell, with the add-on's own part (addons/<id>.html) in it. Built by
+     build-addons.py. Spec: docs/WEBSITE_SPEC.md ("Add-ons page"). Light only. -->
+<html lang="en" data-pipeup-doc="{{DOC}}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{TITLE}} · Pipeup add-ons</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="canonical" href="https://pipeup-ai.github.io/pipeup/addons/{{ID}}.html" />
+    <link rel="alternate" type="text/markdown" href="{{ID}}.html.md" title="This page as Markdown" />
+    <link rel="stylesheet" href="../addons.css" />
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <a class="mark" href="../" aria-label="Pipeup home">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" shape-rendering="geometricPrecision" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
+          Pipeup
+        </a>
+        <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" /></svg>
+          GitHub
+        </a>
+      </header>
+
+      <a class="back" href="../addons.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>Add-ons</a>
+
+{{BODY}}
+
+      <footer>
+        <div class="more-links">
+        <a class="agents-link addons-link" href="../addons.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4a2 2 0 1 1 4 0v1h3a1 1 0 0 1 1 1v3h-1a2 2 0 1 0 0 4h1v3a1 1 0 0 1-1 1h-3v-1a2 2 0 1 0-4 0v1H7a1 1 0 0 1-1-1v-3h1a2 2 0 1 0 0-4H6V6a1 1 0 0 1 1-1h3V4z"/></svg>Add-ons</a>
+        <div class="agents">
+          <a class="agents-link" href="../llms.txt" aria-haspopup="true" aria-expanded="false">For agents</a>
+          <div class="agents-menu" role="menu" aria-label="For agents">
+            <a role="menuitem" href="../llms.txt" title="A short guide for AI agents">llms.txt</a>
+            <a role="menuitem" href="../llms-full.txt" title="The guide and every skill, in one file">llms-full.txt</a>
+            <a role="menuitem" href="{{ID}}.html.md" title="This page as plain Markdown">This page as Markdown</a>
+            <a role="menuitem" href="../skills/pipeup-integrate/SKILL.md" title="How an agent adds Pipeup to a page">Agent skill</a>
+          </div>
+        </div>
+        </div>
+      </footer>
+    </main>
+
+    <script src="../addons.js"></script>
+    <script src="../pipeup.min.js"></script>
+  </body>
+</html>

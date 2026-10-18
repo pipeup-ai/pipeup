@@ -22,6 +22,8 @@ export interface ReactionPicker {
 }
 
 const PICKER = { width: 320, height: 340 };
+/** How long a finger rests on a reaction before it says who gave it. */
+const LONG_PRESS_MS = 450;
 
 /** Opens the picker in a popover beside `anchor`; it closes on a choice, Escape, a click elsewhere or when asked. */
 export function openPicker(anchor: HTMLElement, picker: ReactionPicker, pick: (emoji: string) => void): void {
@@ -75,6 +77,8 @@ export interface ReactionOptions {
   resolved: boolean;
   /** The quick row is open under this comment. */
   quick: boolean;
+  /** Only the quick row, never the chips (a closed card in All comments counts reactions in its last line). */
+  bare?: boolean;
   /** Gives or takes back a reaction. */
   react(emoji: string, on: boolean): void;
   /** Chips and quick buttons already on the page once, so only new ones ease in. */
@@ -86,10 +90,10 @@ export interface ReactionOptions {
  * pointing at one says who), and, when asked for, the quick row. Nothing for a comment nobody reacted to.
  */
 export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null {
-  if (c.deleted || (!c.reactions.length && !o.quick)) return null;
+  if (c.deleted || ((o.bare || !c.reactions.length) && !o.quick)) return null;
   const has = (emoji: string) =>
     c.reactions.find((r) => r.emoji === emoji)?.by.some((b) => b.author === o.me) ?? false;
-  const chips = c.reactions.map((r) => {
+  const chips = (o.bare ? [] : c.reactions).map((r) => {
     const mine = has(r.emoji);
     const n = r.by.length;
     const names = [...(mine ? ["You"] : []), ...r.by.filter((b) => b.author !== o.me).map((b) => nameOf(b))];
@@ -101,6 +105,7 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
         type: "button",
         "aria-pressed": String(mine),
         "aria-label": `${o.picker?.name(r.emoji) ?? NAMES[r.emoji] ?? "Reaction"}, ${n} ${n === 1 ? "person" : "people"}${mine ? ", including you" : ""}`,
+        "data-k": `x${c.id}${r.emoji}`,
       },
       h("span", {}, r.emoji),
       h("span", { class: "n" }, String(n)),
@@ -108,9 +113,28 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
     );
     o.seen.add(key);
     b.disabled = o.resolved;
+    // By touch, which can't point, a long press says who gave it, as pointing does, and leaves the reaction be. The
+    // names stay until the next touch.
+    let held = 0;
+    let told = false;
+    b.addEventListener("pointerdown", (e) => {
+      told = false;
+      if (e.pointerType === "touch")
+        held = window.setTimeout(() => {
+          told = true;
+          b.classList.add("held");
+          window.addEventListener("pointerdown", () => b.classList.remove("held"), {
+            capture: true,
+            once: true,
+          });
+        }, LONG_PRESS_MS);
+    });
+    for (const t of ["pointerup", "pointercancel"]) b.addEventListener(t, () => window.clearTimeout(held));
+    b.addEventListener("contextmenu", (e) => e.preventDefault());
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      o.react(r.emoji, !mine);
+      if (told) told = false;
+      else o.react(r.emoji, !mine);
     });
     return b;
   });
@@ -118,7 +142,12 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
     o.quick && !o.resolved
       ? h(
           "div",
-          { class: `rxq${o.seen.has(`${c.id}|quick`) ? "" : " new"}`, role: "group", "aria-label": "React" },
+          {
+            class: `rxq${o.seen.has(`${c.id}|quick`) ? "" : " new"}`,
+            role: "group",
+            "aria-label": "React",
+            "data-q": c.id,
+          },
           ...QUICK.map((emoji) => {
             const b = h(
               "button",
@@ -127,6 +156,7 @@ export function reactionRow(c: Comment, o: ReactionOptions): HTMLElement | null 
                 type: "button",
                 "aria-label": NAMES[emoji],
                 "aria-pressed": String(has(emoji)),
+                "data-k": `q${c.id}${emoji}`,
               },
               emoji,
             );

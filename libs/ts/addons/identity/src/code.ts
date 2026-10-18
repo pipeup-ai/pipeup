@@ -1,10 +1,7 @@
-import { fromB64u } from "../util/encoding";
-import type { Identity } from "./identity";
-
 /**
- * A portable identity: an Ed25519 key made from a 32-byte seed the reviewer can keep as a recovery code. The ordinary
- * identity is never exportable (its key can't leave the browser); only one made here can be, because the person chose
- * to make it portable.
+ * A portable identity: an Ed25519 key made from a 32-byte seed the reviewer can keep as a recovery code. Pipeup's
+ * ordinary identity is never exportable (its key can't leave the browser); only one made here can be, because the person
+ * chose to make it portable.
  */
 
 const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -59,40 +56,30 @@ function check(seed: Uint8Array): string {
   return out;
 }
 
-/** The code, written to be read and typed: `PU1-XXXX-XXXX-…`. */
-function write(seed: Uint8Array): string {
+/** The code for a seed, written to be read and typed: `PU1-XXXX-XXXX-…`. */
+export function codeOf(seed: Uint8Array): string {
   const body = (base32(seed) + check(seed)).match(/.{1,4}/g)!.join("-");
   return `${PREFIX}-${body}`;
 }
 
-async function fromSeed(seed: Uint8Array): Promise<Identity> {
+/** The private key a seed stands for: extractable, so it can be backed up again later. */
+export function keyOf(seed: Uint8Array): Promise<CryptoKey> {
   const pkcs8 = new Uint8Array(PKCS8.length + seed.length);
   pkcs8.set(PKCS8);
   pkcs8.set(seed, PKCS8.length);
-  const privateKey = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, true, ["sign"]);
-  const jwk = await crypto.subtle.exportKey("jwk", privateKey);
-  return { publicKey: jwk.x!, privateKey };
+  return crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, true, ["sign"]);
 }
 
 /** A new identity the reviewer can back up, and its recovery code. */
-export async function makePortable(): Promise<{ identity: Identity; code: string }> {
+export async function makePortable(): Promise<{ key: CryptoKey; code: string }> {
   const seed = crypto.getRandomValues(new Uint8Array(32));
-  return { identity: await fromSeed(seed), code: write(seed) };
-}
-
-/** The recovery code of an identity that was made portable; null for an ordinary one, which can't be exported. */
-export async function codeOf(identity: Identity): Promise<string | null> {
-  if (!identity.privateKey.extractable) return null;
-  const jwk = await crypto.subtle.exportKey("jwk", identity.privateKey);
-  return jwk.d ? write(fromB64u(jwk.d)) : null;
+  return { key: await keyOf(seed), code: codeOf(seed) };
 }
 
 export type CodeProblem = "shape" | "mistake";
 
-/** The identity a recovery code stands for, or what is wrong with the code, in a word the UI turns into a sentence. */
-export async function identityFromCode(
-  text: string,
-): Promise<{ identity: Identity } | { problem: CodeProblem }> {
+/** The key a recovery code stands for, or what is wrong with the code, in a word the dialog turns into a sentence. */
+export async function keyFromCode(text: string): Promise<{ key: CryptoKey } | { problem: CodeProblem }> {
   const clean = text.toUpperCase().replace(/[\s-]+/g, "");
   if (!clean.startsWith(PREFIX) || clean.length !== PREFIX.length + 52 + CHECK) return { problem: "shape" };
   // Letters that look like others are read as the ones the code uses (O is 0, I and L are 1, U is V).
@@ -101,5 +88,5 @@ export async function identityFromCode(
   if (!seed || seed.length < 32) return { problem: "shape" };
   const bytes = seed.slice(0, 32);
   if (check(bytes) !== body.slice(52) || base32(bytes) !== body.slice(0, 52)) return { problem: "mistake" };
-  return { identity: await fromSeed(bytes) };
+  return { key: await keyOf(bytes) };
 }

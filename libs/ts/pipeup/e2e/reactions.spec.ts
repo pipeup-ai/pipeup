@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { open, openMenu, seedText, showComments } from "./helpers";
+import { open, openAll, seedText, showComments } from "./helpers";
 
 /** Someone else reacts: a second identity signs a react op, merged as if it came from elsewhere. */
 const reactAs = (page: Page, name: string, emoji: string) =>
@@ -88,7 +88,7 @@ test("reactions are kept when the page is reloaded", async ({ page }) => {
   await expect(page.locator(".th .rx")).toContainText("❤️");
 });
 
-test("an agent reads the reactions, and Copy as Markdown carries them", async ({ page }) => {
+test("an agent reads the reactions, and copying comments as Markdown carries them", async ({ page }) => {
   await start(page);
   await reactAs(page, "Sam", "👍");
   await react(page, "👍");
@@ -100,9 +100,8 @@ test("an agent reads the reactions, and Copy as Markdown carries them", async ({
 test("All comments shows a thread's reactions as counts", async ({ page }) => {
   await start(page);
   await react(page, "🙏");
-  await openMenu(page);
-  await page.getByRole("menuitem", { name: /All comments/ }).click();
-  await expect(page.locator(".all.show .mi small").first()).toContainText("🙏 1");
+  await openAll(page);
+  await expect(page.locator(".all.show .cd .rest").first()).toContainText("🙏 1");
 });
 
 test("a keyboard user can react: the React button opens the quick row, and its buttons are named", async ({

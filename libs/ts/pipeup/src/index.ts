@@ -26,5 +26,4 @@ export {
   type Teardown,
   type UiSnapshot,
 } from "./ui/addons";
-export { type AgentComments, type AgentThread } from "./export/agent";
 export { onReveal, setViewState, type SlideHook, type ViewState } from "./ui/here";
