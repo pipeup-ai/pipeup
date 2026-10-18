@@ -129,14 +129,21 @@ describe("placement", () => {
     ).toBe(375 - 12 - 160);
   });
 
-  it("puts the selection's icon below the words on a touch screen", () => {
+  it("puts the selection's icon at the window's right edge on a touch screen, beside the phone's own menu", () => {
     const sel = { left: 100, top: 300, width: 200, height: 44 };
     const last = { left: 100, top: 322, width: 120, height: 22 };
-    expect(placeIcon(sel, last, 640, { width: 48, height: 48 }, vp, true)).toEqual({ left: 176, top: 364 });
-    // No room below: above it.
-    expect(placeIcon({ ...sel, top: 730 }, last, 640, { width: 48, height: 48 }, vp, true).top).toBeLessThan(
-      730,
-    );
+    // Level with the last line.
+    expect(placeIcon(sel, last, 640, { width: 48, height: 48 }, vp, true)).toEqual({
+      left: vp.width - 52,
+      top: 322 + 11 - 24,
+    });
+    // A last line that runs into the edge (where its handle is): level with the first line instead.
+    const long = { left: 100, top: 322, width: vp.width - 120, height: 22 };
+    expect(placeIcon(sel, long, 640, { width: 48, height: 48 }, vp, true).top).toBe(300 + 11 - 24);
+    // Always in the window.
+    expect(
+      placeIcon({ ...sel, top: 760 }, { ...last, top: 782 }, 640, { width: 48, height: 48 }, vp, true).top,
+    ).toBe(vp.height - 48 - 8);
   });
 
   it("puts the naming bar at the window's top over a block too tall for room above or below", () => {
