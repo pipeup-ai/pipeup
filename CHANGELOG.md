@@ -7,48 +7,25 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
-### Fixed
+## [0.8.1] - 2026-10-18
 
-- **On a deck, the comment control stays in its corner** when the deck is shown fullscreen, inside a page's dialog, and beside a layer over the whole window that the page asks Pipeup to ignore: it went off the top of the screen.
-- **On reveal.js, a comment goes under the slide it is on**, and the block cursor leaves a slide as the deck turns, even while it is still sliding away. A page that sets its own width (`html { width: 100% }`, as reveal.js and many resets do) now makes room for All comments.
-- **Replies are kept in All comments**: a reply being written there was thrown away when its card closed, another card opened, or a thread moved into the panel. Esc in it now throws the words away with Undo, as everywhere else.
-- **Opening All comments while writing a comment keeps the caret in it**: the next keys went to another thread's row, and could post a reply there.
-- **Esc while an input method is composing** (Japanese, Chinese, Korean) only cancels the composition; it threw the whole comment or reply away.
-- **⌘Z (Ctrl+Z) takes the Undo** after Esc or Cancel, so it can be reached from the block cursor; once the message fades, its Undo is no longer a Tab stop.
-- On a deck, Tab or a click on nothing in particular leaves a waiting comment on its own slide (it turned the deck back), and going back to it puts the caret in it. On a deck Pipeup can't turn, Pipeup says which slide the waiting comment is on.
-- With a page's modal dialog or inert overlay open, the block cursor only visits what is in it. Pipeup leaves a web component's dialog however it closes, keeps the caret when a dialog renders its contents again, and waits outside a dialog moved with a transform (it was trapped in the dialog's box).
-- Copy thread keeps focus on its ⋯, and copying without the browser's clipboard keeps focus where it was.
-- A change of look fades instead of blinking.
-- **Many comments on one element keep their bubbles in the room they have.** Side-by-side bubbles ran on to the right, over the comment column's first cards, and near the window's edge piled onto one spot, so some couldn't be clicked. They now step left before the column or the window's edge, and onto a further row when a row is full; each one is clear of the others and can be clicked.
-- **A closed card's hidden actions never take a click or tap.** On a touch tablet, a tap on a closed column card where its Resolve, React or ⋯ would be resolved the thread or opened them (the tap hovers the card as it lands); it now opens the card. With a mouse, a click on a closed card's corner as the pointer arrives no longer resolves the thread before Resolve shows: a card's actions take presses once they have eased in.
-- **After Resolve in the column, a second click with the pointer still opens the next card** instead of resolving it too. The keyboard still reaches and sees its actions at once.
-- **On a deck, comment mode's touch hint, Pipeup's other messages and the comment control sit above the deck's own controls anywhere along the bottom**, not only in the bottom-right corner: on a phone the hint no longer covers a bottom-centre "← 1 / 3 →" bar.
-- Pipeup is 58.8 KB gzip; its budget rises from 58.5 to 59.5 KB.
-
-## [0.8.0-beta.5] - 2026-10-18
-
-This pre-release shows a comment where it is whenever its content is on the page, even after a page reports a new revision of itself, and makes the commands an agent is given name the page's Pipeup, so a beta page never fetches the stable command line. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+This release makes Pipeup work on iPhones as it should: one tap chooses what to comment on, the on-screen keyboard never covers the comment box, and comment mode's touch hint is easier to see and gets out of the way. Pipeup is 59.8 KB gzip.
 
 ### Fixed
 
-- **Commands match the page's Pipeup.** The agents add-on's prompt for an agent now names the page's Pipeup version (`npx pipeup@0.8.0-beta.4 comments …`), and a pre-release's prompt points at the pre-release guide; on the pre-release site (`/next/`) every `npx pipeup` command in the pages, skills and `llms.txt` names the pre-release. A bare `npx pipeup` fetched npm's stable release (0.7.0) for pages running a beta.
-- **A comment shows where it is when its content is on the page**, even if the page now reports something else about itself, such as a new revision of a design: it was counted as "in another view", with no bubble and no line to it, whenever its content had also changed (found as Moved). Content that is hidden or gone still counts as elsewhere. The integration skill now says to report only where the reviewer is, never a revision or date.
+- **iPhones: one tap answers.** Safari on iOS sends no click for a tap on words or pictures unless something listens for one, so choosing a block, closing the menu or a thread, and opening a thread from its words took several tries (a tap only worked where it landed on a link or button). While Pipeup waits for a tap on the page, it now listens on the page's body, and Safari sends it.
+- **By touch, Start commenting closes the menu** once the switch has moved, so the next tap chooses a block.
+- **Comment mode's touch hint is easier to see and gets out of the way**: it is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done beside the comment control.
+- ⌘Z (Ctrl+Z) no longer also presses the touch hint's Done.
+- **The on-screen keyboard never covers a comment box.** On a phone the box and its buttons stay in the part of the screen the keyboard leaves, beside what the comment is about (which scrolls up into view), and the comment control steps aside while the keyboard is up. When the phone moves the page to show the box, the box, outline and naming bar stay on what they are about (they were drawn off by the phone's pan). The phone no longer offers AutoFill Contact in a comment box.
+- **By touch, the selection's comment icon sits at the window's right edge**, level with the selection, so the phone's own Copy and Look Up menu never covers it.
+- Pipeup is 59.8 KB gzip; its budget rises from 59.5 to 60 KB.
 
-## [0.8.0-beta.4] - 2026-10-17
+## [0.8.0] - 2026-10-18
 
-This pre-release makes Pipeup work while a page's own dialog is open: a browser's modal dialog, one inside a web component, a library's dialog that traps focus or closes on Escape (Radix, shadcn/ui, Bootstrap, MUI, Headless UI), and an element shown fullscreen. While All comments is open, messages sit inside the panel, clear of a deck's slide controls. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+This release is about reading and writing comments, and about Pipeup working wherever it is put. Every thread is the same compact card; All comments is the hub while it is open; you can edit and delete your own comments; comments show without comment mode; and the comment control is a small frosted square in the corner. Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it and focus never drops to the page. Decks keep their own controls and make room for All comments, Pipeup works inside a page's own dialogs and fullscreen elements, and phones get finger-sized targets and a touch hint with Done. Portable identities are an add-on (`@pipeup/identity`), and `pipeup init` and `pipeup read` join `check`. It folds the five betas, 0.8.0-beta.1 to 0.8.0-beta.5.
 
-### Fixed
-
-- **Pipeup works while a page's own dialog is open.** In a browser's modal dialog, the comment control, menu and comment boxes were under its backdrop and couldn't be used (the browser makes everything outside the dialog inert); Pipeup now moves its element into the open dialog and back out when it closes. A library's dialog that traps focus no longer pulls the caret out of a comment box, and one that closes on a press outside no longer closes when Pipeup is used. Dialogs that make the rest of the page inert, and overlays at the highest z-index, were already fine and are now tested.
-- **While All comments is open, messages sit inside the panel above its footer**, so comment mode's hint no longer covers a deck's own slide controls beside the panel.
-- Pipeup also works in a web component's modal dialog (as Material Web's) and in an element shown fullscreen (a deck presenting, say), and keys pressed in Pipeup never reach a page's dialog: Escape in a comment box no longer closes a Radix or shadcn/ui dialog, and Tab no longer jumps into a focus-trapping one.
-- The Esc that closes the menu no longer also leaves comment mode when focus is on the page.
-- Pipeup is 58.1 KB gzip; its budget rises from 57.5 to 58.5 KB.
-
-## [0.8.0-beta.3] - 2026-10-15
-
-This pre-release fixes what six testers found walking every click and key of beta.2 on documents, slide decks, websites and phones: Tab moves on from a comment box, typed words are never lost without an Undo, keys used in Pipeup stay with it, focus never drops to the page, decks keep their own controls and make room for All comments, phones get finger-sized targets and a touch hint with Done, and highlights, accents and high-contrast modes stay readable. Pipeup is 57.4 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
+Pipeup is 58.9 KB gzip (52.3 KB in 0.7.0), and its budget rises from 56 to 59.5 KB: the cards, the hub, editing, touch, decks, dialogs and the fixes from two rounds of testing every click path are Pipeup's own UI, which every page shows.
 
 ### Changed
 
@@ -65,10 +42,47 @@ This pre-release fixes what six testers found walking every click and key of bet
 - **Comment mode by touch.** On a touch screen its hint says "Tap what you want to comment on" (not the keyboard and mouse hints) and stays beside the comment control while comment mode is on, with **Done**, which leaves comment mode in one tap; only Done takes a tap, so what is under the hint still works. The naming bar's **Pin** waits for the next tap and drops the pin there (from the keyboard it still pins the centre). Comment mode's hint, by touch or not, waits for the menu to close instead of showing under it, and a screen with only touch shows no keyboard shortcuts in the menu or the panel's footer.
 - **Fingers can hit everything.** On a touch screen every button Pipeup shows is at least 44 px across: bubbles (which keep their small look), the naming bar's icons, the selection's icon, who you are in a new comment, a card's actions, the ⋯ menu, reactions, Cancel, Comment and Reply, the filters, Close and the footer's switch.
 - **Opening a thread by touch doesn't raise the keyboard**: its reply box waits to be tapped. A long press on a reaction shows who gave it, without taking yours back. The selection's comment icon sits below the words, clear of the phone's own selection menu.
-- **Pipeup is 57.4 KB gzip** with the click-path review's fixes (52.1 KB in beta.2), and its budget rises from 53 to 57.5 KB.
+- **All comments is the hub while it is open.** The comment control becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title, just its two filters and ×. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
+- **All comments' filters read as on or off.** They are pills with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and filled with a soft tint of the accent colour when on, with tooltips. **Hovering a closed card in the panel shows its actions** (React, ✓ Resolve and ⋯, as on every card), and they work without opening it; on touch screens they show once the card is open.
+- **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
+- **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
+- **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
+- **The comment control is a small frosted square tucked into the corner** instead of a round button floating over the page: flush with the bottom and right edges, no border, the count inside a bigger bubble. Pointed at, it reaches left to show its shortcut. In comment mode a click on it opens All comments.
+- **Clearer small icons.** On the naming bar, Around it is a small box with an arrow leaving it and Inside it a large box with an arrow pointing into it, so the two never look alike; Pin stands as tall as them. A card's actions (React, Resolve, ⋯) are larger, and React's face has round eyes and a gentler smile. In an avatar the animal nearly fills its tint.
+- **A shorter menu.** **Copy comments** is one row that opens to its two choices, As Markdown and As text, and **Look** is now called **Theme**.
+- **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less. A leaner build (the classic script without CommonJS interop, the stylesheet after the code, ASCII-only output) trims Pipeup further, with no change in behaviour. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
+
+### Added
+
+- **Edit and delete your own comments** from their ⋯ menu. Editing puts the words back in a box with Cancel and Save; Delete asks once more. A deleted comment goes away, and deleting a thread's first comment removes the thread.
+- **Hold Space to pause comment mode.** While it is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back. Space is the key because it leaves a click alone (⌘-click would open a link in a new tab); typing in a field and pressing a control from the keyboard keep their Space.
+- **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
+- **`pipeup init <page.html>`** adds Pipeup to a page in one step: the script pinned to this version and its integrity hash, and a document identity if the page has none (it never changes one). It says what it will change and asks first, and leaves every other byte as it was. `--update` moves a page to this version, `--offline` puts Pipeup inside the page, `--addon <id>` adds an add-on (saying what it sends, and asking for what it needs), and `--agent` lists this computer's agent. It then offers stable names for the page's headings, figures, tables, images and slides, one at a time, for you to accept, rename or skip (`--marks` goes straight there). Nothing is fetched.
+- **`pipeup read <page.html>`** prints a page's comments without opening it, as Markdown (like Copy as Markdown) or `--json`: from feedback files and folders of them (`--from`, `--deep`), the page's shared copy (with `@pipeup/share` installed; it sends nothing) and its replies file (only from agents the page lists). Every comment meets the page's checks; what was read, skipped or left out is said on standard error. `--out` writes one merged feedback file.
+- Two add-on slots: `host.openDialog(content, label)` (capability `dialog`) and `host.identity` (capability `identity`).
 
 ### Fixed
 
+- **On a deck, the comment control stays in its corner** when the deck is shown fullscreen, inside a page's dialog, and beside a layer over the whole window that the page asks Pipeup to ignore: it went off the top of the screen.
+- **On reveal.js, a comment goes under the slide it is on**, and the block cursor leaves a slide as the deck turns, even while it is still sliding away. A page that sets its own width (`html { width: 100% }`, as reveal.js and many resets do) now makes room for All comments.
+- **Replies are kept in All comments**: a reply being written there was thrown away when its card closed, another card opened, or a thread moved into the panel. Esc in it now throws the words away with Undo, as everywhere else.
+- **Opening All comments while writing a comment keeps the caret in it**: the next keys went to another thread's row, and could post a reply there.
+- **Esc while an input method is composing** (Japanese, Chinese, Korean) only cancels the composition; it threw the whole comment or reply away.
+- **⌘Z (Ctrl+Z) takes the Undo** after Esc or Cancel, so it can be reached from the block cursor; once the message fades, its Undo is no longer a Tab stop.
+- On a deck, Tab or a click on nothing in particular leaves a waiting comment on its own slide (it turned the deck back), and going back to it puts the caret in it. On a deck Pipeup can't turn, Pipeup says which slide the waiting comment is on.
+- With a page's modal dialog or inert overlay open, the block cursor only visits what is in it. Pipeup leaves a web component's dialog however it closes, keeps the caret when a dialog renders its contents again, and waits outside a dialog moved with a transform (it was trapped in the dialog's box).
+- Copy thread keeps focus on its ⋯, and copying without the browser's clipboard keeps focus where it was.
+- A change of look fades instead of blinking.
+- **Many comments on one element keep their bubbles in the room they have.** Side-by-side bubbles ran on to the right, over the comment column's first cards, and near the window's edge piled onto one spot, so some couldn't be clicked. They now step left before the column or the window's edge, and onto a further row when a row is full; each one is clear of the others and can be clicked.
+- **A closed card's hidden actions never take a click or tap.** On a touch tablet, a tap on a closed column card where its Resolve, React or ⋯ would be resolved the thread or opened them (the tap hovers the card as it lands); it now opens the card. With a mouse, a click on a closed card's corner as the pointer arrives no longer resolves the thread before Resolve shows: a card's actions take presses once they have eased in.
+- **After Resolve in the column, a second click with the pointer still opens the next card** instead of resolving it too. The keyboard still reaches and sees its actions at once.
+- **On a deck, comment mode's touch hint, Pipeup's other messages and the comment control sit above the deck's own controls anywhere along the bottom**, not only in the bottom-right corner: on a phone the hint no longer covers a bottom-centre "← 1 / 3 →" bar.
+- **Commands match the page's Pipeup.** The agents add-on's prompt for an agent now names the page's Pipeup version (`npx pipeup@0.8.0-beta.4 comments …`), and a pre-release's prompt points at the pre-release guide; on the pre-release site (`/next/`) every `npx pipeup` command in the pages, skills and `llms.txt` names the pre-release. A bare `npx pipeup` fetched npm's stable release (0.7.0) for pages running a beta.
+- **A comment shows where it is when its content is on the page**, even if the page now reports something else about itself, such as a new revision of a design: it was counted as "in another view", with no bubble and no line to it, whenever its content had also changed (found as Moved). Content that is hidden or gone still counts as elsewhere. The integration skill now says to report only where the reviewer is, never a revision or date.
+- **Pipeup works while a page's own dialog is open.** In a browser's modal dialog, the comment control, menu and comment boxes were under its backdrop and couldn't be used (the browser makes everything outside the dialog inert); Pipeup now moves its element into the open dialog and back out when it closes. A library's dialog that traps focus no longer pulls the caret out of a comment box, and one that closes on a press outside no longer closes when Pipeup is used. Dialogs that make the rest of the page inert, and overlays at the highest z-index, were already fine and are now tested.
+- **While All comments is open, messages sit inside the panel above its footer**, so comment mode's hint no longer covers a deck's own slide controls beside the panel.
+- Pipeup also works in a web component's modal dialog (as Material Web's) and in an element shown fullscreen (a deck presenting, say), and keys pressed in Pipeup never reach a page's dialog: Escape in a comment box no longer closes a Radix or shadcn/ui dialog, and Tab no longer jumps into a focus-trapping one.
+- The Esc that closes the menu no longer also leaves comment mode when focus is on the page.
 - **Keys used in Pipeup no longer reach the page.** Arrows, Home and End in the menu and All comments, Enter and Space on Pipeup's buttons, and what is typed in a box (going down or coming up) stay with Pipeup, so a deck no longer turns its slide; ← and → on the comment control still do. The Esc that steps back or ends comment mode is Pipeup's, so a reveal.js deck no longer opens its overview.
 - **A double-click on Delete deletes nothing**: its "Delete for everyone" question ignores the click that asked it.
 - **Phones: everything fits the screen and stays clear of the comment control.** At 320 px the naming bar fits (its words shorten before its icons go), so Pin can be reached; a new comment's box, a thread beside a bubble and Pipeup's messages are never under the 44 px control, so their buttons can be pressed; bubbles at the window's edge are wholly on screen; the menu fits a phone on its side or a page zoomed far in, and scrolls when it can't; turning a phone with a thread open brings the thread and its words back into view; and in All comments on a phone an open card keeps where it is, and a comment moved into the panel keeps what it is on.
@@ -91,31 +105,6 @@ This pre-release fixes what six testers found walking every click and key of bet
 - A comment on content outside a tab panel shows whichever tab is open; a comment inside one still goes with its tab.
 - Where a comment is names the section it is in, never the heading of the card before it or of a hidden tab, and copying gives a thread's words the same whether or not its slide shows (a reveal.js slide by its title). The Markdown's Element line says a slide's paragraph is in the slide's id, not that it is it.
 - A new comment on a page's last lines keeps its box and buttons in the window. Two comments on one element each have their own bubble, side by side, and a bubble on a button sits just outside it, so the whole button still works. Choosing a comment inside a closed details outlines its summary instead of an empty box. A site's own bar at the highest z-index no longer hides Pipeup.
-
-## [0.8.0-beta.2] - 2026-10-15
-
-This pre-release is about reading and writing comments: every thread is the same compact card, All comments is the hub while it is open, you can edit and delete your own comments, comments show without comment mode, and the comment control is a small frosted square tucked into the corner. Pipeup is 52.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
-
-### Changed
-
-- **All comments is the hub while it is open.** The comment control becomes the panel's footer (who you are, Comment with its switch, and ⋯ for the rest of the menu), so it is never hidden under the panel. Turning comment mode on leaves the panel open, and a new comment is written in the panel, in page order, joined to what it's about by a line. The header has no title, just its two filters and ×. The panel stays open until you close it (× or Esc); clicking the page no longer closes it.
-- **All comments' filters read as on or off.** They are pills with an icon and a word, **@ For you** and **✓ Resolved**, grey when off and filled with a soft tint of the accent colour when on, with tooltips. **Hovering a closed card in the panel shows its actions** (React, ✓ Resolve and ⋯, as on every card), and they work without opening it; on touch screens they show once the card is open.
-- **Every thread is the same compact card**, in the column, beside a bubble, in All comments and in the drawer: avatar, name, how long ago (the exact time on hover), the words, and its actions at the top right (React, ✓ Resolve, and ⋯ with Copy thread).
-- **The comment and reply boxes** say "Comment (Reply) or add others with @" and have **Cancel** and **Comment** (**Reply**) buttons while you write. Enter still sends.
-- **Pipeup is 52.1 KB gzip** with these and the fixes below (48.8 KB in 0.8.0-beta.1), and its budget rises from 50 to 53 KB.
-- **Comments show whether comment mode is on or off.** Highlights, bubbles and the column can be read and opened without turning comment mode on, and the rest of the page works as normal. **Hide comments**, a new switch in the menu, puts them out of sight; the choice is remembered for that page in this browser.
-- **The comment control is a small frosted square tucked into the corner** instead of a round button floating over the page: flush with the bottom and right edges, no border, the count inside a bigger bubble. Pointed at, it reaches left to show its shortcut. In comment mode a click on it opens All comments.
-- **Clearer small icons.** On the naming bar, Around it is a small box with an arrow leaving it and Inside it a large box with an arrow pointing into it, so the two never look alike; Pin stands as tall as them. A card's actions (React, Resolve, ⋯) are larger, and React's face has round eyes and a gentler smile. In an avatar the animal nearly fills its tint.
-- **A shorter menu.** **Copy comments** is one row that opens to its two choices, As Markdown and As text, and **Look** is now called **Theme**.
-
-### Added
-
-- **Edit and delete your own comments** from their ⋯ menu. Editing puts the words back in a box with Cancel and Save; Delete asks once more. A deleted comment goes away, and deleting a thread's first comment removes the thread.
-- **Hold Space to pause comment mode.** While it is held, the outline and picking cursor go and the page works as normal, so you can click through it to what you want to comment on. Letting go brings comment mode back. Space is the key because it leaves a click alone (⌘-click would open a link in a new tab); typing in a field and pressing a control from the keyboard keep their Space.
-- **A standby signing key for the update list.** The `updates` add-on also trusts `k2`, kept offline, so if the current key is ever lost or leaked the list can be signed with `k2` without a new add-on release.
-
-### Fixed
-
 - **A mention of you stays inline in its sentence.** It showed as a band on its own line, with the rest of the sentence pushed below.
 - **Pipeup's messages appear beside the comment control.** They were at the bottom centre, over a deck's slide controls and a phone's last lines of text. While All comments is open they sit beside it.
 - **A new comment beside the page is never under the comment control.** Near the bottom of the window, an open card or new comment in the column moves up just enough to clear it.
@@ -127,23 +116,8 @@ This pre-release is about reading and writing comments: every thread is the same
 
 - **The home page's showcase keeps a smallest size**, so no scene is cut off: a thinner frame, never narrower than 440 px beside the headline, never shorter than 400 px, and a sideways scroll on screens too narrow for it.
 - **The footer has no facts line**: it says no more than its Add-ons and For agents links.
-
 - **The Add-ons page is a page of small cards**, in three groups (From Pipeup, Run your own, Examples from another company). Each card has a title, one sentence and a picture; its Copy button copies the prompt, script tag or command (a menu when there is more than one), and a click anywhere else opens the add-on's own page, with what it sends, what it asks, its buttons and its demo. Each add-on page has a Markdown copy for agents, and `llms.txt` points to them.
 - The site's animations show Pipeup as this version draws it: the comment box with Cancel and Comment and the compact card it becomes, the selection's icon beside the text, the naming bar with Around it and Pin, and on the Add-ons page Assist's reading line and reply inside the comment's card.
-
-## [0.8.0-beta.1] - 2026-10-13
-
-This pre-release is about a smaller Pipeup and the rest of the command line: Pipeup alone is 48.8 KB gzip (52.3 KB in 0.7.0), portable identities are an add-on, and `pipeup init` and `pipeup read` join `check`. It is a beta: try it from the `next` channel and tell us what breaks.
-
-### Changed
-
-- **Portable identities are an add-on, `@pipeup/identity`.** *My identity* (making an identity portable, its recovery code and file, using it elsewhere, and sharing a way to be reached) moved out of Pipeup, so pages that don't need it download less: Pipeup is 49.9 KB gzip (52.3 KB in 0.7.0) and its budget drops from 56 to 50 KB. A leaner build (the classic script without CommonJS interop, the stylesheet after the code, ASCII-only output) brings it to 48.8 KB, with no change in behaviour. Comments written under a portable identity are still shown and verified, with or without the add-on, and a browser that holds one keeps writing as it. With the add-on, the *My identity* row sits with the other add-ons' rows in the menu. `pu.document.identityCode()` is gone; `pu.document.seed()` returns a portable identity's seed.
-
-### Added
-
-- **`pipeup init <page.html>`** adds Pipeup to a page in one step: the script pinned to this version and its integrity hash, and a document identity if the page has none (it never changes one). It says what it will change and asks first, and leaves every other byte as it was. `--update` moves a page to this version, `--offline` puts Pipeup inside the page, `--addon <id>` adds an add-on (saying what it sends, and asking for what it needs), and `--agent` lists this computer's agent. It then offers stable names for the page's headings, figures, tables, images and slides, one at a time, for you to accept, rename or skip (`--marks` goes straight there). Nothing is fetched.
-- **`pipeup read <page.html>`** prints a page's comments without opening it, as Markdown (like Copy as Markdown) or `--json`: from feedback files and folders of them (`--from`, `--deep`), the page's shared copy (with `@pipeup/share` installed; it sends nothing) and its replies file (only from agents the page lists). Every comment meets the page's checks; what was read, skipped or left out is said on standard error. `--out` writes one merged feedback file.
-- Two add-on slots: `host.openDialog(content, label)` (capability `dialog`) and `host.identity` (capability `identity`).
 
 ## [0.7.0] - 2026-10-13
 
@@ -435,12 +409,9 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.5...HEAD
-[0.8.0-beta.5]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.4...v0.8.0-beta.5
-[0.8.0-beta.4]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.3...v0.8.0-beta.4
-[0.8.0-beta.3]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.2...v0.8.0-beta.3
-[0.8.0-beta.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0-beta.1...v0.8.0-beta.2
-[0.8.0-beta.1]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0-beta.1
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/pipeup-ai/pipeup/compare/v0.5.3...v0.5.4

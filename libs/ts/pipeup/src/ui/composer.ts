@@ -88,6 +88,8 @@ export function composer(o: ComposerOptions): Composer {
     class: "input",
     dir: "auto",
     rows: "1",
+    // A comment is words, not a contact: the phone's keyboard offers no AutoFill.
+    autocomplete: "off",
     "aria-label": o.name ?? o.label,
     placeholder: o.placeholder ?? "",
   });

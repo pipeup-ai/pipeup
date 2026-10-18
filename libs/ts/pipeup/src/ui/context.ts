@@ -146,6 +146,8 @@ export interface Ctx {
   say(text: string): void;
   /** Comment mode's hint goes, if it is showing. */
   hideHint(): void;
+  /** Whether Pipeup waits for a tap on the page changed (the menu opened or closed): iOS is told to send taps. */
+  taps(): void;
   /** Escape's step back: the draft, the open thread, then comment mode's own, then comment mode. */
   back(): void;
   /** Tells the reviewer what went wrong. */
