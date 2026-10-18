@@ -205,8 +205,9 @@ any of them off.
   the naming bar, comment boxes and threads always fit the screen: the naming bar's words shorten before its
   icons go, and nothing sits under the comment control.
 - **Comment mode on a touch screen says how to use it by touch** ("Tap what you want to comment on"), not the
-  keyboard and mouse hints. Its hint stays beside the comment control while comment mode is on, with
-  **Done**, which leaves comment mode in one tap. On a deck it sits above the deck's own slide controls along the
+  keyboard and mouse hints. Its hint, filled with the accent colour so it is easy to see, stays beside the comment
+  control while comment mode is on, with **Done**, which leaves comment mode in one tap. Once a tap has opened a
+  comment box, its words fold away and only Done stays; on that page they don't come back. On a deck it sits above the deck's own slide controls along the
   bottom (§6), so on a phone it never covers them. Only Done takes a tap: what is under the hint's words can
   still be tapped. A screen with only touch shows no keyboard shortcuts, in the menu or the panel's footer.
 
@@ -1795,3 +1796,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Many comments on one element keep their bubbles in the room they have: side by side to the right, then to the left before the comment column or the window's edge, then on a further row; never over the column's cards or each other, and every one can be clicked (section 7).
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
 - 2026-10-18 — iPhones (0.8.1): one tap answers on the page (Safari sends no click for a tap on words or pictures unless something listens for one); by touch the menu closes after Start commenting; the on-screen keyboard never covers a comment box, and Pipeup's drawings stay on what they are about when the phone moves the page; the selection's icon sits at the right edge beside the phone's own menu; no AutoFill in a comment box (sections 5, 7).
+- 2026-10-18 — By touch, comment mode's hint is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done (section 5).

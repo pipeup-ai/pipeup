@@ -174,12 +174,21 @@ export function startApp(o: AppOptions): App {
    * covering the page): how to use it by touch, and Done, which leaves comment mode in one tap.
    */
   const tapping = () => state.commenting && !state.listing && touch();
+  /** A tap has opened a comment box on this page: the hint's words have done their job, and only Done stays. */
+  let taught = false;
   function tapHint(): void {
-    if (tapping() && !state.menu)
-      toast("Tap what you want to comment on", 0, true, false, {
-        label: "Done",
-        run: () => setCommenting(false),
-      });
+    if (!tapping() || state.menu) return;
+    toast("Tap what you want to comment on", 0, true, false, {
+      label: "Done",
+      run: () => setCommenting(false),
+    });
+    toastEl.classList.add("tap");
+    learnt();
+  }
+  /** By touch, once a tap has opened a comment box, the hint's words fold away (screen readers no longer hear them). */
+  function learnt(): void {
+    toastEl.classList.toggle("taught", taught);
+    toastEl.querySelector(".tw")?.toggleAttribute("aria-hidden", taught);
   }
 
   /**
@@ -191,31 +200,47 @@ export function startApp(o: AppOptions): App {
     ms = TOAST_MS,
     isHint = false,
     quiet = false,
-    action?: { label: string; href?: string; run?: () => void },
+    action?: { label: string; href?: string; run?: () => void; undo?: boolean },
   ): void {
     if (destroyed) return;
     if (isHint && state.menu) return void (hintLater = () => toast(text, ms, true, quiet));
     hint = isHint;
-    toastEl.textContent = text;
+    toastEl.replaceChildren(h("span", { class: "tw" }, text));
+    toastEl.classList.remove("tap", "taught");
     toastEl.classList.toggle("act", Boolean(action));
     const run = action?.run;
-    undoing = run
-      ? () => {
-          undoing = null;
-          toastEl.classList.remove("show");
-          run();
-        }
-      : null;
+    // Only an Undo answers ⌘Z or Ctrl+Z (Done, on the touch hint, never does).
+    undoing =
+      run && action.undo
+        ? () => {
+            undoing = null;
+            toastEl.classList.remove("show");
+            run();
+          }
+        : null;
     if (action) {
       const a = run
-        ? h("button", { class: "ta", type: "button", "aria-keyshortcuts": "Meta+Z Control+Z" }, action.label)
+        ? h(
+            "button",
+            {
+              class: "ta",
+              type: "button",
+              ...(action.undo ? { "aria-keyshortcuts": "Meta+Z Control+Z" } : {}),
+            },
+            action.label,
+          )
         : h(
             "a",
             { class: "ta", href: action.href, target: "_blank", rel: "noopener noreferrer" },
             action.label,
           );
-      if (undoing) {
-        const take = undoing;
+      if (run) {
+        const take =
+          undoing ??
+          (() => {
+            toastEl.classList.remove("show");
+            run();
+          });
         a.addEventListener("click", (e) => {
           e.stopPropagation();
           take();
@@ -238,7 +263,7 @@ export function startApp(o: AppOptions): App {
 
   /** Words were thrown away (Cancel or Esc): `undo` brings them back, for a few seconds. */
   const offer = (text: string, undo: () => void) =>
-    toast(text, UNDO_MS, false, false, { label: "Undo", run: undo });
+    toast(text, UNDO_MS, false, false, { label: "Undo", run: undo, undo: true });
 
   function hideHint(): void {
     if (tapping()) return;
@@ -744,6 +769,11 @@ export function startApp(o: AppOptions): App {
     fadeHighlights(state.hidden ? 0 : 1);
     host.layer.classList.toggle("hidden", state.hidden);
     host.layer.classList.toggle("listing", state.listing);
+    // By touch, once a tap has opened a comment box the hint keeps only Done.
+    if (state.draft && tapping() && !taught) {
+      taught = true;
+      if (toastEl.classList.contains("tap")) learnt();
+    }
     // By touch, comment mode's hint goes while All comments covers the page, and comes back after.
     if (state.commenting && touch()) {
       if (state.listing) hideHint();

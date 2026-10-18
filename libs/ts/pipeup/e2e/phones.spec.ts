@@ -625,6 +625,37 @@ test.describe("an iPhone's taps and keyboard", () => {
     await expect.poll(() => bodyClicks(page)).toBe(rest + 1);
   });
 
+  test("comment mode's touch hint is in the accent colour; once a tap has opened a box its words fold away and Done stays", async ({
+    page,
+  }) => {
+    await open(page, "phone.html");
+    await commentMode(page);
+    const hint = page.locator(".toast.show");
+    await expect(hint).toContainText("Tap what you want to comment on");
+    const [bg, accent] = await hint.evaluate((el) => [
+      getComputedStyle(el).backgroundColor,
+      getComputedStyle(el.closest(".layer")!).getPropertyValue("--pu-accent").trim(),
+    ]);
+    expect(bg).not.toBe("rgba(0, 0, 0, 0)");
+    expect(accent).not.toBe("");
+    const words = hint.locator(".tw");
+    await expect(words).toHaveCSS("opacity", "1");
+    await page.locator("#p3").tap();
+    await expect(page.locator(".pop.show textarea")).toBeVisible();
+    await expect(hint).toHaveClass(/\btaught\b/);
+    await expect(words).toHaveCSS("opacity", "0");
+    await expect(words).toHaveAttribute("aria-hidden", "");
+    const done = hint.getByRole("button", { name: "Done" });
+    await fingerSized(done);
+    // Narrower now, it still keeps clear of the control.
+    await expect.poll(async () => (await hint.boundingBox())!.width).toBeLessThan(120);
+    await done.tap();
+    await expect(control(page)).not.toHaveClass(/\bon\b/);
+    // On this page it doesn't come back: comment mode again shows only Done.
+    await commentMode(page);
+    await expect(page.locator(".toast.show")).toHaveClass(/\btaught\b/);
+  });
+
   test("Start commenting by touch closes the menu once the switch has moved, so the next tap picks a block", async ({
     page,
   }) => {

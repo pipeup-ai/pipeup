@@ -40,6 +40,17 @@ a click for every tap, so neither showed there.
   corner, so drawing and measuring agree again. Elsewhere the difference is always nothing.
 - The comment box has `autocomplete="off"`, so the keyboard offers no AutoFill Contact above it.
 
+## The touch hint (`app.ts` `tapHint`, `learnt`)
+
+- Asked for after the demo: the hint is easier to see, and goes once it has done its job. By touch it takes `.tap`:
+  filled with the accent, white words at 15 px, balanced over two lines when it wraps.
+- `taught` turns true the first time a comment box opens by touch (in `render()`), for the rest of the page's life.
+  The hint takes `.taught`: its words' grid column eases from `1fr` to `0fr` and their height to nothing while they
+  fade, so it folds to Done beside the control (still the one tap that leaves comment mode). The words are
+  `aria-hidden` once folded.
+- Messages now put their words in a `.tw` span, so the hint's can fold without touching Done.
+- Only an Undo answers ⌘Z or Ctrl+Z (`action.undo`): the touch hint's Done did too, since it was the only other button.
+
 ## The selection's icon by touch (`placeIcon`)
 
 - iOS puts its own menu for a selection (Copy, Look Up…) above or below the selection, wherever there is room, so
@@ -60,7 +71,7 @@ a click for every tap, so neither showed there.
 
 ## Size
 
-Pipeup is 59.5 KB gzip (+0.6 KB); the budget rises from 59.5 to 60 KB.
+Pipeup is 59.8 KB gzip (+0.9 KB); the budget rises from 59.5 to 60 KB.
 
 ## Change log
 

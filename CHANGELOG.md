@@ -11,9 +11,11 @@ change the API and the stored comment format.
 
 - **iPhones: one tap answers.** Safari on iOS sends no click for a tap on words or pictures unless something listens for one, so choosing a block, closing the menu or a thread, and opening a thread from its words took several tries (a tap only worked where it landed on a link or button). While Pipeup waits for a tap on the page, it now listens on the page's body, and Safari sends it.
 - **By touch, Start commenting closes the menu** once the switch has moved, so the next tap chooses a block.
+- **Comment mode's touch hint is easier to see and gets out of the way**: it is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done beside the comment control.
+- ⌘Z (Ctrl+Z) no longer also presses the touch hint's Done.
 - **The on-screen keyboard never covers a comment box.** On a phone the box and its buttons stay in the part of the screen the keyboard leaves, beside what the comment is about (which scrolls up into view), and the comment control steps aside while the keyboard is up. When the phone moves the page to show the box, the box, outline and naming bar stay on what they are about (they were drawn off by the phone's pan). The phone no longer offers AutoFill Contact in a comment box.
 - **By touch, the selection's comment icon sits at the window's right edge**, level with the selection, so the phone's own Copy and Look Up menu never covers it.
-- Pipeup is 59.5 KB gzip; its budget rises from 59.5 to 60 KB.
+- Pipeup is 59.8 KB gzip; its budget rises from 59.5 to 60 KB.
 
 ## [0.8.0] - 2026-10-18
 
