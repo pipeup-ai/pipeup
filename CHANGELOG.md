@@ -20,6 +20,9 @@ change the API and the stored comment format.
 - Copy thread keeps focus on its ⋯, and copying without the browser's clipboard keeps focus where it was.
 - A change of look fades instead of blinking.
 - **Many comments on one element keep their bubbles in the room they have.** Side-by-side bubbles ran on to the right, over the comment column's first cards, and near the window's edge piled onto one spot, so some couldn't be clicked. They now step left before the column or the window's edge, and onto a further row when a row is full; each one is clear of the others and can be clicked.
+- **A closed card's hidden actions never take a click or tap.** On a touch tablet, a tap on a closed column card where its Resolve, React or ⋯ would be resolved the thread or opened them (the tap hovers the card as it lands); it now opens the card. With a mouse, a click on a closed card's corner as the pointer arrives no longer resolves the thread before Resolve shows: a card's actions take presses once they have eased in.
+- **After Resolve in the column, a second click with the pointer still opens the next card** instead of resolving it too. The keyboard still reaches and sees its actions at once.
+- **On a deck, comment mode's touch hint, Pipeup's other messages and the comment control sit above the deck's own controls anywhere along the bottom**, not only in the bottom-right corner: on a phone the hint no longer covers a bottom-centre "← 1 / 3 →" bar.
 - Pipeup is 58.8 KB gzip; its budget rises from 58.5 to 59.5 KB.
 
 ## [0.8.0-beta.5] - 2026-10-18

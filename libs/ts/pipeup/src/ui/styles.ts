@@ -38,12 +38,14 @@ svg{display:block}
 .tx a{color:var(--pu-accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 
 /* Actions sit at the card's top right: always on an open card, on hover (or focus) on one at rest. In All comments a
-closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. */
+closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. After
+Resolve (.still) the card that moves up under the pointer keeps them from it until it moves; keyboard focus shows them. */
 .acts{margin-left:auto;display:flex;flex:none;transition:opacity var(--in) var(--eo)}
-.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts,.still .th:not(.on):not(:focus-within) .acts,.still .cd:not(.open):not(:has(:focus-visible,.pm)) .acts{opacity:0;pointer-events:none}
+.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts,.still .th:not(.on):not(:has(:focus-visible)) .acts,.still .cd:not(.open):not(:has(:focus-visible,.pm)) .acts{opacity:0;pointer-events:none}
 /* On a closed card they lie over the end of the top line, on the card's own colour, so the name has the whole line
-while they're hidden and the card never changes size as they ease in. */
-.th:not(.on) .acts,.cd:not(.open) .acts{position:absolute;right:0;padding-left:16px;background:linear-gradient(90deg,transparent,var(--bg) 14px)}
+while they're hidden and the card never changes size as they ease in. They take presses only once eased in: a click as
+the pointer arrives, or a tap (which hovers as it lands), opens the card. */
+.th:not(.on) .acts,.cd:not(.open) .acts{position:absolute;right:0;padding-left:16px;background:linear-gradient(90deg,transparent,var(--bg) 14px);transition:opacity var(--in) var(--eo),pointer-events 0s var(--in);transition-behavior:allow-discrete}
 .th.on .rest{display:none}
 /* A comment's ⋯ menu: Copy thread, Edit, Delete (asked twice). */
 .pm{position:absolute;right:0;top:100%;z-index:5;display:flex;flex-direction:column;min-width:150px;padding:4px;border:1px solid var(--ln);border-radius:10px;background:var(--su);box-shadow:var(--sh)}
