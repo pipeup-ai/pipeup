@@ -494,6 +494,88 @@ test.describe("a phone on its side (568 × 320)", () => {
   });
 });
 
+for (const [width, height] of [
+  [375, 812],
+  [568, 320],
+  [320, 568],
+] as const)
+  test.describe(`a deck on a phone (${width} × ${height})`, () => {
+    test.use(phone(width, height));
+
+    test("comment mode's touch hint sits above the deck's own slide controls, which still work, and Done leaves", async ({
+      page,
+    }) => {
+      await open(page, "phone-deck.html");
+      await commentMode(page);
+      const hint = page.locator(".toast.show");
+      await expect(hint).toContainText("Tap what you want to comment on");
+      const h = await boxOf(hint);
+      inWindow(h, page);
+      // Neither the hint nor the comment control covers the deck's "← 1 / 3 →" bar along the bottom.
+      const bar = (await page.locator("#bar").boundingBox())!;
+      const c = (await control(page).boundingBox())!;
+      expect(apart(h, bar)).toBe(true);
+      expect(apart(c, bar)).toBe(true);
+      expect(apart(h, c)).toBe(true);
+      // The deck's own arrows still turn the slide in comment mode.
+      await page.locator("#next").tap();
+      await expect(page.locator("#count")).toHaveText("2 / 3");
+      await hint.getByRole("button", { name: "Done" }).tap();
+      await expect(control(page)).not.toHaveClass(/\bon\b/);
+      await expect(page.locator(".toast.show")).toHaveCount(0);
+    });
+  });
+
+test.describe("a reveal.js deck on a phone by touch (375 × 812)", () => {
+  // Not isMobile: the fixture has no viewport tag, and its slides scale to whatever the window is.
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true });
+
+  test("comment mode's touch hint sits above the deck's arrows, slide number and progress bar", async ({
+    page,
+  }) => {
+    await open(page, "reveal-deck.html");
+    await commentMode(page);
+    const hint = page.locator(".toast.show");
+    await expect(hint).toContainText("Tap what you want to comment on");
+    const h = await boxOf(hint);
+    inWindow(h, page);
+    for (const sel of [".controls", ".slide-number", ".progress"])
+      expect(apart(h, (await page.locator(`.reveal > ${sel}`).boundingBox())!), sel).toBe(true);
+  });
+});
+
+test.describe("a touch tablet (1024 × 768)", () => {
+  test.use({ viewport: { width: 1024, height: 768 }, hasTouch: true });
+
+  test("a tap on a closed card in the column opens it: its hidden Resolve, React and ⋯ take no tap", async ({
+    page,
+  }) => {
+    await open(page, "doc.html", { name: "Sam" });
+    await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+    const card = page.locator(".th");
+    await expect(card).toContainText("Is 20% realistic?");
+    await expect(card).not.toHaveClass(/\bwait\b/);
+    const acts = card.locator(".root .acts");
+    for (const name of ["Resolve", "React", "More"]) {
+      await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+      await still(page);
+      const b = (await card.getByRole("button", { name, exact: true }).boundingBox())!;
+      await tapAt(page, b.x + b.width / 2, b.y + b.height / 2);
+      await expect(card, name).toHaveClass(/\bon\b/);
+      expect(
+        await page.evaluate(
+          () => (window as any).pu.document.threads().filter((t: any) => t.resolved).length,
+        ),
+        name,
+      ).toBe(0);
+      await expect(card.locator(".rxq, .pm"), name).toHaveCount(0);
+      // A tap on the page's blank space closes it, and takes the finger off the card.
+      await tapAt(page, 1000, 700);
+      await expect(card).not.toHaveClass(/\bon\b/);
+    }
+  });
+});
+
 test.describe("a page zoomed far in (320 × 256)", () => {
   test.use({ viewport: { width: 320, height: 256 } });
 

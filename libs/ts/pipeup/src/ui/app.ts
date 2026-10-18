@@ -734,15 +734,16 @@ export function startApp(o: AppOptions): App {
     // Pages that reserve a gutter lay themselves out around it; it closes with the column, when comments are
     // hidden, and while the panel's own room takes its place.
     sheet.gutter(reserve ? (state.mode === "column" && !state.hidden && !push ? GUTTER : 0) : null);
-    // A deck's own controls in the bottom-right corner of its room (a slide number, arrows): the comment control and
-    // its messages sit just above them. Pipeup's own root (inside the page's while a dialog or fullscreen element is
-    // open) and layers over the window aren't controls in the corner.
+    // A deck's own controls along the bottom of its room, as far left as the comment control's messages reach (a
+    // slide number, arrows, a phone deck's "← 1 / 3 →" bar): the control and its messages sit just above them.
+    // Pipeup's own root (inside the page's while a dialog or fullscreen element is open) and layers over the window
+    // aren't such controls.
     let lift = 0;
     if (here.slide() !== null)
       for (const el of o.root.querySelectorAll(IGNORED)) {
         if (el === host.element) continue;
         const r = el.getBoundingClientRect();
-        if (r.right > innerWidth - pushed - 48 && r.bottom > innerHeight - 48 && r.top > innerHeight / 2)
+        if (r.top > innerHeight / 2 && r.right > innerWidth - pushed - 380 && r.bottom > innerHeight - 48)
           lift = Math.max(lift, innerHeight - r.top + 4);
       }
     host.layer.style.setProperty("--pu-lift", `${lift}px`);
