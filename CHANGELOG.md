@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-18
+
+This release makes Pipeup work on iPhones as it should: one tap chooses what to comment on, the on-screen keyboard never covers the comment box, and comment mode's touch hint is easier to see and gets out of the way. Pipeup is 59.8 KB gzip.
+
 ### Fixed
 
 - **iPhones: one tap answers.** Safari on iOS sends no click for a tap on words or pictures unless something listens for one, so choosing a block, closing the menu or a thread, and opening a thread from its words took several tries (a tap only worked where it landed on a link or button). While Pipeup waits for a tap on the page, it now listens on the page's body, and Safari sends it.
@@ -405,7 +409,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/pipeup-ai/pipeup/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/pipeup-ai/pipeup/compare/v0.5.4...v0.6.0
