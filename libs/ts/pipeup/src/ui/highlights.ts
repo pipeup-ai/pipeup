@@ -105,8 +105,9 @@ export function installPageSheet(doc: Document = document): PageSheet {
       paintRules(k) +
         (current === null ? "" : `:root{--pipeup-gutter:${current}px}`) +
         (pick ? PICKING : "") +
+        // A page that sets html's width (`width: 100%`, as reveal.js and many resets do) still gives up the room.
         (margin || ease
-          ? `html{--pipeup-panel:${margin}px;${margin ? `margin-right:${margin}px!important;` : ""}${ease}}`
+          ? `html{--pipeup-panel:${margin}px;width:auto!important;${margin ? `margin-right:${margin}px!important;` : ""}${ease}}`
           : ""),
     );
   write();

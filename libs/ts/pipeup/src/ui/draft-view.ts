@@ -115,7 +115,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   field.addEventListener("keydown", (e) => {
     // The name field's keys are its own: Escape here must not also drop the draft.
     e.stopPropagation();
-    if (e.key === "Escape") {
+    if (e.key === "Escape" && !e.isComposing) {
       e.preventDefault();
       closeName();
     } else if (e.key === "Enter") {

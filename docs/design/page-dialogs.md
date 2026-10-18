@@ -99,6 +99,24 @@ The launcher's Escape (on `window`, added at mount) now also cancels the key whe
 Escape (on `window`, added later) skips a cancelled key: with focus on the page and the menu open, one Esc used to close
 the menu and leave comment mode.
 
+## From the regression pass on beta.5
+
+- `traps(el)`: a transform, translate, scale, rotate, perspective, filter, backdrop-filter, container-type, contain
+  (paint, layout, strict, content) or a will-change of those makes the element the containing block of Pipeup's fixed
+  layer, which it would then clip. `rehome` stays under `<html>` while the top modal traps, and looks again on
+  `transitionend` and `animationend` (an opening animation ends).
+- `shut` watches the `open` attribute of each top in a shadow root (the page's observer can't see it), so a web
+  component's dialog closing by script, or by a button that leaves focus nowhere, gives Pipeup back.
+- `guardFocus` records Pipeup's last focused element and when focus last left; when the page takes Pipeup's element
+  out with its own content (a dialog rendering itself again), `rehome` puts it back and refocuses that element if focus
+  hadn't left Pipeup.
+- Comment mode's `keep` skips blocks that are inert or outside the element Pipeup is in (an open modal dialog or
+  fullscreen element), so the block cursor never visits the page behind.
+- The host also resets `translate`, `scale`, `rotate`, `clip-path`, `mask` and `zoom`, which a page's `dialog > *`
+  rules could reach.
+- Not covered: content inside a web component's own dialog (Pipeup doesn't comment inside shadow roots), and a page
+  script's own `click()` in comment mode (it can't be told from a screen reader's activate in tests).
+
 ## Size
 
 Pipeup is 57.7 KB gzip with the first part (+0.3 KB, budget 58 KB), and 58.1 KB with the keys, web components and
@@ -109,3 +127,5 @@ fullscreen (+0.4 KB); the budget is 58.5 KB.
 - 2026-10-17 — First version.
 - 2026-10-17 — Keys stay with Pipeup ahead of a page dialog's capture listeners; web components' modal dialogs and
   fullscreen elements; what isn't covered.
+- 2026-10-18 — Dialogs that trap a fixed layer, closed web component dialogs, re-rendered dialogs, the block cursor
+  in a dialog, more host resets.

@@ -598,11 +598,20 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   /** Pipeup's own element with focus, if any; a marker has it. */
   const focused = () => (ctx.layer.getRootNode() as ShadowRoot).activeElement;
   const onMarker = () => markers.some((m) => m === focused());
-  /** Only what the reviewer can see here: shown, and on the current slide (a `display: contents` box has none). */
-  const keep = (el: Element) =>
-    (el.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false ||
-      getComputedStyle(el).display === "contents") &&
-    ctx.here.holds(ctx.here.view(el));
+  /**
+   * Only what the reviewer can see and use here: shown (a `display: contents` box has none), not inert, inside the
+   * page's open modal dialog or fullscreen element (where Pipeup's own root then is), and on the current slide.
+   */
+  const keep = (el: Element) => {
+    const over = (ctx.layer.getRootNode() as ShadowRoot).host?.parentElement;
+    return (
+      (el.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false ||
+        getComputedStyle(el).display === "contents") &&
+      !el.closest("[inert]") &&
+      (!over || over === document.documentElement || over.contains(el)) &&
+      ctx.here.holds(ctx.here.view(el))
+    );
+  };
   /** The blocks; read afresh when one of them has left the page, so the cursor never lands on a removed element. */
   const blocks = () => {
     if (tree?.some((b) => !b.el.isConnected)) tree = null;
