@@ -19,6 +19,7 @@ change the API and the stored comment format.
 - With a page's modal dialog or inert overlay open, the block cursor only visits what is in it. Pipeup leaves a web component's dialog however it closes, keeps the caret when a dialog renders its contents again, and waits outside a dialog moved with a transform (it was trapped in the dialog's box).
 - Copy thread keeps focus on its ⋯, and copying without the browser's clipboard keeps focus where it was.
 - A change of look fades instead of blinking.
+- **Many comments on one element keep their bubbles in the room they have.** Side-by-side bubbles ran on to the right, over the comment column's first cards, and near the window's edge piled onto one spot, so some couldn't be clicked. They now step left before the column or the window's edge, and onto a further row when a row is full; each one is clear of the others and can be clicked.
 - Pipeup is 58.8 KB gzip; its budget rises from 58.5 to 59.5 KB.
 
 ## [0.8.0-beta.5] - 2026-10-18

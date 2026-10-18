@@ -8,10 +8,10 @@ import { bubblePoint, INTERACTIVE, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, touch, type AnchorPoint, type Viewport } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { moved } from "./column";
+import { columnSpot, moved } from "./column";
 import { replies, threadView, type ThreadView } from "./thread-view";
 
-/** How far apart bubbles' points must be (a bubble is 20 px): closer, the later one steps right of the earlier. */
+/** How far apart bubbles' points must be (a bubble is 20 px): closer, the later one steps aside. */
 const APART = 22;
 /** How long a preview waits after the pointer leaves, so the pointer can reach it and click. */
 export const PREVIEW_GRACE_MS = 400;
@@ -328,11 +328,13 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
   }
 
   /** A bubble is always wholly on screen (with room for a finger round it), however near the edge its point is. */
-  const across = (x: number) => `${Math.min(Math.max(x, 20), window.innerWidth - 30)}px`;
+  const across = (x: number) => Math.min(Math.max(x, 20), window.innerWidth - 30);
 
   function frame(): void {
-    // Threads on the same element (or spots close together) each keep a bubble of their own, side by side.
+    // Threads on the same element (or spots close together) each keep a bubble of their own, side by side: rightward
+    // while there is room before the column (when it shows) or the window's edge, then leftward, then a row lower.
     const taken: { x: number; y: number }[] = [];
+    const col = pops() ? null : columnSpot(ctx.root, true);
     for (const [id, b] of bubbles) {
       const t = byId(id);
       const r = ctx.resolved.get(id);
@@ -341,10 +343,25 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
         b.style.visibility = "hidden";
         continue;
       }
-      while (taken.some((q) => Math.abs(q.x - p.x) < APART && Math.abs(q.y - p.y) < APART)) p.x += APART;
+      const x = (p.x = across(p.x));
+      // A bubble's own spot stands; only its steps aside keep out of the column.
+      const end = Math.max(x, (col ? col.x : window.innerWidth) - 30);
+      let step = APART;
+      while (taken.some((q) => Math.abs(q.x - p.x) < APART && Math.abs(q.y - p.y) < APART)) {
+        p.x += step;
+        if (p.x > end) {
+          step = -APART;
+          p.x = x - APART;
+        }
+        if (p.x < 20) {
+          step = APART;
+          p.x = x;
+          p.y += APART;
+        }
+      }
       taken.push(p);
       b.style.visibility = "";
-      b.style.left = across(p.x);
+      b.style.left = `${p.x}px`;
       b.style.top = `${p.y}px`;
       if (!b.classList.contains("in")) {
         void b.offsetWidth;
@@ -354,7 +371,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     const d = ctx.state.draft;
     const g = d?.anchor.point && ctx.here.holds(d.anchor.view) ? bubblePoint(d.anchor, d.resolved) : null;
     if (g) {
-      ghost.style.left = across(g.x);
+      ghost.style.left = `${across(g.x)}px`;
       ghost.style.top = `${g.y}px`;
       if (!ghost.classList.contains("in")) {
         ctx.layer.insertBefore(ghost, mark);

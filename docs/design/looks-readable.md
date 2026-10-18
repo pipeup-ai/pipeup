@@ -107,6 +107,28 @@ control's count reads at full contrast.
 - **⋯** (`thread-view.ts`). Its pop-in animation runs when it opens (`.pm.in`); rebuilt while open (Delete asking again)
   it changes in place.
 
+## Bubbles side by side, in the room they have (`bubbles.ts`)
+
+Found on 0.8.0-beta.5 (LK2-01, MD2-06, MD2-07). The frame stepped a bubble 22 px right while it was within 22 px of
+one already placed (one bubble per thread, [decks-and-sites.md](decks-and-sites.md)), whatever was there: on a
+document the row ran into the comment column over its first cards, and near the window's edge `across()` clamped
+every step back onto one spot, so bubbles piled up and the element's own bubble couldn't be clicked.
+
+Now each bubble starts at its own point (clamped into the window as before) and, while it meets one already placed,
+steps right up to the row's end, then left of its point down to 20 px, then starts again from its point one row
+(22 px) lower. The row's end is 30 px short of the window's edge, or of the column's left edge (`columnSpot`) while
+the column shows (not under All comments, where the column has stepped aside). A point already past that end keeps
+its own spot; only its steps aside are held back. A bubble is 20 px, so every placed bubble is 2 px clear of the
+next, never under it, and always reachable. Rows go down, over what the comments are about, never up over the
+words before it; with the bubbles following the page every frame, a row that flipped direction while scrolling
+would jump.
+
+The tests in `e2e/bubbles.spec.ts` add eight comments to doc.html's Revenue chart beside two text comments at
+1180, 1280 and 1440 wide (the column showing), six plus the Q4 bar's at 760 (the window's edge) and twenty at
+420 (a second row), and check that no bubble is outside the window or over another bubble or a column card, and
+that the point at each bubble's middle is that bubble. All five failed before the change. Pipeup grows by 0.1 KB
+gzip (58.2 KB of its 58.5 KB budget).
+
 ## Words
 
 - Resolving says "Resolved · ✓ Resolved in All comments shows it again"; there is no "Show resolved".
@@ -126,3 +148,5 @@ transition list were trimmed. The budget rose from 53 to 53.5 KB on its own; wit
 - 2026-10-15 — First version.
 - 2026-10-15 — Merged with the words-and-focus batch: Pipeup is 55.0 KB, budget 55.5 KB.
 - 2026-10-15 — The count stops at 9+ (99+ didn't fit wide fonts); the exact number is in the name and the slide-out.
+- 2026-10-18 — Bubbles side by side in the room they have: right, then left before the column or the window's edge,
+  then a row lower (LK2-01, MD2-06, MD2-07); Pipeup 58.2 KB.

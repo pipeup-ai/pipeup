@@ -334,7 +334,10 @@ any of them off.
   bubbles**; hovering one shows a one-line preview, clicking opens the thread beside it. Where there's
   no room beside it (on a phone, or near the window's edge), the preview and the thread sit **below what
   they're about, or above it, never over it**, and always on screen. Bubbles themselves are always wholly on
-  screen, and threads on the same element each have their own bubble, never one on top of another. Turning a
+  screen, and threads on the same element each have their own bubble, never one on top of another. Bubbles that
+  would meet sit side by side in a row: to the right while there is room, to the left once the row would reach the
+  comment column (when it shows) or the window's edge, and on a further row below once a row is full. A bubble never
+  covers the column's cards or another bubble, and every bubble can be clicked. Turning a
   phone (or resizing the window) with a thread or new comment open brings what it is about back into view.
 - **Text comments have no bubble.** The soft highlight on the text is itself what you hover and
   click; its thread opens just below the line so the words stay visible.
@@ -1774,3 +1777,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
 - 2026-10-18 — From the regression pass on 0.8.0-beta.5: on a deck, the comment control stays in its corner in fullscreen, in a page's dialog and beside a layer over the window; a page that sets its own width still makes room for All comments; on reveal.js a comment is filed under its own slide; a waiting comment on a slide Pipeup can't turn to says which slide it is on (sections 5, 6).
 - 2026-10-18 — Also from the regression pass: ⌘Z (Ctrl+Z) takes the Undo after Esc or Cancel; Esc while an input method composes keeps the words; replies are kept in All comments, and its Esc throws them away with Undo; opening All comments keeps the caret in a comment being written; the block cursor stays inside an open modal dialog; Pipeup leaves a web component's dialog however it closes, keeps the caret through a dialog's re-render, and waits outside a dialog that is moved with a transform (sections 5, 7, 9).
+- 2026-10-18 — Many comments on one element keep their bubbles in the room they have: side by side to the right, then to the left before the comment column or the window's edge, then on a further row; never over the column's cards or each other, and every one can be clicked (section 7).
