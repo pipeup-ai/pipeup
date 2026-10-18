@@ -14,7 +14,9 @@ export interface Box {
 
 export interface Viewport {
   width: number;
+  /** The bottom of what can be seen; `top`, its top (a phone's on-screen keyboard covers the rest). */
   height: number;
+  top?: number;
   /**
    * Where the comment control's corner starts (its left and top edges, and the left of comment mode's touch hint
    * beside it): a box reaching past `left` stays above `top`, so nothing sits under the control.
@@ -65,10 +67,25 @@ export const narrow = (): boolean => window.innerWidth <= NARROW;
 /** A touch screen: a finger is the main pointer (the stylesheet's `pointer: coarse`). */
 export const touch = (): boolean => window.matchMedia?.("(pointer: coarse)").matches === true;
 
-/** The viewport left for popovers: All comments, when open, takes its width from the right. */
+/** How far Pipeup's layer has moved down to follow a page Safari has panned (see `startApp`'s frame). */
+let panned = 0;
+export const setPanned = (px: number): void => void (panned = px);
+
+/**
+ * What of the window can be seen, top to bottom: a phone's on-screen keyboard covers the bottom of the window without
+ * making it shorter (only the visual viewport shrinks), and the page may be panned within it.
+ */
+export function seen(): { top: number; bottom: number } {
+  const v = window.visualViewport;
+  const top = v ? Math.max(0, v.offsetTop - panned) : 0;
+  return { top, bottom: v ? Math.min(window.innerHeight, top + v.height) : window.innerHeight };
+}
+
+/** The viewport left for popovers: what can be seen, less All comments' width from the right when it is open. */
 export function room(listing: boolean): Viewport {
   const w = window.innerWidth;
-  return { width: listing && !narrow() ? w - PANEL : w, height: window.innerHeight };
+  const s = seen();
+  return { width: listing && !narrow() ? w - PANEL : w, height: s.bottom, top: s.top };
 }
 
 /** The lowest a box from `left`, `width` across, may reach: clear of the comment control's corner, and of the margin. */
@@ -87,8 +104,9 @@ export function placePopover(
   const low = floor(left, size.width, vp, margin);
   let top = at.below ? at.y + 8 : at.y - 12;
   if (at.below && top + size.height > low) top = at.y - size.height - 40;
-  // Always in the window, even when what it is about has gone below it (a phone turned on its side).
-  return { left, top: Math.max(margin, Math.min(top, low - size.height)) };
+  // Always in what can be seen, even when what it is about has gone below it (a phone turned on its side, or its
+  // keyboard up).
+  return { left, top: Math.max((vp.top ?? 0) + margin, Math.min(top, low - size.height)) };
 }
 
 /**
@@ -112,8 +130,10 @@ export function placeDraft(
   const aside = vp.keep ? vp.keep.left - 8 - size.width : -1;
   if (!fits(left) && aside >= margin && fits(aside)) left = Math.min(left, aside);
   const low = floor(left, size.width, vp, margin);
-  const under = below + size.height <= low || above < margin;
-  return { above: !under, left, top: Math.max(margin, under ? Math.min(below, low - size.height) : above) };
+  const min = (vp.top ?? 0) + margin;
+  const under = below + size.height <= low || above < min;
+  // Whichever side, the box stays in what can be seen: with a phone's keyboard up, over its block if it must.
+  return { above: !under, left, top: Math.max(min, Math.min(under ? below : above, low - size.height)) };
 }
 
 /**
@@ -137,8 +157,9 @@ export function placeBar(
 
 /**
  * The selection's comment icon: just past the right of its block's text, level with the selection's last line, so it
- * covers no words; above the selection (or below) when there's no room there. On a touch screen (`below`), below the
- * selection, clear of the phone's own selection menu above it and its handles at its ends.
+ * covers no words; above the selection (or below) when there's no room there. On a touch screen (`below`), at the
+ * window's right edge, level with the selection's last line (its first, when the last runs into that edge): the
+ * phone's own menu for a selection sits above or below it, never beside, and its handles sit at its ends.
  */
 export function placeIcon(
   sel: Box,
@@ -150,9 +171,10 @@ export function placeIcon(
 ): { left: number; top: number } {
   const left = textRight + 8;
   if (below) {
-    const bar = placeBar(sel, size, vp);
-    const under = sel.top + sel.height + 20;
-    return { left: bar.left, top: under + size.height <= vp.height - 8 ? under : bar.top };
+    const edge = vp.width - size.width - 4;
+    const mid = line.left + line.width < edge - 8 ? line.top + line.height / 2 : sel.top + line.height / 2;
+    const top = Math.max((vp.top ?? 0) + 8, Math.min(mid - size.height / 2, vp.height - size.height - 8));
+    return { left: edge, top };
   }
   if (left + size.width > vp.width - 8) return placeBar(sel, size, vp);
   return { left, top: line.top + line.height / 2 - size.height / 2 };

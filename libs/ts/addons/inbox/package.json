@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/inbox",
-  "version": "0.8.0-beta.5",
+  "version": "0.8.1",
   "description": "Tells people they were mentioned, even on pages they haven't opened: a note sealed so only they can read it, left at an inbox service the page's author names.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "0.8.0-beta.5"
+    "pipeup": "0.8.1"
   },
   "pipeup": {
     "network": {

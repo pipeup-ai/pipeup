@@ -16,7 +16,7 @@ const BUDGETS = {
   inbox: 8 * 1024,
   identity: 4 * 1024,
 };
-const CORE = 59.5 * 1024;
+const CORE = 60 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.
