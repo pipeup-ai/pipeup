@@ -1218,6 +1218,11 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
 - When an agent rewrites or regenerates a page, it keeps the page's document identity and sharing line
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
+- A page that keeps one shell and shows a new edition in it (a daily briefing, say) is one document to Pipeup, so
+  earlier comments land on matching content in the new edition, marked Moved (§8). When each edition is meant to be
+  reviewed on its own, the publisher gives each edition its own document identity, made from the page's identity and
+  the edition (for example its date), set before Pipeup starts. Agents that publish such pages do this, and the
+  integrate skill and `llms.txt` say how.
 
 ### 15a. Installing the skills
 
@@ -1266,6 +1271,10 @@ an agent on the same computer is a later step and is not part of this one.)
   **addressed**, with a short note of what was done and where (for example "addressed in revision 41").
 - A reply is signed by the agent's own identity, made once and kept on the agent's computer, never in the
   page or its folder. The identity has a name that shows it is an agent (§10, §15).
+- For an agent that can't reach the page's folder, the reply command can print a **signed replies block** instead of
+  writing the file. The block carries the same replies, each signed by the agent's own identity. A signature covers the
+  reply's words, its addressed note, its thread and the page, so a changed reply, or one pasted into another page, no
+  longer counts as signed.
 - The page shows the replies it finds in the file, inside the thread, under the agent's name and with
   the same marking as other AI replies. A reply can't be edited or removed by a later one, only
   followed by another.
@@ -1295,16 +1304,23 @@ an agent on the same computer is a later step and is not part of this one.)
 - The copied text says that the comments were left in the reviewer's browser and are not in the page's file. It tells
   the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
   resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
-  and works without them. Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.5 …`), so the
+  and works without them. It tells the agent how to sign its replies block when it keeps a key, and says whether the
+  page lists it. Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.5 …`), so the
   agent runs the same release as the page and not whatever npm calls stable, and a pre-release's text points at the
   pre-release guide.
 - With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
-  page finds the replies block in it and says in words what it found (how many replies, from which agent, how many say
-  addressed, and how many it will leave out and why, for example a reply to a comment that's no longer on the page).
+  page finds the replies block in it and says in words what it found (how many replies, from which agent, how many are
+  signed by an agent the page lists, how many say addressed, and how many it will leave out and why, for example a
+  reply to a comment that's no longer on the page). For a reply it can't count as signed, it says why: not signed,
+  signed with a key the page doesn't list, or changed after it was signed.
   Nothing is added until the person agrees. If it finds no replies it can read, it says so and offers to copy a request
   asking the agent to answer in the replies block.
-- Pasted replies show in their threads under the agent's name, with the AI marking (§10) and the words "pasted by
-  you". They are accepted whether or not the page lists that agent, because pasting is the person's own act. They
+- A pasted reply signed by an agent the page lists shows exactly as a reply read from the replies file: under the
+  agent's name, with the AI marking (§10), and nothing more.
+- Any other pasted reply shows under the agent's name, with the AI marking and the words "pasted by you"; to other
+  people in a shared copy, it says who pasted it ("pasted by Sam"). So when comments are shared, everyone can tell that
+  the person who pasted didn't write the agent's words, and which agent replies came to the page unchanged.
+- Pasted replies are accepted whether or not the page lists that agent, because pasting is the person's own act. They
   follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment.
   They are kept with the comments in this browser, and travel with them when the page has a sharing add-on.
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
@@ -1327,10 +1343,9 @@ an agent on the same computer is a later step and is not part of this one.)
 - When a thread is reopened with "Still not right", the agent treats the person's new words as the
   request, and replies again in the same thread.
 - An agent that can't write the replies file (for example one in the cloud, or a chat with no files) answers in one
-  replies block the person can paste into the page, says what it changed and where, and does not say the page was
+  replies block the person can paste into the page, signed when it keeps a key between sessions, says what it changed and where, and does not say the page was
   updated.
-- An agent never looks for comments in the page's file, and never asks the author to list it for replies it has no
-  way to deliver.
+- An agent never looks for comments in the page's file, and asks to be listed only when it can sign its replies.
 - An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
   and says in words what that lets it do.
 
@@ -1589,6 +1604,9 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   before the sign-in the page supplies.
 - Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
   the author's own browser.
+- Editions: whether a page should be able to say which edition it is showing, so comments are kept per edition within
+  one document (each edition keeps its own, and earlier editions' comments can still be found), instead of the
+  publisher giving each edition its own identity; and how an identity per edition works with a page's sharing line.
 
 ---
 
@@ -1804,3 +1822,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Many comments on one element keep their bubbles in the room they have: side by side to the right, then to the left before the comment column or the window's edge, then on a further row; never over the column's cards or each other, and every one can be clicked (section 7).
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
 - 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
+- 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
