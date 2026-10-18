@@ -7,6 +7,12 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A closed card's hidden actions never take a click or tap.** On a touch tablet, a tap on a closed column card where its Resolve, React or ⋯ would be resolved the thread or opened them (the tap hovers the card as it lands); it now opens the card. With a mouse, a click on a closed card's corner as the pointer arrives no longer resolves the thread before Resolve shows: a card's actions take presses once they have eased in.
+- **After Resolve in the column, a second click with the pointer still opens the next card** instead of resolving it too. The keyboard still reaches and sees its actions at once.
+- **On a deck, comment mode's touch hint, Pipeup's other messages and the comment control sit above the deck's own controls anywhere along the bottom**, not only in the bottom-right corner: on a phone the hint no longer covers a bottom-centre "← 1 / 3 →" bar.
+
 ## [0.8.0-beta.5] - 2026-10-18
 
 This pre-release shows a comment where it is whenever its content is on the page, even after a page reports a new revision of itself, and makes the commands an agent is given name the page's Pipeup, so a beta page never fetches the stable command line. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.

@@ -194,7 +194,8 @@ any of them off.
   icons go, and nothing sits under the comment control.
 - **Comment mode on a touch screen says how to use it by touch** ("Tap what you want to comment on"), not the
   keyboard and mouse hints. Its hint stays beside the comment control while comment mode is on, with
-  **Done**, which leaves comment mode in one tap. Only Done takes a tap: what is under the hint's words can
+  **Done**, which leaves comment mode in one tap. On a deck it sits above the deck's own slide controls along the
+  bottom (§6), so on a phone it never covers them. Only Done takes a tap: what is under the hint's words can
   still be tapped. A screen with only touch shows no keyboard shortcuts, in the menu or the panel's footer.
 
 **From the keyboard and with a screen reader**
@@ -281,8 +282,9 @@ any of them off.
 - A comment being written on a slide that goes away leaves nothing drawn over the next slide: it steps aside
   with its words (§8), and comment mode carries on.
 - **On a deck that fits itself to the window**, opening All comments makes the deck refit into the space
-  beside the panel, and closing it gives the space back. Where a deck keeps its own controls in the
-  bottom-right corner (a slide number, arrows), the comment control sits just above them.
+  beside the panel, and closing it gives the space back. Where a deck keeps its own controls along the bottom where
+  the comment control or its messages would be (a slide number, arrows, a "← 1 / 3 →" bar; on a phone, anywhere
+  along the bottom), the comment control and its messages sit just above them.
 - The comment control's number counts the open threads **here** (on this slide); a small mark on the
   control shows when other slides have open threads, and its label says how many ("2 here · 5 on
   other slides").
@@ -375,9 +377,12 @@ any of them off.
 - **React**, **✓ Resolve** (or **Reopen**) and **⋯**, which holds **Copy thread** and, on your own
   comments, **Edit** and **Delete**. Replies have React and ⋯. Copy takes the **whole thread** (see §7a);
   resolving fades the thread and its highlight away.
-- A card's actions can only be pressed while they show: on touch screens, the first tap on a closed card opens
-  it. After Resolve, the card that moves into its place shows its actions only once the pointer moves, so a
-  second click never resolves a different thread. React's quick row closes when its thread does.
+- A card's actions can only be pressed while they show, and only once they have eased in: a click that lands on a
+  closed card's corner as the pointer arrives presses none of them (in the document column it opens the card),
+  and on touch screens, tablets included, the first tap on a closed card opens it, wherever on the card it lands.
+  After Resolve, the card that moves into its place shows its actions only once the pointer moves, even though
+  focus has moved to it, so a second click never resolves a different thread; moved there from the keyboard,
+  focus shows them at once. React's quick row closes when its thread does.
 - The **⋯** menu works from the keyboard like the comment control's menu (arrows move, Enter chooses), and Esc
   closes it before the thread.
 - The thread is answered from its reply box, which lines up with the indented replies. Clicking
@@ -403,7 +408,8 @@ any of them off.
   the footer back into the control. Both shapes ease into each other.
 - **Pipeup's short messages** (someone mentioned you, comment mode's hint, "Resolved", and the like)
   appear **beside the comment control**, never at the bottom centre where decks keep their slide controls and
-  phones show the page's last lines. While All comments is open they sit inside the panel, above its footer, so
+  phones show the page's last lines; on a deck they sit above its own controls along the bottom (§6), so they never
+  cover them, on a phone either. While All comments is open they sit inside the panel, above its footer, so
   they never cover the page beside it (nor a deck's own slide controls there). Nothing of Pipeup's covers a message: comment mode's hint waits
   until the menu has closed, then shows for its usual time.
 - **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
@@ -1756,3 +1762,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   are named as limits (section 9).
 - 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
+- 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).

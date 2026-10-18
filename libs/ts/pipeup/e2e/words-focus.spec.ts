@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   control,
   focusInPipeup,
@@ -8,6 +8,7 @@ import {
   openMenu,
   quoteSpot,
   seedText,
+  settled,
   showComments,
   toggleCommenting,
 } from "./helpers";
@@ -262,6 +263,101 @@ test("a closed card's hidden actions can't be pressed: a tap there opens the car
   await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("none");
   await page.locator(".th").hover();
   await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("auto");
+});
+
+const resolvedCount = (page: Page) =>
+  page.evaluate(() => (window as any).pu.document.threads().filter((t: any) => t.resolved).length as number);
+const opacityOf = (l: Locator) => l.evaluate((e) => getComputedStyle(e).opacity);
+
+test("a closed card's actions take a click only once they show: a click as the pointer arrives never presses them", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await page.mouse.move(0, 0);
+  // In the column, the click opens the card.
+  const card = page.locator(".th");
+  await expect(card).not.toHaveClass(/\bwait\b/);
+  await settled(card);
+  await expect.poll(() => opacityOf(card.locator(".root .acts"))).toBe("0");
+  let b = (await card.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(card).toHaveClass(/\bon\b/);
+  expect(await resolvedCount(page)).toBe(0);
+  await page.mouse.move(0, 0);
+  await page.keyboard.press("Escape");
+  await expect(card).not.toHaveClass(/\bon\b/);
+  // In All comments the same; once they have eased in, the same click resolves.
+  await openAll(page);
+  await page.mouse.move(0, 0);
+  const row = page.locator(".all.show .cd").first();
+  await settled(page.locator(".all.show"));
+  const acts = row.locator(".acts");
+  await expect.poll(() => opacityOf(acts)).toBe("0");
+  b = (await row.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.waitForTimeout(100);
+  expect(await resolvedCount(page)).toBe(0);
+  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("auto");
+  await expect.poll(() => opacityOf(acts)).toBe("1");
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect.poll(() => resolvedCount(page)).toBe(1);
+});
+
+test("after Resolve in the column, a second click with the pointer still opens the next card, never resolves it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "new onboarding flow", "Which flow?");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const first = page.locator(".th", { hasText: "Which flow?" });
+  const next = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await expect(next).not.toHaveClass(/\bwait\b/);
+  await settled(next);
+  await first.hover();
+  const resolve = first.getByRole("button", { name: "Resolve", exact: true });
+  await expect.poll(() => opacityOf(first.locator(".root .acts"))).toBe("1");
+  await resolve.click();
+  const at = await resolve.boundingBox();
+  await expect(first).toHaveCount(0);
+  await settled(next);
+  // The next card has moved up under the pointer, focus is on it, and its actions stay hidden there.
+  const r = (await next.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  const x = at!.x + at!.width / 2;
+  const y = at!.y + at!.height / 2;
+  expect(x > r.x && x < r.x + r.width && y > r.y && y < r.y + r.height).toBe(true);
+  await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("opn") });
+  expect(await opacityOf(next.locator(".root .acts"))).toBe("0");
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(next).toHaveClass(/\bon\b/);
+  expect(await resolvedCount(page)).toBe(1);
+});
+
+test("after Resolve from the keyboard, the next card's actions show for the keyboard at once", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "new onboarding flow", "Which flow?");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const next = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await expect(next).not.toHaveClass(/\bwait\b/);
+  await page.mouse.move(0, 0);
+  await page.locator(".th .opn").first().focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".th").first().getByRole("button", { name: "React", exact: true })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".th", { hasText: "Which flow?" })).toHaveCount(0);
+  await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("opn") });
+  await expect.poll(() => opacityOf(next.locator(".root .acts"))).toBe("1");
+  await page.keyboard.press("Tab");
+  await expect(next.getByRole("button", { name: "React", exact: true })).toBeFocused();
 });
 
 test("the line to a new comment in All comments goes when the panel closes", async ({ page }) => {

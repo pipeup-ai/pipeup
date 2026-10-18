@@ -53,6 +53,19 @@ taking that tap (`readsAt`). Choosing anything else (`choose`) lets go; so does 
   controls on a phone) still works. This also stops a faded Undo message from catching clicks.
 - On touch a message is one 44 px bar (two lines of words fit), `--r` is 52 px to clear the 44 px control, and boxes
   keep 8 px above it.
+- On a deck the hint (with the control and every message) sits above the deck's own controls along the bottom: the
+  deck lift (`--pu-lift`, [decks-and-sites.md](decks-and-sites.md)) now counts controls as far left as a message
+  reaches, which on a phone is the whole bottom (U03, a bottom-centre "← 1 / 3 →" bar at 375 × 812, 568 × 320 and
+  320 × 568). The fixture `phone-deck.html` is that deck. Popovers keep clear of it as before: `keep.top` is the
+  lifted control's top.
+
+## Taps on a closed card (U04)
+
+A tap gives the card `:hover` in the same instant as its click, so a closed column card's hidden actions (shown on
+hover) took the tap on a touch tablet: Resolve resolved, React and ⋯ opened. A closed card's actions now take
+`pointer-events` only once they have eased in (see [words-and-focus.md](words-and-focus.md)), so the tap lands on the
+card and opens it, on a touch-only screen or one with a mouse too. All comments' cards already hid their actions
+where there is no hover.
 
 ## 44 px (T07)
 
@@ -99,7 +112,8 @@ may have hidden it.
   control needs a reliable way to find a page's fixed controls; the spec only asks for that on decks (the control sits
   above a deck's own corner controls), which is separate work.
 - On a phone, comment mode's hint covers the page's last lines while comment mode is on, as the spec asks for a hint
-  that stays. Taps go through its words, and Done is one tap away.
+  that stays. Taps go through its words, and Done is one tap away. (A deck's own controls are no longer covered; a
+  document's last lines still are, at the very end of the page.)
 
 ## Size
 
@@ -110,3 +124,5 @@ budget is 56.5 KB (`scripts/size.mjs` and the add-ons' `CORE`).
 
 - 2026-10-15 — First version.
 - 2026-10-15 — Merged with the looks batch: Pipeup is 56.2 KB, budget 56.5 KB.
+- 2026-10-18 — The hint sits above a deck's own controls anywhere along the bottom (U03); a tap on a closed column
+  card opens it, never its hidden actions (U04). Pipeup is 58.2 KB, inside its 58.5 KB budget.

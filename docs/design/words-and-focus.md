@@ -74,6 +74,15 @@ to the page after most actions on a comment.
   double tap, can't confirm it.
 - A card's hidden actions have `pointer-events: none`, so a tap on a closed card opens it instead of resolving it.
   After Resolve the layer is `.still` until the pointer moves, so the next card's actions don't appear under it.
+- A closed card's actions take presses only once they have eased in (MD2-09, U04): on `.th:not(.on) .acts` and
+  `.cd:not(.open) .acts`, `pointer-events` has a `0s` transition delayed by `--in` (the fade's length) with
+  `transition-behavior: allow-discrete`, so it turns `auto` as the fade ends while `opacity` eases. A click as the
+  pointer arrives on the corner, or a tap (which hovers as it lands), reaches the card: in the column it opens it; in
+  All comments it lands on the card's top line, which takes no click. An open card's actions take presses at once.
+- `.still` gives way only to keyboard focus (MD-08): its rule for column cards was `:not(:focus-within)`, but `after()`
+  puts focus on the next card's `.opn`, so the actions showed under the still pointer and a second click resolved
+  that thread too. It is now `:not(:has(:focus-visible))`, as in All comments: focus moved there after a click isn't
+  `:focus-visible`, focus moved there from the keyboard is, and Tab reaches and shows the actions as before.
 - The connecting line hides while All comments is closed (it ran to the window's edge after a new comment passed
   through the panel).
 - Letting go of Space shows the block cursor's outline again. A double or triple click lets go of the block the first
@@ -87,3 +96,5 @@ Pipeup is 53.8 KB gzip (+1.7 KB); the budget rises from 53 to 54 KB (`scripts/si
 ## Change log
 
 - 2026-10-15 — First version.
+- 2026-10-18 — A closed card's actions take presses only once eased in; `.still` yields only to keyboard focus in the
+  column too (MD2-09, U04, MD-08).
