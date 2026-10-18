@@ -341,8 +341,12 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
             e.stopPropagation();
             if (!run()) menuFor = "";
             update(current);
-            // Rebuilt: while the menu stays open (Delete, asking again), focus stays on the same choice.
-            element.querySelectorAll<HTMLElement>(".pm button")[i]?.focus();
+            // Rebuilt: while the menu stays open (Delete, asking again), focus stays on the same choice; closed (Copy
+            // thread), it goes back to its ⋯, unless the choice took it somewhere (Edit's box).
+            const same = element.querySelectorAll<HTMLElement>(".pm button")[i];
+            if (same) same.focus();
+            else if (!element.contains((element.getRootNode() as ShadowRoot).activeElement))
+              element.querySelector<HTMLElement>(`[data-c="${c.id}"]`)?.focus();
           });
           return b;
         }),

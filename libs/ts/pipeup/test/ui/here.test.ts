@@ -204,6 +204,19 @@ describe("createHere", () => {
     expect(here.slide()).toBe("3");
   });
 
+  it("on reveal.js, content in an unmarked slide is on that slide, whichever shows", () => {
+    deck(`<div class="reveal"><div class="slides">
+      <section><p id="a">One</p></section><section><p id="b">Two</p></section>
+    </div></div><p id="c">Notes</p>`);
+    (window as { Reveal?: unknown }).Reveal = { getIndices: () => ({ h: 1, v: 0 }), slide: () => {} };
+    here = createHere(document.body, () => {}, look);
+    expect(here.view(document.getElementById("a")!)).toEqual({ slide: "1" });
+    expect(here.holds(here.view(document.getElementById("a")!))).toBe(false);
+    expect(here.view(document.getElementById("b")!.firstChild!)).toEqual({ slide: "2" });
+    // Outside the slides: the one showing.
+    expect(here.view(document.getElementById("c")!)).toEqual({ slide: "2" });
+  });
+
   it("asks the page to reveal a view it reported, and resolves once the page says it is there", async () => {
     setViewState({ tab: "plans" });
     here = createHere(document.body, () => {}, look);

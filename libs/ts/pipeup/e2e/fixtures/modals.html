@@ -59,6 +59,7 @@
       <button id="open-top">Top overlay</button>
       <button id="open-wc">Component dialog</button>
       <button id="open-fs">Fullscreen</button>
+      <button id="open-moved">Centred dialog</button>
     </main>
     <dialog id="native">
       <h2>Delete project?</h2>
@@ -69,6 +70,13 @@
     <dialog id="nested">
       <p id="nested-p">This can't be undone.</p>
       <form method="dialog"><button id="nested-close">Close</button></form>
+    </dialog>
+    <!-- Centred with a transform, as many design systems do: it would hold Pipeup's fixed layer inside its own box. -->
+    <dialog
+      id="moved"
+      style="position: fixed; inset: auto; top: 50%; left: 50%; margin: 0; transform: translate(-50%, -50%)"
+    >
+      <p id="moved-p">Your changes are saved.</p>
     </dialog>
     <dialog id="plain">
       <p id="plain-p">A dialog that isn't modal: the page still works around it.</p>
@@ -133,6 +141,7 @@
       $("open-fs").onclick = () => $("stage").requestFullscreen();
       $("exit-fs").onclick = () => document.exitFullscreen();
       $("open-native").onclick = () => $("native").showModal();
+      $("open-moved").onclick = () => $("moved").showModal();
       $("open-nested").onclick = () => $("nested").showModal();
       $("open-plain").onclick = () => $("plain").show();
       $("open-inert").onclick = () => {
