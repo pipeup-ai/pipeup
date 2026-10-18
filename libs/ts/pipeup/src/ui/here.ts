@@ -183,6 +183,11 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
   const fit = (s: unknown): string | null =>
     typeof s === "string" && s.length > 0 && s.length <= LIMITS.viewValue ? s : null;
   const numberOf = (el: Element | null | undefined) => fit(el?.getAttribute("data-pipeup-slide"));
+  /** reveal.js's slide `h` (0-based): its marked slide, else its place. */
+  const revealNumber = (h: number) => {
+    const sec = sections()[h];
+    return numberOf(sec?.matches(SLIDE) ? sec : sec?.querySelector(SLIDE)) ?? fit(String(h + 1));
+  };
 
   function find(): string | null {
     also = [];
@@ -199,9 +204,7 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     if (r) {
       let s: string | null = null;
       safely(() => {
-        const h = r.getIndices().h;
-        const sec = sections()[h];
-        s = numberOf(sec?.matches(SLIDE) ? sec : sec?.querySelector(SLIDE)) ?? fit(String(h + 1));
+        s = revealNumber(r.getIndices().h);
       });
       if (s !== null) return s;
     }
@@ -272,7 +275,9 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     slide: () => slide,
     view(at) {
       const el = at instanceof Element ? at : at?.parentElement;
-      const s = numberOf(el?.closest(SLIDE)) ?? slide;
+      // On reveal.js, content in an unmarked slide is on that slide, not the one showing.
+      const h = el && revealJs() ? sections().findIndex((sec) => sec.contains(el)) : -1;
+      const s = numberOf(el?.closest(SLIDE)) ?? (h >= 0 ? revealNumber(h) : slide);
       const v: ViewState = { ...(s !== null ? { slide: s } : {}), ...page };
       return Object.keys(v).length ? v : undefined;
     },

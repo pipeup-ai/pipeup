@@ -526,9 +526,13 @@ export function startApp(o: AppOptions): App {
     },
     focusDraft,
     backToDraft: () => {
-      modeView?.toDraft();
-      toast("Finish or cancel this comment first");
-      focusDraft();
+      // On a deck Pipeup can't turn there, nothing is drawn over this slide, and the reviewer is told which one.
+      const v = state.draft?.anchor.view;
+      const away = here.holds(v) ? undefined : v?.slide;
+      toast(
+        away ? `Finish or cancel your comment on slide ${away} first` : "Finish or cancel this comment first",
+      );
+      focusDraft(() => modeView?.toDraft());
     },
     postDraft,
     seen,
@@ -710,12 +714,14 @@ export function startApp(o: AppOptions): App {
     // hidden, and while the panel's own room takes its place.
     sheet.gutter(reserve ? (state.mode === "column" && !state.hidden && !push ? GUTTER : 0) : null);
     // A deck's own controls in the bottom-right corner of its room (a slide number, arrows): the comment control and
-    // its messages sit just above them.
+    // its messages sit just above them. Pipeup's own root (inside the page's while a dialog or fullscreen element is
+    // open) and layers over the window aren't controls in the corner.
     let lift = 0;
     if (here.slide() !== null)
       for (const el of o.root.querySelectorAll(IGNORED)) {
+        if (el === host.element) continue;
         const r = el.getBoundingClientRect();
-        if (r.right > innerWidth - pushed - 48 && r.bottom > innerHeight - 48)
+        if (r.right > innerWidth - pushed - 48 && r.bottom > innerHeight - 48 && r.top > innerHeight / 2)
           lift = Math.max(lift, innerHeight - r.top + 4);
       }
     host.layer.style.setProperty("--pu-lift", `${lift}px`);
@@ -799,11 +805,17 @@ export function startApp(o: AppOptions): App {
     );
   }
 
-  /** Into the open draft: to its slide or view first if that has gone (the box is inert while away), then the caret. */
-  function focusDraft(): void {
+  /**
+   * Into the open draft: to its slide or view first if that has gone (the box is inert while away), then `there` once
+   * it is here, then the caret.
+   */
+  function focusDraft(there?: () => void): void {
     const v = state.draft?.anchor.view;
     const restore = openBox?.caret();
-    void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(restore);
+    void Promise.resolve(here.holds(v) || here.navigate(v ?? {}).then(() => ctx.recheck())).then(() => {
+      if (here.holds(v)) there?.();
+      restore?.();
+    });
   }
 
   function open(id: string | null, sent = false): void {

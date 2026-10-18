@@ -251,8 +251,9 @@ any of them off.
   dimmed, and the block keeps a faint outline, so it is always clear where the comment will go. The cursor's
   keys move the cursor. Enter on another block, a click on another block, or Enter on a bubble takes the
   reviewer back to the waiting box: its block is outlined and named again, the page scrolls to it when it is
-  out of view, focus is in the box, and Pipeup says "Finish or cancel this comment first". Modifier+↑/↓ are
-  left to the page.
+  out of view, focus is in the box, and Pipeup says "Finish or cancel this comment first". When the box is on
+  another slide of a deck Pipeup can't turn, nothing of it is drawn over the slide showing, and Pipeup says which
+  slide it is on ("Finish or cancel your comment on slide 1 first"). Modifier+↑/↓ are left to the page.
 - **Keys Pipeup acts on stay with Pipeup.** Keys used in its menus, its panel, a card, a box or the block
   cursor never also reach the page, pressed or let go, so a deck never turns a slide because of them; keys
   Pipeup doesn't use always reach the page. The Esc that leaves comment mode is Pipeup's too.
@@ -281,8 +282,12 @@ any of them off.
 - A comment being written on a slide that goes away leaves nothing drawn over the next slide: it steps aside
   with its words (§8), and comment mode carries on.
 - **On a deck that fits itself to the window**, opening All comments makes the deck refit into the space
-  beside the panel, and closing it gives the space back. Where a deck keeps its own controls in the
-  bottom-right corner (a slide number, arrows), the comment control sits just above them.
+  beside the panel, and closing it gives the space back, even when the page sets its own width. Where a deck
+  keeps its own controls in the bottom-right corner (a slide number, arrows), the comment control sits just
+  above them, and stays in the corner in fullscreen, in a page's dialog and beside a layer over the window. A
+  deck shown fullscreen can't be made smaller: All comments sits over its right side.
+- On reveal.js, a comment is filed under the slide its content is on, and the block cursor leaves a slide as
+  the deck turns, even while it is still sliding away.
 - The comment control's number counts the open threads **here** (on this slide); a small mark on the
   control shows when other slides have open threads, and its label says how many ("2 here · 5 on
   other slides").
@@ -1756,3 +1761,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   are named as limits (section 9).
 - 2026-10-17 — The agents add-on's prompt names the page's Pipeup version in its commands, and a pre-release's guide (section 15b).
 - 2026-10-17 — A comment whose content is found and showing shows on the page even when the page's reported view differs in some other way (a new revision), marked Moved when its content changed (section 8).
+- 2026-10-18 — From the regression pass on 0.8.0-beta.5: on a deck, the comment control stays in its corner in fullscreen, in a page's dialog and beside a layer over the window; a page that sets its own width still makes room for All comments; on reveal.js a comment is filed under its own slide; a waiting comment on a slide Pipeup can't turn to says which slide it is on (sections 5, 6).

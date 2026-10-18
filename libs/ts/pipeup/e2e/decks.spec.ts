@@ -165,3 +165,103 @@ test("a text comment on a slide that doesn't show keeps its words when copied", 
     'Slide 1 "Q3 review" › Paragraph · Growth, retention and what we change in…, on the text "retention"',
   );
 });
+
+test("on a deck, the comment control stays in its corner beside a layer over the window, in a page's dialog and in fullscreen", async ({
+  page,
+}) => {
+  await open(page, "reveal-deck.html");
+  const mode = page.locator(".launch .mode");
+  await settled(page.locator(".launch"));
+  const rest = Math.round((await mode.boundingBox())!.y);
+  const at = async () => Math.round((await mode.boundingBox())!.y);
+  // A full-window layer the page asks Pipeup to ignore isn't a control in the corner.
+  await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.setAttribute("data-pipeup-ignore", "");
+    c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none";
+    document.querySelector(".reveal")!.append(c);
+    (window as any).Reveal.next();
+  });
+  await expect.poll(at).toBe(rest);
+  // Inside a page's dialog, Pipeup's own root isn't one either.
+  await page.evaluate(() => {
+    const d = document.createElement("dialog");
+    d.textContent = "Leave without saving?";
+    document.body.append(d);
+    d.showModal();
+  });
+  await expect
+    .poll(() => page.evaluate(() => document.querySelector("pipeup-root")!.parentElement!.localName))
+    .toBe("dialog");
+  await expect.poll(at).toBe(rest);
+  await page.evaluate(() => {
+    document.querySelector("dialog")!.close();
+    const b = document.createElement("button");
+    b.id = "present";
+    b.textContent = "Present";
+    b.style.cssText = "position:fixed;left:0;top:0;z-index:20";
+    b.onclick = () => document.querySelector(".reveal")!.requestFullscreen();
+    document.body.append(b);
+  });
+  await page.click("#present");
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.className)).toBe("reveal");
+  await page.evaluate(() => (window as any).Reveal.next());
+  await expect.poll(at).toBe(rest);
+  // Still just above the deck's own arrows.
+  expect((await mode.boundingBox())!.y + (await mode.boundingBox())!.height).toBeLessThanOrEqual(
+    (await box(page, ".controls")).y + 1,
+  );
+});
+
+test("on a reveal.js deck with no markup, the block cursor leaves a slide as it turns, and a comment goes under the slide it is on", async ({
+  page,
+}) => {
+  await open(page, "reveal-deck.html");
+  // The old slide stays showing for a moment as the deck turns, as reveal.js's own transitions do.
+  await page.addStyleTag({
+    content:
+      ".reveal .slides>section{transition:visibility 0s 3s}.reveal .slides>section.present{transition:none}",
+  });
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await expect(page.locator(".namebar.show")).toContainText("Quarterly review");
+  await page.evaluate(() => (window as any).Reveal.next());
+  // Slide 1 still shows as it slides away, but nothing of it stays drawn: the cursor is on slide 2.
+  await expect(page.locator(".namebar.show")).toContainText("Revenue grew 42%");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Which slide am I on?");
+  await page.keyboard.press("Enter");
+  await expect.poll(() => savedViews(page)).toEqual({ "Which slide am I on?": { slide: "2" } });
+  expect(
+    await page.evaluate(() => (window as any).pu.document.threads()[0].anchor.quote?.exact ?? ""),
+  ).not.toContain("Quarterly");
+});
+
+test("a page that sets html's width still makes room beside All comments", async ({ page }) => {
+  await open(page, "reveal-deck.html");
+  await page.addStyleTag({ content: "html{width:100%}" });
+  await openAll(page);
+  await settled(page.locator(".all"));
+  await expect
+    .poll(() =>
+      page.evaluate(() => Math.round(document.querySelector(".controls")!.getBoundingClientRect().right)),
+    )
+    .toBeLessThanOrEqual(1280 - 320);
+});
+
+test("on a deck Pipeup can't turn, a waiting comment on another slide isn't drawn over this one, and Pipeup says where it is", async ({
+  page,
+}) => {
+  await open(page, "deck.html");
+  await toggleCommenting(page);
+  await page.locator("#s1p").click();
+  await page.keyboard.type("Is Q4 right?");
+  await page.click("#next", { force: true });
+  await expect(page.locator("#count")).toHaveText("2 / 3");
+  // Once the slides have cross-faded.
+  await page.waitForTimeout(500);
+  await page.locator('[data-pipeup-id="s2-q4"]').click();
+  await expect(page.locator(".toast.show")).toHaveText("Finish or cancel your comment on slide 1 first");
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".pick.show")).toHaveCount(0);
+  await expect(page.locator(".namebar.show")).toHaveCount(0);
+});
