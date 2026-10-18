@@ -24,8 +24,11 @@ code (MD-09, MD-10, MD-11, KB-10, LK-06, LK-15). Builds on [words-and-focus.md](
   in CSS must size from the page, not the window: `examples/review-deck.html` now uses `min(92%, 960px)` and centres
   its controls with `--pipeup-panel`, as the site's Try deck already did.
 - **The control above a deck's corner controls** (SL-8). `render()` measures the `IGNORED` elements in the root on a
-  deck; any touching the bottom-right corner of the room (48 px) lifts the control, its menu and its messages by
-  `--pu-lift` (set on the layer, so the stylesheet's `bottom` uses it; `bottom` eases).
+  deck; any along the bottom of the room (within 48 px of it, its top in the window's lower half, and not Pipeup's own
+  element) that reaches into the last 380 px of the room, as far left as a message can reach (320 px wide, 52 px from
+  the edge on touch), lifts the control, its menu and its messages by `--pu-lift` (set on the layer, so the
+  stylesheet's `bottom` uses it; `bottom` eases). It was the last 48 px (the corner) until U03: on a phone a message
+  runs along most of the bottom, and comment mode's touch hint covered a bottom-centre "← 1 / 3 →" bar.
 - **Copy reads the same on any slide** (SL-9). `wordsOf` falls back to `textContent` where `innerText` is empty (a
   hidden slide); the slide's title is also found in reveal.js's `.slides section`. `Location.within` says the id is
   of a marked element around the one commented on (a slide), and the Markdown says `Paragraph · … in
@@ -74,7 +77,8 @@ code (MD-09, MD-10, MD-11, KB-10, LK-06, LK-15). Builds on [words-and-focus.md](
   pointed at anywhere but its icons, it fades to 0.15 (`.namebar:hover:not(:has(.nb:hover))`), easing, so the words
   under it can be read.
 - **One bubble per thread** (MD-10, sites-18). The bubbles' frame steps a bubble right by 22 px while its point is
-  within 22 px of one already placed, so threads on one element sit side by side. On a control (`INTERACTIVE`, now in
+  within 22 px of one already placed, so threads on one element sit side by side (since 0.8.0, within the room they
+  have: see [looks-readable.md](looks-readable.md)). On a control (`INTERACTIVE`, now in
   `geometry.ts`) the bubble's tail is just past the control's right edge, so all of the control stays the page's.
 - **All comments as a list** (LK-06). The panel has a heading for screen readers ("All comments", `role=heading`, so
   a page's own `h2` selectors never meet it); `.list` is `role=list` named "Comments"; each card is a `listitem`; a
@@ -92,8 +96,21 @@ When merged with the phones batch, its own "hint waits for the menu" (`hintLater
 `toast()` defers a hint into `hintLater` while the menu is open, `hideHint()` drops a waiting hint (except by touch),
 and the menu's bottom offset (`--b`) carries the deck's lift.
 
+## From the regression pass on beta.5
+
+- The lift above a deck's corner controls skips Pipeup's own element (inside the page's while a dialog or fullscreen
+  element is open) and anything whose top is above the middle of the window (a layer over the whole window).
+- `here.view(at)` on reveal.js gives content in an unmarked slide that slide (`.slides > section` by index, or its
+  marked slide), not the one showing, so the block cursor leaves a slide as it turns and a comment is filed there.
+- The panel's room also sets `width: auto` on `<html>`, so a page's `html { width: 100% }` gives it up.
+- A deck shown fullscreen can't make room: the browser's own `:fullscreen` rules win over any page rule.
+
 ## Change log
 
 - 2026-10-15 — First version.
 - 2026-10-15 — Merged with the looks and phones batches: one waiting hint, the menu's `--b` with the deck's lift, All
   comments' groups as list items holding their own lists, and rows that fold and grow; Pipeup 57.4 KB, budget 57.5 KB.
+- 2026-10-18 — From the regression pass on beta.5: the corner lift, reveal.js slides by content, room with a set
+  width.
+- 2026-10-18 — The lift counts a deck's controls anywhere along the bottom as far left as messages reach, not just the
+  corner (U03); it skips Pipeup's own element and anything whose top is in the window's upper half.

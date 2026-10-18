@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   control,
   focusInPipeup,
@@ -8,6 +8,7 @@ import {
   openMenu,
   quoteSpot,
   seedText,
+  settled,
   showComments,
   toggleCommenting,
 } from "./helpers";
@@ -264,6 +265,101 @@ test("a closed card's hidden actions can't be pressed: a tap there opens the car
   await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("auto");
 });
 
+const resolvedCount = (page: Page) =>
+  page.evaluate(() => (window as any).pu.document.threads().filter((t: any) => t.resolved).length as number);
+const opacityOf = (l: Locator) => l.evaluate((e) => getComputedStyle(e).opacity);
+
+test("a closed card's actions take a click only once they show: a click as the pointer arrives never presses them", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await page.mouse.move(0, 0);
+  // In the column, the click opens the card.
+  const card = page.locator(".th");
+  await expect(card).not.toHaveClass(/\bwait\b/);
+  await settled(card);
+  await expect.poll(() => opacityOf(card.locator(".root .acts"))).toBe("0");
+  let b = (await card.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(card).toHaveClass(/\bon\b/);
+  expect(await resolvedCount(page)).toBe(0);
+  await page.mouse.move(0, 0);
+  await page.keyboard.press("Escape");
+  await expect(card).not.toHaveClass(/\bon\b/);
+  // In All comments the same; once they have eased in, the same click resolves.
+  await openAll(page);
+  await page.mouse.move(0, 0);
+  const row = page.locator(".all.show .cd").first();
+  await settled(page.locator(".all.show"));
+  const acts = row.locator(".acts");
+  await expect.poll(() => opacityOf(acts)).toBe("0");
+  b = (await row.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  await page.mouse.up();
+  await page.waitForTimeout(100);
+  expect(await resolvedCount(page)).toBe(0);
+  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).pointerEvents)).toBe("auto");
+  await expect.poll(() => opacityOf(acts)).toBe("1");
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect.poll(() => resolvedCount(page)).toBe(1);
+});
+
+test("after Resolve in the column, a second click with the pointer still opens the next card, never resolves it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "new onboarding flow", "Which flow?");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const first = page.locator(".th", { hasText: "Which flow?" });
+  const next = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await expect(next).not.toHaveClass(/\bwait\b/);
+  await settled(next);
+  await first.hover();
+  const resolve = first.getByRole("button", { name: "Resolve", exact: true });
+  await expect.poll(() => opacityOf(first.locator(".root .acts"))).toBe("1");
+  await resolve.click();
+  const at = await resolve.boundingBox();
+  await expect(first).toHaveCount(0);
+  await settled(next);
+  // The next card has moved up under the pointer, focus is on it, and its actions stay hidden there.
+  const r = (await next.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  const x = at!.x + at!.width / 2;
+  const y = at!.y + at!.height / 2;
+  expect(x > r.x && x < r.x + r.width && y > r.y && y < r.y + r.height).toBe(true);
+  await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("opn") });
+  expect(await opacityOf(next.locator(".root .acts"))).toBe("0");
+  await page.mouse.down();
+  await page.mouse.up();
+  await expect(next).toHaveClass(/\bon\b/);
+  expect(await resolvedCount(page)).toBe(1);
+});
+
+test("after Resolve from the keyboard, the next card's actions show for the keyboard at once", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "new onboarding flow", "Which flow?");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const next = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await expect(next).not.toHaveClass(/\bwait\b/);
+  await page.mouse.move(0, 0);
+  await page.locator(".th .opn").first().focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".th").first().getByRole("button", { name: "React", exact: true })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".th", { hasText: "Which flow?" })).toHaveCount(0);
+  await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("opn") });
+  await expect.poll(() => opacityOf(next.locator(".root .acts"))).toBe("1");
+  await page.keyboard.press("Tab");
+  await expect(next.getByRole("button", { name: "React", exact: true })).toBeFocused();
+});
+
 test("the line to a new comment in All comments goes when the panel closes", async ({ page }) => {
   await open(page, "doc.html");
   await toggleCommenting(page);
@@ -390,4 +486,137 @@ test("in All comments, a thread resolved from the keyboard hands focus to the ne
   await page.keyboard.press("Enter");
   await expect(page.locator(".all .cd")).toHaveCount(1);
   await expect.poll(() => focusInPipeup(page)).toMatchObject({ cls: expect.stringContaining("mi") });
+});
+
+// From the regression pass on 0.8.0-beta.5.
+
+test("Esc while an input method is composing cancels the composition, never the comment or the reply", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await shortcut(page);
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Words ");
+  const composingEsc = (sel: string) =>
+    page.evaluate((sel) => {
+      const t = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(sel)!;
+      for (const type of ["keydown", "keyup"])
+        t.dispatchEvent(
+          new KeyboardEvent(type, {
+            key: "Escape",
+            isComposing: true,
+            bubbles: true,
+            composed: true,
+            cancelable: true,
+          }),
+        );
+    }, sel);
+  await composingEsc(".draft textarea");
+  await expect(draftLine(page)).toHaveValue("Words ");
+  await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
+  await page.keyboard.press("Enter");
+  const th = page.locator(".th.on, .pop.show .thread").first();
+  await expect(th).toHaveCount(1);
+  await th.locator(".rbox textarea").focus();
+  await page.keyboard.type("Not sure");
+  await composingEsc(".rbox textarea");
+  await expect(th.locator(".rbox textarea")).toHaveValue("Not sure");
+  await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
+});
+
+test("in comment mode, ⌘Z or Ctrl+Z takes the Undo offered after Esc; once faded, Undo is no longer a Tab stop", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await shortcut(page);
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("Keep these words");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Comment discarded");
+  await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+  await page.keyboard.press("ControlOrMeta+KeyZ");
+  await expect(draftLine(page)).toHaveValue("Keep these words");
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Comment discarded");
+  await expect(page.locator(".toast.show")).toHaveCount(0, { timeout: 8000 });
+  await expect(page.locator(".toast .ta")).toBeHidden();
+});
+
+test("Copy thread keeps focus on its ⋯, also when the browser's clipboard can't be used", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error("blocked")) },
+    }),
+  );
+  await showComments(page);
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const th = page.locator(".th");
+  await th.locator(".tx").first().click();
+  const more = th.locator(".root").getByRole("button", { name: "More" });
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await expect(th.getByRole("menuitem", { name: "Copy thread" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".toast.show")).toHaveCount(1);
+  await expect(more).toBeFocused();
+});
+
+test("in All comments, a reply being written is kept when its card closes, another opens, or Esc throws it away (with Undo)", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await seedText(page, "#p3", "pricing work", "Which pricing work?");
+  await openAll(page);
+  const rows = page.locator(".all .cd");
+  await rows.first().locator("button.mi").click();
+  const line = page.locator(".all .rbox textarea");
+  await expect(line).toBeFocused();
+  await page.keyboard.type("Ada agrees");
+  await rows.nth(1).locator("button.mi").click();
+  await expect(line).toHaveValue("");
+  await rows.first().locator("button.mi").click();
+  await expect(line).toHaveValue("Ada agrees");
+  // Esc in the line throws the words away first, with Undo; the card stays open.
+  await line.focus();
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".toast.show")).toContainText("Reply discarded");
+  await expect(line).toHaveValue("");
+  await page.locator(".toast.show").getByRole("button", { name: "Undo" }).click();
+  await expect(line).toHaveValue("Ada agrees");
+});
+
+test("a thread open on the page moves into All comments with the reply being written in it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await showComments(page);
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  const th = page.locator(".th", { hasText: "Is 20% realistic?" });
+  await th.locator(".tx").first().click();
+  await expect(th.locator(".rbox textarea")).toBeFocused();
+  await page.keyboard.type("Ada agrees");
+  await openAll(page);
+  await expect(page.locator(".all .rbox textarea")).toHaveValue("Ada agrees");
+});
+
+test("opening All comments while writing a comment keeps the caret in it", async ({ page }) => {
+  await open(page, "doc.html");
+  await seedText(page, "#p3", "pricing work", "Which pricing work?");
+  await toggleCommenting(page);
+  await page.locator("#p1").click();
+  await expect(draftLine(page)).toBeFocused();
+  await page.keyboard.type("We should name the flow");
+  await control(page).click();
+  await expect(page.locator(".all.show")).toHaveCount(1);
+  await page.keyboard.type(" so readers know which one");
+  await expect(draftLine(page)).toHaveValue("We should name the flow so readers know which one");
+  await expect(page.locator(".all .rbox textarea")).toHaveCount(0);
 });

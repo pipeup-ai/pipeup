@@ -12,7 +12,7 @@ svg{display:block}
 --in:.26s;--mv:.34s;--out:.2s;--pl:1.2s;
 --eo:cubic-bezier(.22,.61,.36,1);--eio:cubic-bezier(.4,0,.2,1);--ei:cubic-bezier(.4,0,1,1);
 --pu-text:var(--k);--pu-muted:var(--mu);--pu-faint:var(--fa);--pu-line:var(--ln);--pu-surface:var(--su);--pu-soft:var(--so);--pu-hover:var(--ho);--pu-shadow:var(--sh);--pu-ease:var(--eo)}
-.layer{transition:opacity .24s var(--eo)}.layer.sw{opacity:0;transition-duration:.16s;transition-timing-function:var(--ei)}
+.layer{transition:opacity .24s var(--eo)}.layer.fading{opacity:0;transition-duration:.16s;transition-timing-function:var(--ei)}
 .layer.dark{--k:#ECEBE6;--mu:#B4B2A9;--fa:#9A9892;--ln:#3A3936;--ru:#34332F;--so:#22221F;--su:#1B1B19;--ho:#2C2C29;--sh:0 8px 28px rgba(0,0,0,.45)}
 .layer.hidden .bub,.layer.hidden .col,.layer.hidden .pop,.layer.hidden .tip,.layer.hidden .mark,.layer.hidden .selbar{opacity:0!important;pointer-events:none!important}
 
@@ -38,12 +38,14 @@ svg{display:block}
 .tx a{color:var(--pu-accent);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
 
 /* Actions sit at the card's top right: always on an open card, on hover (or focus) on one at rest. In All comments a
-closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. */
+closed card keeps them while its ⋯ menu is open, and focus put there for the keyboard (not a click) shows them. After
+Resolve (.still) the card that moves up under the pointer keeps them from it until it moves; keyboard focus shows them. */
 .acts{margin-left:auto;display:flex;flex:none;transition:opacity var(--in) var(--eo)}
-.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts,.still .th:not(.on):not(:focus-within) .acts,.still .cd:not(.open):not(:has(:focus-visible,.pm)) .acts{opacity:0;pointer-events:none}
+.th:not(.on):not(:hover):not(:focus-within) .acts,.cd:not(.open):not(:hover):not(:has(:focus-visible,.pm)) .acts,.still .th:not(.on):not(:has(:focus-visible)) .acts,.still .cd:not(.open):not(:has(:focus-visible,.pm)) .acts{opacity:0;pointer-events:none}
 /* On a closed card they lie over the end of the top line, on the card's own colour, so the name has the whole line
-while they're hidden and the card never changes size as they ease in. */
-.th:not(.on) .acts,.cd:not(.open) .acts{position:absolute;right:0;padding-left:16px;background:linear-gradient(90deg,transparent,var(--bg) 14px)}
+while they're hidden and the card never changes size as they ease in. They take presses only once eased in: a click as
+the pointer arrives, or a tap (which hovers as it lands), opens the card. */
+.th:not(.on) .acts,.cd:not(.open) .acts{position:absolute;right:0;padding-left:16px;background:linear-gradient(90deg,transparent,var(--bg) 14px);transition:opacity var(--in) var(--eo),pointer-events 0s var(--in);transition-behavior:allow-discrete}
 .th.on .rest{display:none}
 /* A comment's ⋯ menu: Copy thread, Edit, Delete (asked twice). */
 .pm{position:absolute;right:0;top:100%;z-index:5;display:flex;flex-direction:column;min-width:150px;padding:4px;border:1px solid var(--ln);border-radius:10px;background:var(--su);box-shadow:var(--sh)}
@@ -108,6 +110,8 @@ font-size:12px;font-weight:600;line-height:1;opacity:0;transform:scale(.85);tran
 .dlg{position:fixed;left:50%;top:18vh;width:min(380px,calc(100vw - 32px));padding:16px 18px;border:1px solid var(--ln);border-radius:14px;background:var(--su);box-shadow:var(--sh);color:var(--k);opacity:0;transform:translate(-50%,6px);pointer-events:none;transition:opacity var(--in) var(--eo),transform var(--in) var(--eo)}
 .dlg.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast.act{display:flex;align-items:center}.toast.show .ta{pointer-events:auto}
+/* Faded, its button is no longer a Tab stop (hidden once the fade is over). */
+.toast .ta{transition:visibility 0s .3s}.toast:not(.show) .ta{visibility:hidden}.toast.show .ta{transition-delay:0s}
 .ta{margin-left:4px;color:var(--pu-accent);text-decoration:underline;text-underline-offset:2px}
 .rx .n{font-size:11px;font-variant-numeric:tabular-nums}
 .rx.mine{background:var(--as);color:var(--pu-accent);border-color:var(--pu-accent)}
