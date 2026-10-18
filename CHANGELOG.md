@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A comment shows where it is when its content is on the page**, even if the page now reports something else about itself, such as a new revision of a design: it was counted as "in another view", with no bubble and no line to it, whenever its content had also changed (found as Moved). Content that is hidden or gone still counts as elsewhere. The integration skill now says to report only where the reviewer is, never a revision or date.
+
 ## [0.8.0-beta.4] - 2026-10-17
 
 This pre-release makes Pipeup work while a page's own dialog is open: a browser's modal dialog, one inside a web component, a library's dialog that traps focus or closes on Escape (Radix, shadcn/ui, Bootstrap, MUI, Headless UI), and an element shown fullscreen. While All comments is open, messages sit inside the panel, clear of a deck's slide controls. Pipeup is 58.1 KB gzip. It is a beta: try it from the `next` channel and tell us what breaks.
