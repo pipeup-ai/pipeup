@@ -67,7 +67,7 @@ function attrSpan(tag, name) {
 const attrEnd = (tag) => tag.length - (/\s*\/?>$/.exec(tag)?.[0].length ?? 1);
 
 /** What the page already has: its <html> tag, Pipeup's script, add-ons. */
-function survey(html) {
+export function survey(html) {
   const h = HTML_TAG.exec(html);
   if (!h) throw new InitError("the page has no <html> element; add one around the page and run this again");
   const found = { html: { at: h.index, tag: h[0] }, core: null, addons: new Map(), lastScriptEnd: -1 };
@@ -298,7 +298,7 @@ export function candidates(html) {
 }
 
 /** Applies edits (each { at, del, text }) from the end of the file back, so earlier offsets stay right. */
-function apply(html, edits) {
+export function apply(html, edits) {
   let out = html;
   for (const e of [...edits].sort((a, b) => b.at - a.at || b.order - a.order))
     out = out.slice(0, e.at) + e.text + out.slice(e.at + (e.del ?? 0));
@@ -306,7 +306,7 @@ function apply(html, edits) {
 }
 
 /** Sets (or appends to) an attribute on the <html> start tag: returns the edit, or null when nothing changes. */
-function htmlAttr(found, name, value, { append = false } = {}) {
+export function htmlAttr(found, name, value, { append = false } = {}) {
   const { at, tag } = found.html;
   const span = attrSpan(tag, name);
   if (!span) return { at: at + attrEnd(tag), text: ` ${name}="${escapeAttr(value)}"` };
