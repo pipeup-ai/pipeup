@@ -1305,9 +1305,16 @@ an agent on the same computer is a later step and is not part of this one.)
 - The copied text says that the comments were left in the reviewer's browser and are not in the page's file. It tells
   the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
   resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
-  and works without them. Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.5 …`), so the
-  agent runs the same release as the page and not whatever npm calls stable, and a pre-release's text points at the
-  pre-release guide.
+  and works without them. Its commands
+  run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that
+  answers them, not only the page's exact one, because some computers accept only packages a few days old. A
+  pre-release page's commands name its pre-release and say to use any release if npm refuses that one, and its
+  text points at the pre-release guide.
+- The copied text names the page to answer on: the HTML file that runs Pipeup (its full path, for a page opened from
+  this computer, or its address on the site), never a file the page shows (a viewer at `viewer.html?file=notes.md` is
+  `viewer.html`). For an agent that can write the replies file, it says where the replies will be written and that the
+  page reads them from there. When the page doesn't list an agent, it tells such an agent to ask the author first and,
+  after a yes, list itself with one command.
 - With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
   page finds the replies block in it and says in words what it found (how many replies, from which agent, how many say
   addressed, and how many it will leave out and why, for example a reply to a comment that's no longer on the page).
@@ -1343,6 +1350,23 @@ an agent on the same computer is a later step and is not part of this one.)
   way to deliver.
 - An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
   and says in words what that lets it do.
+- An agent passes the page named in the copied text and, when it can't tell which file runs Pipeup, asks instead of
+  guessing a file the page shows. It lists itself on a page only after the author's yes.
+- The skills, `llms.txt`, the Markdown copies and the site give the same commands as the prompt, in the same form.
+
+**The commands an agent runs**
+- The reply command writes only to a page that runs Pipeup. Given any other file (a note a viewer shows, say), it
+  writes nothing, says why, and names the page nearby that runs Pipeup when there is one.
+- It writes the replies where the page reads them (next to the page, or the file the page names), and says where and
+  that the page will show them within a few seconds.
+- When the page doesn't list the agent yet, it still writes the replies, so nothing is lost, and ends by saying the
+  page will ignore them until it lists the agent, with the one command that lists it.
+- The agent command, given a page, lists the agent on it: it makes the agent's identity if there is none, shows the
+  one change (an attribute on the page's `<html>` tag) and asks first; with `--yes` it doesn't ask. Where it can't
+  ask (an agent's shell), it changes nothing and says to ask the author. It changes nothing else in the page, and says
+  so when the agent is already listed.
+- Every release from 0.6 on reads and writes replies the same way, so any of them answers any page. A release that
+  doesn't know an option says so and carries on with the rest.
 
 **Skills and checking**
 - The apply skill tells the agent to read the comments, make each change the author approved, reply with
@@ -1815,4 +1839,6 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
 - 2026-10-18 — iPhones (0.8.1): one tap answers on the page (Safari sends no click for a tap on words or pictures unless something listens for one); by touch the menu closes after Start commenting; the on-screen keyboard never covers a comment box, and Pipeup's drawings stay on what they are about when the phone moves the page; the selection's icon sits at the right edge beside the phone's own menu; no AutoFill in a comment box (sections 5, 7).
 - 2026-10-18 — By touch, comment mode's hint is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done (section 5).
+- 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
+- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
