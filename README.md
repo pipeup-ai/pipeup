@@ -73,7 +73,7 @@ Install the skills once and "add comments to this page" is enough; the agent the
 /plugin install pipeup --marketplace pipeup-ai/pipeup
 
 # Claude Code and Codex: one command (for you, or --project for this folder only)
-npx pipeup skills install
+npx --yes pipeup@0 skills install
 ```
 
 `pipeup skills install` says what it will write (`~/.claude/skills`, `~/.agents/skills`), asks first, and never
@@ -85,9 +85,9 @@ setting up saving reviews in Git) are in [apps/agent-skills](apps/agent-skills/)
 ### From the command line
 
 ```sh
-npx pipeup init page.html    # adds Pipeup, pinned, with a document identity; then offers stable names for its parts
-npx pipeup check page.html   # what Pipeup changes or covers on the page, at three widths
-npx pipeup read page.html --from feedback/   # the comments, from feedback files, the shared copy and agents' replies
+npx --yes pipeup@0 init page.html    # adds Pipeup, pinned, with a document identity; then offers stable names for its parts
+npx --yes pipeup@0 check page.html   # what Pipeup changes or covers on the page, at three widths
+npx --yes pipeup@0 read page.html --from feedback/   # the comments, from feedback files, the shared copy and agents' replies
 ```
 
 Each says what it will do; `init` asks before it changes the file and leaves every other byte as it was.

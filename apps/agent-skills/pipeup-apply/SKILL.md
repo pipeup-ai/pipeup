@@ -11,8 +11,8 @@ Written for Pipeup 0.8.1 This skill is published at https://pipeup-ai.github.io/
 
 Use the first of these that works:
 
-0. **A live link** (the author runs `npx pipeup watch report.html --agent Claude` on this computer, opens the page it
-   prints, and switches on **Share with my agent**): run `npx pipeup comments report.html` (add `--all` for resolved
+0. **A live link** (the author runs `npx --yes pipeup@0 watch report.html --agent Claude` on this computer, opens the page it
+   prints, and switches on **Share with my agent**): run `npx --yes pipeup@0 comments report.html` (add `--all` for resolved
    threads, `--json` for data). No browser needed. If it says nothing is shared, ask the author to switch the switch on.
    Your replies below reach the open page within seconds. The link lists your key for the page while it runs.
 1. **Run the page** in a browser (you can drive one, or the author has it open) and evaluate
@@ -42,20 +42,30 @@ Answer a question with an answer, not a change.
 You answer in the page's **replies file**, next to the page (`report.html` → `report.replies.js`), signed with your
 own key. The key stays on this computer in `~/.pipeup/agent.json`; never put it in the page or its folder.
 
-First time only — make your key, then ask the author to list it on the page and to add the **agents add-on**
+Run these commands exactly as written: `--yes` stops npx asking "Ok to proceed?", and `pipeup@0` takes any release npm
+will give (some computers only accept packages a few days old). Every release from 0.6 answers them the same way. A
+pre-release page's prompt names its pre-release; if npm refuses that one, use `pipeup@0`.
+
+`--page` is **the HTML file that runs Pipeup**, the one the author opened, never a file it shows: on a viewer such as
+`wiki/viewer.html?file=notes.md`, pass `wiki/viewer.html`. The prompt the author copies names it. If you can't tell,
+ask; if the command says the file doesn't run Pipeup, it names the page to use instead.
+
+First time only — ask the author whether you may list yourself on the page. After their yes, this makes your key (once)
+and lists it; without `--yes` it only shows the change. The author also needs the **agents add-on**
 (`@pipeup/agents`), which is what shows your replies in the page (neither is needed under a live link, which lists your
 key and adds the add-on for you):
 
 ```bash
-npx pipeup agent --name Claude
-# prints: <html data-pipeup-agents="<your public key>">   (the author adds this to the page's <html> tag)
+npx --yes pipeup@0 agent --name Claude --page report.html --yes
 ```
 
 Then, for each thread:
 
 ```bash
-npx pipeup reply --page report.html --thread <Thread id> "Changed the 20% to 15 to 20%, in the second paragraph." --addressed "addressed in revision 2"
+npx --yes pipeup@0 reply --page report.html --thread <Thread id> "Changed the 20% to 15 to 20%, in the second paragraph." --addressed "addressed in revision 2"
 ```
+
+It says where it wrote the replies, and, if the page doesn't list you yet, that the page will ignore them until it does.
 
 - The words say plainly what changed and where. If you did not make the change, say why, and leave out `--addressed`.
 - `--addressed` marks the thread addressed: the author sees your note and chooses **Resolve** or **Still not right**.

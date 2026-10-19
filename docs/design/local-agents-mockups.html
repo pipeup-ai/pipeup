@@ -287,7 +287,7 @@
         <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 agent --name Muse --page wiki/viewer.html</span>
 Muse (~/.pipeup/agent.json)
 
-This adds one attribute to wiki/viewer.html, and changes nothing else:
+This adds one attribute on wiki/viewer.html, and changes nothing else:
   &lt;html lang="en" data-pipeup-doc="…" <span class="hl">data-pipeup-agents="3SOh…Zf4"</span>&gt;
 
 <span class="no">This shell can't ask, so nothing was changed.</span>
@@ -297,8 +297,8 @@ Ask the page's author. After their yes, run it again with --yes.</pre></div>
         <span class="tag new">After Sam's yes</span>
         <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 agent --name Muse --page wiki/viewer.html --yes</span>
 Muse (~/.pipeup/agent.json)
-<span class="ok">Listed Muse on wiki/viewer.html.</span> The page now shows Muse's replies.</pre></div>
-        <div class="cap">Run by Sam in a terminal, the same command asks "Add it? (y/N)" instead. Already listed, it says so and changes nothing.</div>
+<span class="ok">Listed Muse on wiki/viewer.html.</span> Reload the page, and it shows Muse's replies.</pre></div>
+        <div class="cap">Run by Sam in a terminal, the same command asks "Add it? (y/N)" instead. Already listed, it says so and changes nothing. Where it can't ask, it exits 2, so the agent knows nothing was done.</div>
       </div>
     </div>
   </section>

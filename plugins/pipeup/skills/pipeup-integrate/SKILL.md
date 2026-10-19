@@ -140,7 +140,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    never a revision, version or date: those change for every comment already made, which then counts as
    somewhere else.
 
-8. **Check, and fix until it passes:** once it ships, run `npx pipeup check page.html`; until then, open the page and check the items below by eye. Fix every `fail`; fix
+8. **Check, and fix until it passes:** once it ships, run `npx --yes pipeup@0 check page.html`; until then, open the page and check the items below by eye. Fix every `fail`; fix
    `warn` items unless the author says otherwise. Typical fixes:
    - *layout changed* — you edited styles or wrappers; undo that.
    - *closed UI overlaps content* — add `data-pipeup-ignore` to a floating element that shouldn't be covered, or set
@@ -197,9 +197,10 @@ page opened from disk and in any script order, and they are released with Pipeup
 - **Letting an agent answer comments.** Only when the author asks. Agents read a page's comments with
   `await Pipeup.comments()` (part of Pipeup itself) and answer in a replies file next to the page (`pipeup-apply` is the
   skill for that). Showing those answers in the page is the **agents add-on**, so listing an agent means two things:
-  1. The agent runs `npx pipeup agent --name Claude`, which prints its public key; add that key to `<html>` as
-     `data-pipeup-agents="<key>"` (append to an existing list, keep every entry). Never write a key you weren't given,
-     and never put an agent's private key in the page.
+  1. With the author's yes, the agent lists itself: `npx --yes pipeup@0 agent --name Claude --page page.html --yes`
+     adds its public key to `<html>` as `data-pipeup-agents` (appended to an existing list) and changes nothing else.
+     Or add a key you were given by hand, keeping every entry. Never write a key you weren't given, and never put an
+     agent's private key in the page.
   2. Add the agents add-on after the Pipeup script, pinned with its `integrity` hash like any add-on:
      `<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@<version>/dist/agents.min.js" integrity="…" crossorigin="anonymous"></script>`,
      and add `agents` to `data-pipeup-addons` if the page has that list. Say in plain words what it does: it reads the
@@ -207,9 +208,9 @@ page opened from disk and in any script order, and they are released with Pipeup
      sends the page's comments to the program on their computer; nothing leaves the computer. It also lets the agent
      reply in threads and mark them addressed, never resolve or change anyone's comment. The page ignores replies from
      keys it doesn't list. Without the add-on the page says so once in the browser console and no replies show.
-  On their own computer the author can instead run `npx pipeup watch page.html --agent Claude`: it shows the page with a
+  On their own computer the author can instead run `npx --yes pipeup@0 watch page.html --agent Claude`: it shows the page with a
   **Share with my agent** switch (off until they turn it on), lists the agent while it runs, **adds the agents add-on to
-  the page it shows itself**, and lets the agent read with `npx pipeup comments page.html`. Nothing is written into the
+  the page it shows itself**, and lets the agent read with `npx --yes pipeup@0 comments page.html`. Nothing is written into the
   page file. (It refuses a page whose Pipeup is older than 0.6 and says what to change; a 0.6.x page already has agent
   support built in.)
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence

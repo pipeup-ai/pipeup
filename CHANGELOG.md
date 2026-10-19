@@ -7,6 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **An agent on your computer answers the first time.** The commands an agent is given are now `npx --yes pipeup@0 …`: they never stop to ask "Ok to proceed?", and they take any release npm will give, so they work on computers whose npm only accepts packages a few days old (the page's exact new version couldn't be installed there). Every release from 0.6 answers them the same way.
+- **The prompt names the page to answer on**: the HTML file that runs Pipeup (its full path, or its address on a site), never a file it shows, so an agent on a viewer page (`viewer.html?file=notes.md`) passes `viewer.html`. It says where the replies go.
+- **`pipeup reply` writes only to a page that runs Pipeup.** Given a note a viewer shows, it writes nothing and names the page nearby that runs Pipeup. It writes where the page reads (including a file the page names with `data-pipeup-replies`), says so, and when the page doesn't list the agent yet says how to list it.
+- **`pipeup agent --page` lists the agent on the page** in one step, after the author's yes (`--yes`): it shows the one change and changes nothing else. Where it can't ask, it changes nothing.
+- The agent commands say which options a release doesn't know, and carry on with the rest.
+
 ## [0.8.1] - 2026-10-18
 
 This release makes Pipeup work on iPhones as it should: one tap chooses what to comment on, the on-screen keyboard never covers the comment box, and comment mode's touch hint is easier to see and gets out of the way. Pipeup is 59.8 KB gzip.
