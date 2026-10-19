@@ -52,7 +52,7 @@ async function filesIn(dir, deep) {
 
 /**
  * The share add-on's headless reader, if it is installed: beside this package, or in the project the command runs in
- * (as with `npx pipeup read` in a folder where `@pipeup/share` is installed). It is never a dependency of `pipeup`.
+ * (as with `npx --yes pipeup@0 read` in a folder where `@pipeup/share` is installed). It is never a dependency of `pipeup`.
  */
 async function shareReader() {
   try {
