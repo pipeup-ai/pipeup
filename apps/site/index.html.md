@@ -38,7 +38,7 @@ You decide how comments travel. By default they stay in each reviewer's browser 
 - [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt): a short guide.
 - [llms-full.txt](https://pipeup-ai.github.io/pipeup/llms-full.txt): the guide and all three skills in one file.
 - Skills: [pipeup-integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [pipeup-summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [pipeup-apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md), [pipeup-send-to-git-setup](https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md) (a company saving reviews into its own Git).
-- Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx pipeup skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
+- Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx --yes pipeup@0 skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
 - Making your own add-on: [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html.md). Add one safely: pin it with its integrity hash, list it in `data-pipeup-addons` on `<html>`, and tell the author about a Content-Security-Policy (best effort).
 - Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html), a card for each add-on; each has its own page and Markdown copy, listed in [addons.html.md](https://pipeup-ai.github.io/pipeup/addons.html.md).
 - Source: [github.com/pipeup-ai/pipeup](https://github.com/pipeup-ai/pipeup).

@@ -76,7 +76,7 @@ const prompts = {
     "",
     `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/agents", "agents.min.js")}`,
     "",
-    "Do not list an agent's key unless I give you one: if I want an agent to reply, tell me to run npx pipeup agent --name <its name> and give you the key it prints, and then put it on the <html> element as data-pipeup-agents=\"<key>\" (add it to the list if the attribute is already there).",
+    "Do not list an agent's key unless I give you one: if I want an agent to reply, the agent can list itself, with my yes, by running npx --yes pipeup@0 agent --name <its name> --page <this page> --yes; or, if I give you its key, put it on the <html> element as data-pipeup-agents=\"<key>\" (add it to the list if the attribute is already there).",
     "",
     ...SAFE("agents", "to nowhere new (the page reads a file next to it, and sends comments only to the program on my own computer when I switch sharing on)"),
     "",
