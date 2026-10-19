@@ -12,12 +12,12 @@ const id = (n: string) => n.padEnd(43, "_");
 describe("Copy for my agent", () => {
   const meta = {
     title: "Daily briefing",
-    url: "https://muse.example/briefing",
+    url: "file:///a/brief.html",
     doc: "doc-id-123",
     comments: "1. [t-4f2a] On Markets: Put the rates chart first. (Sam)",
     open: 1,
     resolved: 2,
-    replies: "https://muse.example/briefing.replies.js",
+    replies: "file:///a/brief.replies.js",
     listed: true,
   };
 
@@ -38,6 +38,14 @@ describe("Copy for my agent", () => {
     expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
   });
 
+  it("tells an agent whose key isn't listed to ask, then list itself on the page in one command, and carries no key", () => {
+    const p = agentPrompt({ ...meta, listed: false });
+    expect(p).toContain(
+      "Ask me first; after my yes, run `npx --yes pipeup@0 agent --name <your name> --page /a/brief.html --yes`",
+    );
+    expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
+  });
+
   it("asks an agent to be listed only if it can keep a key", () => {
     const p = agentPrompt({ ...meta, listed: false });
     expect(p).toContain("If you keep a Pipeup key between sessions");
@@ -45,19 +53,52 @@ describe("Copy for my agent", () => {
   });
 
   it("points an agent at the link's commands when a link is running", () => {
-    expect(agentPrompt({ ...meta, file: "/a/brief.html" })).toContain("npx pipeup comments /a/brief.html");
+    expect(agentPrompt({ ...meta, file: "/a/brief.html" })).toContain(
+      "npx --yes pipeup@0 comments /a/brief.html",
+    );
   });
 
-  it("names the page's Pipeup in every command, and a pre-release's own guide", () => {
-    const p = agentPrompt({ ...meta, file: "/a/brief.html", listed: false, version: "0.8.0-beta.4" });
-    expect(p).toContain("npx pipeup@0.8.0-beta.4 comments /a/brief.html");
-    expect(p).toContain("npx pipeup@0.8.0-beta.4 reply --print");
-    expect(p).not.toMatch(/npx pipeup /);
-    expect(p).toContain("https://pipeup-ai.github.io/pipeup/next/skills/pipeup-apply/SKILL.md");
-    // A stable release keeps the stable guide.
-    expect(agentPrompt({ ...meta, version: "0.8.0" })).toContain(
-      "https://pipeup-ai.github.io/pipeup/skills/",
+  it("asks npm for any release of the page's major version, never stops to ask, and a pre-release names itself", () => {
+    const stable = agentPrompt({ ...meta, file: "/a/brief.html", listed: false, version: "0.8.2" });
+    for (const c of ["comments /a/brief.html", "reply --page", "agent --name"])
+      expect(stable).toContain(`npx --yes pipeup@0 ${c}`);
+    expect(stable).not.toMatch(/npx pipeup|pipeup@0\.8/);
+    expect(stable).not.toContain("If npm refuses");
+    expect(stable).toContain("https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md");
+    const pre = agentPrompt({ ...meta, file: "/a/brief.html", listed: false, version: "0.9.0-beta.1" });
+    expect(pre).toContain("npx --yes pipeup@0.9.0-beta.1 reply --page");
+    expect(pre).toContain(
+      "If npm refuses pipeup@0.9.0-beta.1, use pipeup@0: it answers these commands the same way.",
     );
+    expect(pre).toContain("https://pipeup-ai.github.io/pipeup/next/skills/pipeup-apply/SKILL.md");
+    expect(agentPrompt({ ...meta, version: "1.2.0" })).toContain("npx --yes pipeup@1 reply");
+  });
+
+  it("names the HTML file that runs Pipeup, never a file a viewer shows, and where the replies go", () => {
+    const viewer = agentPrompt({
+      ...meta,
+      url: "file:///Users/sam/My%20wiki/viewer.html?file=syntheses/q3.md#top",
+      replies: "file:///Users/sam/My%20wiki/viewer.replies.js",
+    });
+    expect(viewer).toContain("reply --page /Users/sam/My wiki/viewer.html --thread");
+    expect(viewer).toContain("not a file it shows");
+    expect(viewer).toContain(
+      "writes /Users/sam/My wiki/viewer.replies.js, and your replies appear by themselves",
+    );
+    expect(viewer).not.toContain("q3.md --thread");
+    // A folder's page is its index.html; Windows paths lose the leading slash.
+    expect(agentPrompt({ ...meta, url: "file:///a/wiki/" })).toContain("--page /a/wiki/index.html");
+    expect(agentPrompt({ ...meta, url: "file:///C:/wiki/viewer.html" })).toContain(
+      "--page C:/wiki/viewer.html",
+    );
+    // Served from a site: the address it is served at.
+    const site = agentPrompt({
+      ...meta,
+      url: "https://docs.example.test/wiki/viewer.html?file=q3.md",
+      replies: "https://docs.example.test/wiki/viewer.replies.js",
+    });
+    expect(site).toContain("--page <the HTML file your site serves at /wiki/viewer.html>");
+    expect(site).toContain("writes https://docs.example.test/wiki/viewer.replies.js");
   });
 });
 

@@ -14,7 +14,7 @@ On the home page, the first screen shows Pipeup on a document, slides, a website
 You want to read it and give feedback.
 
 1. Open the file in your browser. If you see a small comment button in the bottom-right corner, skip to step 3.
-2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.1/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
+2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
 3. Comment: select words and click the comment icon, or press Shift+Option+C (Shift+Alt+C) and click any block. With the keyboard: Tab moves between blocks, Enter comments, Esc finishes.
 4. Send it back: **Copy comments › As Markdown** copies every comment with exactly where it is. Paste it in a message or email to whoever sent the file.
 
@@ -38,7 +38,7 @@ You decide how comments travel. By default they stay in each reviewer's browser 
 - [llms.txt](https://pipeup-ai.github.io/pipeup/llms.txt): a short guide.
 - [llms-full.txt](https://pipeup-ai.github.io/pipeup/llms-full.txt): the guide and all three skills in one file.
 - Skills: [pipeup-integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [pipeup-summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [pipeup-apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md), [pipeup-send-to-git-setup](https://pipeup-ai.github.io/pipeup/skills/pipeup-send-to-git-setup/SKILL.md) (a company saving reviews into its own Git).
-- Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx pipeup skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
+- Install the skills once: Claude Code `/plugin install pipeup --marketplace pipeup-ai/pipeup`, or `npx --yes pipeup@0 skills install` for Claude Code and Codex (it says what it writes and asks first). Without an install, paste the prompt.
 - Making your own add-on: [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html.md). Add one safely: pin it with its integrity hash, list it in `data-pipeup-addons` on `<html>`, and tell the author about a Content-Security-Policy (best effort).
 - Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html), a card for each add-on; each has its own page and Markdown copy, listed in [addons.html.md](https://pipeup-ai.github.io/pipeup/addons.html.md).
 - Source: [github.com/pipeup-ai/pipeup](https://github.com/pipeup-ai/pipeup).

@@ -1315,9 +1315,16 @@ an agent on the same computer is a later step and is not part of this one.)
   the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
   resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
   and works without them. It tells the agent how to sign its replies block when it keeps a key, and says whether the
-  page lists it. Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.5 …`), so the
-  agent runs the same release as the page and not whatever npm calls stable, and a pre-release's text points at the
-  pre-release guide.
+  page lists it. Its commands
+  run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that
+  answers them, not only the page's exact one, because some computers accept only packages a few days old. A
+  pre-release page's commands name its pre-release and say to use any release if npm refuses that one, and its
+  text points at the pre-release guide.
+- For an agent that can write next to the page, the copied text names the page to answer on: the HTML file that runs
+  Pipeup (its full path, for a page opened from this computer, or its address on the site), never a file the page
+  shows (a viewer at `viewer.html?file=notes.md` is `viewer.html`). It says where the replies will be written and that
+  the page reads them from there. When the page doesn't list an agent, it tells the agent to ask the author first and,
+  after a yes, list itself with one command.
 - With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
   page finds the replies block in it and says in words what it found (how many replies, from which agent, how many are
   signed by an agent the page lists, how many say addressed, and how many it will leave out and why, for example a
@@ -1358,6 +1365,23 @@ an agent on the same computer is a later step and is not part of this one.)
 - An agent never looks for comments in the page's file, and asks to be listed only when it can sign its replies.
 - An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
   and says in words what that lets it do.
+- An agent passes the page named in the prompt and, when it can't tell which file runs Pipeup, asks instead of
+  guessing a file the page shows. It lists itself on a page only after the author's yes.
+- The skills, `llms.txt`, the Markdown copies and the site give the same commands as the prompt, in the same form.
+
+**The commands an agent runs**
+- The reply command writes only to a page that runs Pipeup. Given any other file (a note a viewer shows, say), it
+  writes nothing, says why, and names the page nearby that runs Pipeup when there is one.
+- It writes the replies where the page reads them (next to the page, or the file the page names), and says where and
+  that the page will show them within a few seconds.
+- When the page doesn't list the agent yet, it still writes the replies, so nothing is lost, and ends by saying the
+  page will ignore them until it lists the agent, with the one command that lists it.
+- The agent command, given a page, lists the agent on it: it makes the agent's identity if there is none, shows the
+  one change (an attribute on the page's `<html>` tag) and asks first; with `--yes` it doesn't ask. Where it can't
+  ask (an agent's shell), it changes nothing and says to ask the author. It changes nothing else in the page, and says
+  so when the agent is already listed.
+- Every release from 0.6 on reads and writes replies the same way, so any of them answers any page. A release that
+  doesn't know an option says so and carries on with the rest.
 
 **Skills and checking**
 - The apply skill tells the agent to read the comments, make each change the author approved, reply with
@@ -1836,3 +1860,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
 - 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
 - 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
+- 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
+- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).

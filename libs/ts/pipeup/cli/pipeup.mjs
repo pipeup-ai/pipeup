@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // pipeup agent / pipeup reply: how an AI agent answers comments on a Pipeup page.
 // The agent's key stays in ~/.pipeup/agent.json (owner-only) and never goes in the page or its folder.
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
+import { createInterface } from "node:readline/promises";
 import { check, table } from "./check.mjs";
-import { init, InitError } from "./init.mjs";
+import { apply, htmlAttr, init, InitError, survey } from "./init.mjs";
 import { read, ReadError } from "./read.mjs";
 import { comments, watch } from "./link.mjs";
 import * as skills from "./skills.mjs";
@@ -41,9 +42,10 @@ pipeup check <page.html> [--json]
   Loads the page with and without Pipeup at 375, 768 and 1440 px (with Playwright, which you install) and says what
   Pipeup changes or covers, and what the page could do better: pass, WARN or FAIL for each. Exits 1 on any FAIL.
 
-pipeup agent [--name <name>]
+pipeup agent [--name <name>] [--page <page.html>] [--yes]
   Makes this computer's agent key (once) and prints the public key to list on the page:
-  <html data-pipeup-agents="<key>">
+  <html data-pipeup-agents="<key>">. With --page it lists the agent on that page itself: it shows the one change and
+  asks first (--yes to go ahead without asking; where it can't ask, it changes nothing and exits 2).
 
 pipeup watch <page.html> [--agent <name>] [--port <number>]
   Shows the page from this computer, with a live link to the agent: the page offers "Share with my agent"
@@ -55,12 +57,66 @@ pipeup comments <page.html> [--all] [--json]
   Prints the comments the page has shared (open threads, or all with --all), as Markdown or, with --json, as data.
 
 pipeup reply --page <file.html> --thread <id> "<words>" [--addressed "<short note>"]
-  Writes a signed reply (and, with --addressed, an addressed note) to <file>.replies.js next to the page.
+  Writes a signed reply (and, with --addressed, an addressed note) where the page reads replies: <file>.replies.js
+  next to the page, or the file the page names. The page is the HTML file that runs Pipeup, never a file it shows.
   It never resolves, reopens, edits or deletes anything: the author closes threads.
 
 pipeup reply --print (--doc <document id> | --page <file.html>) --thread <id> "<words>" [--addressed "<short note>"]
   Prints the same signed reply as a replies block for the person to paste into the page (Paste my agent's replies),
-  for an agent that can't write next to the page. Copy for my agent gives the document id. Nothing is written.`;
+  for an agent that can't write next to the page. Copy for my agent gives the document id. Nothing is written.
+
+Agents run these as \`npx --yes pipeup@0 …\`: any release from 0.6 answers agent, reply and comments the same way.`;
+
+/** How agents are told to run this command line: never stopping to ask, and any release npm will give. */
+const RUN = "npx --yes pipeup@0";
+/** A path as the person typed it, or relative to where they are. */
+const shown = (file) => relative(process.cwd(), resolve(file)) || file;
+const DOC = /<html\b[^>]*\sdata-pipeup-doc\s*=\s*["']([^"']+)["']/i;
+
+/**
+ * The options each agent command knows: one this release doesn't know is said, and the rest carry on (a newer
+ * agent's command still works with an older release).
+ */
+const KNOWN = {
+  agent: ["name", "page", "yes"],
+  reply: ["page", "thread", "addressed", "print", "doc"],
+  comments: ["all", "json"],
+  watch: ["agent", "port"],
+};
+function unknown(command, args) {
+  for (const k of Object.keys(args))
+    if (k !== "_" && KNOWN[command] && !KNOWN[command].includes(k))
+      console.warn(`pipeup: this release doesn't know --${k}; carrying on without it`);
+}
+
+/** The HTML file nearest to `file` (its folder, then the folders above) that runs Pipeup, or null. */
+async function nearbyPage(file) {
+  const self = resolve(file);
+  let dir = dirname(self);
+  for (let i = 0; i < 4; i++) {
+    const names = await readdir(dir).catch(() => []);
+    for (const n of names.filter((n) => /\.html?$/i.test(n)).sort()) {
+      const p = join(dir, n);
+      if (p !== self && DOC.test(await readFile(p, "utf8").catch(() => ""))) return p;
+    }
+    const up = dirname(dir);
+    if (up === dir) break;
+    dir = up;
+  }
+  return null;
+}
+
+/** `file` doesn't run Pipeup (a note a viewer shows, say): nothing is written, and the page nearby is named. */
+async function notPipeup(file, what) {
+  const near = await nearbyPage(file);
+  console.error(`pipeup: ${shown(file)} doesn't run Pipeup, so ${what}.`);
+  console.error(
+    near
+      ? `The page that shows it is probably ${shown(near)}:\n  --page ${shown(near)}`
+      : "Pass the HTML page the comments were left on: --page <page.html>",
+  );
+  process.exit(1);
+}
 
 function fail(message) {
   console.error(`pipeup: ${message}`);
@@ -113,13 +169,26 @@ async function loadAgent(name) {
 /** A name that shows it is an agent: "AI assistant · Claude". */
 const signedName = (name) => (name && name !== AI ? `${AI} · ${name}`.slice(0, 80) : AI);
 
+/** Reads a page: its text, or a plain failure when it can't be read. */
+const readPage = (file) => readFile(file, "utf8").catch((e) => fail(`can't read ${file}: ${e.message}`));
+
 async function pageDoc(file) {
-  const html = await readFile(file, "utf8");
-  const m = /<html\b[^>]*\sdata-pipeup-doc\s*=\s*["']([^"']+)["']/i.exec(html);
-  if (!m) fail(`${file} has no data-pipeup-doc attribute; add Pipeup to the page first`);
+  const html = await readPage(file);
+  const m = DOC.exec(html);
+  if (!m) await notPipeup(file, "nothing was written");
   const { id } = await (await core()).parseDocumentAttribute(m[1]);
   const listed = /<html\b[^>]*\sdata-pipeup-agents\s*=\s*["']([^"']*)["']/i.exec(html)?.[1] ?? "";
-  return { id, listed: listed.split(/[\s,]+/).filter(Boolean) };
+  // Where the page reads replies: the file it names (a path beside it), else <page>.replies.js.
+  const given = /<html\b[^>]*\sdata-pipeup-replies\s*=\s*["']([^"']+)["']/i.exec(html)?.[1];
+  const local = given && !/^[a-z][\w+.-]*:|^\/\//i.test(given);
+  if (given && !local)
+    console.warn(
+      `pipeup: the page reads replies from ${given}, which isn't a file here; writing next to the page`,
+    );
+  const replies = local
+    ? resolve(dirname(file), given.split(/[?#]/)[0])
+    : resolve(file.replace(/\.[^./\\]*$/, "") + ".replies.js");
+  return { id, listed: listed.split(/[\s,]+/).filter(Boolean), replies };
 }
 
 const headerOf = (file) =>
@@ -164,7 +233,11 @@ async function reply(args) {
     fail(`missing words, ${print ? "--doc" : "--page"} or --thread\n\n${USAGE}`);
   if (given && given.length > 64) fail("that isn't a document id");
   const note = typeof args.addressed === "string" ? args.addressed.trim() : "";
-  const { id: doc, listed } = given ? { id: given, listed: null } : await pageDoc(page);
+  const {
+    id: doc,
+    listed,
+    replies: out,
+  } = given ? { id: given, listed: null, replies: "" } : await pageDoc(page);
   const { identity, name } = await loadAgent();
   if (print) {
     let clock = Math.floor(Date.now() / 1000);
@@ -197,11 +270,6 @@ async function reply(args) {
     () => true,
     () => false,
   );
-  if (!listed.includes(identity.publicKey) && !linked)
-    console.warn(
-      `pipeup: this page doesn't list your key yet, so it will ignore these replies.\n  Add: <html data-pipeup-agents="${identity.publicKey}">`,
-    );
-  const out = resolve(page.replace(/\.[^./\\]*$/, "") + ".replies.js");
   const ops = await readReplies(out, doc);
   // Seconds since 1970: later than any counter a browser has kept, so these follow the thread they answer.
   let clock = Math.max(Math.floor(Date.now() / 1000), ...ops.map((o) => o.body.clock + 1));
@@ -225,16 +293,57 @@ async function reply(args) {
   if (note) added.push(await make({ kind: "addressed", thread, text: note }));
   const file = { format: "pipeup-replies", v: 1, doc, ops: [...ops, ...added] };
   await writeFile(out, `${headerOf(page)}(globalThis.pipeupReplies ||= []).push(${JSON.stringify(file)});\n`);
-  console.log(`Wrote ${added.length} ${added.length === 1 ? "entry" : "entries"} to ${out}`);
+  console.log(`Wrote ${added.length} ${added.length === 1 ? "entry" : "entries"} to ${shown(out)}.`);
+  // Written either way, so nothing is lost: the page shows them once it lists the agent.
+  if (!listed.includes(identity.publicKey) && !linked)
+    console.warn(
+      `The page will ignore them until it lists ${name || "your agent"}. Ask the page's author. After their yes, run:\n  ${RUN} agent --page ${shown(page)} --yes`,
+    );
+  else console.log("The page reads this file: the reply shows in its thread within a few seconds.");
+}
+
+/**
+ * Lists the agent on a page: the one change (its key in data-pipeup-agents on <html>) is shown and asked about first;
+ * --yes goes ahead. Where it can't ask (an agent's shell, with nobody to answer), nothing changes and it exits 2.
+ */
+async function listOn(page, identity, name, yes) {
+  const html = await readPage(page);
+  if (!DOC.test(html)) await notPipeup(page, "nothing was changed");
+  const found = survey(html);
+  const edit = htmlAttr(found, "data-pipeup-agents", identity.publicKey, { append: true });
+  if (!edit) return console.log(`${name} is already listed on ${shown(page)}; nothing was changed.`);
+  const next = apply(html, [{ ...edit, order: 0 }]);
+  console.log(
+    `\nThis ${edit.del ? `adds ${name}'s key to the page's agents` : "adds one attribute"} on ${shown(page)}, and changes nothing else:\n  ${survey(next).html.tag}\n`,
+  );
+  if (!yes) {
+    if (!process.stdin.isTTY || !process.stdout.isTTY) {
+      console.log(
+        "This shell can't ask, so nothing was changed.\nAsk the page's author. After their yes, run it again with --yes.",
+      );
+      process.exitCode = 2;
+      return;
+    }
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await rl.question("Add it? (y/N) ");
+    rl.close();
+    if (!/^y(es)?$/i.test(answer.trim())) return console.log("Nothing was changed.");
+  }
+  await writeFile(page, next);
+  console.log(`Listed ${name} on ${shown(page)}. Reload the page, and it shows ${name}'s replies.`);
 }
 
 const [command, ...rest] = process.argv.slice(2);
 const args = flags(rest);
+unknown(command, args);
 if (command === "agent") {
   const { identity, name } = await loadAgent(args.name);
-  console.log(
-    `${name} (${KEYFILE})\n\nList this key on the page:\n  <html data-pipeup-agents="${identity.publicKey}">`,
-  );
+  console.log(`${name} (${KEYFILE})`);
+  if (typeof args.page === "string") await listOn(args.page, identity, name, args.yes === true);
+  else
+    console.log(
+      `\nList this key on the page:\n  <html data-pipeup-agents="${identity.publicKey}">\nOr list it in one step: ${RUN} agent --page <page.html>`,
+    );
 } else if (command === "reply") await reply(args);
 else if (command === "skills") {
   const sub = args._[0];
@@ -351,7 +460,7 @@ else if (command === "skills") {
   else if (link.support === "builtin")
     console.log("This page's Pipeup (0.6) has agent support built in, so nothing is added to it.");
   console.log(
-    `Read:  npx pipeup comments ${page}\nReply: npx pipeup reply --page ${page} --thread <id> "words" --addressed "note"\nStop:  Ctrl-C (comments stay in ${basename(link.sidecar)})`,
+    `Read:  ${RUN} comments ${page}\nReply: ${RUN} reply --page ${page} --thread <id> "words" --addressed "note"\nStop:  Ctrl-C (comments stay in ${basename(link.sidecar)})`,
   );
   const stop = () => link.close().then(() => process.exit(0));
   process.on("SIGINT", stop);

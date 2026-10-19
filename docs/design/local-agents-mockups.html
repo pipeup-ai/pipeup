@@ -1,0 +1,369 @@
+<title>Local Agent Replies</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: an agent on the author's computer answers comments the first time it tries. Light mode only, Pipeup's own tokens (as agent-handoff-mockups.html). -->
+<style>
+  /* Layout: one reading column; what broke, storyboard, swimlanes, then screens on grey stages, then the spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --stage: #e6e5de; --stagel: #c4c2b9; --term: #fbfbf9;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --sans: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 var(--sans); }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: var(--stage); border: 1px solid var(--stagel); border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 520px; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+
+  /* what broke */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; font-size: 13.5px; min-width: 760px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td:first-child { white-space: nowrap; font-weight: 600; }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot .n { font-size: 12px; color: var(--fa); }
+  .shot .pic { height: 92px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+  .shot.new { border-color: #c9c4ef; }
+
+  /* swimlanes */
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+  /* copied text and terminals */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); max-width: 100%; }
+  .clip { width: 520px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .was { background: var(--del); color: var(--delk); border-radius: 3px; text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .clip .dim { color: var(--fa); }
+  .term { width: 560px; max-width: 100%; background: var(--term); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); overflow: hidden; }
+  .term .bar { display: flex; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--ru); }
+  .term .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--ln); }
+  .term pre { margin: 0; padding: 12px 14px 14px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .term .p { color: var(--fa); }
+  .term .cmd { color: var(--k); font-weight: 600; }
+  .term .ok { color: var(--addk); }
+  .term .no { color: var(--delk); }
+  .term .hl { background: var(--as); border-radius: 3px; }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+  @media (max-width: 520px) { .stage { padding: 14px; } }
+</style>
+
+<main>
+  <h1>An agent on your computer answers comments, the first time</h1>
+  <p class="lede">
+    On 19 October a local agent (pi, running a model in Ollama) tried to answer comments on a wiki that shows its
+    Markdown notes through one viewer page, <code>wiki/viewer.html?file=…</code>. It never got a reply onto the page. Every
+    step it was given had a gap of its own, so fixing any one of them would not have been enough. This spec closes all
+    four, without changing what the page or the reviewer sees.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li>The commands an agent is given ask npm for <b>any release that answers them</b> (<code>pipeup@0</code>), not only the
+          page's exact one, and never stop to ask "Ok to proceed?". Some computers only accept packages a few days old; on
+          those, an exact new version can't be installed at all.</li>
+        <li>The copied text names <b>the page's own HTML file</b> to pass as <code>--page</code> (here
+          <code>wiki/viewer.html</code>, not the note it shows), and says where the replies will be written.</li>
+        <li><code>pipeup reply</code> writes nothing when it is given a file Pipeup doesn't run on, and names the page that does.
+          It always writes where the page reads, and says so.</li>
+        <li><code>pipeup agent --page</code> lists the agent on the page in one step, after the author's yes. Today it prints an
+          attribute to paste into the HTML by hand.</li>
+        <li>Reading the comments without a browser is the open hand-off spec (#96): Copy for my agent carries the comments, so
+          this spec doesn't change step 1.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>What broke on 19 October</h2>
+    <p class="what">Four steps, each enough to stop the agent. Two of them showed an error; two would have failed quietly.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Step</th><th>What happened</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Running the command</td><td><code>npx pipeup@0.8.1 reply …</code> stopped with "No matching version found for pipeup@0.8.1 with a date before 10/16/2026".</td><td>That computer's npm only accepts packages at least three days old. The copied text names the page's exact release, and 0.8.1 was a day old.</td></tr>
+          <tr><td></td><td><code>npx pipeup agent</code> installed 0.7.0 instead, and stopped to ask "Ok to proceed? (y)".</td><td>Without a version, npm took the newest it was allowed. An agent running unattended can't answer the question.</td></tr>
+          <tr><td>Naming the page</td><td>The agent passed the note, <code>--page wiki/syntheses/….md</code>.</td><td>The copied text says <code>--page &lt;the page's file&gt;</code>. On a viewer, the obvious reading is the file it shows.</td></tr>
+          <tr><td></td><td>Had npm installed it, <code>reply</code> would have stopped: "has no data-pipeup-doc attribute".</td><td>A note has no Pipeup in it. And had it been an HTML file, the replies would have gone beside it, where the viewer never looks.</td></tr>
+          <tr><td>Listing the agent</td><td>The key had to be pasted into <code>&lt;html&gt;</code> by hand.</td><td>Unlisted, the page ignores the replies; <code>reply</code> only prints a warning.</td></tr>
+          <tr><td>Reading comments</td><td>The agent can't open a browser.</td><td>The comments live in the reviewer's browser. #96 covers this.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="what" style="margin-top:14px">Versions were not the problem: 0.7.0 and 0.8.1 write the same replies file, so the older command would have worked for this page.</p>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <p class="what">Six moments. Frames 2, 4 and 5 are new or changed; frame 3 is #96's.</p>
+    <div class="story">
+      <div class="shot">
+        <span class="n">1</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="12" width="110" height="8" rx="3" fill="#2c2c2a"/><rect x="16" y="30" width="150" height="5" rx="2" fill="#d6d4cb"/><rect x="16" y="42" width="130" height="5" rx="2" fill="#d6d4cb"/><rect x="16" y="56" width="90" height="26" rx="4" fill="#e5e3da"/><circle cx="150" cy="45" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="150" y="49" text-anchor="middle" font-size="10" fill="#8a4b12">S</text></svg>
+        </div>
+        <p>Sam reads a note in the wiki and leaves comments on it.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">2 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="30" y="10" width="140" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="38" y="20" width="96" height="4" rx="2" fill="#d6d4cb"/><rect x="38" y="31" width="124" height="12" rx="3" fill="#edebfa"/><text x="42" y="40" font-size="7.5" fill="#534ab7" font-family="ui-monospace, Menlo, monospace">--page wiki/viewer.html</text><rect x="38" y="50" width="110" height="4" rx="2" fill="#d6d4cb"/><rect x="38" y="60" width="80" height="4" rx="2" fill="#d6d4cb"/></svg>
+        </div>
+        <p>Sam picks <b>Copy for my agent</b>. Its commands name <code>wiki/viewer.html</code> and run on any computer.</p>
+      </div>
+      <div class="shot">
+        <span class="n">3 · #96</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="90" y="10" width="96" height="26" rx="10" fill="#dfe9fb"/><rect x="14" y="44" width="130" height="38" rx="10" fill="#fff" stroke="#e5e3da"/><rect x="24" y="54" width="90" height="4" rx="2" fill="#d6d4cb"/><rect x="24" y="64" width="108" height="4" rx="2" fill="#d6d4cb"/></svg>
+        </div>
+        <p>Sam pastes it to Muse, the agent on this computer. Muse reads the comments and edits the notes.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">4 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="14" y="10" width="140" height="30" rx="10" fill="#fff" stroke="#e5e3da"/><text x="24" y="29" font-size="9" fill="#2c2c2a">May I list myself on viewer.html?</text><rect x="120" y="48" width="66" height="24" rx="10" fill="#dfe9fb"/><text x="153" y="64" text-anchor="middle" font-size="9.5" fill="#2c2c2a">Yes</text></svg>
+        </div>
+        <p>Muse asks to be listed. After Sam's yes it runs <code>agent --page … --yes</code>, which adds its key to the page.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">5 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="10" y="10" width="180" height="72" rx="8" fill="#fbfbf9" stroke="#e5e3da"/><text x="18" y="28" font-size="8" fill="#2c2c2a" font-family="ui-monospace, Menlo, monospace">$ npx --yes pipeup@0 reply</text><text x="18" y="42" font-size="8" fill="#534ab7" font-family="ui-monospace, Menlo, monospace">  --page wiki/viewer.html …</text><text x="18" y="62" font-size="8" fill="#1f6b3a" font-family="ui-monospace, Menlo, monospace">Wrote 2 entries to</text><text x="18" y="74" font-size="8" fill="#1f6b3a" font-family="ui-monospace, Menlo, monospace">wiki/viewer.replies.js</text></svg>
+        </div>
+        <p>Muse answers each thread. The command writes the file the page reads, and says so.</p>
+      </div>
+      <div class="shot">
+        <span class="n">6</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="30" y="18" width="110" height="5" rx="2" fill="#2c2c2a"/><circle cx="42" cy="44" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="41" width="100" height="5" rx="2" fill="#d6d4cb"/><rect x="34" y="58" width="132" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="40" y="70" font-size="8.5" fill="#5f5e5a">Addressed · Resolve</text></svg>
+        </div>
+        <p>Within a few seconds the replies ease into their threads. Sam resolves each one.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what">Violet boxes are new or changed. The red lines under them say what happened at that step on 19 October.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 580" role="img" aria-label="Swimlane flow: Sam, the page, Muse and the pipeup command line, from Copy for my agent to replies in the page">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="30" width="1320" height="120" fill="#fafaf7"/>
+          <rect x="0" y="160" width="1320" height="120" fill="#f4f3ee"/>
+          <rect x="0" y="290" width="1320" height="120" fill="#fafaf7"/>
+          <rect x="0" y="420" width="1320" height="150" fill="#f4f3ee"/>
+          <text x="16" y="86" font-size="14" font-weight="600" fill="#2c2c2a">Sam</text>
+          <text x="16" y="104" font-size="11.5" fill="#888780">the reviewer</text>
+          <text x="16" y="216" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
+          <text x="16" y="234" font-size="11.5" fill="#888780">wiki/viewer.html</text>
+          <text x="16" y="346" font-size="14" font-weight="600" fill="#2c2c2a">Muse</text>
+          <text x="16" y="364" font-size="11.5" fill="#888780">agent on this computer</text>
+          <text x="16" y="476" font-size="14" font-weight="600" fill="#2c2c2a">pipeup</text>
+          <text x="16" y="494" font-size="11.5" fill="#888780">the command line, via npx</text>
+
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M215 122V220H308"/>
+            <path d="M630 350H648"/>
+            <path d="M1065 382V446"/>
+            <path d="M1235 188V124"/>
+          </g>
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M460 220H555V316"/>
+            <path d="M725 318V124"/>
+            <path d="M800 90H895V446"/>
+            <path d="M970 470L1000 384"/>
+            <path d="M1140 470L1180 254"/>
+          </g>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="140" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="215" y="86" fill="#2c2c2a">Picks</text><text x="215" y="102" fill="#2c2c2a">Copy for my agent</text>
+
+            <rect x="310" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="385" y="210" fill="#2c2c2a">Copies the commands,</text><text x="385" y="226" fill="#2c2c2a">naming viewer.html</text><text x="385" y="242" fill="#2c2c2a">and where replies go</text>
+
+            <rect x="480" y="318" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="555" y="346" fill="#2c2c2a">Reads the comments,</text><text x="555" y="362" fill="#2c2c2a">edits the notes</text>
+
+            <rect x="650" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="725" y="346" fill="#2c2c2a">Asks Sam</text><text x="725" y="362" fill="#2c2c2a">to list it</text>
+
+            <rect x="650" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="725" y="94" fill="#2c2c2a">Says yes</text>
+
+            <rect x="820" y="448" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="895" y="472" fill="#2c2c2a">agent --page … --yes</text><text x="895" y="488" fill="#2c2c2a">adds Muse's key</text><text x="895" y="504" fill="#2c2c2a">to viewer.html</text>
+
+            <rect x="990" y="318" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1065" y="346" fill="#2c2c2a">Answers</text><text x="1065" y="362" fill="#2c2c2a">each thread</text>
+
+            <rect x="990" y="448" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1065" y="472" fill="#2c2c2a">reply --page</text><text x="1065" y="488" fill="#2c2c2a">wiki/viewer.html writes</text><text x="1065" y="504" fill="#2c2c2a">viewer.replies.js</text>
+
+            <rect x="1160" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1235" y="216" fill="#2c2c2a">Reads viewer.replies.js;</text><text x="1235" y="232" fill="#2c2c2a">replies ease in</text>
+
+            <rect x="1160" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1235" y="86" fill="#2c2c2a">Resolves, or</text><text x="1235" y="102" fill="#2c2c2a">Still not right</text>
+          </g>
+
+          <g font-size="11" fill="#9a2b2b" text-anchor="middle">
+            <text x="385" y="270">On 19 Oct: "--page &lt;the page's file&gt;"</text>
+            <text x="895" y="532">On 19 Oct: printed an attribute</text><text x="895" y="547">to paste into the HTML by hand</text>
+            <text x="1065" y="532">On 19 Oct: pipeup@0.8.1 refused by npm;</text><text x="1065" y="547">the note had no Pipeup; replies</text><text x="1065" y="562">would have gone beside the note</text>
+          </g>
+          <text x="555" y="402" font-size="11" fill="#888780" text-anchor="middle">step 1 is #96's</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the agent is given</h2>
+    <p class="what">Step 3 of the copied text, for Sam's wiki opened from this computer. Only the changed lines are shown; steps 1, 2 and 4 stay as they are (step 1 as #96 rewrites it).</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today</span>
+        <div class="card clip">3. Answer in each thread: `<span class="was">npx pipeup@0.8.1</span> reply --page <span class="was">&lt;the page's file&gt;</span> --thread &lt;Thread id&gt; "what you changed and where" --addressed "short note"`. That writes file:///Users/sam/wiki/viewer.replies.js. The page doesn't list your key yet: run `<span class="was">npx pipeup@0.8.1</span> agent --name &lt;your name&gt;` and <span class="was">tell me the attribute to add</span>.</div>
+        <div class="cap">The exact version can't install where npm accepts only older packages, and nothing says which file is "the page's file".</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed</span>
+        <div class="card clip">3. Answer in each thread: `<span class="hl">npx --yes pipeup@0</span> reply --page <span class="hl">/Users/sam/wiki/viewer.html</span> --thread &lt;Thread id&gt; "what you changed and where" --addressed "short note"`. <span class="hl">Pass that file, the one that runs Pipeup, not the note it shows.</span> It writes /Users/sam/wiki/viewer.replies.js, <span class="hl">which the page reads by itself</span>.
+   The page doesn't list you yet. <span class="hl">Ask me first; after my yes, run `npx --yes pipeup@0 agent --name &lt;your name&gt; --page /Users/sam/wiki/viewer.html --yes`.</span></div>
+        <div class="cap"><b>Opened from this computer</b>, the page knows its own file and names it. <b>Served from a site</b>, it names the address instead: "the HTML file your site serves at <code>/wiki/viewer.html</code>". A pre-release page keeps its exact version (testers want the pre-release), and the text says to use <code>pipeup@0</code> if npm refuses it.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Listing the agent</h2>
+    <p class="what">One command makes the agent's key if it has none and adds it to the page. It shows the one change and asks first. In a shell that can't ask (an agent's), it changes nothing and says why.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">Run by the agent, before a yes</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 agent --name Muse --page wiki/viewer.html</span>
+Muse (~/.pipeup/agent.json)
+
+This adds one attribute on wiki/viewer.html, and changes nothing else:
+  &lt;html lang="en" data-pipeup-doc="…" <span class="hl">data-pipeup-agents="3SOh…Zf4"</span>&gt;
+
+<span class="no">This shell can't ask, so nothing was changed.</span>
+Ask the page's author. After their yes, run it again with --yes.</pre></div>
+      </div>
+      <div class="frame">
+        <span class="tag new">After Sam's yes</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 agent --name Muse --page wiki/viewer.html --yes</span>
+Muse (~/.pipeup/agent.json)
+<span class="ok">Listed Muse on wiki/viewer.html.</span> Reload the page, and it shows Muse's replies.</pre></div>
+        <div class="cap">Run by Sam in a terminal, the same command asks "Add it? (y/N)" instead. Already listed, it says so and changes nothing. Where it can't ask, it exits 2, so the agent knows nothing was done.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Answering</h2>
+    <p class="what">The reply command writes only to a page that runs Pipeup, writes where that page reads, and ends with what happens next.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">Given the note</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 reply --page wiki/syntheses/q3-plan.md --thread fTU-4_Frh0j… "Changed Related Pages to links that open in the viewer." --addressed "Links updated"</span>
+<span class="no">wiki/syntheses/q3-plan.md doesn't run Pipeup, so nothing was written.</span>
+The page that shows it is probably wiki/viewer.html:
+  --page wiki/viewer.html</pre></div>
+        <div class="cap">It looks for an HTML file with Pipeup in the same folder and the folders above it. When it finds none, it says to pass the page the comments were left on.</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Given the page</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 reply --page wiki/viewer.html --thread fTU-4_Frh0j… "Changed Related Pages to links that open in the viewer." --addressed "Links updated"</span>
+<span class="ok">Wrote 2 entries to wiki/viewer.replies.js.</span>
+The page reads this file: the reply shows in its thread within a few seconds.</pre></div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Not listed yet</span>
+        <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre><span class="p">$</span> <span class="cmd">npx --yes pipeup@0 reply --page wiki/viewer.html --thread fTU-4_Frh0j… "…" --addressed "Links updated"</span>
+<span class="ok">Wrote 2 entries to wiki/viewer.replies.js.</span>
+<span class="no">The page will ignore them until it lists Muse.</span> Ask the page's author. After their yes, run:
+  npx --yes pipeup@0 agent --page wiki/viewer.html --yes</pre></div>
+        <div class="cap">The replies are written anyway, so nothing is lost: once Muse is listed and the page is reloaded, they show with no second reply.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Spec wording</h2>
+    <p class="what">The changes to <code>docs/FUNCTIONAL_SPEC.md</code>, section 15b. Red lines go, green lines come in.</p>
+    <div class="spec">
+      <div class="h">15b · Showing that a page is ready for an agent</div>
+      <div class="d">Its commands name the version of Pipeup the page runs (`npx pipeup@0.8.0-beta.4 …`), so the agent runs the same release as the page and not whatever npm calls stable, and a pre-release's prompt points at the pre-release guide.</div>
+      <div class="a">Its commands run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that answers them, not only the page's exact one, because some computers accept only packages a few days old. A pre-release page's commands name its pre-release, say to use any release if npm refuses that one, and its text points at the pre-release guide.</div>
+      <div class="a">The copied text names the page to answer on: the HTML file that runs Pipeup (its full path, for a page opened from this computer, or its address on the site), never a file the page shows (a viewer at viewer.html?file=notes.md is viewer.html). It says where the replies will be written and that the page reads them from there.</div>
+      <div class="a">When the page doesn't list an agent, the copied text tells the agent to ask the author first and, after a yes, list itself with one command.</div>
+      <div class="h">15b · The commands an agent runs (new)</div>
+      <div class="a">The reply command writes only to a page that runs Pipeup. Given any other file (a note a viewer shows, say), it writes nothing, says why, and names the page nearby that runs Pipeup when there is one.</div>
+      <div class="a">It writes the replies where the page reads them (next to the page, or the file the page names) and says where, and that the page will show them within a few seconds.</div>
+      <div class="a">When the page doesn't list the agent yet, it still writes the replies, so nothing is lost, and ends by saying the page will ignore them until it lists the agent, with the one command that lists it.</div>
+      <div class="a">The agent command, given a page, lists the agent on it: it makes the agent's identity if there is none, shows the one change (an attribute on the page's html tag) and asks first; with --yes it doesn't ask. Where it can't ask, it changes nothing and says to ask the author. It changes nothing else in the page, and says so when the agent is already listed.</div>
+      <div class="a">Every release from 0.6 on reads and writes replies the same way, so any of them answers any page. A release that doesn't know an option says so and carries on with the rest.</div>
+      <div class="h">15b · What agents are told</div>
+      <div class="a">An agent passes the page named in the copied text and, when it can't tell which file runs Pipeup, asks instead of guessing a file the page shows. It lists itself on a page only after the author's yes.</div>
+      <div class="a">The skills, llms.txt, the Markdown copies and the site give the same commands as the copied text, in the same form.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. Which version should the commands ask for?</h3>
+        <p><b>Recommended: <code>pipeup@0</code> on a stable page</b>, any 0.x release npm will give. It installs everywhere, and every release from 0.6 answers <code>agent</code>, <code>reply</code> and <code>comments</code> the same way. Keeping the exact version with a fallback line instead would fail first and recover second, on every computer with an age rule.</p></div>
+      <div class="q"><h3>2. Should the agent list itself, or the author?</h3>
+        <p><b>Recommended: the agent, with <code>--page … --yes</code>, after the author's yes in chat.</b> The author keeps the decision and never edits HTML. The alternative keeps today's "tell me the attribute to add", which is where people stop.</p></div>
+      <div class="q"><h3>3. Should <code>reply</code> refuse when the page doesn't list the agent?</h3>
+        <p><b>Recommended: write anyway and say so.</b> The work is kept, and the replies show once the agent is listed and the page reloads. Refusing would make the agent run every reply twice.</p></div>
+      <div class="q"><h3>4. When does this ship?</h3>
+        <p><b>Recommended: as 0.8.2, from main.</b> Local agents are broken today on any computer with an npm age rule. The hand-off spec (#96) is for the next milestone, and changes the same sentence: it would build on this one.</p></div>
+    </div>
+  </section>
+</main>
