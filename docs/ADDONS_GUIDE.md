@@ -15,7 +15,7 @@ git clone --depth 1 https://github.com/pipeup-ai/pipeup pipeup-src && cp -R pipe
 A page's author includes Pipeup, then your script, with one script tag each:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.1/dist/pipeup.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>
 <script src="https://example.org/my-addon.min.js"></script>
 ```
 
