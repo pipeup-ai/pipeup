@@ -84,7 +84,7 @@ Pipeup add-ons: local try-out
   relay    ${relay.url}   (live's meeting point)
 
 1. Open the page in two browsers (Chrome and Firefox, or a normal and a private window). Each is a reviewer.
-2. Share: open the comment control's menu. In one, choose "Start commenting", click a paragraph, comment. The
+2. Share: in one, click the comment control to start commenting, click a paragraph, comment. The
    other shows it within about half a minute (the menu's share row says "Shared · up to date").
    Try "Send my comments" off, then on; comment before and after.
 3. Live: in both, choose "Go live" in the menu. Comments appear within about a second, you see each other's

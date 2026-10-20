@@ -382,7 +382,7 @@ test.describe("keyboard focus is plainly marked (KB-09)", () => {
           };
         });
       await control(page).focus();
-      await page.keyboard.press("Enter");
+      await page.keyboard.press("ArrowUp");
       await expect(page.locator(".menu.show")).toHaveCount(1);
       for (const key of ["ArrowUp", "ArrowUp"]) {
         const r = await ring();
@@ -394,7 +394,7 @@ test.describe("keyboard focus is plainly marked (KB-09)", () => {
       await page.keyboard.press("Escape");
       // All comments, from the keyboard: focus lands on the first card.
       await control(page).focus();
-      await page.keyboard.press("Enter");
+      await page.keyboard.press("ArrowUp");
       await page.getByRole("menuitem", { name: /All comments/ }).focus();
       await page.keyboard.press("Enter");
       await expect(page.locator(".all.show")).toHaveCount(1);

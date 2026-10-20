@@ -2,7 +2,6 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   bodySnapshot,
   commenting,
-  control,
   hideComments,
   leaveReply,
   open,
@@ -149,10 +148,12 @@ test("with comments hidden, All comments shows them while it is open; closing it
   await expect.poll(() => highlightAlpha(page)).toBe(0);
 });
 
-test("selecting text offers nothing outside comment mode, and the comment icon in it", async ({ page }) => {
+test("selecting text offers the comment icon in comment mode and out of it", async ({ page }) => {
   await open(page, "doc.html");
   await selectWords(page, "#p2", "second designer");
-  await page.waitForTimeout(100); // Pipeup looks at the selection a tick after the mouse is released.
+  await expect(page.locator(".selbar.show")).toHaveCount(1);
+  await commenting(page, false);
+  await page.mouse.click(900, 700);
   await expect(page.locator(".selbar.show")).toHaveCount(0);
   await toggleCommenting(page);
   await commenting(page);
@@ -161,7 +162,8 @@ test("selecting text offers nothing outside comment mode, and the comment icon i
   await expect(page.locator(".selbar.show")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page, false);
-  await expect(page.locator(".selbar.show")).toHaveCount(0);
+  // Leaving comment mode leaves the selection's icon: it is offered outside comment mode too.
+  await expect(page.locator(".selbar.show")).toHaveCount(1);
 });
 
 test("✓ Resolved is a filter in the All comments panel, not the menu", async ({ page }) => {
@@ -253,8 +255,7 @@ test.describe("on a narrow screen", () => {
   test("the full-width panel covers the page and does not move it", async ({ page }) => {
     await open(page, "doc.html");
     const e0 = await page.evaluate(() => document.body.getBoundingClientRect().right);
-    await control(page).click();
-    await page.getByRole("menuitem", { name: /All comments/ }).click();
+    await openAll(page);
     await settled(panel(page));
     expect(await page.evaluate(() => document.body.getBoundingClientRect().right)).toBe(e0);
   });

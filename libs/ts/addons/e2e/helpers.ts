@@ -25,17 +25,18 @@ export async function mount(page: Page, options: Record<string, unknown> = {}): 
 }
 
 export async function openMenu(page: Page): Promise<void> {
-  // In comment mode the control opens All comments, and the menu is its footer's ⋯.
-  const panelOpen = (await page.locator(".all.show").count()) > 0;
-  const commenting = await page.locator(".launch .mode").evaluate((b) => b.classList.contains("on"));
-  if (panelOpen || commenting) {
-    if (!panelOpen) await page.locator(".launch .mode").click();
+  // A click on the control starts or stops comment mode; the menu is ⋯ at the end of its reach, or the footer's ⋯
+  // while All comments is open.
+  if ((await page.locator(".all.show").count()) > 0)
     await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
-  } else await page.locator(".launch .mode").click();
+  else {
+    await page.locator(".launch .mode").hover();
+    await page.locator(".launch .mm").click();
+  }
   await page.locator(".menu.show").waitFor();
 }
 
-/** Closes All comments if it is open (in comment mode, reaching the menu opens it). */
+/** Closes All comments if it is open. */
 export async function closePanel(page: Page): Promise<void> {
   const panel = page.locator(".all.show");
   if (await panel.count()) await panel.getByRole("button", { name: "Close" }).click();

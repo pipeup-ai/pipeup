@@ -94,4 +94,18 @@ export const PUBLIC_NAMES = [
   "onEnd",
   "press",
   "available",
+  // The page API (§4a): what a page's own code calls on the instance mount() gives it.
+  "appearance",
+  "code",
+  "comments",
+  "doc",
+  "flush",
+  "layout",
+  "on",
+  "setCommentMode",
+  "setName",
+  "slides",
+  "store",
+  "theme",
+  "unmount",
 ];

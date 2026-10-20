@@ -1,4 +1,5 @@
 import type { AddonHost, ItemHandle, PipeupAddon, SignedOp } from "pipeup";
+import { pageSetting } from "@pipeup/kit";
 
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const NAME = /^[A-Za-z0-9-]{1,39}$/;
@@ -16,13 +17,11 @@ const core = (): Partial<Core> => (globalThis as { Pipeup?: Partial<Core> }).Pip
 
 /** The GitHub names the page's author listed: `data-pipeup-github-people="octocat hubot"`. */
 const listed = (): string[] =>
-  (document.documentElement.getAttribute("data-pipeup-github-people") ?? "")
-    .split(/[\s,]+/)
-    .filter((n) => NAME.test(n));
+  (pageSetting("data-pipeup-github-people") ?? "").split(/[\s,]+/).filter((n) => NAME.test(n));
 
 /** Where the issue goes: `data-pipeup-github-repo="owner/repo"`, or "" when the page has none. */
-export const repoOf = (html: Element = document.documentElement): string => {
-  const v = html.getAttribute("data-pipeup-github-repo") ?? "";
+export const repoOf = (html?: Element): string => {
+  const v = pageSetting("data-pipeup-github-repo", html) ?? "";
   return REPO.test(v) ? v : "";
 };
 

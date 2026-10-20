@@ -7,6 +7,17 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- **One click on the comment control starts commenting**, and another stops it. The menu moved to **⋯** at the end of the control's reach when you point at it; by touch, press and hold the control (the first touch hint says so); from the keyboard, ↑ on the control. All comments is in the menu.
+- **Selecting words offers a comment outside comment mode too.** The comment icon appears beside the selection, and commenting from it leaves comment mode off, so links and the page keep working. A page can keep it to comment mode with `data-pipeup-select="comment-mode"`.
+- Pipeup's size budget rises from 60 to 61 KB gzip for these changes (it is 60.7 KB).
+
+### Added
+
+- **A page's own code can drive Pipeup**: `setCommentMode()` and `commentMode`, `setName()` and `name`, and `on("change", …)`, which hears comment mode and the name changing however they changed. `mount()` rejects with a `code` (`"another-copy"` or `"failed"`) and words when Pipeup can't start.
+- **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it.
+
 ## [0.8.2] - 2026-10-19
 
 This release makes an agent on your own computer answer comments the first time it tries: its commands run on any computer and never stop to ask, it is told exactly which page to answer on, and it can list itself on the page after your yes. Pipeup itself is unchanged at 59.8 KB gzip.

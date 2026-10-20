@@ -1,5 +1,6 @@
 import { isAiName, nameOf } from "../model/animals";
 import type { Comment, Mention, Thread } from "../model/types";
+import { setting } from "./settings";
 
 /** Someone who can be mentioned: `ref` says who (a writer's key, or `host:<id>` / `gh:<name>` for a supplied person). */
 export interface Person {
@@ -26,9 +27,7 @@ export const heardPeople = (fn: () => void): (() => void) => (changes.add(fn), (
 
 /** The agents the author lists on the page: `<html data-pipeup-agents="<key> <key>">`. */
 const listedAgents = (): string[] =>
-  (document.documentElement.getAttribute("data-pipeup-agents") ?? "")
-    .split(/[\s,]+/)
-    .filter((k) => KEY.test(k));
+  (setting("data-pipeup-agents") ?? "").split(/[\s,]+/).filter((k) => KEY.test(k));
 
 /**
  * Everyone who can be mentioned here: the people who have commented or reacted in this document, the agents the page

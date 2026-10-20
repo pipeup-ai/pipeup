@@ -1,5 +1,5 @@
 import { devices, expect, test } from "@playwright/test";
-import { fixture, seedElement, seedText, settled } from "./helpers";
+import { fixture, openMenu, seedElement, seedText, settled } from "./helpers";
 
 /** Taps the highlighted words of the first text comment, as a reader's finger would. */
 const tapHighlight = async (page: import("@playwright/test").Page) => {
@@ -21,12 +21,16 @@ const start = async (page: import("@playwright/test").Page) => {
   });
 };
 
-test("on a phone, a tap opens the menu and Start commenting turns comment mode on", async ({ page }) => {
+test("on a phone, a tap turns comment mode on, and pressing and holding opens the menu", async ({ page }) => {
   await start(page);
   await page.locator(".launch .mode").tap();
-  await expect(page.locator(".menu.show")).toHaveCount(1);
-  await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
+  await expect(page.locator(".menu.show")).toHaveCount(0);
   await expect(page.locator(".launch .mode")).toHaveClass(/\bon\b/);
+  await openMenu(page);
+  await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
 });
 
 test("on a phone, the controls are big enough to hit: 40 px for the button, 44 px for the menu's rows", async ({
@@ -35,7 +39,7 @@ test("on a phone, the controls are big enough to hit: 40 px for the button, 44 p
   await start(page);
   const control = (await page.locator(".launch .mode").boundingBox())!;
   expect(Math.min(control.width, control.height)).toBeGreaterThanOrEqual(40);
-  await page.locator(".launch .mode").tap();
+  await openMenu(page);
   const rows = await page
     .locator(".menu.show .mi")
     .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
@@ -46,7 +50,7 @@ test("on a phone, a tap on a block opens the comment box on it, and sending make
   page,
 }) => {
   await start(page);
-  await page.locator(".launch .mode").tap();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
   await page.keyboard.press("Escape").catch(() => {});
   await page.locator("#p2").tap();
@@ -62,7 +66,7 @@ test("on a phone, a tap on a block opens the comment box on it, and sending make
 test("on a phone, a comment can be reacted to with taps", async ({ page }) => {
   await start(page);
   await seedText(page, "#p1", "new onboarding flow", "Is this the plan?");
-  await page.locator(".launch .mode").tap();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
   await tapHighlight(page);
   await page.locator("button[aria-label=React]").first().tap();
@@ -73,7 +77,7 @@ test("on a phone, a comment can be reacted to with taps", async ({ page }) => {
 test("on a phone, All comments takes the whole width and its threads open in place", async ({ page }) => {
   await start(page);
   await seedText(page, "#p1", "new onboarding flow", "Is this the plan?");
-  await page.locator(".launch .mode").tap();
+  await openMenu(page);
   await page.getByRole("menuitem", { name: /All comments/ }).tap();
   const panel = (await page.locator(".all.show").boundingBox())!;
   expect(panel.width).toBeGreaterThanOrEqual(page.viewportSize()!.width - 2);
@@ -93,7 +97,7 @@ test("on a phone, All comments takes the whole width and its threads open in pla
 test("on a phone, a thread's buttons and the reaction row are finger-sized", async ({ page }) => {
   await start(page);
   await seedText(page, "#p1", "new onboarding flow", "Is this the plan?");
-  await page.locator(".launch .mode").tap();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
   await tapHighlight(page);
   await page.locator("button[aria-label=React]").first().tap();

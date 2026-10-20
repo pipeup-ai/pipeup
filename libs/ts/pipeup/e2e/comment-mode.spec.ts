@@ -459,7 +459,7 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
 test("the shortcut on a focused menu item enters comment mode and keeps the menu open", async ({ page }) => {
   await open(page, "controls.html");
   await control(page).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect(page.locator(".menu.show")).toHaveCount(1);
   await page.keyboard.press(`Shift+Alt+${SHORTCUT.code}`);
   await commenting(page);

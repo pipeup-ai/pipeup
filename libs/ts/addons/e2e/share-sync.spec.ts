@@ -79,10 +79,8 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       expect(await texts(b.page)).not.toContain("Written early");
       await m.getByText("Share my 1 earlier comment").click();
       await converge(b.page, ["Written after", "Written early"]);
-      await a.page
-        .locator(".launch .mode")
-        .click()
-        .catch(() => {});
+      // The choice is made: the menu, open again, no longer offers it.
+      if ((await a.page.locator(".menu.show").count()) === 0) await menu(a.page);
       await expect(a.page.getByText("Keep them on this machine")).toHaveCount(0);
       await a.context.close();
       await b.context.close();

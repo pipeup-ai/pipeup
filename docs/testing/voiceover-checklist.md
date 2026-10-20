@@ -30,7 +30,7 @@ stable release. About 10 minutes. Record ✅ / ❌ and a note for each step.
 | 11 | Tab to the naming bar's **Pin** (VO+arrows if needed) and activate it | "Pin on …"; a pin comment box opens with focus. Press Esc. | |
 | 12 | On the cursor, press **Esc** | "Comment mode off"; focus goes back where it was (the Comment control if it was nowhere). | |
 | 13 | Press **Shift+Option+C**, then click a paragraph with the mouse and press **Esc** | The comment box closes. Then **Tab**: the cursor lands on the block after the clicked one, read aloud. | |
-| 14 | Press **Esc**, then turn comment mode on with a click on the Comment control's Start commenting, and press **Tab** | The menu closes and the cursor lands on a block, read with the hint. The Comment control's name says "comment mode on" until Esc turns it off. | |
+| 14 | Press **Esc**, then turn comment mode on by pressing **Space** on the Comment control, and press **Tab** | The cursor lands on a block, read with the hint. The Comment control's name says "comment mode on" until Esc turns it off. | |
 | 15 | Press **Esc** to leave comment mode, then Tab to the **Comment** control | Its name: "Comment, …" (with "comment mode on" only while it is on). | |
 | 16 | VO browse mode: **VO+→** through a paragraph, then **VO+Space** on it while comment mode is on (Shift+Option+C first) | The cursor moves to that block (not put away), and the block is read. | |
 | 17 | Long block: Tab to the section with the most text and listen | The full description is read. Note whether it's tolerable or too long on every move. | |
