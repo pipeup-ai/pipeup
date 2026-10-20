@@ -1,0 +1,538 @@
+<title>Shell Link</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: the live link between a page in the browser and an agent on the same computer, made of plain shell
+     commands (bash and nc) instead of Node. Light mode only, Pipeup's own tokens. Style follows agent-handoff-mockups.html. -->
+<style>
+  /* Layout: one reading column; findings, storyboard, swimlanes, screens on grey stages, then the spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 62em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 360px; margin: 0; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot .pic { height: 92px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); position: relative; overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+  .shot.new { border-color: #c9c4ef; }
+
+  /* swimlanes */
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+  /* tables */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); font-size: 13.5px; min-width: 720px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td.ok { color: var(--addk); font-weight: 600; white-space: nowrap; }
+  td.no { color: var(--delk); font-weight: 600; white-space: nowrap; }
+  td.hit { color: var(--ac); font-weight: 600; }
+
+  /* Pipeup's look */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; max-width: 100%; }
+  .menu { width: 310px; padding: 4px; }
+  .mi { display: flex; gap: 10px; align-items: flex-start; min-height: 34px; padding: 7px 10px; border-radius: 8px; }
+  .mi svg { color: var(--mu); flex: none; margin-top: 2px; }
+  .mi .lb { flex: 1; }
+  .mi .lb small { display: block; color: var(--fa); font-size: 12px; }
+  .mi .kc { color: var(--fa); font-size: 12px; }
+  .mi.added { background: var(--as); }
+  .sep { height: 1px; margin: 4px 10px; background: var(--ru); }
+  .sw { position: relative; width: 28px; height: 16px; border-radius: 8px; background: var(--ln); flex: none; margin-top: 3px; transition: background-color 0.25s var(--eo); }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.25); transition: transform 0.25s var(--eo); }
+  .sw.on { background: var(--ac); } .sw.on::after { transform: translateX(12px); }
+  .panel { width: 340px; display: flex; flex-direction: column; }
+  .hd { padding: 14px 16px 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .hd small { font-weight: 400; color: var(--fa); }
+  .body { padding: 4px 16px 16px; }
+  .body p { margin: 0 0 10px; }
+  .muted { color: var(--mu); }
+  .fa { color: var(--fa); font-size: 12px; }
+  .found { margin: 4px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .found li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 0; border-top: 1px solid var(--ru); }
+  .found li i { font-style: normal; color: var(--fa); }
+  .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  button { font: inherit; border-radius: 9px; padding: 7px 13px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); cursor: default; transition: background-color 0.2s var(--eo); }
+  button.go { background: #111; border-color: #111; color: #fff; }
+  button.quiet { border-color: transparent; color: var(--mu); padding: 7px 8px; }
+  .pop { width: 380px; padding: 12px 14px 14px; }
+  .av { width: 22px; height: 22px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 600; }
+  .root { position: relative; padding-right: 30px; }
+  .root .av { position: absolute; right: 0; top: 0; background: #dbeedd; color: #2d6a3a; }
+  .tx { font-size: 14px; }
+  .meta { display: flex; gap: 6px; align-items: center; color: var(--fa); font-size: 12px; margin: 2px 0; flex-wrap: wrap; }
+  .reply { padding: 10px 0 0 14px; }
+  .reply .who { display: flex; align-items: center; gap: 8px; }
+  .ai { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--ac); display: grid; place-items: center; font-size: 9px; font-weight: 700; box-shadow: 0 0 0 1.5px var(--ac); flex: none; }
+  .ai::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 9px 1px rgba(83, 74, 183, 0.45); opacity: 0.3; animation: breathe 3.8s ease-in-out infinite; pointer-events: none; }
+  @keyframes breathe { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+  .pasted { color: var(--ac); }
+  .addr { margin: 10px 0 0 14px; border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 9px 11px; font-size: 12.5px; }
+
+  /* a page in a window */
+  .win { width: 440px; max-width: 100%; position: relative; overflow: hidden; }
+  .win .bar { height: 30px; background: var(--so); border-bottom: 1px solid var(--ru); display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 11.5px; color: var(--fa); }
+  .win .bar i { width: 8px; height: 8px; border-radius: 50%; background: #d9d7ce; }
+  .win .url { flex: 1; background: var(--su); border: 1px solid var(--ru); border-radius: 6px; padding: 2px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win .url b { color: var(--ac); font-weight: 600; }
+  .win .pg { padding: 16px 18px 70px; min-height: 230px; }
+  .win h4 { margin: 0 0 2px; font-size: 17px; }
+  .win .sub { color: var(--fa); font-size: 12px; margin: 0 0 12px; }
+  .win .day { font-weight: 600; font-size: 12.5px; margin: 12px 0 4px; color: var(--mu); }
+  .win p { margin: 0 0 6px; }
+  .ctl { position: absolute; right: 0; bottom: 0; width: 32px; height: 32px; border-top-left-radius: 10px; background: rgba(240, 239, 233, 0.92); display: grid; place-items: center; color: var(--k); }
+  .win .menu { position: absolute; right: 6px; bottom: 40px; }
+
+  /* terminal */
+  .term { width: 560px; max-width: 100%; padding: 0; overflow: hidden; }
+  .term .tb { height: 26px; background: var(--so); border-bottom: 1px solid var(--ru); display: flex; align-items: center; gap: 5px; padding: 0 10px; font-size: 11.5px; color: var(--fa); }
+  .term .tb i { width: 8px; height: 8px; border-radius: 50%; background: #d9d7ce; }
+  .term pre { margin: 0; padding: 12px 14px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .term .p { color: var(--ac); }
+  .term .o { color: var(--mu); }
+  .term .c { color: var(--fa); }
+  .clip { width: 540px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .x { background: var(--del); color: var(--delk); border-radius: 3px; }
+  .clip .dim { color: var(--fa); }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  .log { color: var(--mu); font-size: 14px; max-width: 64em; padding-left: 20px; }
+  @media (prefers-reduced-motion: reduce) { .ai::after { animation: none; opacity: 0.5; } .sw, .sw::after, button { transition: none; } }
+  @media (max-width: 520px) { .stage { padding: 14px; } .menu, .panel, .pop { width: 100%; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cm" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="paste" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="3" width="6" height="4" rx="1" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M12 10v7m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 7h11M8 12h11M8 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</svg>
+
+<main>
+  <h1>A live link made of shell commands</h1>
+  <p class="lede">
+    Ada is planning a trip to Lisbon that starts Friday. Claude, running on Ada's Mac, made the itinerary and shows it
+    at <code>http://localhost:3000</code>. Ada left six comments. For Claude to read them and answer straight into the
+    page, today's live link needs <code>npx pipeup watch</code>, and Ada's Mac has no Node. Every Mac already has bash
+    and <code>nc</code>, and that's enough for the link.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>A shell link.</b> A short script, published with each Pipeup release, does the live link's job (§15c)
+          with only bash and <code>nc</code>, which come with macOS and most Linux. The agent can read all of it before
+          running it.</li>
+        <li><b>It sits beside whatever already shows the page</b>: a local preview at <code>localhost</code>, or the
+          page opened as a file. It doesn't serve the page itself.</li>
+        <li><b>It prints a connect address</b>, the page's own address with the link added. Opening it once tells the
+          page where the link is, and <b>Share with my agent</b> appears in the menu, off until Ada turns it on.</li>
+        <li><b>Turned on, the page sends its comments to the link</b>, which writes them to a file next to the page.
+          Claude reads that file with <code>cat</code>.</li>
+        <li><b>Claude answers with the same replies block it would paste</b>, piped into the script, which writes the
+          replies file. The page finds the replies within seconds and asks Ada before adding them, because no Mac can
+          sign them without Node.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>What stays the same</h2>
+    <div class="changes">
+      <ul>
+        <li>Nothing leaves the computer. The link listens on <code>127.0.0.1</code> only, accepts only the page's own
+          address and a secret made fresh each run, and sends nothing anywhere.</li>
+        <li>Share with my agent is off on every load, and its hint says what it sends and where (§15c).</li>
+        <li>Agents still only reply and mark threads addressed. Copy and paste (#96, #98) still works everywhere, and
+          <code>pipeup watch</code> still works where Node is.</li>
+        <li>No telemetry, and nothing added to the page's own content.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tried on this Mac</h2>
+    <p class="what">A 40-line prototype on macOS 26.7 with its own bash 3.2 and <code>nc</code>. The page was shown by a
+      separate local server at <code>localhost:3000</code>; the link listened on <code>127.0.0.1:7342</code>.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>What was tried</th><th>Result</th><th>What it means for the design</th></tr></thead>
+        <tbody>
+          <tr><td>The page sends its comments to the link</td><td class="ok">Arrived</td><td>Written to <code>trip.comments.json</code>; <code>plutil</code> (on every Mac) printed the Markdown from it.</td></tr>
+          <tr><td>A wrong address, a wrong secret, or another site's origin</td><td class="ok">Refused</td><td>The same protections as <code>pipeup watch</code> work in shell.</td></tr>
+          <tr><td>Two sends within a tenth of a second</td><td class="no">Second refused</td><td><code>nc</code> takes one connection at a time. With 0.3 seconds between sends, or one retry after 0.15 seconds, all 13 test sends arrived. The page must retry for a few seconds before it says the link is gone; today it gives up at once.</td></tr>
+          <tr><td>The link showing the page itself</td><td class="no">Failed</td><td>The browser loads a page's scripts at the same time, and <code>nc</code> refused all but one. So the shell link sits beside whatever already shows the page.</td></tr>
+          <tr><td>What Copy comments copies, while linked</td><td class="no">Leaked the secret</td><td>The Markdown's "Page:" line carried the connect address. Pipeup must leave its own link out of every address it copies.</td></tr>
+          <tr><td>Signing replies in shell</td><td class="no">Not possible on a Mac</td><td>macOS's <code>openssl</code> (LibreSSL 3.3.6) can't make the signatures Pipeup uses. Shell replies are unsigned, so the page asks first.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <p class="what">Six moments. Ada installs nothing and edits nothing; Claude runs the commands.</p>
+    <div class="story">
+      <div class="shot new">
+        <span class="tag new">1 · new</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ bash pipeup-link.sh</text><text x="22" y="46" font-size="8.5" font-family="monospace" fill="#5f5e5a">Connect the page once:</text><text x="22" y="60" font-size="8.5" font-family="monospace" fill="#5f5e5a">localhost:3000/lisbon…</text></svg></div>
+        <p>Claude starts the shell link beside the preview it already runs. It prints a connect address.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">2 · new</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="12" y="10" width="176" height="16" rx="8" fill="#fafaf7"/><rect x="30" y="14" width="140" height="8" rx="3" fill="#edebfa"/><rect x="24" y="36" width="80" height="7" rx="3" fill="#2c2c2a"/><rect x="24" y="50" width="130" height="4" rx="2" fill="#d6d4cb"/><rect x="24" y="60" width="110" height="4" rx="2" fill="#d6d4cb"/></svg></div>
+        <p>Claude opens it in Ada's browser. The itinerary looks the same; the page now knows where the link is.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">3 · changed</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="10" width="140" height="62" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="32" font-size="9.5" fill="#2c2c2a">Share with my agent</text><rect x="148" y="24" width="22" height="12" rx="6" fill="#534ab7"/><circle cx="164" cy="30" r="4.5" fill="#fff"/><rect x="50" y="44" width="110" height="4" rx="2" fill="#d6d4cb"/><rect x="50" y="54" width="90" height="4" rx="2" fill="#d6d4cb"/><path d="M168 92V82a8 8 0 0 1 8-8h24v18z" fill="#e7e5dc"/></svg></div>
+        <p>Ada turns on <b>Share with my agent</b>, as the live link has today. Its hint says the comments stay on this computer.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">4 · new</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ cat lisbon.comments.json</text><rect x="22" y="38" width="140" height="4" rx="2" fill="#d6d4cb"/><rect x="22" y="47" width="120" height="4" rx="2" fill="#d6d4cb"/><text x="22" y="70" font-size="9" font-family="monospace" fill="#534ab7">$ … | bash pipeup-link.sh reply</text></svg></div>
+        <p>Claude reads the comments from a file, makes the changes, and pipes its replies block into the script.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">5 · new</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="8" width="120" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="24" font-size="9.5" font-weight="600" fill="#2c2c2a">6 replies from Claude</text><text x="50" y="42" font-size="8.5" fill="#5f5e5a">through your link</text><rect x="104" y="64" width="46" height="12" rx="4" fill="#111"/></svg></div>
+        <p>Within seconds the page says what arrived. Ada picks <b>Add 6 replies</b>.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">6 · same as today</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><circle cx="42" cy="30" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="27" width="100" height="5" rx="2" fill="#d6d4cb"/><rect x="34" y="50" width="132" height="22" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="40" y="64" font-size="8.5" fill="#5f5e5a">Resolve · Still not right</text></svg></div>
+        <p>Ada resolves each, or says <b>Still not right</b>. That reaches Claude through the link with no copying.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what">Violet boxes are new. The shell link only receives; replies come back through a file next to the page, which the page already knows how to read.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 560" role="img" aria-label="Swimlanes: Ada, the page at localhost:3000, the shell link on 127.0.0.1, and Claude. Comments go from the page to the link to a file Claude reads; replies go from Claude to a file the page reads, and Ada agrees before they're added.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="30" width="1320" height="120" fill="#fafaf7"/>
+          <rect x="0" y="160" width="1320" height="120" fill="#f4f3ee"/>
+          <rect x="0" y="290" width="1320" height="120" fill="#fafaf7"/>
+          <rect x="0" y="420" width="1320" height="120" fill="#f4f3ee"/>
+          <text x="16" y="86" font-size="14" font-weight="600" fill="#2c2c2a">Ada</text>
+          <text x="16" y="104" font-size="11.5" fill="#888780">in the browser</text>
+          <text x="16" y="216" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
+          <text x="16" y="234" font-size="11.5" fill="#888780">at localhost:3000</text>
+          <text x="16" y="346" font-size="14" font-weight="600" fill="#2c2c2a">Shell link</text>
+          <text x="16" y="364" font-size="11.5" fill="#888780">bash and nc, 127.0.0.1</text>
+          <text x="16" y="476" font-size="14" font-weight="600" fill="#2c2c2a">Claude</text>
+          <text x="16" y="494" font-size="11.5" fill="#888780">on Ada's Mac</text>
+
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M210 448V384"/>
+            <path d="M285 350H303"/>
+            <path d="M380 318V254"/>
+            <path d="M455 220H473"/>
+            <path d="M550 186V124"/>
+            <path d="M625 104L668 186"/>
+            <path d="M720 252V316"/>
+            <path d="M795 350L815 470"/>
+            <path d="M965 480H983"/>
+            <path d="M1060 448V384"/>
+            <path d="M1060 318V254"/>
+            <path d="M1135 220H1153"/>
+          </g>
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M1230 186V124"/>
+          </g>
+          <g stroke="#888780" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ar)">
+            <path d="M1230 58V16H720V184"/>
+          </g>
+          <text x="388" y="290" font-size="11" fill="#534ab7">connect address</text>
+          <text x="728" y="290" font-size="11" fill="#534ab7">comments, retried</text>
+          <text x="728" y="304" font-size="11" fill="#534ab7">if refused</text>
+          <text x="1068" y="290" font-size="11" fill="#534ab7">read every</text>
+          <text x="1068" y="304" font-size="11" fill="#534ab7">few seconds</text>
+          <text x="975" y="12" font-size="11" fill="#888780" text-anchor="middle">Still not right: sent to the link again, with no copying</text>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="135" y="448" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="476" fill="#2c2c2a">Starts the link</text><text x="210" y="492" fill="#2c2c2a">beside the preview</text>
+            <rect x="135" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="210" y="340" fill="#2c2c2a">Listens on</text><text x="210" y="356" fill="#2c2c2a">127.0.0.1 with a</text><text x="210" y="372" fill="#2c2c2a">fresh secret</text>
+
+            <rect x="305" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="346" fill="#2c2c2a">Prints the</text><text x="380" y="362" fill="#2c2c2a">connect address</text>
+            <rect x="305" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="210" fill="#2c2c2a">Opened once</text><text x="380" y="226" fill="#2c2c2a">(Claude runs</text><text x="380" y="242" fill="#2c2c2a"><tspan font-family="monospace">open</tspan>)</text>
+
+            <rect x="475" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="210" fill="#2c2c2a">Menu gains</text><text x="550" y="226" fill="#2c2c2a">Share with my agent,</text><text x="550" y="242" fill="#2c2c2a">off</text>
+            <rect x="475" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="86" fill="#2c2c2a">Turns on Share</text><text x="550" y="102" fill="#2c2c2a">with my agent</text>
+
+            <rect x="645" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="720" y="216" fill="#2c2c2a">Sends comments,</text><text x="720" y="232" fill="#2c2c2a">and every change</text>
+            <rect x="645" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="720" y="340" fill="#2c2c2a">Writes</text><text x="720" y="356" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.comments</text><text x="720" y="372" fill="#2c2c2a" font-family="monospace" font-size="11">.json</text>
+
+            <rect x="815" y="448" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="890" y="470" fill="#2c2c2a">Reads it, makes</text><text x="890" y="486" fill="#2c2c2a">approved changes</text><text x="890" y="502" fill="#2c2c2a">to the page</text>
+            <rect x="985" y="448" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1060" y="476" fill="#2c2c2a">Pipes its replies</text><text x="1060" y="492" fill="#2c2c2a">block to the script</text>
+            <rect x="985" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1060" y="340" fill="#2c2c2a">Writes</text><text x="1060" y="356" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.replies.js</text><text x="1060" y="372" fill="#2c2c2a">next to the page</text>
+            <rect x="985" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1060" y="216" fill="#2c2c2a">Finds 6 replies;</text><text x="1060" y="232" fill="#2c2c2a">asks before adding</text>
+
+            <rect x="1155" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1230" y="216" fill="#2c2c2a">Replies ease into</text><text x="1230" y="232" fill="#2c2c2a">their threads</text>
+            <rect x="1155" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1230" y="80" fill="#2c2c2a">Adds them, then</text><text x="1230" y="96" fill="#2c2c2a">Resolves, or</text><text x="1230" y="112" fill="#2c2c2a">Still not right</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Which link each page gets</h2>
+    <p class="what">The shell link is for pages on the person's own computer. Copy and paste covers everything else.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Where the page is</th><th>Node on the computer</th><th>Reads comments by</th><th>Answers by</th></tr></thead>
+        <tbody>
+          <tr><td>A file or a <code>localhost</code> preview</td><td>Yes</td><td><code>pipeup watch</code></td><td>Signed replies; appear by themselves</td></tr>
+          <tr><td>A file or a <code>localhost</code> preview</td><td>No</td><td class="hit">Shell link</td><td class="hit">Replies file through the script; Ada agrees, then they appear</td></tr>
+          <tr><td>A website, or an agent in the cloud</td><td>Either</td><td>Copy for my agent</td><td>Replies block, pasted back</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 1 · Claude starts the link</h2>
+    <p class="what">What Claude runs in its own terminal. The script is fetched for the version the page runs and checked before it runs; Claude can read it, since it's short.</p>
+    <div class="stage">
+      <div class="card term">
+        <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
+<pre><span class="p">$ curl -fsSLO https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup-link.sh</span>
+<span class="p">$ shasum -a 256 -c &lt;&lt;&lt; "4f1c…9a2e  pipeup-link.sh"</span>
+<span class="o">pipeup-link.sh: OK</span>
+<span class="p">$ bash pipeup-link.sh lisbon.html http://localhost:3000/lisbon.html &amp;</span>
+<span class="o">Pipeup's link for lisbon.html, on this computer only (127.0.0.1:7342).
+Open this once to connect the page:
+  http://localhost:3000/lisbon.html?pipeup-link=7342.eJRdIxZc…8RDW
+Comments will arrive in lisbon.comments.json. Stop with: kill %1</span>
+<span class="p">$ open "http://localhost:3000/lisbon.html?pipeup-link=7342.eJRdIxZc…8RDW"</span></pre>
+      </div>
+      <p class="cap"><b>No change to the page's file.</b> The connect address carries the link; the preview server and the file are untouched. On Linux, <code>xdg-open</code> opens it.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · The page, connected</h2>
+    <p class="what">The same switch <code>pipeup watch</code> gives today, now also on a page opened from a shell link's connect address. Off until Ada turns it on, every time the page loads.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Opened without the link</span>
+        <div class="card win">
+          <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/lisbon.html</span></div>
+          <div class="pg"><h4>Lisbon, 23–26 Oct</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11, then the market.</p></div>
+          <div class="card menu">
+            <div class="mi"><svg width="16" height="16"><use href="#list"/></svg><span class="lb">All comments</span><span class="kc">6</span></div>
+            <div class="sep"></div>
+            <div class="mi"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy for my agent<small>Your 6 open comments, and how to answer them</small></span></div>
+            <div class="mi"><svg width="16" height="16"><use href="#paste"/></svg><span class="lb">Paste my agent's replies</span></div>
+          </div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Opened from the connect address</span>
+        <div class="card win">
+          <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/lisbon.html<b>?pipeup-link=7342.eJRd…</b></span></div>
+          <div class="pg"><h4>Lisbon, 23–26 Oct</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11, then the market.</p></div>
+          <div class="card menu">
+            <div class="mi"><svg width="16" height="16"><use href="#list"/></svg><span class="lb">All comments</span><span class="kc">6</span></div>
+            <div class="sep"></div>
+            <div class="mi added"><svg width="16" height="16"><use href="#link"/></svg><span class="lb">Share with my agent<small>Sends this page's comments to the link running on this computer. Nothing leaves it.</small></span><span class="sw on"></span></div>
+            <div class="mi"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy for my agent</span></div>
+            <div class="mi"><svg width="16" height="16"><use href="#paste"/></svg><span class="lb">Paste my agent's replies</span></div>
+          </div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">Shown switched on, after Ada turned it on. If a send doesn't get through, the page tries again for a few seconds, then turns the switch off and says the link isn't reachable.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 3 · Claude reads and answers</h2>
+    <p class="what">Reading is a file. Answering is the same replies block as copy and paste, piped into the script, which writes it in the form the page loads.</p>
+    <div class="stage">
+      <div class="card term">
+        <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
+<pre><span class="p">$ plutil -extract open.markdown raw -o - lisbon.comments.json</span>
+<span class="o"># Review comments: Lisbon, 23–26 Oct
+- Page: http://localhost:3000/lisbon.html
+- Open threads: 6
+1. [t-3a1c] On "Saturday: brunch at 11": Can we make this 11:30? (Ada)
+…</span>
+<span class="c">  edits lisbon.html: brunch at 11:30, the market after it …</span>
+<span class="p">$ bash pipeup-link.sh reply lisbon.html &lt;&lt;'EOF'</span>
+```pipeup-replies
+thread: t-3a1c
+reply: Moved brunch to 11:30 on Saturday, and the market to after it.
+addressed: Changed in Saturday's plan
+…
+```
+<span class="p">EOF</span>
+<span class="o">Wrote 6 replies to lisbon.replies.js. They aren't signed, so the page will ask Ada before adding them.</span></pre>
+      </div>
+      <p class="cap"><b>The address in the Markdown</b> is the page's own, without <code>?pipeup-link=…</code>. The prototype's copy carried the secret; Pipeup leaves its link out of everything it copies. <b>On Linux</b>, <code>python3 -m json.tool</code> or <code>jq</code> where present, or the JSON as it is.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 4 · Replies arrive</h2>
+    <p class="what">The page reads the replies file every few seconds while it's showing, as it does today. Unsigned replies wait for Ada, with the same words as a paste.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">The page asks</span>
+        <div class="card panel">
+          <div class="hd">6 replies from Claude <small>Esc</small></div>
+          <div class="body">
+            <p class="muted">They came through your link to Claude on this computer.</p>
+            <ul class="found">
+              <li><i>✓</i><span><b>6 replies</b> for comments on this page</span></li>
+              <li><i>✓</i><span>5 of them say the comment is addressed</span></li>
+              <li><i>–</i><span>Not signed, so they'll show as added by you</span></li>
+            </ul>
+            <div class="btns"><button class="go">Add 6 replies</button><button class="quiet">Not now</button></div>
+          </div>
+        </div>
+        <p class="cap">Opens by itself only while Pipeup is showing. While comments are closed, the control's label and tooltip say replies are waiting (§11a).</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Added</span>
+        <div class="card pop">
+          <div class="root"><span class="av">A</span>
+            <div class="meta">Ada · 9:12</div>
+            <div class="tx">Can we make this 11:30?</div>
+          </div>
+          <div class="reply">
+            <div class="who"><span class="ai">AI</span><div class="meta">Claude · AI · <span class="pasted">added by you</span> · 9:31</div></div>
+            <div class="tx" style="margin-top:4px">Moved brunch to 11:30 on Saturday, and the market to after it.</div>
+          </div>
+          <div class="addr"><b>Addressed:</b> Changed in Saturday's plan
+            <div class="btns" style="margin-top:8px"><button class="go">Resolve</button><button>Still not right</button></div>
+          </div>
+        </div>
+        <p class="cap"><b>Still not right</b> reopens the thread; with sharing on, the change reaches Claude through the link at once.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 5 · What Copy for my agent says</h2>
+    <p class="what">The highlighted line is new, for an agent on the same computer. The page can't tell whether Node is there, so it names both and lets the agent check.</p>
+    <div class="stage">
+      <div class="card clip">…
+How to answer
+- Reply in one block I can paste back into the page:
+  ```pipeup-replies …```
+<span class="x">- If you can run commands on this computer, `npx pipeup@0.9.0 reply …` is faster: your replies appear by themselves.</span>
+<span class="hl">- If you run on this computer: with Node, `npx pipeup@0.9.0 watch lisbon.html` links this page to you. Without Node, the shell link does the same with bash and nc: https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup-link.sh (read it first). Don't ask me to install anything.</span>
+- Only mark a thread addressed. Never resolve, reopen, edit or delete: I close threads. Never answer as me.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">Changes to §15c (A live link to an agent on this computer) and §15b (What agents are told).</p>
+    <div class="spec">
+      <div class="h">§15c · Starting it</div>
+      <div class="d">The author starts a link for a page file with one command on their own computer.</div>
+      <div class="a">The author starts a link for a page file with one command on their own computer: <code>pipeup watch</code> where Node is, or the <b>shell link</b>, a short script published with each release that needs only what macOS and Linux come with.</div>
+      <div class="a">The shell link works beside whatever already shows the page on this computer (a local preview address, or the file itself) and doesn't change either. It prints a connect address: the page's own address with the link added. Opening it connects the page to the link.</div>
+      <div class="a">Like <code>pipeup watch</code>, it listens only on this computer, accepts only the page it was started for and a secret made fresh each time it starts, and says in words where it is and how to stop it.</div>
+      <div class="h">§15c · Sharing is a click</div>
+      <div class="d">A page not shown through a link has no such switch.</div>
+      <div class="a">The switch is shown on a page shown through <code>pipeup watch</code> or opened from a shell link's connect address, and on no other page.</div>
+      <div class="a">If a send doesn't get through, the page tries again for a few seconds before it turns the switch off and says the link isn't reachable.</div>
+      <div class="a">Nothing Pipeup copies or shows carries the link's address or secret.</div>
+      <div class="h">§15c · What the agent can do</div>
+      <div class="a">With the shell link, the agent reads the comments from the file the link keeps next to the page, and answers by giving the script its replies block, which the script writes to the replies file.</div>
+      <div class="a">Replies that come this way and aren't signed by an agent the page lists wait for the person: the page says in words how many arrived and from which agent, and adds them only when the person agrees. They show as "added by you", and follow every rule for agent replies (§15b).</div>
+      <div class="h">§15b · What agents are told</div>
+      <div class="a">An agent on the person's computer that can run commands but has no Node uses the shell link, and never asks the person to install anything to answer comments.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. Where the connect address carries the link</h3>
+        <p><b>Recommended: in the query (<code>?pipeup-link=…</code>).</b> The part after <code>#</code> would never reach a server, but decks and many apps use it for their own place, and the link would break it. The query does reach the local preview server, which is on the same computer. Opening the page again without it leaves the link off.</p></div>
+      <div class="q"><h3>2. Add unsigned replies without asking while the switch is on?</h3>
+        <p><b>Recommended: no, ask each time replies arrive.</b> Anything that can write the page's folder can write the replies file. One click per round is the cost of not needing Node. Signed replies from a listed agent still appear by themselves.</p></div>
+      <div class="q"><h3>3. Linux's different <code>nc</code> programs</h3>
+        <p><b>Recommended: the script checks which one it has</b> and says plainly when it can't listen, pointing to copy and paste. Debian and Ubuntu ship one that works the way macOS's does; some others need different options, and some have none.</p></div>
+      <div class="q"><h3>4. Pages on a website</h3>
+        <p><b>Recommended: not for now.</b> A page on <code>https://</code> reaching <code>127.0.0.1</code> is blocked by some browsers and needs the person's permission in others. Pages on websites keep copy and paste.</p></div>
+      <div class="q"><h3>5. Windows</h3>
+        <p><b>Recommended: later, as a PowerShell script</b> doing the same job, once the shell link has settled.</p></div>
+      <div class="q"><h3>6. Considered and left out: driving the browser</h3>
+        <p>On a Mac, <code>osascript</code> can run code in Safari or Chrome directly, with no link at all. But it only works after the person turns on a developer setting that lets any program with permission run code in every tab, banking included. That's too much to ask for reading comments.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Change log</h2>
+    <ul class="log">
+      <li>2026-10-21: First version, "Pipeup without Node": several setup paths, a single program, a setup page for sharing.</li>
+      <li>2026-10-21: Refocused, at the maintainer's request, on a way to read and answer comments without Node: a live link made of shell commands. Added what was found by trying it on macOS 26.7.</li>
+    </ul>
+  </section>
+</main>
