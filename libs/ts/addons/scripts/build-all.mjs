@@ -11,8 +11,9 @@ const BUDGETS = {
   assist: 10 * 1024,
   // 7 KB: Copy for my agent's instructions and the paste dialog, which reads and checks signed replies blocks
   // (+2.8 KB; docs/design/agent-paste.md), with 0.8.2's commands for local agents (docs/design/local-agents.md).
-  // Only pages that have an agent load it.
-  agents: 7 * 1024,
+  // Only pages that have an agent load it. 7.5 KB: it reads its settings wherever the page put them, the script line
+  // too, for hosts that write their own <html> (docs/design/one-tap-page-api.md).
+  agents: 7.5 * 1024,
   emoji: 32 * 1024,
   github: 3 * 1024,
   updates: 4 * 1024,

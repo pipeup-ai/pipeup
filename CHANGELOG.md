@@ -14,7 +14,7 @@ change the API and the stored comment format.
 - **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
 - `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
 - **A page's own code can drive Pipeup**: `setCommentMode()` and `commentMode`, `setName()` and `name`, and `on("change", …)`, which hears comment mode and the name changing however they changed. `mount()` rejects with a `code` (`"another-copy"` or `"failed"`) and words when Pipeup can't start.
-- **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it. For now the agents add-on still reads its own settings from `<html>` only.
+- **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it.
 
 ### Changed
 
@@ -22,7 +22,7 @@ change the API and the stored comment format.
 - **Selecting words offers a comment outside comment mode too.** The comment icon appears beside the selection, and commenting from it leaves comment mode off, so links and the page keep working. A page can keep it to comment mode with `data-pipeup-select="comment-mode"`.
 - **Shared copies carry a listed agent's answers.** While you're sending, the share add-on also passes on the replies, addressed notes and reactions of an agent the page lists (from the replies file, the live link or a signed paste), so everyone who has the page sees them as the agent's. An answer to a comment you haven't shared waits with it.
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
-- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.6 KB), and the agents add-on's from 5 to 7 KB.
+- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.6 KB), and the agents add-on's from 5 to 7.5 KB.
 
 ### Documentation
 
