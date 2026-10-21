@@ -3,7 +3,7 @@ import { ladder, pageSecret, settings, SyncEngine } from "@pipeup/kit";
 import { parseShare } from "./address";
 import { idsOf, type Backend } from "./backend";
 import { Mailbox } from "./mailbox";
-import { Policy, type Saved } from "./policy";
+import { listedAgents, Policy, type Saved } from "./policy";
 import { PrivateBin } from "./privatebin";
 import { ShareTransport } from "./transport";
 
@@ -40,7 +40,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       const l = ladder(doc.id, address.key);
       const store = await settings("share", { memory: host.ephemeral });
       const saved = await store.get<Saved>(`doc:${doc.id}`);
-      const policy = new Policy(doc.me, saved);
+      const policy = new Policy(doc.me, saved, listedAgents);
       policy.hold(doc.ops());
       let writing: Promise<void> = Promise.resolve();
       const save = () => {

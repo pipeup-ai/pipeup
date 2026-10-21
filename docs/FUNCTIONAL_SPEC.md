@@ -852,6 +852,10 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
   someone else by file or live review. People who already received your comments could still pass them
   on themselves, and Pipeup says so where you choose whether to send.
+- The one exception is an agent the page lists (§15b). While a reviewer is sending, their Pipeup also passes on that
+  agent's replies, addressed notes and reactions that it holds (from the replies file, the live link, or a signed paste),
+  because the agent signed them and anyone can check that, and so everyone who has the page sees the agent's answers.
+  An agent's answer to a comment the reviewer hasn't shared stays with that comment and isn't sent.
 - Pipeup says in words whether the shared copy is:
   - up to date;
   - waiting to send changes;
@@ -1330,14 +1334,15 @@ an agent on the same computer is a later step and is not part of this one.)
   the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
   resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
   and works without them. It tells the agent how to sign its replies block when it keeps a key, and says whether the
-  page lists it. Its commands run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that
+  page lists it. Its commands
+  run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that
   answers them, not only the page's exact one, because some computers accept only packages a few days old. A
   pre-release page's commands name its pre-release and say to use any release if npm refuses that one, and its
   text points at the pre-release guide.
-- The copied text names the page to answer on: the HTML file that runs Pipeup (its full path, for a page opened from
-  this computer, or its address on the site), never a file the page shows (a viewer at `viewer.html?file=notes.md` is
-  `viewer.html`). For an agent that can write the replies file, it says where the replies will be written and that the
-  page reads them from there. When the page doesn't list an agent, it tells such an agent to ask the author first and,
+- For an agent that can write next to the page, the copied text names the page to answer on: the HTML file that runs
+  Pipeup (its full path, for a page opened from this computer, or its address on the site), never a file the page
+  shows (a viewer at `viewer.html?file=notes.md` is `viewer.html`). It says where the replies will be written and that
+  the page reads them from there. When the page doesn't list an agent, it tells the agent to ask the author first and,
   after a yes, list itself with one command.
 - With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
   page finds the replies block in it and says in words what it found (how many replies, from which agent, how many are
@@ -1353,7 +1358,8 @@ an agent on the same computer is a later step and is not part of this one.)
   the person who pasted didn't write the agent's words, and which agent replies came to the page unchanged.
 - Pasted replies are accepted whether or not the page lists that agent, because pasting is the person's own act. They
   follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment.
-  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on.
+  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on: a reply
+  pasted by this reviewer as their own, and a reply signed by an agent the page lists as that agent's (§11).
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1868,8 +1874,10 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
 - 2026-10-18 — iPhones (0.8.1): one tap answers on the page (Safari sends no click for a tap on words or pictures unless something listens for one); by touch the menu closes after Start commenting; the on-screen keyboard never covers a comment box, and Pipeup's drawings stay on what they are about when the phone moves the page; the selection's icon sits at the right edge beside the phone's own menu; no AutoFill in a comment box (sections 5, 7).
 - 2026-10-18 — By touch, comment mode's hint is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done (section 5).
-- 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
-- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
 - 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
+- 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
+- 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
+- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).

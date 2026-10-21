@@ -137,7 +137,9 @@ export function startReplies(host: AddonHost): Replies {
     check,
     tally: (threads) => {
       const open = threads.filter((t) => !t.resolved);
-      const said = (t: Thread) => t.root.replies.some((r) => agents.includes(r.author));
+      // A listed agent's own replies, and the ones a reviewer pasted for an agent.
+      const said = (t: Thread) =>
+        t.root.replies.some((r) => agents.includes(r.author) || r.name.startsWith("AI assistant · "));
       const here = new Set(threads.map((t) => t.id));
       const stray = new Set(
         host.document

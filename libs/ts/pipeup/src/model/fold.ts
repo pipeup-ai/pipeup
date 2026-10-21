@@ -1,4 +1,4 @@
-import { nameOf } from "./animals";
+import { isAiName, nameOf } from "./animals";
 import { compareOps } from "./ops";
 import type { Comment, Mention, SignedOp, Thread } from "./types";
 
@@ -21,7 +21,8 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
   const names = new Map<string, string>();
 
   for (const { body: o } of [...ops].sort(compareOps)) {
-    if (o.name) names.set(o.author, o.name);
+    // An agent's name on a reply someone pasted is the agent's, not the writer's own.
+    if (o.name && !isAiName(o.name)) names.set(o.author, o.name);
     if (o.kind === "create") {
       if (threads.has(o.id) || !o.anchor || o.text === undefined) continue;
       const root = newComment(o.id, o.author, o.name, o.text, o.at, o.mentions);
@@ -98,7 +99,8 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     }
     for (const r of c.reactions) for (const b of r.by) b.name ||= names.get(b.author) ?? "";
   }
-  // Two people with one name: each shows with a short tag, so they can be told apart.
+  // Two people with one name: each shows with a short tag, so they can be told apart. Not agents: an agent's reply
+  // someone pasted says who pasted it instead, beside the agent's own.
   const writers = new Map<string, Set<string>>();
   const note = (author: string, name: string) => {
     const shown = nameOf({ author, name }).toLowerCase();
@@ -109,7 +111,7 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     for (const r of c.reactions) for (const b of r.by) note(b.author, b.name);
   }
   const alike = (author: string, name: string) =>
-    (writers.get(nameOf({ author, name }).toLowerCase())?.size ?? 0) > 1;
+    !isAiName(name) && (writers.get(nameOf({ author, name }).toLowerCase())?.size ?? 0) > 1;
   for (const { comment: c } of entries.values()) {
     if (alike(c.author, c.name)) c.alike = true;
     for (const r of c.reactions) for (const b of r.by) if (alike(b.author, b.name)) b.alike = true;
