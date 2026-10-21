@@ -1,0 +1,478 @@
+<title>Agent Hand-off</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: a default hand-off that works for any agent, however isolated. Light mode only, Pipeup's own tokens. -->
+<style>
+  /* Layout: one reading column; storyboard, swimlanes, then screens on grey stages, then the spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 360px; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot .n { font-size: 12px; color: var(--fa); }
+  .shot .pic { height: 92px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); position: relative; overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+  .shot.new { border-color: #c9c4ef; }
+
+  /* swimlanes */
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+  /* table */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; font-size: 13.5px; min-width: 720px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td.hit { color: var(--ac); font-weight: 600; }
+
+  /* Pipeup's look */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; max-width: 100%; }
+  .menu { width: 300px; padding: 4px; }
+  .mi { display: flex; gap: 10px; align-items: flex-start; min-height: 34px; padding: 7px 10px; border-radius: 8px; }
+  .mi.hot { background: var(--so); }
+  .mi svg { color: var(--mu); flex: none; margin-top: 2px; }
+  .mi .lb { flex: 1; }
+  .mi .lb small { display: block; color: var(--fa); font-size: 12px; }
+  .mi .kc { color: var(--fa); font-size: 12px; }
+  .mi.added { background: var(--as); }
+  .mi.gone { opacity: 0.55; text-decoration: line-through; text-decoration-color: var(--delk); }
+  .sep { height: 1px; margin: 4px 10px; background: var(--ru); }
+  .sec { padding: 8px 10px 2px; font-size: 12px; color: var(--fa); }
+  .panel { width: 340px; display: flex; flex-direction: column; }
+  .hd { padding: 14px 16px 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .hd small { font-weight: 400; color: var(--fa); }
+  .body { padding: 4px 16px 16px; }
+  .body p { margin: 0 0 10px; }
+  .muted { color: var(--mu); }
+  .fa { color: var(--fa); font-size: 12px; }
+  .well { border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 8px 10px; font: 11.5px/1.5 var(--mono); color: var(--mu); height: 96px; overflow: hidden; position: relative; }
+  .well::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(transparent, var(--so)); }
+  .found { margin: 12px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .found li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 0; border-top: 1px solid var(--ru); }
+  .found li i { font-style: normal; color: var(--fa); }
+  .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  button { font: inherit; border-radius: 9px; padding: 7px 13px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); cursor: default; transition: background-color 0.2s var(--eo); }
+  button.go { background: #111; border-color: #111; color: #fff; }
+  button.quiet { border-color: transparent; color: var(--mu); padding: 7px 8px; }
+  .pop { width: 400px; padding: 12px 14px 14px; }
+  .av { width: 22px; height: 22px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 600; }
+  .root { position: relative; padding-right: 30px; }
+  .root .av { position: absolute; right: 0; top: 0; background: #f6e3cf; color: #8a4b12; }
+  .tx { font-size: 14px; }
+  .meta { display: flex; gap: 6px; align-items: center; color: var(--fa); font-size: 12px; margin: 2px 0; flex-wrap: wrap; }
+  .reply { padding: 10px 0 0 14px; }
+  .reply .who { display: flex; align-items: center; gap: 8px; }
+  .ai { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--ac); display: grid; place-items: center; font-size: 9px; font-weight: 700; box-shadow: 0 0 0 1.5px var(--ac); flex: none; }
+  .ai::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 9px 1px rgba(83, 74, 183, 0.45); opacity: 0.3; animation: breathe 3.8s ease-in-out infinite; pointer-events: none; }
+  @keyframes breathe { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+  .pasted { color: var(--ac); }
+  .addr { margin: 10px 0 0 14px; border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 9px 11px; font-size: 12.5px; }
+  .addr b { font-weight: 600; }
+
+  /* copied text and chat */
+  .clip { width: 520px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .dim { color: var(--fa); }
+  .chat { width: 520px; max-width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #fbfbf9; }
+  .bub { border-radius: 14px; padding: 10px 14px; font-size: 13.5px; max-width: 92%; }
+  .bub.me { align-self: flex-end; background: #dfe9fb; }
+  .bub.them { align-self: flex-start; background: var(--su); border: 1px solid var(--ln); }
+  .bub pre { margin: 8px 0 0; background: var(--so); border: 1px solid var(--ru); border-radius: 8px; padding: 8px 10px; font: 11.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; }
+  .who-l { font-size: 11.5px; color: var(--fa); margin-bottom: 2px; }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+  @media (prefers-reduced-motion: reduce) { .ai::after { animation: none; opacity: 0.5; } }
+  @media (max-width: 520px) { .stage { padding: 14px; } .menu, .panel, .pop { width: 100%; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="paste" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="3" width="6" height="4" rx="1" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M12 10v7m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 7h11M8 12h11M8 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+</svg>
+
+<main>
+  <h1>Hand comments to any agent, however isolated</h1>
+  <p class="lede">
+    Sam reviewed today's briefing, which Muse made, and asked Muse to act on the comments. Muse couldn't open the page,
+    couldn't see Sam's browser, and had nowhere to put its answers. Agents differ in what they can reach, and the page
+    can't tell which kind it's being handed to. So the default should assume the agent can reach nothing, and carry
+    everything both ways through copy and paste.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>Copy for my agent</b> copies the open comments together with how to answer them. Today it copies only the
+          instructions, and an agent that can't open the page has to ask for a second paste.</li>
+        <li>The copied text says plainly that the comments are kept in Sam's browser, not in the page's file. Muse spent a
+          turn defending itself against "you overwrote the page"; neither side knew where the comments lived.</li>
+        <li>An agent that can't write next to the page answers with a <b>replies block</b> in its chat message.</li>
+        <li>A new menu item, <b>Paste my agent's replies</b>, reads that block. The page shows what it found before
+          adding anything, and the replies appear in their threads marked as pasted by Sam.</li>
+        <li>The faster routes (the live link and the reply command) stay, as shortcuts for agents that can use them. No
+          agent needs them.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <p class="what">Five moments. Frames 2, 4 and 5 are new or changed.</p>
+    <div class="story">
+      <div class="shot">
+        <span class="n">1</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="12" width="110" height="8" rx="3" fill="#2c2c2a"/><rect x="16" y="30" width="150" height="5" rx="2" fill="#d6d4cb"/><rect x="16" y="42" width="130" height="5" rx="2" fill="#d6d4cb"/><rect x="16" y="56" width="90" height="26" rx="4" fill="#e5e3da"/><circle cx="150" cy="45" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="150" y="49" text-anchor="middle" font-size="10" fill="#8a4b12">S</text><circle cx="116" cy="70" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="116" y="74" text-anchor="middle" font-size="10" fill="#8a4b12">S</text></svg>
+        </div>
+        <p>Sam reads the briefing Muse made and leaves five comments.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">2 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="10" width="120" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="46" y="18" width="108" height="16" rx="5" fill="#edebfa"/><text x="54" y="30" font-size="9.5" fill="#2c2c2a">Copy for my agent</text><rect x="48" y="42" width="80" height="4" rx="2" fill="#d6d4cb"/><rect x="48" y="52" width="96" height="4" rx="2" fill="#d6d4cb"/><rect x="48" y="62" width="70" height="4" rx="2" fill="#d6d4cb"/></svg>
+        </div>
+        <p>Sam picks <b>Copy for my agent</b>. The comments and how to answer them are copied together.</p>
+      </div>
+      <div class="shot">
+        <span class="n">3</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="90" y="10" width="96" height="26" rx="10" fill="#dfe9fb"/><rect x="14" y="44" width="130" height="38" rx="10" fill="#fff" stroke="#e5e3da"/><rect x="24" y="54" width="90" height="4" rx="2" fill="#d6d4cb"/><rect x="24" y="64" width="108" height="10" rx="3" fill="#edebfa"/></svg>
+        </div>
+        <p>Sam pastes it into Muse's chat. Muse works through each thread and answers with a replies block.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">4 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="8" width="120" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="24" font-size="9.5" font-weight="600" fill="#2c2c2a">Paste replies</text><rect x="50" y="30" width="100" height="22" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="50" y="66" font-size="8.5" fill="#5f5e5a">Found 4 replies from Muse</text><rect x="104" y="70" width="46" height="10" rx="4" fill="#111"/></svg>
+        </div>
+        <p>Sam copies Muse's answer and picks <b>Paste my agent's replies</b>. The page says what it found.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">5 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="30" y="18" width="110" height="5" rx="2" fill="#2c2c2a"/><circle cx="42" cy="44" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="41" width="100" height="5" rx="2" fill="#d6d4cb"/><rect x="34" y="58" width="132" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="40" y="70" font-size="8.5" fill="#5f5e5a">Addressed · Resolve</text></svg>
+        </div>
+        <p>Muse's replies ease into their threads. Sam resolves each one, or says <b>Still not right</b> and copies again.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what">Violet boxes are new. The dashed path is today's route for an agent that can write next to the page; it still works and is now the shortcut, not the default.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 430" role="img" aria-label="Swimlane flow: Sam, the page, and Muse, passing comments and replies by copy and paste">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="30" width="1320" height="120" fill="#fafaf7"/>
+          <rect x="0" y="160" width="1320" height="120" fill="#f4f3ee"/>
+          <rect x="0" y="290" width="1320" height="120" fill="#fafaf7"/>
+          <text x="16" y="86" font-size="14" font-weight="600" fill="#2c2c2a">Sam</text>
+          <text x="16" y="104" font-size="11.5" fill="#888780">the reviewer</text>
+          <text x="16" y="216" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
+          <text x="16" y="234" font-size="11.5" fill="#888780">agents add-on</text>
+          <text x="16" y="346" font-size="14" font-weight="600" fill="#2c2c2a">Muse</text>
+          <text x="16" y="364" font-size="11.5" fill="#888780">agent, in the cloud</text>
+
+          <!-- arrows -->
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M210 122V186"/>
+            <path d="M285 90H303"/>
+            <path d="M380 122V186"/>
+            <path d="M455 220L473 98"/>
+            <path d="M550 122V316"/>
+            <path d="M625 350H643"/>
+            <path d="M890 122V186"/>
+            <path d="M1060 122V186"/>
+          </g>
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M720 318V90H812"/>
+            <path d="M965 220L982 98"/>
+            <path d="M1135 220L1152 98"/>
+          </g>
+          <g stroke="#888780" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ar)">
+            <path d="M795 350H813"/>
+            <path d="M965 318L1040 256"/>
+            <path d="M1230 58V16H380V55"/>
+          </g>
+          <text x="728" y="150" font-size="11" fill="#534ab7">Sam copies</text>
+          <text x="728" y="164" font-size="11" fill="#534ab7">the answer</text>
+          <text x="560" y="250" font-size="11" fill="#888780">paste</text>
+          <text x="800" y="12" font-size="11" fill="#888780" text-anchor="middle">Still not right: copy again</text>
+
+          <!-- boxes -->
+          <g font-size="12" text-anchor="middle">
+            <rect x="135" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="86" fill="#2c2c2a">Leaves comments</text><text x="210" y="102" fill="#2c2c2a">on the briefing</text>
+            <rect x="135" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="216" fill="#2c2c2a">Keeps them</text><text x="210" y="232" fill="#2c2c2a">in this browser</text>
+
+            <rect x="305" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="380" y="86" fill="#2c2c2a">Picks</text><text x="380" y="102" fill="#2c2c2a">Copy for my agent</text>
+            <rect x="305" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="216" fill="#2c2c2a">Copies comments</text><text x="380" y="232" fill="#2c2c2a">and how to answer</text>
+
+            <rect x="475" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="86" fill="#2c2c2a">Pastes it into</text><text x="550" y="102" fill="#2c2c2a">Muse's chat</text>
+            <rect x="475" y="318" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="346" fill="#2c2c2a">Reads each thread,</text><text x="550" y="362" fill="#2c2c2a">makes approved changes</text>
+
+            <rect x="645" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="720" y="346" fill="#2c2c2a">Answers in chat</text><text x="720" y="362" fill="#2c2c2a">with a replies block</text>
+
+            <rect x="815" y="58" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="86" fill="#2c2c2a">Picks Paste my</text><text x="890" y="102" fill="#2c2c2a">agent's replies</text>
+            <rect x="815" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="216" fill="#2c2c2a">Shows what it found</text><text x="890" y="232" fill="#2c2c2a">before adding</text>
+            <rect x="815" y="318" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9" stroke-dasharray="5 4"/>
+            <text x="890" y="340" fill="#5f5e5a">Or, if it can reach</text><text x="890" y="355" fill="#5f5e5a">the page's folder,</text><text x="890" y="370" fill="#5f5e5a">writes the replies file</text>
+
+            <rect x="985" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1060" y="86" fill="#2c2c2a">Picks</text><text x="1060" y="102" fill="#2c2c2a">Add replies</text>
+            <rect x="985" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1060" y="216" fill="#2c2c2a">Replies ease into</text><text x="1060" y="232" fill="#2c2c2a">their threads</text>
+
+            <rect x="1155" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1230" y="86" fill="#2c2c2a">Resolves, or</text><text x="1230" y="102" fill="#2c2c2a">Still not right</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Which route each agent gets</h2>
+    <p class="what">Copy and paste works in every row, so it is the default. The other routes are faster where they exist.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Agent</th><th>Can open the page</th><th>Can write next to it</th><th>Reads comments by</th><th>Answers by</th></tr></thead>
+        <tbody>
+          <tr><td>On this computer, page shown with <code>pipeup watch</code></td><td>Yes</td><td>Yes</td><td>Live link</td><td>Reply command; appears by itself</td></tr>
+          <tr><td>On this computer, page opened as a file</td><td>Yes</td><td>Yes</td><td class="hit">Copy for my agent</td><td>Replies file; appears by itself</td></tr>
+          <tr><td>In the cloud, publishes the page (Muse)</td><td>No</td><td>Sometimes</td><td class="hit">Copy for my agent</td><td class="hit">Replies block, pasted back</td></tr>
+          <tr><td>A chat with no files or browser</td><td>No</td><td>No</td><td class="hit">Copy for my agent</td><td class="hit">Replies block, pasted back</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 1 · The menu</h2>
+    <p class="what">One item is renamed and gains the comments. One item is added. Nothing else in the menu moves.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today</span>
+        <div class="card menu">
+          <div class="mi"><svg width="16" height="16"><use href="#list"/></svg><span class="lb">All comments</span><span class="kc">5</span></div>
+          <div class="sep"></div>
+          <div class="mi"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy comments</span><svg width="14" height="14"><use href="#chev"/></svg></div>
+          <div class="mi"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy a prompt for my agent<small>Tells an AI agent where the comments are and how to answer them</small></span></div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed</span>
+        <div class="card menu">
+          <div class="mi"><svg width="16" height="16"><use href="#list"/></svg><span class="lb">All comments</span><span class="kc">5</span></div>
+          <div class="sep"></div>
+          <div class="mi"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy comments</span><svg width="14" height="14"><use href="#chev"/></svg></div>
+          <div class="mi added"><svg width="16" height="16"><use href="#copy"/></svg><span class="lb">Copy for my agent<small>Your 5 open comments, and how to answer them</small></span></div>
+          <div class="mi added"><svg width="16" height="16"><use href="#paste"/></svg><span class="lb">Paste my agent's replies<small>Adds the answers your agent gave in a chat</small></span></div>
+        </div>
+      </div>
+      <p class="cap"><b>Why "Copy for my agent".</b> It now carries the comments, so it is no longer only a prompt. The hint counts the comments so Sam knows what's going.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · What gets copied</h2>
+    <p class="what">Highlighted lines are new. The comments travel with the instructions, and the agent is told where they live.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today</span>
+        <div class="card clip">Act on the review comments on this page, which uses Pipeup: Daily briefing, Sat 18 Oct (https://muse.example/briefing-2026-10-18).
+
+1. Read the comments. Open the page in a browser and run `await Pipeup.comments()`, then read `.markdown`. If you can't run the page, ask me to paste its comments (Copy comments › As Markdown).
+2. Work through the open threads in order. …
+3. Answer in each thread: `npx pipeup@0.8.0-beta.5 reply --page &lt;the page's file&gt; …` The page doesn't list your key yet: run `npx pipeup@0.8.0-beta.5 agent --name &lt;your name&gt;` and tell me the attribute to add.
+4. Only mark a thread addressed. …</div>
+        <p class="cap">Muse followed step 1, failed, and asked for a paste. It followed step 3, made a key and asked Sam to edit the page, though it had no way to write the replies file.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed</span>
+        <div class="card clip">Please act on my review comments on Daily briefing, Sat 18 Oct (https://muse.example/briefing-2026-10-18). The page uses Pipeup.
+<span class="hl">The comments were left in my browser. They are not in the page's file, so don't look for them there. Everything you need is below.</span>
+
+<span class="hl">## 5 open comments</span>
+<span class="hl">1. [t-4f2a] On "Markets": Put the rates chart first; it's what I check. (Sam)</span>
+<span class="hl">2. [t-9c1b] On "CPI 3.2%": Year on year or month on month? (Sam)</span>
+<span class="hl dim">3–5 …</span>
+<span class="hl">(2 resolved comments left out.)</span>
+
+How to answer
+- For each thread, make the change I approved, or say why you didn't. Answer a question with an answer. Ask before changing anything I haven't approved.
+<span class="hl">- Reply in one block I can paste back into the page:</span>
+<span class="hl">  ```pipeup-replies</span>
+<span class="hl">  thread: t-4f2a</span>
+<span class="hl">  reply: what you changed and where</span>
+<span class="hl">  addressed: short note, only if you made the change</span>
+<span class="hl">  ```</span>
+<span class="hl">- If you can run commands on this computer, `npx pipeup@0.8.0-beta.5 reply …` is faster: your replies appear by themselves.</span>
+- Only mark a thread addressed. Never resolve, reopen, edit or delete: I close threads. Never answer as me.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 3 · The agent's answer</h2>
+    <p class="what">Muse's reply in its own chat. The block is plain text, so any agent that can write a message can produce it.</p>
+    <div class="stage">
+      <div class="card chat">
+        <div class="bub me">Please act on my review comments on Daily briefing, Sat 18 Oct … <span class="fa">(the copied text)</span></div>
+        <div>
+          <div class="who-l">Muse</div>
+          <div class="bub them">I've moved the rates chart to the top of Markets and answered the CPI question. I can't change the page you have open; paste this into it with Paste my agent's replies:
+<pre>```pipeup-replies
+thread: t-4f2a
+reply: Moved the rates chart to the top of Markets in today's edition.
+addressed: Moved in today's edition
+
+thread: t-9c1b
+reply: Year on year. I've said so under the figure.
+addressed: Labelled under the figure
+```</pre></div>
+        </div>
+      </div>
+      <p class="cap"><b>What Muse must not say.</b> "I've updated the page" when it hasn't. The copied text already tells it to say what it changed and where.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 4 · Pasting the replies</h2>
+    <p class="what">Sam pastes Muse's whole message; the page finds the block. Nothing is added until Sam agrees, and the page says what it left out and why.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">Pasted</span>
+        <div class="card panel">
+          <div class="hd">Paste your agent's replies <small>Esc</small></div>
+          <div class="body">
+            <div class="well">I've moved the rates chart to the top of Markets and answered the CPI question…<br>```pipeup-replies<br>thread: t-4f2a<br>reply: Moved the rates chart…</div>
+            <ul class="found">
+              <li><i>✓</i><span><b>4 replies from Muse</b> for comments on this page</span></li>
+              <li><i>✓</i><span>3 of them say the comment is addressed</span></li>
+              <li><i>–</i><span>1 reply is for a comment that's no longer here, so it will be left out</span></li>
+            </ul>
+            <p class="fa" style="margin-top:10px">Replies show under Muse's name, marked as AI and as pasted by you. They can't change your comments.</p>
+            <div class="btns"><button class="go">Add 4 replies</button><button class="quiet">Cancel</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Nothing found</span>
+        <div class="card panel">
+          <div class="hd">Paste your agent's replies <small>Esc</small></div>
+          <div class="body">
+            <div class="well" style="height:56px">Sure! Here's what I'd say for each comment: 1. The rates chart…</div>
+            <p class="muted" style="margin-top:12px">There are no replies here that this page can read. Ask your agent to answer in the replies block from Copy for my agent.</p>
+            <div class="btns"><button>Copy that request</button><button class="quiet">Cancel</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 5 · A pasted reply in its thread</h2>
+    <p class="what">Same as an agent reply from the replies file, plus <b>pasted by you</b>. Resolve and Still not right are unchanged.</p>
+    <div class="stage">
+      <div class="card pop">
+        <div class="root"><span class="av">S</span>
+          <div class="meta">Sam · 9:12</div>
+          <div class="tx">Put the rates chart first; it's what I check.</div>
+        </div>
+        <div class="reply">
+          <div class="who"><span class="ai">AI</span><div class="meta">Muse · AI · <span class="pasted">pasted by you</span> · 9:31</div></div>
+          <div class="tx" style="margin-top:4px">Moved the rates chart to the top of Markets in today's edition.</div>
+        </div>
+        <div class="addr"><b>Addressed:</b> Moved in today's edition
+          <div class="btns" style="margin-top:8px"><button class="go">Resolve</button><button>Still not right</button></div>
+        </div>
+      </div>
+      <p class="cap"><b>Still not right</b> reopens the thread with Sam's words. The next Copy for my agent carries it, with Muse's earlier reply, so Muse sees the whole thread.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">Changes to §15b (Showing that a page is ready; What agents are told) and §15d (What the add-on does).</p>
+    <div class="spec">
+      <div class="h">§15b · Showing that a page is ready for an agent</div>
+      <div class="d">…a second choice, Copy a prompt for my agent… It carries no comments and no keys.</div>
+      <div class="a">With the agents add-on, the menu has <b>Copy for my agent</b>, which copies the page's open comments (each with its id, where it is and its words, and any replies) together with how to answer them, so an agent that can't open the page or its folder has everything in one paste. It says how many resolved comments it left out. It carries no keys.</div>
+      <div class="a">The copied text says that the comments were left in the reviewer's browser and are not in the page's file.</div>
+      <div class="a">It names the faster routes (the live link and the reply command) for an agent that can use them, and works without them.</div>
+      <div class="a">With the agents add-on, the menu has <b>Paste my agent's replies</b>. The person pastes the agent's answer; the page says in words what it found (how many replies, from which agent, how many say addressed, and how many it will leave out and why) and adds nothing until the person agrees. If it finds none, it says so and offers to copy a request for the agent to answer in the replies block.</div>
+      <div class="a">Pasted replies show in their threads under the agent's name, with the AI marking and "pasted by you". They follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment. They are kept with the comments in this browser.</div>
+      <div class="h">§15b · What agents are told</div>
+      <div class="d">An agent that can't write the replies file (for example a chat with no files) says what it would have replied, in a form the author can paste, and does not pretend the page was updated.</div>
+      <div class="a">An agent that can't write the replies file answers in one replies block the page can read, says what it changed and where, and does not say the page was updated.</div>
+      <div class="a">An agent never looks for comments in the page's file, and never asks the author to list it for replies it can't deliver.</div>
+      <div class="h">§15d · What the add-on does</div>
+      <div class="a">Reads replies the person pastes, as above. Pasting sends nothing anywhere.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. Accept pasted replies from an agent the page doesn't list?</h3>
+        <p><b>Recommended: yes, marked "pasted by you".</b> The listing guards the replies file, which anyone who can write the folder could fill. A paste is Sam's own act, made after seeing what the page found. Requiring a listed key would send Muse back to asking Sam to edit the page.</p></div>
+      <div class="q"><h3>2. Should Copy for my agent include resolved comments?</h3>
+        <p><b>Recommended: open ones only, with a line saying how many were left out.</b> Reopened threads are open, so "Still not right" still reaches the agent with its history.</p></div>
+      <div class="q"><h3>3. Do pasted replies travel when the page is shared?</h3>
+        <p><b>Recommended: yes, like any reply,</b> when the page has a sharing add-on. Without one they stay in this browser with the comments.</p></div>
+    </div>
+  </section>
+</main>
