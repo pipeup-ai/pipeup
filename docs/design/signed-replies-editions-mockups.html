@@ -169,7 +169,7 @@
         <li><b>Why it matters:</b> once comments are shared, Lee can tell that Sam pasted Muse's words but didn't write
           them, and that Muse's signed words weren't changed on the way.</li>
         <li><b>Editions get their own identity.</b> The publisher sets each edition's document identity (for example
-          the page's key plus the edition date) before Pipeup starts. Pipeup doesn't change: a new document made from a
+          a new id made from the page's id and the edition date) before Pipeup starts. Pipeup doesn't change: a new document made from a
           template already gets a new identity (§15). The integrate skill and <code>llms.txt</code> spell the case out.</li>
         <li>An <b>edition attribute</b> that scopes comments per edition inside one document is named as an open question,
           not a requirement.</li>
@@ -237,9 +237,9 @@
       <div class="shot new">
         <span class="n tag new">3 · proposed</span>
         <div class="pic" aria-hidden="true">
-          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="26" y="20" width="148" height="18" rx="4" fill="#edebfa"/><text x="32" y="32" font-size="8" fill="#2c2c2a" font-family="ui-monospace, Menlo, monospace">doc = key + 2026-10-18</text><rect x="26" y="46" width="148" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/><rect x="26" y="64" width="110" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/></svg>
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="26" y="20" width="148" height="18" rx="4" fill="#edebfa"/><text x="32" y="32" font-size="8" fill="#2c2c2a" font-family="ui-monospace, Menlo, monospace">doc = id(key, 2026-10-18)</text><rect x="26" y="46" width="148" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/><rect x="26" y="64" width="110" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/></svg>
         </div>
-        <p>Before Pipeup starts, the shell gives Tuesday's edition its own identity: the page's key plus the date.</p>
+        <p>Before Pipeup starts, the shell gives Tuesday's edition its own identity, made from the page's and the date.</p>
       </div>
       <div class="shot new">
         <span class="n tag new">4 · proposed</span>
@@ -546,14 +546,16 @@ addressed: Labelled under the figure
       <div class="frame">
         <span class="tag new">What the publisher does</span>
         <div class="code"><span class="dim">&lt;!-- the shell, fixed --&gt;</span>
-&lt;html data-pipeup-doc="k7Hq…"&gt;
-<span class="hl">&lt;script&gt;
-  // before Pipeup's script
-  const d = document.documentElement;
-  d.dataset.pipeupDoc += "-" + edition.date;
-&lt;/script&gt;</span>
-&lt;script src="…/pipeup.min.js" integrity="…"&gt;&lt;/script&gt;</div>
-        <p class="cap">If the edition arrives after the page has loaded, the shell loads Pipeup once it knows the date. Illustrative; the skill gives the exact steps.</p>
+&lt;html data-pipeup-doc="k7Hq…:key…" <span class="hl">data-pipeup-auto="off"</span>&gt;
+&lt;script src="…/pipeup.min.js" integrity="…"&gt;&lt;/script&gt;
+<span class="hl">&lt;script type="module"&gt;
+  // once the edition's data has loaded
+  const [id, key] = pipeupDoc.split(":");
+  const h = sha256(`${id}:${edition.date}`);
+  pipeupDoc = `${base64url(h).slice(0, 16)}:${key}`;
+  await Pipeup.mount();
+&lt;/script&gt;</span></div>
+        <p class="cap">The key stays; the id becomes a new 16 characters made from the page's id and the date (Pipeup refuses a date simply appended). Shortened; the integrate skill has the exact code.</p>
       </div>
     </div>
   </section>
