@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Documentation
+
+- The integrate skill and `llms.txt` say how a page that shows a new edition in a fixed shell (a daily briefing) gives each edition its own identity, so yesterday's comments don't land on today's content: keep the key, make a new 16-character id from the page's id and the edition, and mount Pipeup once the edition is known.
+
 ## [0.8.2] - 2026-10-19
 
 This release makes an agent on your own computer answer comments the first time it tries: its commands run on any computer and never stop to ask, it is told exactly which page to answer on, and it can list itself on the page after your yes. Pipeup itself is unchanged at 59.8 KB gzip.

@@ -185,6 +185,32 @@ page opened from disk and in any script order, and they are released with Pipeup
 - **When you rewrite or regenerate a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are.** A
   new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
   comments of different documents never mix.
+- **A page that shows a new edition in a fixed shell** (a daily briefing, say, whose shell stays the same while each
+  day's content is loaded as data) is one document to Pipeup, so yesterday's comments land on today's matching content,
+  marked Moved. When each edition is meant to be reviewed on its own, give each edition its own `data-pipeup-doc`: keep
+  the key (after the colon) and make a new 16-character id from the page's id and the edition. Pipeup refuses any other
+  form, so never just append a date. Set it before Pipeup starts: put `data-pipeup-auto="off"` on `<html>` and mount
+  Pipeup once the edition is known:
+
+  ```html
+  <html data-pipeup-doc="<the page's id>:<key>" data-pipeup-auto="off">
+  …
+  <script src="…/pipeup.min.js" integrity="…"></script>
+  <script type="module">
+    // Once the edition's data has loaded: `edition` is its date, or any name that is the same every time it is shown.
+    const html = document.documentElement;
+    const [id, key] = html.dataset.pipeupDoc.split(":");
+    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${id}:${edition}`));
+    const editionId = btoa(String.fromCharCode(...new Uint8Array(hash)))
+      .replace(/\+/g, "-").replace(/\//g, "_").slice(0, 16);
+    html.dataset.pipeupDoc = `${editionId}:${key}`;
+    await Pipeup.mount();
+  </script>
+  ```
+
+  Each edition then keeps its own comments, and the same edition always gets the same id. Keep the shell's own
+  `data-pipeup-doc` unchanged when you regenerate it. On a page with `data-pipeup-share`, ask the author first: every
+  edition's comments then go to the one shared copy (each edition shows only its own).
 - **Keep add-ons intentional (best effort).** When you add an add-on: pin its script with its `integrity` hash; add its id to
   `data-pipeup-addons` on `<html>` (append to an existing list and keep every entry it has, never remove one), so only the
   add-ons the author chose run on the page; and tell the author, in your reply, about a Content-Security-Policy that
