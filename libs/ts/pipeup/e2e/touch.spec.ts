@@ -40,6 +40,8 @@ test("on a phone, the controls are big enough to hit: 40 px for the button, 44 p
   const control = (await page.locator(".launch .mode").boundingBox())!;
   expect(Math.min(control.width, control.height)).toBeGreaterThanOrEqual(40);
   await openMenu(page);
+  // Measured once the menu has eased in: mid-transition a row can be a fraction of a pixel short.
+  await settled(page.locator(".menu.show"));
   const rows = await page
     .locator(".menu.show .mi")
     .evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
