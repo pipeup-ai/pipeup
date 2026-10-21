@@ -1,7 +1,7 @@
 <title>Shell Link</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <!-- Visual spec: the live link between a page in the browser and an agent on the same computer, made of plain shell
-     commands (bash and nc) instead of Node. Light mode only, Pipeup's own tokens. Style follows agent-handoff-mockups.html. -->
+     commands (bash and nc, or PowerShell) instead of Node. Light mode only, Pipeup's own tokens. Style follows agent-handoff-mockups.html. -->
 <style>
   /* Layout: one reading column; findings, storyboard, swimlanes, screens on grey stages, then the spec wording. */
   :root {
@@ -151,26 +151,28 @@
   <p class="lede">
     Ada is planning a trip to Lisbon that starts Friday. Claude, running on Ada's Mac, made the itinerary and shows it
     at <code>http://localhost:3000</code>. Ada left six comments. For Claude to read them and answer straight into the
-    page, today's live link needs <code>npx pipeup watch</code>, and Ada's Mac has no Node. Every Mac already has bash
-    and <code>nc</code>, and that's enough for the link.
+    page, today's live link needs <code>npx pipeup watch</code>, and Ada's Mac has no Node. Every Mac already has bash,
+    <code>nc</code> and <code>openssl</code>, and that's enough for the link.
   </p>
 
   <section>
     <h2>What changes</h2>
     <div class="changes">
       <ul>
-        <li><b>A shell link.</b> A short script, published with each Pipeup release, does the live link's job (§15c)
-          with only bash and <code>nc</code>, which come with macOS and most Linux. The agent can read all of it before
-          running it.</li>
+        <li><b>A shell link.</b> A short script for each kind of computer does the live link's job (§15c) with only what
+          the computer came with: bash and <code>nc</code> on a Mac or Linux, PowerShell on Windows. The agent can read
+          all of it before running it.</li>
         <li><b>It sits beside whatever already shows the page</b>: a local preview at <code>localhost</code>, or the
-          page opened as a file. It doesn't serve the page itself.</li>
-        <li><b>It prints a connect address</b>, the page's own address with the link added. Opening it once tells the
-          page where the link is, and <b>Share with my agent</b> appears in the menu, off until Ada turns it on.</li>
-        <li><b>Turned on, the page sends its comments to the link</b>, which writes them to a file next to the page.
-          Claude reads that file with <code>cat</code>.</li>
-        <li><b>Claude answers with the same replies block it would paste</b>, piped into the script, which writes the
-          replies file. The page finds the replies within seconds and asks Ada before adding them, because no Mac can
-          sign them without Node.</li>
+          page opened as a file. It doesn't serve the page, and changes neither the page nor its address.</li>
+        <li><b>The page finds the link by itself.</b> The script leaves a small link file next to the page. Within
+          seconds, <b>Share with my agent</b> appears in the menu, off until Ada turns it on.</li>
+        <li><b>Turned on, the page sends its comments to the link</b>, one send at a time, retrying briefly if the link
+          is busy. The script writes them to a file next to the page, which Claude reads.</li>
+        <li><b>Replies appear by themselves, with no Node.</b> When Ada turns sharing on, the page makes a key for this
+          session and sends it with the comments. The script tags Claude's replies with it, and the page adds tagged
+          replies by itself, marked "through your link". Anything untagged still waits for Ada.</li>
+        <li><b>Copy for my agent names the script for Ada's kind of computer</b>, pinned to the page's Pipeup version
+          with its checksum. The agent fetches it; the page fetches nothing.</li>
       </ul>
     </div>
   </section>
@@ -179,30 +181,32 @@
     <h2>What stays the same</h2>
     <div class="changes">
       <ul>
-        <li>Nothing leaves the computer. The link listens on <code>127.0.0.1</code> only, accepts only the page's own
-          address and a secret made fresh each run, and sends nothing anywhere.</li>
+        <li>Nothing leaves the computer. The link listens on this computer only, accepts only the page's own address and
+          a secret made fresh each run, and sends nothing anywhere. The page makes no network request beyond the link.</li>
         <li>Share with my agent is off on every load, and its hint says what it sends and where (§15c).</li>
         <li>Agents still only reply and mark threads addressed. Copy and paste (#96, #98) still works everywhere, and
           <code>pipeup watch</code> still works where Node is.</li>
-        <li>No telemetry, and nothing added to the page's own content.</li>
+        <li>Core is unchanged. Everything new on the page is in the agents add-on.</li>
       </ul>
     </div>
   </section>
 
   <section>
     <h2>Tried on this Mac</h2>
-    <p class="what">A 40-line prototype on macOS 26.7 with its own bash 3.2 and <code>nc</code>. The page was shown by a
-      separate local server at <code>localhost:3000</code>; the link listened on <code>127.0.0.1:7342</code>.</p>
+    <p class="what">A 40-line prototype on macOS 26.7 with its own bash 3.2, <code>nc</code> and <code>openssl</code>. The
+      page was shown by a separate local server at <code>localhost:3000</code>; the link listened on
+      <code>127.0.0.1:7342</code>. Windows is not tried yet.</p>
     <div class="tbl">
       <table>
         <thead><tr><th>What was tried</th><th>Result</th><th>What it means for the design</th></tr></thead>
         <tbody>
           <tr><td>The page sends its comments to the link</td><td class="ok">Arrived</td><td>Written to <code>trip.comments.json</code>; <code>plutil</code> (on every Mac) printed the Markdown from it.</td></tr>
           <tr><td>A wrong address, a wrong secret, or another site's origin</td><td class="ok">Refused</td><td>The same protections as <code>pipeup watch</code> work in shell.</td></tr>
-          <tr><td>Two sends within a tenth of a second</td><td class="no">Second refused</td><td><code>nc</code> takes one connection at a time. With 0.3 seconds between sends, or one retry after 0.15 seconds, all 13 test sends arrived. The page must retry for a few seconds before it says the link is gone; today it gives up at once.</td></tr>
+          <tr><td>Two sends within a tenth of a second</td><td class="no">Second refused</td><td><code>nc</code> takes one connection at a time. With 0.3 seconds between sends, or one retry after 0.15 seconds, all 13 test sends arrived. The page sends one at a time and retries for a few seconds; today it gives up at once.</td></tr>
           <tr><td>The link showing the page itself</td><td class="no">Failed</td><td>The browser loads a page's scripts at the same time, and <code>nc</code> refused all but one. So the shell link sits beside whatever already shows the page.</td></tr>
-          <tr><td>What Copy comments copies, while linked</td><td class="no">Leaked the secret</td><td>The Markdown's "Page:" line carried the connect address. Pipeup must leave its own link out of every address it copies.</td></tr>
-          <tr><td>Signing replies in shell</td><td class="no">Not possible on a Mac</td><td>macOS's <code>openssl</code> (LibreSSL 3.3.6) can't make the signatures Pipeup uses. Shell replies are unsigned, so the page asks first.</td></tr>
+          <tr><td>Telling the page where the link is through its address</td><td class="no">Leaked the secret</td><td>Copy comments put the address, secret included, in the Markdown. So the page finds the link from a file next to it instead, and its address never changes.</td></tr>
+          <tr><td>Signing replies in shell</td><td class="no">Not possible on a Mac</td><td>macOS's <code>openssl</code> (LibreSSL 3.3.6) can't make the signatures Pipeup uses.</td></tr>
+          <tr><td>Tagging replies with a shared key in shell</td><td class="ok">Works</td><td><code>openssl dgst -sha256 -hmac</code> works on the same Mac. That is what lets tagged replies appear by themselves.</td></tr>
         </tbody>
       </table>
     </div>
@@ -210,46 +214,46 @@
 
   <section>
     <h2>Storyboard</h2>
-    <p class="what">Six moments. Ada installs nothing and edits nothing; Claude runs the commands.</p>
+    <p class="what">Six moments. Ada installs nothing, edits nothing and clicks once.</p>
     <div class="story">
       <div class="shot new">
         <span class="tag new">1 · new</span>
-        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ bash pipeup-link.sh</text><text x="22" y="46" font-size="8.5" font-family="monospace" fill="#5f5e5a">Connect the page once:</text><text x="22" y="60" font-size="8.5" font-family="monospace" fill="#5f5e5a">localhost:3000/lisbon…</text></svg></div>
-        <p>Claude starts the shell link beside the preview it already runs. It prints a connect address.</p>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ bash pipeup-link.sh</text><text x="22" y="46" font-size="8.5" font-family="monospace" fill="#5f5e5a">Wrote lisbon.link.js</text><text x="22" y="60" font-size="8.5" font-family="monospace" fill="#5f5e5a">next to the page.</text></svg></div>
+        <p>Claude starts the shell link beside the preview it already runs. The script leaves a link file next to the page.</p>
       </div>
       <div class="shot new">
-        <span class="tag new">2 · new</span>
-        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="12" y="10" width="176" height="16" rx="8" fill="#fafaf7"/><rect x="30" y="14" width="140" height="8" rx="3" fill="#edebfa"/><rect x="24" y="36" width="80" height="7" rx="3" fill="#2c2c2a"/><rect x="24" y="50" width="130" height="4" rx="2" fill="#d6d4cb"/><rect x="24" y="60" width="110" height="4" rx="2" fill="#d6d4cb"/></svg></div>
-        <p>Claude opens it in Ada's browser. The itinerary looks the same; the page now knows where the link is.</p>
-      </div>
-      <div class="shot new">
-        <span class="tag new">3 · changed</span>
+        <span class="tag new">2 · changed</span>
         <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="10" width="140" height="62" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="32" font-size="9.5" fill="#2c2c2a">Share with my agent</text><rect x="148" y="24" width="22" height="12" rx="6" fill="#534ab7"/><circle cx="164" cy="30" r="4.5" fill="#fff"/><rect x="50" y="44" width="110" height="4" rx="2" fill="#d6d4cb"/><rect x="50" y="54" width="90" height="4" rx="2" fill="#d6d4cb"/><path d="M168 92V82a8 8 0 0 1 8-8h24v18z" fill="#e7e5dc"/></svg></div>
-        <p>Ada turns on <b>Share with my agent</b>, as the live link has today. Its hint says the comments stay on this computer.</p>
+        <p>Within seconds the page finds it. Ada turns on <b>Share with my agent</b>: the one click.</p>
+      </div>
+      <div class="shot new">
+        <span class="tag new">3 · new</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">lisbon.comments.json</text><rect x="22" y="38" width="140" height="4" rx="2" fill="#d6d4cb"/><rect x="22" y="47" width="120" height="4" rx="2" fill="#d6d4cb"/><rect x="22" y="60" width="70" height="8" rx="3" fill="#edebfa"/><text x="26" y="66.5" font-size="7" fill="#534ab7">session key</text></svg></div>
+        <p>The page sends its comments, and a key for this session, to the link. The script writes them to a file.</p>
       </div>
       <div class="shot new">
         <span class="tag new">4 · new</span>
-        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ cat lisbon.comments.json</text><rect x="22" y="38" width="140" height="4" rx="2" fill="#d6d4cb"/><rect x="22" y="47" width="120" height="4" rx="2" fill="#d6d4cb"/><text x="22" y="70" font-size="9" font-family="monospace" fill="#534ab7">$ … | bash pipeup-link.sh reply</text></svg></div>
-        <p>Claude reads the comments from a file, makes the changes, and pipes its replies block into the script.</p>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="12" y="10" width="176" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><text x="22" y="30" font-size="9" font-family="monospace" fill="#534ab7">$ plutil … comments.json</text><rect x="22" y="38" width="140" height="4" rx="2" fill="#d6d4cb"/><rect x="22" y="47" width="120" height="4" rx="2" fill="#d6d4cb"/><text x="22" y="70" font-size="9" font-family="monospace" fill="#534ab7">$ … | bash pipeup-link.sh reply</text></svg></div>
+        <p>Claude reads the comments, makes the changes, and pipes its replies block into the script, which tags it.</p>
       </div>
       <div class="shot new">
         <span class="tag new">5 · new</span>
-        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="8" width="120" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="24" font-size="9.5" font-weight="600" fill="#2c2c2a">6 replies from Claude</text><text x="50" y="42" font-size="8.5" fill="#5f5e5a">through your link</text><rect x="104" y="64" width="46" height="12" rx="4" fill="#111"/></svg></div>
-        <p>Within seconds the page says what arrived. Ada picks <b>Add 6 replies</b>.</p>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="30" y="18" width="110" height="5" rx="2" fill="#2c2c2a"/><circle cx="42" cy="42" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="39" width="100" height="5" rx="2" fill="#d6d4cb"/><text x="54" y="60" font-size="8" fill="#534ab7">through your link</text></svg></div>
+        <p>Claude's replies ease into their threads by themselves, marked <b>through your link</b>.</p>
       </div>
-      <div class="shot new">
-        <span class="tag new">6 · same as today</span>
+      <div class="shot">
+        <span class="tag">6 · same as today</span>
         <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><circle cx="42" cy="30" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="27" width="100" height="5" rx="2" fill="#d6d4cb"/><rect x="34" y="50" width="132" height="22" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="40" y="64" font-size="8.5" fill="#5f5e5a">Resolve · Still not right</text></svg></div>
-        <p>Ada resolves each, or says <b>Still not right</b>. That reaches Claude through the link with no copying.</p>
+        <p>Ada resolves each, or says <b>Still not right</b>, which reaches Claude through the link with no copying.</p>
       </div>
     </div>
   </section>
 
   <section>
     <h2>The system, in swimlanes</h2>
-    <p class="what">Violet boxes are new. The shell link only receives; replies come back through a file next to the page, which the page already knows how to read.</p>
+    <p class="what">Violet boxes are new. The page and the script only meet through files next to the page and the one link the page sends to.</p>
     <div class="scroll">
-      <svg viewBox="0 0 1320 560" role="img" aria-label="Swimlanes: Ada, the page at localhost:3000, the shell link on 127.0.0.1, and Claude. Comments go from the page to the link to a file Claude reads; replies go from Claude to a file the page reads, and Ada agrees before they're added.">
+      <svg viewBox="0 0 1320 560" role="img" aria-label="Swimlanes: Ada, the page at localhost:3000, the shell link on this computer, and Claude. The script leaves a link file the page finds; the page sends comments and a session key to the link; Claude's replies come back tagged through a replies file and appear by themselves.">
         <defs>
           <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
           <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
@@ -262,73 +266,64 @@
           <text x="16" y="86" font-size="14" font-weight="600" fill="#2c2c2a">Ada</text>
           <text x="16" y="104" font-size="11.5" fill="#888780">in the browser</text>
           <text x="16" y="216" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
-          <text x="16" y="234" font-size="11.5" fill="#888780">at localhost:3000</text>
+          <text x="16" y="234" font-size="11.5" fill="#888780">agents add-on</text>
           <text x="16" y="346" font-size="14" font-weight="600" fill="#2c2c2a">Shell link</text>
-          <text x="16" y="364" font-size="11.5" fill="#888780">bash and nc, 127.0.0.1</text>
+          <text x="16" y="364" font-size="11.5" fill="#888780">the script</text>
           <text x="16" y="476" font-size="14" font-weight="600" fill="#2c2c2a">Claude</text>
           <text x="16" y="494" font-size="11.5" fill="#888780">on Ada's Mac</text>
 
           <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
             <path d="M210 448V384"/>
-            <path d="M285 350H303"/>
-            <path d="M380 318V254"/>
-            <path d="M455 220H473"/>
-            <path d="M550 186V124"/>
-            <path d="M625 104L668 186"/>
-            <path d="M720 252V316"/>
-            <path d="M795 350L815 470"/>
-            <path d="M965 480H983"/>
-            <path d="M1060 448V384"/>
-            <path d="M1060 318V254"/>
-            <path d="M1135 220H1153"/>
+            <path d="M285 330L318 254"/>
+            <path d="M380 186V124"/>
+            <path d="M455 104L490 186"/>
+            <path d="M550 252V316"/>
+            <path d="M625 370L660 446"/>
+            <path d="M795 480H813"/>
+            <path d="M890 446V384"/>
+            <path d="M965 330L1000 254"/>
           </g>
           <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
-            <path d="M1230 186V124"/>
+            <path d="M1135 200L1170 124"/>
           </g>
           <g stroke="#888780" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ar)">
-            <path d="M1230 58V16H720V184"/>
+            <path d="M1230 58V16H550V184"/>
           </g>
-          <text x="388" y="290" font-size="11" fill="#534ab7">connect address</text>
-          <text x="728" y="290" font-size="11" fill="#534ab7">comments, retried</text>
-          <text x="728" y="304" font-size="11" fill="#534ab7">if refused</text>
-          <text x="1068" y="290" font-size="11" fill="#534ab7">read every</text>
-          <text x="1068" y="304" font-size="11" fill="#534ab7">few seconds</text>
-          <text x="975" y="12" font-size="11" fill="#888780" text-anchor="middle">Still not right: sent to the link again, with no copying</text>
+          <text x="306" y="300" font-size="11" fill="#534ab7">link file,</text>
+          <text x="306" y="314" font-size="11" fill="#534ab7">read every few seconds</text>
+          <text x="558" y="280" font-size="11" fill="#534ab7">one at a time,</text>
+          <text x="558" y="294" font-size="11" fill="#534ab7">retried if busy</text>
+          <text x="978" y="300" font-size="11" fill="#534ab7">replies file</text>
+          <text x="890" y="12" font-size="11" fill="#888780" text-anchor="middle">Still not right: sent to the link again, with no copying</text>
 
           <g font-size="12" text-anchor="middle">
             <rect x="135" y="448" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
             <text x="210" y="476" fill="#2c2c2a">Starts the link</text><text x="210" y="492" fill="#2c2c2a">beside the preview</text>
             <rect x="135" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="210" y="340" fill="#2c2c2a">Listens on</text><text x="210" y="356" fill="#2c2c2a">127.0.0.1 with a</text><text x="210" y="372" fill="#2c2c2a">fresh secret</text>
+            <text x="210" y="340" fill="#2c2c2a">Listens on this</text><text x="210" y="356" fill="#2c2c2a">computer; leaves</text><text x="210" y="372" fill="#2c2c2a">a link file</text>
 
-            <rect x="305" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="380" y="346" fill="#2c2c2a">Prints the</text><text x="380" y="362" fill="#2c2c2a">connect address</text>
             <rect x="305" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="380" y="210" fill="#2c2c2a">Opened once</text><text x="380" y="226" fill="#2c2c2a">(Claude runs</text><text x="380" y="242" fill="#2c2c2a"><tspan font-family="monospace">open</tspan>)</text>
+            <text x="380" y="210" fill="#2c2c2a">Finds it; menu gains</text><text x="380" y="226" fill="#2c2c2a">Share with my agent,</text><text x="380" y="242" fill="#2c2c2a">off</text>
+            <rect x="305" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="380" y="86" fill="#2c2c2a">Turns on Share</text><text x="380" y="102" fill="#2c2c2a">with my agent</text>
 
-            <rect x="475" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="550" y="210" fill="#2c2c2a">Menu gains</text><text x="550" y="226" fill="#2c2c2a">Share with my agent,</text><text x="550" y="242" fill="#2c2c2a">off</text>
-            <rect x="475" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="550" y="86" fill="#2c2c2a">Turns on Share</text><text x="550" y="102" fill="#2c2c2a">with my agent</text>
+            <rect x="475" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="550" y="210" fill="#2c2c2a">Makes a session key;</text><text x="550" y="226" fill="#2c2c2a">sends it with the</text><text x="550" y="242" fill="#2c2c2a">comments</text>
+            <rect x="475" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="550" y="340" fill="#2c2c2a">Writes</text><text x="550" y="356" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.comments</text><text x="550" y="372" fill="#2c2c2a" font-family="monospace" font-size="11">.json</text>
 
-            <rect x="645" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="720" y="216" fill="#2c2c2a">Sends comments,</text><text x="720" y="232" fill="#2c2c2a">and every change</text>
-            <rect x="645" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="720" y="340" fill="#2c2c2a">Writes</text><text x="720" y="356" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.comments</text><text x="720" y="372" fill="#2c2c2a" font-family="monospace" font-size="11">.json</text>
+            <rect x="645" y="448" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="720" y="470" fill="#2c2c2a">Reads it, makes</text><text x="720" y="486" fill="#2c2c2a">approved changes</text><text x="720" y="502" fill="#2c2c2a">to the page</text>
+            <rect x="815" y="448" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="476" fill="#2c2c2a">Pipes its replies</text><text x="890" y="492" fill="#2c2c2a">block to the script</text>
+            <rect x="815" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="340" fill="#2c2c2a">Tags them with the</text><text x="890" y="356" fill="#2c2c2a">session key; writes</text><text x="890" y="372" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.replies.js</text>
 
-            <rect x="815" y="448" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="890" y="470" fill="#2c2c2a">Reads it, makes</text><text x="890" y="486" fill="#2c2c2a">approved changes</text><text x="890" y="502" fill="#2c2c2a">to the page</text>
-            <rect x="985" y="448" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="1060" y="476" fill="#2c2c2a">Pipes its replies</text><text x="1060" y="492" fill="#2c2c2a">block to the script</text>
-            <rect x="985" y="318" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="1060" y="340" fill="#2c2c2a">Writes</text><text x="1060" y="356" fill="#2c2c2a" font-family="monospace" font-size="11">lisbon.replies.js</text><text x="1060" y="372" fill="#2c2c2a">next to the page</text>
             <rect x="985" y="188" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
-            <text x="1060" y="216" fill="#2c2c2a">Finds 6 replies;</text><text x="1060" y="232" fill="#2c2c2a">asks before adding</text>
+            <text x="1060" y="210" fill="#2c2c2a">Checks the tag;</text><text x="1060" y="226" fill="#2c2c2a">replies ease into</text><text x="1060" y="242" fill="#2c2c2a">their threads</text>
 
-            <rect x="1155" y="188" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="1230" y="216" fill="#2c2c2a">Replies ease into</text><text x="1230" y="232" fill="#2c2c2a">their threads</text>
             <rect x="1155" y="58" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
-            <text x="1230" y="80" fill="#2c2c2a">Adds them, then</text><text x="1230" y="96" fill="#2c2c2a">Resolves, or</text><text x="1230" y="112" fill="#2c2c2a">Still not right</text>
+            <text x="1230" y="86" fill="#2c2c2a">Resolves, or</text><text x="1230" y="102" fill="#2c2c2a">Still not right</text>
           </g>
         </g>
       </svg>
@@ -343,7 +338,8 @@
         <thead><tr><th>Where the page is</th><th>Node on the computer</th><th>Reads comments by</th><th>Answers by</th></tr></thead>
         <tbody>
           <tr><td>A file or a <code>localhost</code> preview</td><td>Yes</td><td><code>pipeup watch</code></td><td>Signed replies; appear by themselves</td></tr>
-          <tr><td>A file or a <code>localhost</code> preview</td><td>No</td><td class="hit">Shell link</td><td class="hit">Replies file through the script; Ada agrees, then they appear</td></tr>
+          <tr><td>A file or a <code>localhost</code> preview, on a Mac or Linux</td><td>No</td><td class="hit">Shell link (bash)</td><td class="hit">Tagged replies; appear by themselves</td></tr>
+          <tr><td>A file or a <code>localhost</code> preview, on Windows</td><td>No</td><td class="hit">Shell link (PowerShell)</td><td class="hit">Tagged replies; appear by themselves</td></tr>
           <tr><td>A website, or an agent in the cloud</td><td>Either</td><td>Copy for my agent</td><td>Replies block, pasted back</td></tr>
         </tbody>
       </table>
@@ -351,31 +347,63 @@
   </section>
 
   <section>
-    <h2>Screen 1 · Claude starts the link</h2>
-    <p class="what">What Claude runs in its own terminal. The script is fetched for the version the page runs and checked before it runs; Claude can read it, since it's short.</p>
-    <div class="stage">
-      <div class="card term">
-        <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
-<pre><span class="p">$ curl -fsSLO https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup-link.sh</span>
-<span class="p">$ shasum -a 256 -c &lt;&lt;&lt; "4f1c…9a2e  pipeup-link.sh"</span>
-<span class="o">pipeup-link.sh: OK</span>
-<span class="p">$ bash pipeup-link.sh lisbon.html http://localhost:3000/lisbon.html &amp;</span>
-<span class="o">Pipeup's link for lisbon.html, on this computer only (127.0.0.1:7342).
-Open this once to connect the page:
-  http://localhost:3000/lisbon.html?pipeup-link=7342.eJRdIxZc…8RDW
-Comments will arrive in lisbon.comments.json. Stop with: kill %1</span>
-<span class="p">$ open "http://localhost:3000/lisbon.html?pipeup-link=7342.eJRdIxZc…8RDW"</span></pre>
-      </div>
-      <p class="cap"><b>No change to the page's file.</b> The connect address carries the link; the preview server and the file are untouched. On Linux, <code>xdg-open</code> opens it.</p>
+    <h2>Where it ships</h2>
+    <p class="what">Only the agents add-on changes on the page. The scripts are published with it and never loaded by a page.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Piece</th><th>Where</th><th>Why there</th></tr></thead>
+        <tbody>
+          <tr><td>Finding the link file, the switch, sending one at a time with retries, the session key</td><td class="hit">Agents add-on</td><td>The live link's page side already lives there (§15d).</td></tr>
+          <tr><td>Reading the replies file, checking tags, asking about untagged replies</td><td class="hit">Agents add-on</td><td>It already reads the replies file; checking a tag uses the browser's own crypto.</td></tr>
+          <tr><td>Naming the script for this kind of computer in Copy for my agent</td><td class="hit">Agents add-on</td><td>It writes that text. It carries one pinned address and checksum per system, not the scripts.</td></tr>
+          <tr><td><code>pipeup-link.sh</code> and <code>pipeup-link.ps1</code></td><td>Published in <code>@pipeup/agents</code>, pinned per release</td><td>Only the agent fetches and runs them, so they don't count toward the page's size budget.</td></tr>
+          <tr><td>Copy comments, <code>Pipeup.comments()</code></td><td>Core, unchanged</td><td>The page's address never carries the link, so nothing in core has to strip it.</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
   <section>
-    <h2>Screen 2 · The page, connected</h2>
-    <p class="what">The same switch <code>pipeup watch</code> gives today, now also on a page opened from a shell link's connect address. Off until Ada turns it on, every time the page loads.</p>
+    <h2>Screen 1 · Claude starts the link</h2>
+    <p class="what">The commands come from Copy for my agent, which names the script for Ada's kind of computer. Claude fetches it pinned to the page's version, checks it, can read it, and runs it.</p>
     <div class="stage">
       <div class="frame">
-        <span class="tag">Opened without the link</span>
+        <span class="tag new">On a Mac or Linux</span>
+        <div class="card term">
+          <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
+<pre><span class="p">$ curl -fsSLO https://cdn.jsdelivr.net/npm/@pipeup/agents@0.9.0/dist/pipeup-link.sh</span>
+<span class="p">$ shasum -a 256 -c &lt;&lt;&lt; "4f1c…9a2e  pipeup-link.sh"</span>
+<span class="o">pipeup-link.sh: OK</span>
+<span class="p">$ bash pipeup-link.sh lisbon.html &amp;</span>
+<span class="o">Pipeup's link for lisbon.html, on this computer only (127.0.0.1:7342).
+Wrote lisbon.link.js next to the page. The page finds it within a few
+seconds; Share with my agent then appears in its menu.
+Comments will arrive in lisbon.comments.json.
+Stop with: kill %1 (this also removes lisbon.link.js)</span></pre>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">On Windows</span>
+        <div class="card term" style="width:460px">
+          <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
+<pre><span class="p">&gt; Invoke-WebRequest https://cdn.jsdelivr.net/npm/@pipeup/agents@0.9.0/dist/pipeup-link.ps1 -OutFile pipeup-link.ps1</span>
+<span class="p">&gt; (Get-FileHash pipeup-link.ps1).Hash</span>
+<span class="o">7B3E…C41D</span>
+<span class="p">&gt; powershell -ExecutionPolicy Bypass -File pipeup-link.ps1 lisbon.html</span>
+<span class="o">Pipeup's link for lisbon.html, on this computer only (localhost:7342).
+Wrote lisbon.link.js next to the page. …</span></pre>
+        </div>
+        <p class="cap"><b>Not tried yet.</b> PowerShell's own listener and hashing do the same job without <code>nc</code>'s one-at-a-time limit. Windows blocks scripts by default; the bypass applies to this one run only and needs no administrator (open question 3).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · The page finds the link</h2>
+    <p class="what">The same switch <code>pipeup watch</code> gives today. The address bar doesn't change: the page found the link file next to it. Off until Ada turns it on, every time the page loads.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">No link running</span>
         <div class="card win">
           <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/lisbon.html</span></div>
           <div class="pg"><h4>Lisbon, 23–26 Oct</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11, then the market.</p></div>
@@ -389,9 +417,9 @@ Comments will arrive in lisbon.comments.json. Stop with: kill %1</span>
         </div>
       </div>
       <div class="frame">
-        <span class="tag new">Opened from the connect address</span>
+        <span class="tag new">Link found, switched on</span>
         <div class="card win">
-          <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/lisbon.html<b>?pipeup-link=7342.eJRd…</b></span></div>
+          <div class="bar"><i></i><i></i><i></i><span class="url">localhost:3000/lisbon.html</span></div>
           <div class="pg"><h4>Lisbon, 23–26 Oct</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11, then the market.</p></div>
           <div class="card menu">
             <div class="mi"><svg width="16" height="16"><use href="#list"/></svg><span class="lb">All comments</span><span class="kc">6</span></div>
@@ -402,14 +430,14 @@ Comments will arrive in lisbon.comments.json. Stop with: kill %1</span>
           </div>
           <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
         </div>
-        <p class="cap">Shown switched on, after Ada turned it on. If a send doesn't get through, the page tries again for a few seconds, then turns the switch off and says the link isn't reachable.</p>
+        <p class="cap">The row eases in when the page finds the link, and eases out when the link file goes. If a send doesn't get through after a few seconds of trying, the switch turns off and the page says the link isn't reachable.</p>
       </div>
     </div>
   </section>
 
   <section>
     <h2>Screen 3 · Claude reads and answers</h2>
-    <p class="what">Reading is a file. Answering is the same replies block as copy and paste, piped into the script, which writes it in the form the page loads.</p>
+    <p class="what">Reading is a file. Answering is the same replies block as copy and paste, piped into the script, which tags it with this session's key.</p>
     <div class="stage">
       <div class="card term">
         <div class="tb"><i></i><i></i><i></i><span style="margin-left:6px">Claude · lisbon</span></div>
@@ -428,101 +456,122 @@ addressed: Changed in Saturday's plan
 …
 ```
 <span class="p">EOF</span>
-<span class="o">Wrote 6 replies to lisbon.replies.js. They aren't signed, so the page will ask Ada before adding them.</span></pre>
+<span class="o">Wrote 6 replies to lisbon.replies.js, tagged for this session.
+The page adds them by itself while sharing stays on.</span></pre>
       </div>
-      <p class="cap"><b>The address in the Markdown</b> is the page's own, without <code>?pipeup-link=…</code>. The prototype's copy carried the secret; Pipeup leaves its link out of everything it copies. <b>On Linux</b>, <code>python3 -m json.tool</code> or <code>jq</code> where present, or the JSON as it is.</p>
+      <p class="cap"><b>On Linux</b>, <code>python3 -m json.tool</code> or <code>jq</code> where present, or the JSON as it is. <b>The key</b> lives only in the page's memory and in <code>lisbon.comments.json</code>; it is never in the page's file or its address.</p>
     </div>
   </section>
 
   <section>
     <h2>Screen 4 · Replies arrive</h2>
-    <p class="what">The page reads the replies file every few seconds while it's showing, as it does today. Unsigned replies wait for Ada, with the same words as a paste.</p>
+    <p class="what">Tagged replies need no click. Replies the page can't match to this session (written before a reload, or by something else) wait for Ada, with the same words as a paste.</p>
     <div class="stage">
       <div class="frame">
-        <span class="tag new">The page asks</span>
-        <div class="card panel">
-          <div class="hd">6 replies from Claude <small>Esc</small></div>
-          <div class="body">
-            <p class="muted">They came through your link to Claude on this computer.</p>
-            <ul class="found">
-              <li><i>✓</i><span><b>6 replies</b> for comments on this page</span></li>
-              <li><i>✓</i><span>5 of them say the comment is addressed</span></li>
-              <li><i>–</i><span>Not signed, so they'll show as added by you</span></li>
-            </ul>
-            <div class="btns"><button class="go">Add 6 replies</button><button class="quiet">Not now</button></div>
-          </div>
-        </div>
-        <p class="cap">Opens by itself only while Pipeup is showing. While comments are closed, the control's label and tooltip say replies are waiting (§11a).</p>
-      </div>
-      <div class="frame">
-        <span class="tag new">Added</span>
+        <span class="tag new">Tagged: added by themselves</span>
         <div class="card pop">
           <div class="root"><span class="av">A</span>
             <div class="meta">Ada · 9:12</div>
             <div class="tx">Can we make this 11:30?</div>
           </div>
           <div class="reply">
-            <div class="who"><span class="ai">AI</span><div class="meta">Claude · AI · <span class="pasted">added by you</span> · 9:31</div></div>
+            <div class="who"><span class="ai">AI</span><div class="meta">Claude · AI · <span class="pasted">through your link</span> · 9:31</div></div>
             <div class="tx" style="margin-top:4px">Moved brunch to 11:30 on Saturday, and the market to after it.</div>
           </div>
           <div class="addr"><b>Addressed:</b> Changed in Saturday's plan
             <div class="btns" style="margin-top:8px"><button class="go">Resolve</button><button>Still not right</button></div>
           </div>
         </div>
-        <p class="cap"><b>Still not right</b> reopens the thread; with sharing on, the change reaches Claude through the link at once.</p>
+        <p class="cap">The reply eases into its thread. <b>Still not right</b> reopens it, and with sharing on the change reaches Claude at once.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Untagged: the page asks</span>
+        <div class="card panel">
+          <div class="hd">6 replies from Claude <small>Esc</small></div>
+          <div class="body">
+            <p class="muted">Found in <b>lisbon.replies.js</b>, next to this page.</p>
+            <ul class="found">
+              <li><i>✓</i><span><b>6 replies</b> for comments on this page</span></li>
+              <li><i>✓</i><span>5 of them say the comment is addressed</span></li>
+              <li><i>–</i><span>Not from this session's link, so they'll show as added by you</span></li>
+            </ul>
+            <div class="btns"><button class="go">Add 6 replies</button><button class="quiet">Not now</button></div>
+          </div>
+        </div>
+        <p class="cap">Opens only while Pipeup is showing. While comments are closed, the control's label and tooltip say replies are waiting (§11a).</p>
       </div>
     </div>
   </section>
 
   <section>
     <h2>Screen 5 · What Copy for my agent says</h2>
-    <p class="what">The highlighted line is new, for an agent on the same computer. The page can't tell whether Node is there, so it names both and lets the agent check.</p>
+    <p class="what">The highlighted lines are new. The page names the script for the kind of computer it's on; the agent checks again before running anything.</p>
     <div class="stage">
-      <div class="card clip">…
+      <div class="frame">
+        <span class="tag new">On a Mac</span>
+        <div class="card clip">…
 How to answer
 - Reply in one block I can paste back into the page:
   ```pipeup-replies …```
 <span class="x">- If you can run commands on this computer, `npx pipeup@0.9.0 reply …` is faster: your replies appear by themselves.</span>
-<span class="hl">- If you run on this computer: with Node, `npx pipeup@0.9.0 watch lisbon.html` links this page to you. Without Node, the shell link does the same with bash and nc: https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup-link.sh (read it first). Don't ask me to install anything.</span>
+<span class="hl">- If you run on this computer (a Mac), you can link this page to you:</span>
+<span class="hl">  with Node: `npx pipeup@0.9.0 watch lisbon.html`;</span>
+<span class="hl">  without Node: https://cdn.jsdelivr.net/npm/@pipeup/agents@0.9.0/dist/pipeup-link.sh</span>
+<span class="hl">  (sha256 4f1c…9a2e). Read it, check it, then `bash pipeup-link.sh lisbon.html`.</span>
+<span class="hl">  Don't ask me to install anything.</span>
 - Only mark a thread addressed. Never resolve, reopen, edit or delete: I close threads. Never answer as me.</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">On Windows, the same lines read</span>
+        <div class="card clip" style="width:420px"><span class="hl">- If you run on this computer (Windows), …</span>
+<span class="hl">  without Node: …/dist/pipeup-link.ps1</span>
+<span class="hl">  (sha256 7b3e…c41d). Read it, check it, then</span>
+<span class="hl">  `powershell -ExecutionPolicy Bypass -File pipeup-link.ps1 lisbon.html`.</span></div>
+        <p class="cap"><b>The page fetches nothing.</b> It only chooses which address to name. On a phone or tablet, where no agent runs beside the page, these lines are left out.</p>
+      </div>
     </div>
   </section>
 
   <section>
     <h2>Proposed spec wording</h2>
-    <p class="what">Changes to §15c (A live link to an agent on this computer) and §15b (What agents are told).</p>
+    <p class="what">Changes to §15c (A live link to an agent on this computer), §15b (Showing that a page is ready; What agents are told) and §15d (The agents add-on).</p>
     <div class="spec">
       <div class="h">§15c · Starting it</div>
       <div class="d">The author starts a link for a page file with one command on their own computer.</div>
-      <div class="a">The author starts a link for a page file with one command on their own computer: <code>pipeup watch</code> where Node is, or the <b>shell link</b>, a short script published with each release that needs only what macOS and Linux come with.</div>
-      <div class="a">The shell link works beside whatever already shows the page on this computer (a local preview address, or the file itself) and doesn't change either. It prints a connect address: the page's own address with the link added. Opening it connects the page to the link.</div>
+      <div class="a">The author starts a link for a page file with one command on their own computer: <code>pipeup watch</code> where Node is, or the <b>shell link</b>, a short script published with each release that needs only what the computer came with (one for macOS and Linux, one for Windows).</div>
+      <div class="a">The shell link works beside whatever already shows the page on this computer (a local preview address, or the file itself), and changes neither the page's file nor its address. It leaves a link file next to the page while it runs, and removes it when it stops.</div>
       <div class="a">Like <code>pipeup watch</code>, it listens only on this computer, accepts only the page it was started for and a secret made fresh each time it starts, and says in words where it is and how to stop it.</div>
       <div class="h">§15c · Sharing is a click</div>
       <div class="d">A page not shown through a link has no such switch.</div>
-      <div class="a">The switch is shown on a page shown through <code>pipeup watch</code> or opened from a shell link's connect address, and on no other page.</div>
-      <div class="a">If a send doesn't get through, the page tries again for a few seconds before it turns the switch off and says the link isn't reachable.</div>
-      <div class="a">Nothing Pipeup copies or shows carries the link's address or secret.</div>
+      <div class="a">The switch is shown on a page shown through <code>pipeup watch</code>, or next to a shell link's link file, and on no other page. It appears within a few seconds of the link starting, and goes when the link stops.</div>
+      <div class="a">The page sends one change at a time. If a send doesn't get through, it tries again for a few seconds before it turns the switch off and says the link isn't reachable.</div>
       <div class="h">§15c · What the agent can do</div>
       <div class="a">With the shell link, the agent reads the comments from the file the link keeps next to the page, and answers by giving the script its replies block, which the script writes to the replies file.</div>
-      <div class="a">Replies that come this way and aren't signed by an agent the page lists wait for the person: the page says in words how many arrived and from which agent, and adds them only when the person agrees. They show as "added by you", and follow every rule for agent replies (§15b).</div>
+      <div class="a">Each time the person turns sharing on, the page makes a new key for that session and sends it with the comments; it is never put in the page's file or address. The shell link marks the replies it writes with that key. Replies marked with the current session's key are added by themselves, under the agent's name, with the AI marking and the words "through your link"; to other people in a shared copy, "through Ada's link".</div>
+      <div class="a">Any other unsigned replies in the replies file wait for the person: the page says in words how many there are and from which agent, and adds them only when the person agrees. They show as "added by you". All of them follow every rule for agent replies (§15b).</div>
       <div class="h">§15b · What agents are told</div>
-      <div class="a">An agent on the person's computer that can run commands but has no Node uses the shell link, and never asks the person to install anything to answer comments.</div>
+      <div class="a">Copy for my agent names the way to link the page that fits the kind of computer it is on: <code>pipeup watch</code> where Node is, and otherwise the shell link for that system, pinned to the page's version with its checksum. The page fetches nothing itself. On a phone or tablet it names neither.</div>
+      <div class="a">An agent on the person's computer that can run commands but has no Node uses the shell link. It checks the script against the checksum before running it, and never asks the person to install anything to answer comments.</div>
+      <div class="h">§15d · What the add-on does</div>
+      <div class="d">Reads the replies file (§15b), keeps only replies from the agents the author listed, and says how many it ignored.</div>
+      <div class="a">Reads the replies file and the link file whenever it is on the page. It keeps signed replies from agents the author listed and replies marked with the current session's key, asks the person about other unsigned replies, and says how many it ignored.</div>
+      <div class="a">Its one sentence (§11a) becomes: "Reads a replies file next to this page, and replies you paste from your agent. When a link is running on this computer, and only after you switch it on, it sends this page's comments to that link. Nothing leaves this computer."</div>
     </div>
   </section>
 
   <section>
     <h2>Open questions</h2>
     <div class="qs">
-      <div class="q"><h3>1. Where the connect address carries the link</h3>
-        <p><b>Recommended: in the query (<code>?pipeup-link=…</code>).</b> The part after <code>#</code> would never reach a server, but decks and many apps use it for their own place, and the link would break it. The query does reach the local preview server, which is on the same computer. Opening the page again without it leaves the link off.</p></div>
-      <div class="q"><h3>2. Add unsigned replies without asking while the switch is on?</h3>
-        <p><b>Recommended: no, ask each time replies arrive.</b> Anything that can write the page's folder can write the replies file. One click per round is the cost of not needing Node. Signed replies from a listed agent still appear by themselves.</p></div>
-      <div class="q"><h3>3. Linux's different <code>nc</code> programs</h3>
-        <p><b>Recommended: the script checks which one it has</b> and says plainly when it can't listen, pointing to copy and paste. Debian and Ubuntu ship one that works the way macOS's does; some others need different options, and some have none.</p></div>
-      <div class="q"><h3>4. Pages on a website</h3>
-        <p><b>Recommended: not for now.</b> A page on <code>https://</code> reaching <code>127.0.0.1</code> is blocked by some browsers and needs the person's permission in others. Pages on websites keep copy and paste.</p></div>
-      <div class="q"><h3>5. Windows</h3>
-        <p><b>Recommended: later, as a PowerShell script</b> doing the same job, once the shell link has settled.</p></div>
+      <div class="q"><h3>1. The link file runs as a script</h3>
+        <p><b>Recommended: treat it exactly like the replies file.</b> A page opened as a file can't read a data file next to it, only run a script, which is why the replies file is a script today. Both are loaded inside Pipeup's own area, only from the same site or the same disk, and anything that can write the page's folder could already change the page itself.</p></div>
+      <div class="q"><h3>2. How tagged replies show to others in a shared copy</h3>
+        <p><b>Recommended: "through Ada's link".</b> Like "pasted by Sam", it tells everyone that a person's link brought the agent's words in, not that Ada wrote them.</p></div>
+      <div class="q"><h3>3. Windows blocks scripts by default</h3>
+        <p><b>Recommended: run it with the bypass for that one run</b>, as shown, which needs no administrator and changes no setting. To be tried on Windows before this is agreed, along with whether PowerShell's listener needs any permission for a local address.</p></div>
+      <div class="q"><h3>4. Linux's different <code>nc</code> programs</h3>
+        <p><b>Recommended: the script checks which one it has</b>, uses Python's own server when <code>nc</code> can't listen and <code>python3</code> is there, says in words which it used, and otherwise points to copy and paste.</p></div>
+      <div class="q"><h3>5. Pages on a website</h3>
+        <p><b>Recommended: not for now.</b> A page on <code>https://</code> reaching this computer is blocked by some browsers and needs the person's permission in others. Pages on websites keep copy and paste.</p></div>
       <div class="q"><h3>6. Considered and left out: driving the browser</h3>
         <p>On a Mac, <code>osascript</code> can run code in Safari or Chrome directly, with no link at all. But it only works after the person turns on a developer setting that lets any program with permission run code in every tab, banking included. That's too much to ask for reading comments.</p></div>
     </div>
@@ -533,6 +582,7 @@ How to answer
     <ul class="log">
       <li>2026-10-21: First version, "Pipeup without Node": several setup paths, a single program, a setup page for sharing.</li>
       <li>2026-10-21: Refocused, at the maintainer's request, on a way to read and answer comments without Node: a live link made of shell commands. Added what was found by trying it on macOS 26.7.</li>
+      <li>2026-10-21: The page finds the link from a file next to it instead of its address, so nothing leaks into copied text and core is unchanged. Replies tagged with a key the page makes for each session appear by themselves. Added Windows (PowerShell). Copy for my agent names the script for the person's kind of computer; the page fetches nothing. Added where each piece ships.</li>
     </ul>
   </section>
 </main>
