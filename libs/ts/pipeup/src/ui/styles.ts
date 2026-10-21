@@ -360,6 +360,10 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .cx circle{fill:var(--pu-accent)}
 .layer.listing .col{opacity:0;transition:opacity var(--out) var(--ei)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
+.fold{display:flex;align-items:center;gap:4px;width:100%;margin-top:6px;border-radius:6px;text-align:left;cursor:pointer}
+.fold:hover,.fold:focus-visible{color:var(--mu);outline:none}
+.fold svg{transition:transform var(--mv) var(--eio)}
+.fold[aria-expanded=true] svg{transform:rotate(90deg)}
 .ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
 .ag[hidden]{display:none}
 .lns{display:flex;flex-direction:column}

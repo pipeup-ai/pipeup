@@ -31,7 +31,8 @@ export type Capability =
   | "listnote"
   | "reactions"
   | "identity"
-  | "dialog";
+  | "dialog"
+  | "paste";
 
 const CAPABILITIES: readonly Capability[] = [
   "sync",
@@ -49,6 +50,7 @@ const CAPABILITIES: readonly Capability[] = [
   "reactions",
   "identity",
   "dialog",
+  "paste",
 ];
 
 export interface NetworkUse {
@@ -223,6 +225,11 @@ export interface AddonHost {
   readonly identity: IdentityAccess;
   /** A small dialog over the page, labelled `label`; Escape closes it, and it goes with the add-on. */
   openDialog(content: Node, label: string): DialogHandle;
+  /**
+   * Adds an agent's reply the reviewer pasted (and, with `note`, marks the thread addressed): signed by the reviewer,
+   * under the agent's name, so it shows as "pasted by you". It never resolves, reopens, edits or deletes.
+   */
+  paste(thread: string, agent: string, text: string, note?: string): Promise<void>;
 }
 
 const ID = /^[a-z][a-z0-9-]{1,23}$/;
@@ -812,6 +819,10 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       unshare: () => doc.uncontact(),
     },
     openDialog: live((content, label) => surface.dialog(id, content, label)),
+    paste: (thread, agent, text, note) =>
+      alive()
+        ? doc.paste(thread, agent, text, note)
+        : Promise.reject(new Error("pipeup: this add-on is off")),
   };
   let teardown: void | Teardown;
   let offReason: string | undefined;

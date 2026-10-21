@@ -7,16 +7,26 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- **Editions.** A page that shows a new edition in the same shell (a daily briefing) can name the edition it shows with `data-pipeup-edition`, and set it again when the next one is swapped in. Comments stay with their edition: they never land on another edition's content, the comment control counts this edition's, earlier editions' threads wait folded under **Earlier editions** in All comments (and still open, with what they were about), and Copy for my agent carries this edition's and says how many earlier ones it left out. `Pipeup.comments({ edition: true })` reads this edition's. Pipeup's budget rises from 60.5 to 61 KB gzip.
+- **Copy for my agent** (agents add-on) replaces Copy a prompt for my agent. It copies the page's open comments together with how to answer them, says the comments live in your browser and not in the page's file, and gives the page's document id so an agent can sign its answer.
+- **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
+- `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
+- **A page's own code can drive Pipeup**: `setCommentMode()` and `commentMode`, `setName()` and `name`, and `on("change", …)`, which hears comment mode and the name changing however they changed. `mount()` rejects with a `code` (`"another-copy"` or `"failed"`) and words when Pipeup can't start.
+- **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it. For now the agents add-on still reads its own settings from `<html>` only.
+
 ### Changed
 
 - **One click on the comment control starts commenting**, and another stops it. The menu moved to **⋯** at the end of the control's reach when you point at it; by touch, press and hold the control (the first touch hint says so); from the keyboard, ↑ on the control. All comments is in the menu.
 - **Selecting words offers a comment outside comment mode too.** The comment icon appears beside the selection, and commenting from it leaves comment mode off, so links and the page keep working. A page can keep it to comment mode with `data-pipeup-select="comment-mode"`.
-- Pipeup's size budget rises from 60 to 61 KB gzip for these changes (it is 60.7 KB).
+- **Shared copies carry a listed agent's answers.** While you're sending, the share add-on also passes on the replies, addressed notes and reactions of an agent the page lists (from the replies file, the live link or a signed paste), so everyone who has the page sees them as the agent's. An answer to a comment you haven't shared waits with it.
+- A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
+- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.6 KB), and the agents add-on's from 5 to 7 KB.
 
-### Added
+### Documentation
 
-- **A page's own code can drive Pipeup**: `setCommentMode()` and `commentMode`, `setName()` and `name`, and `on("change", …)`, which hears comment mode and the name changing however they changed. `mount()` rejects with a `code` (`"another-copy"` or `"failed"`) and words when Pipeup can't start.
-- **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it.
+- The integrate skill and `llms.txt` say how a page that shows a new edition in a fixed shell (a daily briefing) names its edition, and, for a page that wants editions wholly apart or an older Pipeup, how to give each edition its own identity instead.
 
 ## [0.8.2] - 2026-10-19
 

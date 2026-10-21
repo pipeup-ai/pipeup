@@ -1,4 +1,6 @@
+import { EDITION } from "../anchor/locate";
 import { LIMITS } from "../model/ops";
+import { setting } from "./settings";
 
 /** Where the reviewer is: the slide ("1"-based) and whatever the page reports about itself. */
 export type ViewState = Record<string, string>;
@@ -30,6 +32,10 @@ export interface Here {
   view(at?: Node): ViewState | undefined;
   /** A thread saved with view `saved` belongs here (its content is judged by the app). */
   holds(saved: ViewState | undefined): boolean;
+  /** The edition the page names (`data-pipeup-edition`), or null on a page that names none. */
+  edition(): string | null;
+  /** A thread saved with view `saved` is from another edition (or from before the page named one). */
+  earlier(saved: ViewState | undefined): boolean;
   /** Goes to `view`; resolves true once it is here, false after 1 s (or at once when nothing can go there). */
   navigate(view: ViewState): Promise<boolean>;
   destroy(): void;
@@ -66,7 +72,13 @@ export function setViewState(state: Record<string, unknown> | null): void {
     next = {};
     let n = 0;
     for (const [k, v] of Object.entries(state)) {
-      if (typeof v !== "string" || k === "slide" || k.length > LIMITS.viewKey || v.length > LIMITS.viewValue)
+      if (
+        typeof v !== "string" ||
+        k === "slide" ||
+        k === EDITION ||
+        k.length > LIMITS.viewKey ||
+        v.length > LIMITS.viewValue
+      )
         continue;
       // One entry is kept for the slide.
       if (++n >= LIMITS.viewEntries) break;
@@ -144,8 +156,20 @@ export function isHere(
   if (slide !== null)
     return saved?.slide === undefined || saved.slide === slide || also.includes(saved.slide);
   if (!saved || !state) return true;
-  return Object.entries(saved).every(([k, v]) => k === "label" || k === "slide" || state[k] === v);
+  return Object.entries(saved).every(
+    ([k, v]) => k === "label" || k === "slide" || k === EDITION || state[k] === v,
+  );
 }
+
+/** The edition the page names (`data-pipeup-edition`, wherever settings go), as written; null when it names none. */
+export function pageEdition(): string | null {
+  const e = setting("data-pipeup-edition")?.trim() ?? "";
+  return e && e.length <= LIMITS.viewValue ? e : null;
+}
+
+/** A comment saved with `saved` is from another edition than `now`; never on a page that names none. */
+export const isEarlier = (saved: ViewState | undefined, now: string | null): boolean =>
+  now !== null && (saved?.[EDITION] ?? "") !== now;
 
 export function pageSlideLook(): SlideLook {
   return {
@@ -227,7 +251,8 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     if (!raf && !destroyed) raf = requestAnimationFrame(check);
   };
 
-  const holds = (saved: ViewState | undefined) => isHere(saved, slide, page, also);
+  const holds = (saved: ViewState | undefined) =>
+    isHere(saved, slide, page, also) && !isEarlier(saved, pageEdition());
 
   function navigate(view: ViewState): Promise<boolean> {
     if (holds(view)) return Promise.resolve(true);
@@ -267,6 +292,9 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
     if (records.some((r) => r.target instanceof Element && r.target.matches(SLIDE))) schedule();
   });
   observer.observe(root, { subtree: true, attributes: true, attributeFilter: ["class", "style", "hidden"] });
+  // A new edition swapped in: comments are sorted again, without a reload.
+  const editions = new MutationObserver(schedule);
+  editions.observe(document.documentElement, { attributes: true, attributeFilter: ["data-pipeup-edition"] });
   for (const e of EVENTS) window.addEventListener(e, schedule, { capture: true, passive: true });
   watchers.add(schedule);
   slide = find();
@@ -278,15 +306,23 @@ export function createHere(root: Element, onCheck: () => void, look: SlideLook =
       // On reveal.js, content in an unmarked slide is on that slide, not the one showing.
       const h = el && revealJs() ? sections().findIndex((sec) => sec.contains(el)) : -1;
       const s = numberOf(el?.closest(SLIDE)) ?? (h >= 0 ? revealNumber(h) : slide);
-      const v: ViewState = { ...(s !== null ? { slide: s } : {}), ...page };
+      const e = pageEdition();
+      const v: ViewState = {
+        ...(s !== null ? { slide: s } : {}),
+        ...page,
+        ...(e !== null ? { [EDITION]: e } : {}),
+      };
       return Object.keys(v).length ? v : undefined;
     },
     holds,
+    edition: pageEdition,
+    earlier: (saved) => isEarlier(saved, pageEdition()),
     navigate,
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);
       observer.disconnect();
+      editions.disconnect();
       for (const e of EVENTS) window.removeEventListener(e, schedule, true);
       watchers.delete(schedule);
     },

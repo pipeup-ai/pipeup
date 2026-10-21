@@ -1,9 +1,9 @@
 import type { AddonHost, ItemHandle, PipeupAddon } from "pipeup";
-import { ladder, pageSecret, settings, SyncEngine } from "@pipeup/kit";
+import { ladder, pageSecret, pageSetting, settings, SyncEngine } from "@pipeup/kit";
 import { parseShare } from "./address";
 import { idsOf, type Backend } from "./backend";
 import { Mailbox } from "./mailbox";
-import { Policy, type Saved } from "./policy";
+import { listedAgents, Policy, type Saved } from "./policy";
 import { PrivateBin } from "./privatebin";
 import { ShareTransport } from "./transport";
 
@@ -30,17 +30,14 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
     },
     async setup(host: AddonHost) {
       const doc = host.document;
-      const address = parseShare(
-        options.share ?? document.documentElement.getAttribute("data-pipeup-share"),
-        true,
-      );
+      const address = parseShare(options.share ?? pageSetting("data-pipeup-share"), true);
       if (address.kind === "off") return host.off(address.reason);
       if (!pageSecret(doc.id)) return host.off("needs a document identity");
 
       const l = ladder(doc.id, address.key);
       const store = await settings("share", { memory: host.ephemeral });
       const saved = await store.get<Saved>(`doc:${doc.id}`);
-      const policy = new Policy(doc.me, saved);
+      const policy = new Policy(doc.me, saved, listedAgents);
       policy.hold(doc.ops());
       let writing: Promise<void> = Promise.resolve();
       const save = () => {

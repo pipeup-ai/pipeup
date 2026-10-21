@@ -61,3 +61,14 @@ export const nameOf = (c: { author: string; name: string; alike?: boolean }): st
 /** The name an assistant's replies carry: a person can't choose it, and a reply under it is drawn as an AI's. */
 export const AI_NAME = "AI assistant";
 export const isAiName = (name: string): boolean => name === AI_NAME || name.startsWith(`${AI_NAME} `);
+
+/** The name an agent's replies carry: "AI assistant · Muse". */
+export const agentName = (agent: string): string =>
+  `${AI_NAME} · ${agent.replace(/\s+/g, " ").trim() || "Agent"}`.slice(0, 80).trim();
+
+/**
+ * An agent's reply that someone else put here: named for an agent, but not written by a key the page lists, so the
+ * agent didn't sign it. (A listed agent's own replies, people's comments and the on-device assistant's are not.)
+ */
+export const isPasted = (c: { author: string; name: string }, listed: readonly string[]): boolean =>
+  c.name.startsWith(`${AI_NAME} · `) && !listed.includes(c.author);

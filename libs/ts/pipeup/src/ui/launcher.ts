@@ -1,4 +1,4 @@
-import { viewName } from "../anchor/locate";
+import { EDITION, viewName } from "../anchor/locate";
 import { formatAgo, type ExportItem } from "../export/format";
 import { animalName, nameOf } from "../model/animals";
 import type { Thread } from "../model/types";
@@ -288,13 +288,20 @@ export function createLauncher(ctx: Ctx): View {
   const moved = (t: Thread) => movedIn(ctx, t);
   /** Open threads: here (the control's number), elsewhere (its dot), and all of them (All comments). */
   const tally = (where?: boolean) =>
-    latest.filter((t) => !t.resolved && (where === undefined || ctx.elsewhere(t) === where)).length;
+    latest.filter(
+      (t) =>
+        !t.resolved && (where === undefined || (ctx.elsewhere(t) === where && !(where && ctx.earlier(t)))),
+    ).length;
   const open = () => tally(false);
   const others = () => tally(true);
   const allOpen = () => tally();
 
   /** Where a thread that can't be shown lives: "On slide 3", "In Pricing tab", or hidden on the page. */
   const placeOf = (t: Thread) => {
+    if (ctx.earlier(t)) {
+      const e = t.anchor.view?.[EDITION];
+      return e ? `In the ${e} edition` : "From before editions";
+    }
     const s = t.anchor.view?.slide;
     const name = ctx.here.holds(t.anchor.view) ? "" : viewName(t.anchor.view);
     return s && ctx.here.slide() !== null ? `On slide ${s}` : name ? `In ${name}` : HIDDEN;
@@ -392,6 +399,23 @@ export function createLauncher(ctx: Ctx): View {
   };
   /** What the list says when nothing is in it. */
   const empty = h("div", { class: "sec", role: "listitem" });
+  /** Earlier editions' threads, folded under one heading until the person opens it (§8). */
+  let earlierOpen = false;
+  const foldButton = h("button", { class: "sec fold", type: "button" });
+  foldButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    earlierOpen = !earlierOpen;
+    buildAll();
+  });
+  const foldBox = h("div", { role: "listitem" });
+  const foldList = h("div", { role: "list", "aria-label": "Earlier editions" });
+  const earlierGroup = (rows: Node[], open: number, opened: boolean) => {
+    foldButton.setAttribute("aria-expanded", String(opened));
+    foldButton.replaceChildren(`Earlier editions · ${open} open`, icon("chev", 12));
+    place(foldBox, opened ? [foldButton, foldList] : [foldButton]);
+    place(foldList, opened ? rows : [], true);
+    return foldBox;
+  };
 
   /**
    * On a deck, threads by slide in deck order ("Slide 3 · 2 open"), this slide's group marked; threads with no
@@ -523,11 +547,13 @@ export function createLauncher(ctx: Ctx): View {
       const rest = [n ? plural(n) : "", ...t.root.reactions.map((r) => `${r.emoji} ${r.by.length}`)]
         .filter(Boolean)
         .join(" · ");
-      const about = lost(t)
-        ? `“${clip(t.anchor.snapshot, 80)}”`
-        : t.anchor.quote
-          ? `“${clip(t.anchor.quote.exact, 80)}”`
-          : i.location.where;
+      const about = ctx.earlier(t)
+        ? `${placeOf(t)} · “${clip(t.anchor.snapshot, 80)}”`
+        : lost(t)
+          ? `“${clip(t.anchor.snapshot, 80)}”`
+          : t.anchor.quote
+            ? `“${clip(t.anchor.quote.exact, 80)}”`
+            : i.location.where;
       // The card's button covers it, under its actions: choosing the card opens it. It holds what the card shows,
       // unseen, for screen readers.
       const b = h(
@@ -585,17 +611,34 @@ export function createLauncher(ctx: Ctx): View {
       return draft && t.id === draftBefore ? [draft.card, card] : [card];
     };
     const gone = shownItems.filter((i) => lost(i.thread));
-    empty.textContent = ctx.state.mine ? "No comments mention you" : "No open comments";
+    const earlier = shownItems.filter((i) => ctx.earlier(i.thread));
+    const current = shownItems.filter((i) => !ctx.earlier(i.thread));
+    // An earlier edition's thread that is open keeps its group open.
+    const opened = earlierOpen || earlier.some((i) => i.thread.id === openId);
+    empty.textContent = ctx.state.mine
+      ? "No comments mention you"
+      : earlier.length
+        ? "No open comments on this edition"
+        : "No open comments";
     place(
       list,
       [
-        ...(shownItems.length || draft ? [] : [empty]),
+        ...(current.length || draft ? [] : [empty]),
         ...groups(
-          shownItems.filter((i) => !lost(i.thread)),
+          current.filter((i) => !lost(i.thread)),
           row,
         ),
         ...(draft && draftBefore === null ? [draft.card] : []),
         ...(gone.length ? [group("No longer on the page", gone.flatMap(row))] : []),
+        ...(earlier.length
+          ? [
+              earlierGroup(
+                opened ? earlier.flatMap(row) : [],
+                everyone.filter((i) => ctx.earlier(i.thread) && !i.thread.resolved).length,
+                opened,
+              ),
+            ]
+          : []),
       ],
       true,
     );

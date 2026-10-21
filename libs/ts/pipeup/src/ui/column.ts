@@ -67,12 +67,14 @@ interface Item {
 
 /** The thread's content is gone (not just waiting for its fuzzy match). */
 export function lost(ctx: Ctx, t: Thread): boolean {
+  if (ctx.earlier(t)) return false;
   const r = ctx.resolved.get(t.id);
   return !r || (r.state === "orphaned" && !ctx.pending.has(t.id));
 }
 
 /** The thread's content was found changed, or nearby: it is flagged Moved, for someone to confirm. */
-export const moved = (ctx: Ctx, t: Thread): boolean => ctx.resolved.get(t.id)?.state === "moved";
+export const moved = (ctx: Ctx, t: Thread): boolean =>
+  !ctx.earlier(t) && ctx.resolved.get(t.id)?.state === "moved";
 
 /** Threads beside the document, level with what they're about; the open one aligns exactly. */
 export function createColumn(ctx: Ctx): View {

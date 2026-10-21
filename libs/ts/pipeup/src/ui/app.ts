@@ -2,8 +2,8 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import { animalName, nameOf } from "../model/animals";
-import type { Mention, Thread } from "../model/types";
+import { animalName, isAiName, isPasted, nameOf } from "../model/animals";
+import type { Comment, Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
@@ -25,7 +25,7 @@ import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
-import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
+import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 import { hasSetting } from "./settings";
 
@@ -163,9 +163,17 @@ export function startApp(o: AppOptions): App {
   let sorted = "";
   /** Replies half-typed in threads that went elsewhere, put back when the thread reopens. */
   const unsent = new Map<string, string>();
+  /** The edition comments were last found for: a new one finds them again (§8). */
+  let edition: string | null = null;
   const here = createHere(o.root, () => {
-    if (!destroyed && classify()) render();
+    if (destroyed) return;
+    if (here.edition() !== edition) {
+      edition = here.edition();
+      resolveAll();
+    }
+    if (classify()) render();
   });
+  edition = here.edition();
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS (by touch it stays). */
   let hint = false;
@@ -459,6 +467,18 @@ export function startApp(o: AppOptions): App {
       }
       focusReply(id);
     },
+    pasted: (c) => {
+      if (!isPasted(c, listedAgents())) return "";
+      if (c.author === o.doc.me) return "pasted by you";
+      // The name they comment under, or their animal.
+      let name = "";
+      const walk = (x: Comment) => {
+        if (x.author === c.author && x.name && !isAiName(x.name)) name = x.name;
+        x.replies.forEach(walk);
+      };
+      o.doc.threads().forEach((t) => walk(t.root));
+      return `pasted by ${name || animalName(c.author)}`;
+    },
     drop: (id, words) =>
       offer("Reply discarded", () => {
         unsent.set(id, words);
@@ -564,6 +584,7 @@ export function startApp(o: AppOptions): App {
     menu,
     here,
     elsewhere: (t) => elsewhere.has(t.id),
+    earlier: (t) => here.earlier(t.anchor.view),
     recheck: () => {
       if (classify()) render();
     },
@@ -633,6 +654,12 @@ export function startApp(o: AppOptions): App {
     const threads = o.doc.threads();
     for (const t of threads) {
       if (only && !only.has(t.id)) continue;
+      // Another edition's comment is never looked for in this edition's content.
+      if (here.earlier(t.anchor.view)) {
+        resolved.set(t.id, { state: "orphaned", element: null, range: null });
+        pendingFuzzy.delete(t.id);
+        continue;
+      }
       const fuzzy = performance.now() - start < RESOLVE_BUDGET_MS;
       const r = resolveAnchor(t.anchor, o.root, { fuzzy });
       resolved.set(t.id, r);
@@ -670,7 +697,7 @@ export function startApp(o: AppOptions): App {
       // comments whatever else the page reports (another revision, say).
       const found = r?.state === "attached" || r?.state === "moved";
       if (
-        deck
+        here.earlier(t.anchor.view) || deck
           ? !here.holds(t.anchor.view)
           : el?.checkVisibility?.({ visibilityProperty: true }) === false ||
             (!here.holds(t.anchor.view) && !(found && !el?.closest("[role=tabpanel]")))

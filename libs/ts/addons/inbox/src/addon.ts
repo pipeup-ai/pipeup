@@ -77,7 +77,7 @@ export function createAddon(): PipeupAddon {
       if (!base) return host.off('the page names no inbox service (data-pipeup-inbox="https://…")');
       const service = new Service(base, host.signal);
       const me = host.document.me;
-      const poll = Math.max(1, Number(document.documentElement.getAttribute("data-pipeup-inbox-poll")) || 60);
+      const poll = Math.max(1, Number(pageSetting("data-pipeup-inbox-poll")) || 60);
       let enabled = on();
       let mine: { key: InboxKey; id: string } | null = null;
       let cursor = "";

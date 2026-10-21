@@ -19,7 +19,7 @@ Use the first of these that works:
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
    comment with `by`, `agent` and `text`). Pass `{ all: true }` to include resolved threads.
-2. **The pasted Markdown**: the author clicks **Copy comments › As Markdown** (or, on a page with the agents add-on, **Copy a prompt for my agent**) and pastes it.
+2. **The pasted Markdown**: the author clicks **Copy comments › As Markdown** (or, on a page with the agents add-on, **Copy for my agent**) and pastes it.
 
 Each thread has a `- **Thread:** <id>` line: you need it to answer the thread.
 
@@ -79,8 +79,28 @@ It says where it wrote the replies, and, if the page doesn't list you yet, that 
 
 - Never resolve, reopen, edit or delete a thread or anyone's comment. The author closes threads.
 - Never answer as the author or put your key in the page.
-- If you can't write the replies file (for example a chat with no files), tell the author what you would have
-  replied, thread by thread, in words they can paste. Don't say the page was updated.
+- If you can't write the replies file (for example you're in the cloud, or a chat with no files), answer in one
+  **replies block** the author pastes into the page with **Paste my agent's replies**, and say what you changed and
+  where. Don't say the page was updated.
+
+### Answering by paste
+
+The comments were left in the author's browser, not in the page's file: never look for them there. Answer in one block,
+anywhere in your message:
+
+````
+```pipeup-replies
+agent: <your name>
+thread: <Thread id>
+reply: what you changed and where
+addressed: short note, only if you made the change
+```
+````
+
+If you keep a Pipeup key between sessions (`~/.pipeup/agent.json`), sign each reply so it shows as yours rather than as
+pasted by the author: `npx --yes pipeup@0 reply --print --doc <document id> --thread <Thread id> "…" --addressed "…"` prints the
+entry, signed (Copy for my agent gives the document id). Ask the author to list your key only when you can sign; if you
+can't keep a key, the plain block works and the reply shows as pasted by them.
 
 ## 5. Report back
 

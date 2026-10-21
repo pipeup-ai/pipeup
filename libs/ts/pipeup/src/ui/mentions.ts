@@ -26,7 +26,7 @@ export function setPeople(list: readonly Person[]): void {
 export const heardPeople = (fn: () => void): (() => void) => (changes.add(fn), () => void changes.delete(fn));
 
 /** The agents the author lists on the page: `<html data-pipeup-agents="<key> <key>">`. */
-const listedAgents = (): string[] =>
+export const listedAgents = (): string[] =>
   (setting("data-pipeup-agents") ?? "").split(/[\s,]+/).filter((k) => KEY.test(k));
 
 /**

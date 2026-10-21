@@ -1,4 +1,5 @@
 import { fromB64u } from "./encoding";
+import { pageSetting } from "./page";
 
 const DOC = /^([A-Za-z0-9_-]{16}):([A-Za-z0-9_-]{43})$/;
 
@@ -7,6 +8,11 @@ const DOC = /^([A-Za-z0-9_-]{16}):([A-Za-z0-9_-]{43})$/;
  * Anyone holding the file has it; it is never stored (add-ons design §6.1).
  */
 export function pageSecret(docId: string, doc: Document = document): Uint8Array<ArrayBuffer> | null {
-  const m = DOC.exec(doc.documentElement.getAttribute("data-pipeup-doc")?.trim() ?? "");
+  const m = DOC.exec(
+    (doc === globalThis.document
+      ? pageSetting("data-pipeup-doc")
+      : doc.documentElement.getAttribute("data-pipeup-doc")
+    )?.trim() ?? "",
+  );
   return m && m[1] === docId ? fromB64u(m[2]!) : null;
 }

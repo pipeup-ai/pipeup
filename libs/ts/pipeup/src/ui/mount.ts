@@ -50,7 +50,7 @@ const failure = (code: MountErrorCode, message: string, cause?: unknown): MountE
 export interface PipeupInstance {
   readonly document: PipeupDocument;
   /** The page's comments, for an agent: open threads, or every thread with `all`. */
-  comments(options?: { all?: boolean }): AgentComments;
+  comments(options?: { all?: boolean; edition?: boolean }): AgentComments;
   /** How Pipeup looks and why (for `pipeup check` and agents): its look, who chose it, and what the page's styles do to it. */
   appearance(): Appearance;
   flush(): Promise<void>;
@@ -220,13 +220,17 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   window.addEventListener("pagehide", onHide);
   return {
     document: doc,
-    comments: ({ all = false } = {}) =>
-      agentComments(started.ctx.menu.all(), {
-        title: document.title,
-        url: location.href,
-        exportedAt: new Date(),
-        all,
-      }),
+    // `edition`: only the edition the page shows, on a page that names one (§8).
+    comments: ({ all = false, edition = false } = {}) =>
+      agentComments(
+        started.ctx.menu.all().filter((i) => !edition || !started.ctx.earlier(i.thread)),
+        {
+          title: document.title,
+          url: location.href,
+          exportedAt: new Date(),
+          all,
+        },
+      ),
     appearance: () => ({ ...started.appearance() }),
     flush: () => doc.flush(),
     get commentMode() {
@@ -266,7 +270,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
 }
 
 /** The page's comments for an agent that is looking at the page: waits for Pipeup to start, then reads them. */
-export async function comments(options?: { all?: boolean }): Promise<AgentComments> {
+export async function comments(options?: { all?: boolean; edition?: boolean }): Promise<AgentComments> {
   if (!current) throw new Error("pipeup: Pipeup hasn't started on this page");
   return (await current).comments(options);
 }
