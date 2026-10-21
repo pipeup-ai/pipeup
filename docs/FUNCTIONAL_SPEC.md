@@ -1901,4 +1901,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   spec: docs/design/shell-link-mockups.html.
 - 2026-10-21 — Built: the shell link in the agents add-on, with both scripts published in its package. Tagged replies
   show as pasted by the person; a separate "through your link" marking would need Pipeup itself to change, and is left
-  for later (section 15c).
+  for later (section 15c). Agreed: the agents add-on's budget rises to 9.5 KB, and tagged replies show as pasted by
+  the person.
