@@ -104,7 +104,9 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
   - a **preferred side** for the comment gutter;
   - a **reserved comment gutter**: a page can lay itself out around the space comments need (see
     §9), so its content stays centred in what remains;
-  - for decks, which element is a **slide**.
+  - for decks, which element is a **slide**;
+  - an **edition**: a page that shows a new edition in the same shell (a daily briefing, say) can say which edition
+    it is showing, and say so again when the next one is swapped in (§8).
 - Pages with none of this markup still work; Pipeup falls back to its own judgement.
 - Pipeup never requires the author to restructure or restyle their page, and never moves or
   restyles the page itself.
@@ -598,6 +600,16 @@ any of them off.
   the page reports (for example, a chosen filter).
 - When the author publishes a new version of the file, comments on text that changed are marked
   **Moved** rather than silently re-attached.
+- **Editions.** On a page that names its edition (§4), every new comment remembers the edition it was made on.
+  Comments from another edition never show on the page, are never matched to the content of the edition showing, and
+  are never marked Moved for it. When the page names a new edition while it is open, Pipeup follows without a reload.
+  On such a page, a comment made before the page named an edition counts as an earlier edition's.
+- The comment control counts the open comments on the edition showing; earlier editions' comments don't add to its
+  number or its sign that comments are elsewhere. All comments lists this edition's threads first, then, folded under
+  **Earlier editions** with how many open threads they hold, the threads of other editions, each saying which edition
+  it is from (as written by the page, for example "the 2026-10-20 edition").
+- An earlier edition's thread opens on its own with a snapshot of what it was about, and can be replied to, reacted
+  to and resolved. It goes to that edition only when the page tells Pipeup how (as for any view).
 
 ## 9. Fitting the page naturally
 
@@ -1230,9 +1242,10 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
   line, so comments of different documents never mix. Agents never put a stop key in a page.
 - A page that keeps one shell and shows a new edition in it (a daily briefing, say) is one document to Pipeup, so
   earlier comments land on matching content in the new edition, marked Moved (§8). When each edition is meant to be
-  reviewed on its own, the publisher gives each edition its own document identity, made from the page's identity and
-  the edition (for example its date), set before Pipeup starts. Agents that publish such pages do this, and the
-  integrate skill and `llms.txt` say how.
+  reviewed on its own, the page names the edition it shows (§4, §8), and agents that publish such pages do so. A page
+  that wants editions kept wholly apart, or that runs a Pipeup without editions, gives each edition its own document
+  identity instead, made from the page's identity and the edition (for example its date), set before Pipeup starts.
+  The integrate skill and `llms.txt` say how.
 
 ### 15a. Installing the skills
 
@@ -1310,7 +1323,9 @@ an agent on the same computer is a later step and is not part of this one.)
 - With the agents add-on, the menu has **Copy for my agent**, shown whether or not an agent is listed. It copies the
   page's open comments (each with its id, where it is, its words and any replies) together with how to answer them,
   so an agent that can't open the page or its folder has everything it needs in one paste. Its hint says how many
-  comments it copies. It says how many resolved comments it left out, and carries no keys.
+  comments it copies. It says how many resolved comments it left out, and carries no keys. On a page that names its
+  edition (§8), it carries the open comments on the edition showing, and says how many open comments on earlier
+  editions it left out.
 - The copied text says that the comments were left in the reviewer's browser and are not in the page's file. It tells
   the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
   resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
@@ -1637,9 +1652,6 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   before the sign-in the page supplies.
 - Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
   the author's own browser.
-- Editions: whether a page should be able to say which edition it is showing, so comments are kept per edition within
-  one document (each edition keeps its own, and earlier editions' comments can still be found), instead of the
-  publisher giving each edition its own identity; and how an identity per edition works with a page's sharing line.
 
 ---
 
@@ -1860,3 +1872,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
 - 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
+- 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
