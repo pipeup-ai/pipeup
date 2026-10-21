@@ -160,9 +160,17 @@ export function startApp(o: AppOptions): App {
   let sorted = "";
   /** Replies half-typed in threads that went elsewhere, put back when the thread reopens. */
   const unsent = new Map<string, string>();
+  /** The edition comments were last found for: a new one finds them again (§8). */
+  let edition: string | null = null;
   const here = createHere(o.root, () => {
-    if (!destroyed && classify()) render();
+    if (destroyed) return;
+    if (here.edition() !== edition) {
+      edition = here.edition();
+      resolveAll();
+    }
+    if (classify()) render();
   });
+  edition = here.edition();
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS (by touch it stays). */
   let hint = false;
@@ -552,6 +560,7 @@ export function startApp(o: AppOptions): App {
     menu,
     here,
     elsewhere: (t) => elsewhere.has(t.id),
+    earlier: (t) => here.earlier(t.anchor.view),
     recheck: () => {
       if (classify()) render();
     },
@@ -621,6 +630,12 @@ export function startApp(o: AppOptions): App {
     const threads = o.doc.threads();
     for (const t of threads) {
       if (only && !only.has(t.id)) continue;
+      // Another edition's comment is never looked for in this edition's content.
+      if (here.earlier(t.anchor.view)) {
+        resolved.set(t.id, { state: "orphaned", element: null, range: null });
+        pendingFuzzy.delete(t.id);
+        continue;
+      }
       const fuzzy = performance.now() - start < RESOLVE_BUDGET_MS;
       const r = resolveAnchor(t.anchor, o.root, { fuzzy });
       resolved.set(t.id, r);
@@ -658,7 +673,7 @@ export function startApp(o: AppOptions): App {
       // comments whatever else the page reports (another revision, say).
       const found = r?.state === "attached" || r?.state === "moved";
       if (
-        deck
+        here.earlier(t.anchor.view) || deck
           ? !here.holds(t.anchor.view)
           : el?.checkVisibility?.({ visibilityProperty: true }) === false ||
             (!here.holds(t.anchor.view) && !(found && !el?.closest("[role=tabpanel]")))

@@ -6,7 +6,7 @@ import { listedAgents, repliesUrl, startReplies } from "./replies";
 
 /** What this add-on borrows from the core's global: the page's comments, as an agent reads them. */
 interface Core {
-  comments(options?: { all?: boolean }): Promise<AgentComments>;
+  comments(options?: { all?: boolean; edition?: boolean }): Promise<AgentComments>;
 }
 const core = (): Partial<Core> => (globalThis as { Pipeup?: Partial<Core> }).Pipeup ?? {};
 
@@ -128,7 +128,12 @@ export function createAddon(): PipeupAddon {
             try {
               const c = core();
               if (!c.comments) throw new Error("pipeup: this page has no Pipeup to read comments from");
-              const [open, all] = await Promise.all([c.comments(), c.comments({ all: true })]);
+              // On a page that names its edition, this edition's open comments; the earlier editions' are counted.
+              const [open, all, every] = await Promise.all([
+                c.comments({ edition: true }),
+                c.comments({ all: true, edition: true }),
+                c.comments(),
+              ]);
               await copyText(
                 agentPrompt({
                   title: document.title,
@@ -137,6 +142,8 @@ export function createAddon(): PipeupAddon {
                   comments: open.markdown,
                   open: open.threads.length,
                   resolved: all.threads.length - open.threads.length,
+                  edition: document.documentElement.getAttribute("data-pipeup-edition")?.trim() || "",
+                  earlier: every.threads.length - open.threads.length,
                   replies: repliesUrl(),
                   file: link.enabled ? link.file : "",
                   listed: listedAgents().length > 0,

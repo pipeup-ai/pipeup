@@ -8,6 +8,9 @@ export interface PromptMeta {
   /** How many open comments it carries, and how many resolved ones it left out. */
   open: number;
   resolved: number;
+  /** The edition the page names, and how many open comments on earlier editions were left out; "" and 0 for none. */
+  edition?: string;
+  earlier?: number;
   /** The replies file's address, when the page can have one. */
   replies: string | null;
   /** The author has listed an agent for this page. */
@@ -75,10 +78,20 @@ export function agentPrompt(m: PromptMeta): string {
     `Please act on my review comments on ${one(m.title)} (${one(m.url)}). The page uses Pipeup.`,
     "The comments were left in my browser. They are not in the page's file, so don't look for them there. Everything you need is below.",
     "",
-    `## ${m.open} open comment${m.open === 1 ? "" : "s"}`,
+    `## ${m.open} open comment${m.open === 1 ? "" : "s"}${m.edition ? ` on the ${m.edition} edition` : ""}`,
     "",
     m.comments.trim(),
-    ...(m.resolved ? ["", `(${m.resolved} resolved comment${m.resolved === 1 ? "" : "s"} left out.)`] : []),
+    ...(m.resolved || m.earlier
+      ? [
+          "",
+          `(${[
+            m.resolved ? `${m.resolved} resolved comment${m.resolved === 1 ? "" : "s"}` : "",
+            m.earlier ? `${m.earlier} open comment${m.earlier === 1 ? "" : "s"} on earlier editions` : "",
+          ]
+            .filter(Boolean)
+            .join(" and ")} left out.)`,
+        ]
+      : []),
     "",
     "## How to answer",
     "",

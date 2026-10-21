@@ -31,6 +31,15 @@ describe("Copy for my agent", () => {
     expect(p).toContain("Never resolve, reopen, edit or delete");
   });
 
+  it("on a page that names its edition, carries that edition's comments and counts the earlier ones left out", () => {
+    const p = agentPrompt({ ...meta, edition: "2026-10-21", earlier: 2 });
+    expect(p).toContain("## 1 open comment on the 2026-10-21 edition");
+    expect(p).toContain("(2 resolved comments and 2 open comments on earlier editions left out.)");
+    expect(agentPrompt({ ...meta, resolved: 0, earlier: 1 })).toContain(
+      "(1 open comment on earlier editions left out.)",
+    );
+  });
+
   it("says how to sign with the page's document id, and carries no key", () => {
     const p = agentPrompt(meta);
     expect(p).toContain("reply --print --doc doc-id-123");

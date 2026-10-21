@@ -147,13 +147,16 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
   };
 }
 
-/** A view's readable name: its label, else its values joined with " · " (the slide left out); "" for none. */
+/** Where a comment keeps the edition it was made on, in its view (Pipeup's own key: a page can't report it). */
+export const EDITION = "pipeup-edition";
+
+/** A view's readable name: its label, else its values joined with " · " (the slide and edition left out); "" for none. */
 export function viewName(view: Record<string, string> | undefined): string {
   if (!view) return "";
   return (
     view.label ||
     Object.entries(view)
-      .filter(([k, v]) => v && k !== "slide")
+      .filter(([k, v]) => v && k !== "slide" && k !== EDITION)
       .map(([, v]) => v)
       .join(" · ")
   );

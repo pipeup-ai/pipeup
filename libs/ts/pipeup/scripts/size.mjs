@@ -33,10 +33,12 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // Pipeup, the menu closing after Start commenting by touch, boxes above the on-screen keyboard, the layer following a
 // panned page, and the selection's icon beside the phone's own menu, and a touch hint that stands out and folds to Done (+0.9 KB; docs/design/iphone-taps-keyboard.md); then 60.5 KB
 // for an agent's replies a reviewer pastes: written under the agent's name and signed by the reviewer, and "pasted
-// by you" on a reply an agent the page lists didn't sign (+0.3 KB; docs/design/agent-paste.md).
+// by you" on a reply an agent the page lists didn't sign (+0.3 KB; docs/design/agent-paste.md); then 61 KB for
+// editions: comments kept with the edition the page names, and earlier editions folded in All comments (+0.6 KB;
+// docs/design/editions.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 60.5 * 1024,
-  "dist/pipeup.esm.js": 60.5 * 1024,
+  "dist/pipeup.min.js": 61 * 1024,
+  "dist/pipeup.esm.js": 61 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

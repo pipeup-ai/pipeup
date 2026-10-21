@@ -9,6 +9,7 @@ change the API and the stored comment format.
 
 ### Added
 
+- **Editions.** A page that shows a new edition in the same shell (a daily briefing) can name the edition it shows with `data-pipeup-edition`, and set it again when the next one is swapped in. Comments stay with their edition: they never land on another edition's content, the comment control counts this edition's, earlier editions' threads wait folded under **Earlier editions** in All comments (and still open, with what they were about), and Copy for my agent carries this edition's and says how many earlier ones it left out. `Pipeup.comments({ edition: true })` reads this edition's. Pipeup's budget rises from 60.5 to 61 KB gzip.
 - **Copy for my agent** (agents add-on) replaces Copy a prompt for my agent. It copies the page's open comments together with how to answer them, says the comments live in your browser and not in the page's file, and gives the page's document id so an agent can sign its answer.
 - **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
 - `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
@@ -21,7 +22,7 @@ change the API and the stored comment format.
 
 ### Documentation
 
-- The integrate skill and `llms.txt` say how a page that shows a new edition in a fixed shell (a daily briefing) gives each edition its own identity, so yesterday's comments don't land on today's content: keep the key, make a new 16-character id from the page's id and the edition, and mount Pipeup once the edition is known.
+- The integrate skill and `llms.txt` say how a page that shows a new edition in a fixed shell (a daily briefing) names its edition, and, for a page that wants editions wholly apart or an older Pipeup, how to give each edition its own identity instead.
 
 ## [0.8.2] - 2026-10-19
 
