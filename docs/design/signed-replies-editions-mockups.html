@@ -1,0 +1,601 @@
+<title>Signed Replies, Editions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: signed pasted replies and a document identity per edition. Light mode only, Pipeup's own tokens. -->
+<style>
+  /* Layout: one reading column; storyboard, swimlanes, then screens on grey stages, then the spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 360px; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot .n { font-size: 12px; color: var(--fa); }
+  .shot .pic { height: 92px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); position: relative; overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+  .shot.new { border-color: #c9c4ef; }
+
+  /* swimlanes */
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+  /* table */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; font-size: 13.5px; min-width: 720px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td.hit { color: var(--ac); font-weight: 600; }
+
+  /* Pipeup's look */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; max-width: 100%; }
+  .menu { width: 300px; padding: 4px; }
+  .mi { display: flex; gap: 10px; align-items: flex-start; min-height: 34px; padding: 7px 10px; border-radius: 8px; }
+  .mi.hot { background: var(--so); }
+  .mi svg { color: var(--mu); flex: none; margin-top: 2px; }
+  .mi .lb { flex: 1; }
+  .mi .lb small { display: block; color: var(--fa); font-size: 12px; }
+  .mi .kc { color: var(--fa); font-size: 12px; }
+  .mi.added { background: var(--as); }
+  .mi.gone { opacity: 0.55; text-decoration: line-through; text-decoration-color: var(--delk); }
+  .sep { height: 1px; margin: 4px 10px; background: var(--ru); }
+  .sec { padding: 8px 10px 2px; font-size: 12px; color: var(--fa); }
+  .panel { width: 340px; display: flex; flex-direction: column; }
+  .hd { padding: 14px 16px 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .hd small { font-weight: 400; color: var(--fa); }
+  .body { padding: 4px 16px 16px; }
+  .body p { margin: 0 0 10px; }
+  .muted { color: var(--mu); }
+  .fa { color: var(--fa); font-size: 12px; }
+  .well { border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 8px 10px; font: 11.5px/1.5 var(--mono); color: var(--mu); height: 96px; overflow: hidden; position: relative; }
+  .well::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(transparent, var(--so)); }
+  .found { margin: 12px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .found li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 0; border-top: 1px solid var(--ru); }
+  .found li i { font-style: normal; color: var(--fa); }
+  .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  button { font: inherit; border-radius: 9px; padding: 7px 13px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); cursor: default; transition: background-color 0.2s var(--eo); }
+  button.go { background: #111; border-color: #111; color: #fff; }
+  button.quiet { border-color: transparent; color: var(--mu); padding: 7px 8px; }
+  .pop { width: 400px; padding: 12px 14px 14px; }
+  .av { width: 22px; height: 22px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 600; }
+  .root { position: relative; padding-right: 30px; }
+  .root .av { position: absolute; right: 0; top: 0; background: #f6e3cf; color: #8a4b12; }
+  .tx { font-size: 14px; }
+  .meta { display: flex; gap: 6px; align-items: center; color: var(--fa); font-size: 12px; margin: 2px 0; flex-wrap: wrap; }
+  .reply { padding: 10px 0 0 14px; }
+  .reply .who { display: flex; align-items: center; gap: 8px; }
+  .ai { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--ac); display: grid; place-items: center; font-size: 9px; font-weight: 700; box-shadow: 0 0 0 1.5px var(--ac); flex: none; }
+  .ai::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 9px 1px rgba(83, 74, 183, 0.45); opacity: 0.3; animation: breathe 3.8s ease-in-out infinite; pointer-events: none; }
+  @keyframes breathe { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+  .pasted { color: var(--ac); }
+  .addr { margin: 10px 0 0 14px; border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 9px 11px; font-size: 12.5px; }
+  .addr b { font-weight: 600; }
+
+  /* copied text and chat */
+  .clip { width: 520px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .dim { color: var(--fa); }
+  .chat { width: 520px; max-width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #fbfbf9; }
+  .bub { border-radius: 14px; padding: 10px 14px; font-size: 13.5px; max-width: 92%; }
+  .bub.me { align-self: flex-end; background: #dfe9fb; }
+  .bub.them { align-self: flex-start; background: var(--su); border: 1px solid var(--ln); }
+  .bub pre { margin: 8px 0 0; background: var(--so); border: 1px solid var(--ru); border-radius: 8px; padding: 8px 10px; font: 11.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; }
+  .who-l { font-size: 11.5px; color: var(--fa); margin-bottom: 2px; }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+  .signed { color: var(--addk); }
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; width: 100%; }
+  .page { width: 360px; max-width: 100%; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); padding: 16px 18px; font-size: 13px; position: relative; }
+  .page .ed { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); }
+  .page h4 { margin: 2px 0 10px; font-size: 17px; letter-spacing: -0.02em; }
+  .page .blk { border: 1px solid var(--ru); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; background: var(--so); }
+  .page .blk b { display: block; font-size: 12px; color: var(--mu); margin-bottom: 2px; }
+  .page .blk.hi { background: #fbf3e6; border-color: #e9cfa6; }
+  .page .bub2 { position: absolute; right: -11px; width: 22px; height: 22px; border-radius: 32%; background: #f6e3cf; color: #8a4b12; display: grid; place-items: center; font-size: 12px; font-weight: 600; box-shadow: 0 0 0 2px #fff; }
+  .moved { display: inline-block; font-size: 11.5px; color: #8a4b12; background: #fbf3e6; border: 1px solid #e9cfa6; border-radius: 6px; padding: 1px 6px; }
+  .code { font: 12px/1.6 var(--mono); background: var(--su); border: 1px solid var(--ln); border-radius: 10px; padding: 12px 14px; white-space: pre-wrap; word-break: break-word; width: 520px; max-width: 100%; }
+  .code .hl { background: var(--as); border-radius: 3px; }
+  .code .dim { color: var(--fa); }
+  .part { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ac); margin: 0 0 4px; }
+  .story + .part { margin-top: 22px; }
+  @media (prefers-reduced-motion: reduce) { .ai::after { animation: none; opacity: 0.5; } }
+  @media (max-width: 520px) { .stage { padding: 14px; } .menu, .panel, .pop { width: 100%; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="paste" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="3" width="6" height="4" rx="1" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M12 10v7m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 7h11M8 12h11M8 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+</svg>
+
+
+<main>
+  <h1>Signed pasted replies, and a new identity for each edition</h1>
+  <p class="lede">
+    Two things came out of testing with Muse, a cloud agent that makes Sam's daily briefing. Muse keeps a key between
+    sessions but can't put a file beside the page, so its pasted replies all read "pasted by you", even when Muse could
+    prove it wrote them. And the briefing is a fixed shell with each day's edition swapped in, so yesterday's comments
+    turn up on today's news.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>An agent that keeps a key can sign the replies block it gives in a chat.</b> The reply command prints a
+          signed block instead of writing a replies file.</li>
+        <li><b>A signed paste from an agent the page lists shows as that agent's</b>, exactly like a reply read from the
+          replies file: the agent's name and the AI marking, with no "pasted by you".</li>
+        <li><b>Unsigned pasted replies don't change.</b> They still say "pasted by you", and other people in a shared copy
+          see "pasted by Sam".</li>
+        <li>The agent guidance changes from "never asks to be listed for replies it can't deliver" to <b>"asks to be listed
+          only when it can sign its replies."</b></li>
+        <li><b>Why it matters:</b> once comments are shared, Lee can tell that Sam pasted Muse's words but didn't write
+          them, and that Muse's signed words weren't changed on the way.</li>
+        <li><b>Editions get their own identity.</b> The publisher sets each edition's document identity (for example
+          the page's key plus the edition date) before Pipeup starts. Pipeup doesn't change: a new document made from a
+          template already gets a new identity (§15). The integrate skill and <code>llms.txt</code> spell the case out.</li>
+        <li>An <b>edition attribute</b> that scopes comments per edition inside one document is named as an open question,
+          not a requirement.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <p class="part">1 · Signed pasted replies</p>
+    <div class="story">
+      <div class="shot new">
+        <span class="n tag new">1 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="14" width="160" height="64" rx="8" fill="#fff" stroke="#e5e3da"/><circle cx="44" cy="38" r="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="44" y="41" text-anchor="middle" font-size="7" font-weight="700" fill="#534ab7">AI</text><rect x="60" y="32" width="100" height="5" rx="2" fill="#d6d4cb"/><rect x="60" y="42" width="70" height="5" rx="2" fill="#d6d4cb"/><rect x="34" y="56" width="132" height="14" rx="4" fill="#edebfa"/><text x="40" y="66" font-size="8" fill="#2c2c2a">key kept in ~/.pipeup</text></svg>
+        </div>
+        <p>Muse keeps its key between sessions, so it can sign. Only then does it ask Sam to list it on the page.</p>
+      </div>
+      <div class="shot">
+        <span class="n">2</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="10" width="120" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="46" y="18" width="108" height="16" rx="5" fill="#f1efe8"/><text x="54" y="30" font-size="9.5" fill="#2c2c2a">Copy for my agent</text><rect x="48" y="42" width="80" height="4" rx="2" fill="#d6d4cb"/><rect x="48" y="52" width="96" height="4" rx="2" fill="#d6d4cb"/><rect x="48" y="62" width="70" height="4" rx="2" fill="#edebfa"/></svg>
+        </div>
+        <p>Sam picks <b>Copy for my agent</b>. The text now tells Muse the page lists its key, and how to sign.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">3 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="14" y="12" width="172" height="68" rx="10" fill="#fff" stroke="#e5e3da"/><rect x="24" y="22" width="110" height="4" rx="2" fill="#d6d4cb"/><rect x="24" y="32" width="152" height="40" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="30" y="44" font-size="8" fill="#5f5e5a" font-family="ui-monospace, Menlo, monospace">```pipeup-replies</text><text x="30" y="64" font-size="8" fill="#1f6b3a" font-family="ui-monospace, Menlo, monospace">signature: MEUC…</text></svg>
+        </div>
+        <p>Muse runs the reply command to print a <b>signed</b> replies block, and answers with it in the chat.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">4 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="8" width="120" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><text x="50" y="24" font-size="9.5" font-weight="600" fill="#2c2c2a">Paste replies</text><rect x="50" y="30" width="100" height="22" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="50" y="66" font-size="8.5" fill="#1f6b3a">4 signed by Muse</text><rect x="104" y="70" width="46" height="10" rx="4" fill="#111"/></svg>
+        </div>
+        <p>Sam pastes it with <b>Paste my agent's replies</b>. The page says the replies are signed by Muse.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">5 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="20" y="8" width="160" height="76" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="30" y="18" width="110" height="5" rx="2" fill="#2c2c2a"/><circle cx="42" cy="44" r="7" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><rect x="54" y="41" width="100" height="5" rx="2" fill="#d6d4cb"/><circle cx="160" cy="68" r="9" fill="#dfe9fb" stroke="#6b8fcf"/><text x="160" y="72" text-anchor="middle" font-size="10" fill="#2b4f8f">L</text><text x="34" y="72" font-size="8.5" fill="#5f5e5a">Muse · AI</text></svg>
+        </div>
+        <p>On the shared page, Lee sees Muse's replies as Muse's. An unsigned paste would say <b>pasted by Sam</b>.</p>
+      </div>
+    </div>
+
+    <p class="part">2 · An identity for each edition</p>
+    <div class="story">
+      <div class="shot">
+        <span class="n">1</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><text x="26" y="24" font-size="8" fill="#888780">MON 17 OCT</text><rect x="26" y="32" width="148" height="20" rx="4" fill="#fbf3e6" stroke="#e9cfa6"/><text x="32" y="45" font-size="8.5" fill="#2c2c2a">Markets · oil falls 3%</text><circle cx="176" cy="42" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="176" y="46" text-anchor="middle" font-size="10" fill="#8a4b12">S</text><rect x="26" y="58" width="148" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/></svg>
+        </div>
+        <p>Monday. Sam comments on Markets: "Put the rates chart first."</p>
+      </div>
+      <div class="shot">
+        <span class="n tag">2 · today</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><text x="26" y="24" font-size="8" fill="#888780">TUE 18 OCT</text><rect x="26" y="32" width="148" height="20" rx="4" fill="#fbf3e6" stroke="#e9cfa6"/><text x="32" y="45" font-size="8.5" fill="#2c2c2a">Markets · rates hold</text><circle cx="176" cy="42" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="176" y="46" text-anchor="middle" font-size="10" fill="#8a4b12">S</text><rect x="110" y="60" width="64" height="14" rx="4" fill="#fbf3e6" stroke="#e9cfa6"/><text x="142" y="70" text-anchor="middle" font-size="8" fill="#8a4b12">Moved</text></svg>
+        </div>
+        <p>Tuesday's edition swaps in under the same identity. Monday's comment lands on Tuesday's Markets, marked Moved.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">3 · proposed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="26" y="20" width="148" height="18" rx="4" fill="#edebfa"/><text x="32" y="32" font-size="8" fill="#2c2c2a" font-family="ui-monospace, Menlo, monospace">doc = key + 2026-10-18</text><rect x="26" y="46" width="148" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/><rect x="26" y="64" width="110" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/></svg>
+        </div>
+        <p>Before Pipeup starts, the shell gives Tuesday's edition its own identity: the page's key plus the date.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">4 · proposed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><text x="26" y="24" font-size="8" fill="#888780">TUE 18 OCT</text><rect x="26" y="32" width="148" height="20" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="32" y="45" font-size="8.5" fill="#2c2c2a">Markets · rates hold</text><rect x="26" y="58" width="148" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/></svg>
+        </div>
+        <p>Tuesday opens clean. Monday's comment stays with Monday's edition, wherever that edition is kept.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what"><b>1 · Signed pasted replies.</b> Violet boxes are new or changed. Everything else is #96 as written.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 520" role="img" aria-label="Swimlane flow: Sam, the page, Muse and Lee; Muse prints a signed replies block, Sam pastes it, the page checks it against the listed key, and Lee sees it as Muse's">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="30" width="1320" height="110" fill="#fafaf7"/>
+          <rect x="0" y="150" width="1320" height="110" fill="#f4f3ee"/>
+          <rect x="0" y="270" width="1320" height="110" fill="#fafaf7"/>
+          <rect x="0" y="390" width="1320" height="110" fill="#f4f3ee"/>
+          <text x="16" y="80" font-size="14" font-weight="600" fill="#2c2c2a">Sam</text>
+          <text x="16" y="98" font-size="11.5" fill="#888780">the reviewer</text>
+          <text x="16" y="200" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
+          <text x="16" y="218" font-size="11.5" fill="#888780">agents add-on</text>
+          <text x="16" y="320" font-size="14" font-weight="600" fill="#2c2c2a">Muse</text>
+          <text x="16" y="338" font-size="11.5" fill="#888780">agent, keeps a key</text>
+          <text x="16" y="440" font-size="14" font-weight="600" fill="#2c2c2a">Lee</text>
+          <text x="16" y="458" font-size="11.5" fill="#888780">another reviewer</text>
+
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M285 85H303"/>
+            <path d="M380 115V173"/>
+            <path d="M455 205L473 100"/>
+            <path d="M550 115V293"/>
+            <path d="M625 325H643"/>
+            <path d="M890 115V173"/>
+            <path d="M1135 205L1153 100"/>
+          </g>
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M210 295V117"/>
+            <path d="M720 293V85H812"/>
+            <path d="M965 205H983"/>
+            <path d="M1135 220L1153 413"/>
+          </g>
+          <text x="218" y="190" font-size="11" fill="#534ab7">asks to be listed,</text>
+          <text x="218" y="204" font-size="11" fill="#534ab7">since it can sign</text>
+          <text x="728" y="150" font-size="11" fill="#534ab7">Sam copies</text>
+          <text x="728" y="164" font-size="11" fill="#534ab7">the answer</text>
+          <text x="1150" y="300" font-size="11" fill="#534ab7">shared copy</text>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="135" y="295" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="210" y="321" fill="#2c2c2a">Keeps its key</text><text x="210" y="337" fill="#2c2c2a">between sessions</text>
+            <rect x="135" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="81" fill="#2c2c2a">Lists Muse's key</text><text x="210" y="97" fill="#2c2c2a">on the page, once</text>
+
+            <rect x="305" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="380" y="81" fill="#2c2c2a">Picks</text><text x="380" y="97" fill="#2c2c2a">Copy for my agent</text>
+            <rect x="305" y="175" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="201" fill="#2c2c2a">Copies comments;</text><text x="380" y="217" fill="#2c2c2a">says how to sign</text>
+
+            <rect x="475" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="81" fill="#2c2c2a">Pastes it into</text><text x="550" y="97" fill="#2c2c2a">Muse's chat</text>
+            <rect x="475" y="295" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="550" y="321" fill="#2c2c2a">Acts on each</text><text x="550" y="337" fill="#2c2c2a">thread</text>
+
+            <rect x="645" y="295" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="720" y="321" fill="#2c2c2a">Prints a signed</text><text x="720" y="337" fill="#2c2c2a">replies block</text>
+
+            <rect x="815" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="890" y="81" fill="#2c2c2a">Picks Paste my</text><text x="890" y="97" fill="#2c2c2a">agent's replies</text>
+            <rect x="815" y="175" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="201" fill="#2c2c2a">Checks each reply</text><text x="890" y="217" fill="#2c2c2a">against listed keys</text>
+
+            <rect x="985" y="175" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1060" y="195" fill="#2c2c2a">Signed: as Muse's.</text><text x="1060" y="211" fill="#2c2c2a">Otherwise:</text><text x="1060" y="227" fill="#2c2c2a">pasted by you</text>
+
+            <rect x="1155" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1230" y="81" fill="#2c2c2a">Resolves, or</text><text x="1230" y="97" fill="#2c2c2a">Still not right</text>
+            <rect x="1155" y="415" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1230" y="441" fill="#2c2c2a">Sees Muse's words,</text><text x="1230" y="457" fill="#2c2c2a">or pasted by Sam</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <p class="what" style="margin-top:24px"><b>2 · An identity for each edition.</b> Nothing in Pipeup changes; the new step is the publisher's. The dashed path is what happens today.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 400" role="img" aria-label="Swimlane flow: Muse publishes an edition, the shell sets that edition's identity before Pipeup starts, Pipeup opens that edition's own comments, and Sam starts fresh">
+        <defs>
+          <marker id="br" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="brA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="20" width="1320" height="110" fill="#fafaf7"/>
+          <rect x="0" y="140" width="1320" height="110" fill="#f4f3ee"/>
+          <rect x="0" y="260" width="1320" height="120" fill="#fafaf7"/>
+          <text x="16" y="70" font-size="14" font-weight="600" fill="#2c2c2a">Muse</text>
+          <text x="16" y="88" font-size="11.5" fill="#888780">publishes the edition</text>
+          <text x="16" y="190" font-size="14" font-weight="600" fill="#2c2c2a">The page</text>
+          <text x="16" y="208" font-size="11.5" fill="#888780">fixed shell + Pipeup</text>
+          <text x="16" y="310" font-size="14" font-weight="600" fill="#2c2c2a">Sam</text>
+          <text x="16" y="328" font-size="11.5" fill="#888780">the reviewer</text>
+
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#br)">
+            <path d="M285 75L303 192"/>
+            <path d="M625 195H643"/>
+            <path d="M795 195L813 302"/>
+            <path d="M965 315H983"/>
+          </g>
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#brA)">
+            <path d="M455 195H473"/>
+          </g>
+          <g stroke="#9a2b2b" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#br)">
+            <path d="M380 225V292"/>
+          </g>
+          <text x="388" y="262" font-size="11" fill="#9a2b2b">today: one identity</text>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="135" y="45" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="71" fill="#2c2c2a">Publishes Tuesday's</text><text x="210" y="87" fill="#2c2c2a">edition as data</text>
+
+            <rect x="305" y="165" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="380" y="191" fill="#2c2c2a">Shell loads</text><text x="380" y="207" fill="#2c2c2a">the edition</text>
+
+            <rect x="475" y="165" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="550" y="185" fill="#2c2c2a">Sets the identity:</text><text x="550" y="201" fill="#2c2c2a">key + edition date,</text><text x="550" y="217" fill="#2c2c2a">before Pipeup starts</text>
+
+            <rect x="645" y="165" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="720" y="191" fill="#2c2c2a">Pipeup opens this</text><text x="720" y="207" fill="#2c2c2a">edition's comments</text>
+
+            <rect x="815" y="285" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="890" y="311" fill="#2c2c2a">Reads Tuesday,</text><text x="890" y="327" fill="#2c2c2a">starts fresh</text>
+            <rect x="985" y="285" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1060" y="305" fill="#2c2c2a">Monday's edition,</text><text x="1060" y="321" fill="#2c2c2a">if kept, still has</text><text x="1060" y="337" fill="#2c2c2a">Monday's comments</text>
+
+            <rect x="305" y="295" width="150" height="60" rx="10" fill="#fbeaea" stroke="#9a2b2b" stroke-dasharray="5 4"/>
+            <text x="380" y="315" fill="#9a2b2b">Sees Monday's</text><text x="380" y="331" fill="#9a2b2b">comments on Tuesday,</text><text x="380" y="347" fill="#9a2b2b">marked Moved</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 1 · What Copy for my agent adds</h2>
+    <p class="what">Only the answering part changes. Highlighted lines are new; the rest is as in #96.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">#96</span>
+        <div class="card clip"><span class="dim">… 5 open comments …</span>
+
+How to answer
+- Reply in one block I can paste back into the page:
+  ```pipeup-replies
+  thread: t-4f2a
+  reply: what you changed and where
+  addressed: short note, only if you made the change
+  ```
+- If you can run commands on this computer, `npx pipeup@0.8.0-beta.5 reply …` is faster: your replies appear by themselves.</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · page lists Muse</span>
+        <div class="card clip"><span class="dim">… 5 open comments …</span>
+
+How to answer
+- Reply in one block I can paste back into the page.
+<span class="hl">- This page lists your key (Muse). Sign the block so it shows as yours:</span>
+<span class="hl">  `npx pipeup@0.8.0-beta.5 reply --print …` prints it signed with the key you keep.</span>
+<span class="hl">- Without your key, send the same block unsigned. It will show as pasted by me.</span>
+- If you can run commands on this computer, `npx pipeup@0.8.0-beta.5 reply …` is faster: your replies appear by themselves.</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · no agent listed</span>
+        <div class="card clip"><span class="dim">… How to answer …</span>
+<span class="hl">- If you keep a Pipeup key between sessions, sign the block with `npx pipeup@0.8.0-beta.5 reply --print …` and tell me the line to add so the page lists you. If you can't keep a key, don't ask to be listed: the plain block works.</span></div>
+        <p class="cap">Muse was asked for a key it had no way to use. It is now asked to be listed only when it can sign.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · Muse's signed answer</h2>
+    <p class="what">The same block as #96, with who signed it and a signature. The exact form of the block belongs to the design note; this is illustrative.</p>
+    <div class="stage">
+      <div class="card chat">
+        <div class="bub me">Please act on my review comments on Daily briefing, Sat 18 Oct … <span class="fa">(the copied text)</span></div>
+        <div>
+          <div class="who-l">Muse</div>
+          <div class="bub them">I've moved the rates chart to the top of Markets and answered the CPI question. Paste this into the page with Paste my agent's replies; it's signed with my key.
+<pre>```pipeup-replies
+<span class="signed">agent: Muse (key 7Hq2…xK)</span>
+thread: t-4f2a
+reply: Moved the rates chart to the top of Markets in today's edition.
+addressed: Moved in today's edition
+<span class="signed">signature: MEUCIQD…</span>
+
+thread: t-9c1b
+reply: Year on year. I've said so under the figure.
+addressed: Labelled under the figure
+<span class="signed">signature: MEQCIF…</span>
+```</pre></div>
+        </div>
+      </div>
+      <p class="cap"><b>What the signature covers.</b> The reply's words, its addressed note, the thread and the page. Changing any of them, or pasting the block into another page, means it no longer counts as signed.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 3 · Pasting signed replies</h2>
+    <p class="what">The panel from #96. What changes is the first line of what it found, and the line beneath.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">All signed</span>
+        <div class="card panel">
+          <div class="hd">Paste your agent's replies <small>Esc</small></div>
+          <div class="body">
+            <div class="well">I've moved the rates chart to the top of Markets and answered the CPI question…<br>```pipeup-replies<br>agent: Muse (key 7Hq2…xK)<br>thread: t-4f2a</div>
+            <ul class="found">
+              <li><i>✓</i><span><b>4 replies signed by Muse</b>, whom this page lists</span></li>
+              <li><i>✓</i><span>3 of them say the comment is addressed</span></li>
+            </ul>
+            <p class="fa" style="margin-top:10px">They show under Muse's name, marked as AI, the same as replies Muse writes beside the page. They can't change your comments.</p>
+            <div class="btns"><button class="go">Add 4 replies</button><button class="quiet">Cancel</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Some not signed</span>
+        <div class="card panel">
+          <div class="hd">Paste your agent's replies <small>Esc</small></div>
+          <div class="body">
+            <div class="well">…thread: t-9c1b<br>reply: Year on year — and I've also…<br>signature: MEQCIF…</div>
+            <ul class="found">
+              <li><i>✓</i><span><b>3 replies signed by Muse</b>, whom this page lists</span></li>
+              <li><i>–</i><span>1 reply was changed after Muse signed it, so it will show as pasted by you</span></li>
+            </ul>
+            <p class="fa" style="margin-top:10px">Replies show under Muse's name, marked as AI. They can't change your comments.</p>
+            <div class="btns"><button class="go">Add 4 replies</button><button class="quiet">Cancel</button></div>
+          </div>
+        </div>
+        <p class="cap">Other reasons it names, in words: "signed with a key this page doesn't list", or "not signed".</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 4 · Who sees what in the thread</h2>
+    <p class="what">A signed reply looks the same to everyone. An unsigned one names who pasted it.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">Signed · everyone sees</span>
+        <div class="card pop" style="width:330px">
+          <div class="root"><span class="av">S</span><div class="meta">Sam · 9:12</div><div class="tx">Put the rates chart first; it's what I check.</div></div>
+          <div class="reply"><div class="who"><span class="ai">AI</span><div class="meta">Muse · AI · 9:31</div></div><div class="tx" style="margin-top:4px">Moved the rates chart to the top of Markets in today's edition.</div></div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag">Unsigned · Sam sees</span>
+        <div class="card pop" style="width:330px">
+          <div class="root"><span class="av">S</span><div class="meta">Sam · 9:12</div><div class="tx">Put the rates chart first; it's what I check.</div></div>
+          <div class="reply"><div class="who"><span class="ai">AI</span><div class="meta">Muse · AI · <span class="pasted">pasted by you</span> · 9:31</div></div><div class="tx" style="margin-top:4px">Moved the rates chart to the top of Markets in today's edition.</div></div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Unsigned · Lee sees</span>
+        <div class="card pop" style="width:330px">
+          <div class="root"><span class="av">S</span><div class="meta">Sam · 9:12</div><div class="tx">Put the rates chart first; it's what I check.</div></div>
+          <div class="reply"><div class="who"><span class="ai">AI</span><div class="meta">Muse · AI · <span class="pasted">pasted by Sam</span> · 9:31</div></div><div class="tx" style="margin-top:4px">Moved the rates chart to the top of Markets in today's edition.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 5 · Tuesday's briefing</h2>
+    <p class="what">Same page, same moment. On the left, today's behaviour; on the right, the edition with its own identity.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today · one identity</span>
+        <div class="page">
+          <div class="ed">Tue 18 Oct</div>
+          <h4>Daily briefing</h4>
+          <div class="blk hi"><b>Markets</b>Rates hold at 4.25%; the ten-year eases.<span class="bub2" style="top:84px">S</span></div>
+          <div class="blk"><b>CPI</b>3.1% year on year.</div>
+        </div>
+        <p class="cap">Monday's "Put the rates chart first" sits on Tuesday's Markets, marked <span class="moved">Moved</span>. It reads as if it were about today, and Copy for my agent sends it to Muse again.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · identity per edition</span>
+        <div class="page">
+          <div class="ed">Tue 18 Oct</div>
+          <h4>Daily briefing</h4>
+          <div class="blk"><b>Markets</b>Rates hold at 4.25%; the ten-year eases.</div>
+          <div class="blk"><b>CPI</b>3.1% year on year.</div>
+        </div>
+        <p class="cap">Tuesday has no comments yet. Monday's stay with Monday's identity.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">What the publisher does</span>
+        <div class="code"><span class="dim">&lt;!-- the shell, fixed --&gt;</span>
+&lt;html data-pipeup-doc="k7Hq…"&gt;
+<span class="hl">&lt;script&gt;
+  // before Pipeup's script
+  const d = document.documentElement;
+  d.dataset.pipeupDoc += "-" + edition.date;
+&lt;/script&gt;</span>
+&lt;script src="…/pipeup.min.js" integrity="…"&gt;&lt;/script&gt;</div>
+        <p class="cap">If the edition arrives after the page has loaded, the shell loads Pipeup once it knows the date. Illustrative; the skill gives the exact steps.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">Changes to §15 (Agent support), §15b (Answering; Showing that a page is ready; What agents are told) and §19 (Open questions). Lines not shown are unchanged from #96.</p>
+    <div class="spec">
+      <div class="h">§15 · Agent support</div>
+      <div class="a">A page that keeps one shell and shows a new edition in it (a daily briefing, say) is one document to Pipeup, so earlier comments land on matching content in the new edition, marked Moved (§8). When each edition is meant to be reviewed on its own, the publisher gives each edition its own document identity, made from the page's identity and the edition (for example its date), set before Pipeup starts. Agents that publish such pages do this, and the integrate skill and <code>llms.txt</code> say how.</div>
+
+      <div class="h">§15b · Answering</div>
+      <div class="a">For an agent that can't reach the page's folder, the reply command can print a <b>signed replies block</b> instead of writing the file. The block carries the same replies, each signed by the agent's own identity. A signature covers the reply's words, its addressed note, its thread and the page, so a changed reply, or one pasted into another page, no longer counts as signed.</div>
+
+      <div class="h">§15b · Showing that a page is ready for an agent</div>
+      <div class="d">…the page finds the replies block in it and says in words what it found (how many replies, from which agent, how many say addressed, and how many it will leave out and why…)</div>
+      <div class="a">…the page finds the replies block in it and says in words what it found (how many replies, from which agent, how many are signed by an agent the page lists, how many say addressed, and how many it will leave out and why…). For a reply it can't count as signed, it says why: not signed, signed with a key the page doesn't list, or changed after it was signed.</div>
+      <div class="d">Pasted replies show in their threads under the agent's name, with the AI marking (§10) and the words "pasted by you".</div>
+      <div class="a">A pasted reply signed by an agent the page lists shows exactly as a reply read from the replies file: under the agent's name, with the AI marking (§10), and nothing more.</div>
+      <div class="a">Any other pasted reply shows under the agent's name, with the AI marking and the words "pasted by you"; to other people in a shared copy, it says who pasted it ("pasted by Sam"). So when comments are shared, everyone can tell that the person who pasted didn't write the agent's words, and which agent replies came to the page unchanged.</div>
+      <div class="a">The text Copy for my agent copies tells the agent how to sign its replies block when it keeps a key, and says whether the page lists it.</div>
+
+      <div class="h">§15b · What agents are told</div>
+      <div class="d">An agent never looks for comments in the page's file, and never asks the author to list it for replies it has no way to deliver.</div>
+      <div class="a">An agent never looks for comments in the page's file, and asks to be listed only when it can sign its replies.</div>
+      <div class="d">An agent that can't write the replies file … answers in one replies block the person can paste into the page…</div>
+      <div class="a">An agent that can't write the replies file … answers in one replies block the person can paste into the page, signed when it keeps a key between sessions…</div>
+
+      <div class="h">§19 · Open questions</div>
+      <div class="a">Editions: whether a page should be able to say which edition it is showing, so comments are kept per edition within one document (each edition keeps its own, and earlier editions' comments can still be found), instead of the publisher giving each edition its own identity.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. A pasted reply whose signature doesn't check: add it or leave it out?</h3>
+        <p><b>Recommended: add it as "pasted by you", and say why.</b> It is then exactly an unsigned paste, which #96 already accepts because pasting is Sam's own act. Leaving it out would punish Sam for a reply that a chat window reflowed.</p></div>
+      <div class="q"><h3>2. An "edition" attribute, later?</h3>
+        <p><b>Recommended: an open question, not a requirement.</b> A new identity per edition works today with no change to Pipeup. An attribute would add one more thing to explain and size to pay for; it is worth it only if people want to see earlier editions' comments from today's page.</p></div>
+      <div class="q"><h3>3. Editions on a shared page</h3>
+        <p><b>To check in the design note.</b> A shell with a sharing line keeps one line for every edition. Before the skill recommends a per-edition identity on a shared page, the note confirms that each edition's comments stay apart in the shared copy, or the skill says to set sharing up per edition.</p></div>
+    </div>
+  </section>
+</main>
