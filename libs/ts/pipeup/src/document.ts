@@ -1,6 +1,6 @@
 import { sign as signBytes, type Identity } from "./crypto/identity";
 import { OpLog, type NewOp } from "./model/log";
-import { isAiName } from "./model/animals";
+import { agentName, isAiName } from "./model/animals";
 import { compareOps, CONTACT, isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
 import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
@@ -227,6 +227,21 @@ export class PipeupDocument {
   }
 
   /**
+   * Adds an agent's reply the reviewer pasted, to the thread's first comment: signed by this reviewer, under the agent's
+   * name ("AI assistant · Muse"), so it is drawn as an AI's and says who put it here. With `note`, also marks the thread
+   * addressed. It never resolves, reopens, edits or deletes.
+   */
+  paste(threadId: string, agent: string, text: string, note?: string): Promise<void> {
+    return this.enqueue(async () => {
+      const thread = this.thread(threadId);
+      const name = agentName(agent);
+      const target = this.cache.find((t) => t.id === thread)!.root.id;
+      await this.write({ kind: "reply", thread, target, text: checkText(text) }, name);
+      if (note?.trim()) await this.write({ kind: "addressed", thread, text: checkText(note) }, name);
+    });
+  }
+
+  /**
    * Signs `data` for `purpose` ("<add-on id>/<name>") with this reviewer's identity, as base64url. The signed
    * text starts "pipeup:", never "{", so it can never verify as an op.
    */
@@ -282,8 +297,8 @@ export class PipeupDocument {
   }
 
   /** Records a change and returns its id. */
-  private async write(fields: NewOp): Promise<string> {
-    const op = await this.log.append(this.options.identity, this.displayName, fields);
+  private async write(fields: NewOp, name = this.displayName): Promise<string> {
+    const op = await this.log.append(this.options.identity, name, fields);
     this.unsaved.push(op);
     this.refresh(true, [op], "local");
     try {

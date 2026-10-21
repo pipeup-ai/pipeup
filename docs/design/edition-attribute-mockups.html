@@ -1,0 +1,425 @@
+<title>Editions in One Page</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: a page names the edition it shows, and comments stay with their edition. Light mode only, Pipeup's own tokens. -->
+<style>
+  /* Layout: one reading column; storyboard, swimlanes, then screens on grey stages, then the spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 360px; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot .n { font-size: 12px; color: var(--fa); }
+  .shot .pic { height: 92px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); position: relative; overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+  .shot.new { border-color: #c9c4ef; }
+
+  /* swimlanes */
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1100px; width: 100%; height: auto; }
+
+  /* table */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; font-size: 13.5px; min-width: 720px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td.hit { color: var(--ac); font-weight: 600; }
+
+  /* Pipeup's look */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; max-width: 100%; }
+  .menu { width: 300px; padding: 4px; }
+  .mi { display: flex; gap: 10px; align-items: flex-start; min-height: 34px; padding: 7px 10px; border-radius: 8px; }
+  .mi.hot { background: var(--so); }
+  .mi svg { color: var(--mu); flex: none; margin-top: 2px; }
+  .mi .lb { flex: 1; }
+  .mi .lb small { display: block; color: var(--fa); font-size: 12px; }
+  .mi .kc { color: var(--fa); font-size: 12px; }
+  .mi.added { background: var(--as); }
+  .mi.gone { opacity: 0.55; text-decoration: line-through; text-decoration-color: var(--delk); }
+  .sep { height: 1px; margin: 4px 10px; background: var(--ru); }
+  .sec { padding: 8px 10px 2px; font-size: 12px; color: var(--fa); }
+  .panel { width: 340px; display: flex; flex-direction: column; }
+  .hd { padding: 14px 16px 8px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .hd small { font-weight: 400; color: var(--fa); }
+  .body { padding: 4px 16px 16px; }
+  .body p { margin: 0 0 10px; }
+  .muted { color: var(--mu); }
+  .fa { color: var(--fa); font-size: 12px; }
+  .well { border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 8px 10px; font: 11.5px/1.5 var(--mono); color: var(--mu); height: 96px; overflow: hidden; position: relative; }
+  .well::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: linear-gradient(transparent, var(--so)); }
+  .found { margin: 12px 0 0; padding: 0; list-style: none; font-size: 12.5px; }
+  .found li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; padding: 5px 0; border-top: 1px solid var(--ru); }
+  .found li i { font-style: normal; color: var(--fa); }
+  .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  button { font: inherit; border-radius: 9px; padding: 7px 13px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); cursor: default; transition: background-color 0.2s var(--eo); }
+  button.go { background: #111; border-color: #111; color: #fff; }
+  button.quiet { border-color: transparent; color: var(--mu); padding: 7px 8px; }
+  .pop { width: 400px; padding: 12px 14px 14px; }
+  .av { width: 22px; height: 22px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 600; }
+  .root { position: relative; padding-right: 30px; }
+  .root .av { position: absolute; right: 0; top: 0; background: #f6e3cf; color: #8a4b12; }
+  .tx { font-size: 14px; }
+  .meta { display: flex; gap: 6px; align-items: center; color: var(--fa); font-size: 12px; margin: 2px 0; flex-wrap: wrap; }
+  .reply { padding: 10px 0 0 14px; }
+  .reply .who { display: flex; align-items: center; gap: 8px; }
+  .ai { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--ac); display: grid; place-items: center; font-size: 9px; font-weight: 700; box-shadow: 0 0 0 1.5px var(--ac); flex: none; }
+  .ai::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; box-shadow: 0 0 9px 1px rgba(83, 74, 183, 0.45); opacity: 0.3; animation: breathe 3.8s ease-in-out infinite; pointer-events: none; }
+  @keyframes breathe { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+  .pasted { color: var(--ac); }
+  .addr { margin: 10px 0 0 14px; border: 1px solid var(--ln); border-radius: 8px; background: var(--so); padding: 9px 11px; font-size: 12.5px; }
+  .addr b { font-weight: 600; }
+
+  /* copied text and chat */
+  .clip { width: 520px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .dim { color: var(--fa); }
+  .chat { width: 520px; max-width: 100%; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #fbfbf9; }
+  .bub { border-radius: 14px; padding: 10px 14px; font-size: 13.5px; max-width: 92%; }
+  .bub.me { align-self: flex-end; background: #dfe9fb; }
+  .bub.them { align-self: flex-start; background: var(--su); border: 1px solid var(--ln); }
+  .bub pre { margin: 8px 0 0; background: var(--so); border: 1px solid var(--ru); border-radius: 8px; padding: 8px 10px; font: 11.5px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; }
+  .who-l { font-size: 11.5px; color: var(--fa); margin-bottom: 2px; }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+  .signed { color: var(--addk); }
+  .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; width: 100%; }
+  .page { width: 360px; max-width: 100%; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); padding: 16px 18px; font-size: 13px; position: relative; }
+  .page .ed { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); }
+  .page h4 { margin: 2px 0 10px; font-size: 17px; letter-spacing: -0.02em; }
+  .page .blk { border: 1px solid var(--ru); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; background: var(--so); }
+  .page .blk b { display: block; font-size: 12px; color: var(--mu); margin-bottom: 2px; }
+  .page .blk.hi { background: #fbf3e6; border-color: #e9cfa6; }
+  .page .bub2 { position: absolute; right: -11px; width: 22px; height: 22px; border-radius: 32%; background: #f6e3cf; color: #8a4b12; display: grid; place-items: center; font-size: 12px; font-weight: 600; box-shadow: 0 0 0 2px #fff; }
+  .moved { display: inline-block; font-size: 11.5px; color: #8a4b12; background: #fbf3e6; border: 1px solid #e9cfa6; border-radius: 6px; padding: 1px 6px; }
+  .code { font: 12px/1.6 var(--mono); background: var(--su); border: 1px solid var(--ln); border-radius: 10px; padding: 12px 14px; white-space: pre-wrap; word-break: break-word; width: 520px; max-width: 100%; }
+  .code .hl { background: var(--as); border-radius: 3px; }
+  .code .dim { color: var(--fa); }
+  .part { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ac); margin: 0 0 4px; }
+  .story + .part { margin-top: 22px; }
+  @media (prefers-reduced-motion: reduce) { .ai::after { animation: none; opacity: 0.5; } }
+  @media (max-width: 520px) { .stage { padding: 14px; } .menu, .panel, .pop { width: 100%; } }
+  .list { width: 340px; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #fafaf7; }
+  .lh { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--fa); padding: 2px 4px; }
+  .lc { background: var(--su); border: 1px solid var(--ln); border-radius: 10px; padding: 9px 11px; font-size: 13px; }
+  .lc .meta { margin: 0 0 2px; }
+  .lc .where { font-size: 12px; color: var(--mu); margin: 0 0 3px; }
+  .fold { display: flex; justify-content: space-between; align-items: center; padding: 8px 6px 4px; border-top: 1px solid var(--ru); font-size: 12.5px; color: var(--mu); }
+  .ctl { display: inline-flex; align-items: center; gap: 8px; background: var(--su); border: 1px solid var(--ln); border-radius: 999px; padding: 6px 12px 6px 8px; box-shadow: var(--sh); font-size: 13px; }
+  .ctl .num { min-width: 20px; height: 20px; border-radius: 999px; background: var(--ac); color: #fff; display: grid; place-items: center; font-size: 11.5px; font-weight: 600; }
+  .ctl .num.zero { background: var(--ho); color: var(--mu); }
+  .snap { margin: 8px 0 0; border: 1px dashed var(--ln); border-radius: 8px; padding: 7px 9px; font-size: 12.5px; color: var(--mu); background: var(--so); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="paste" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9" y="3" width="6" height="4" rx="1" fill="#fff" stroke="currentColor" stroke-width="1.6"/><path d="M12 10v7m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><path d="M8 7h11M8 12h11M8 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+</svg>
+
+
+
+<main>
+  <h1>Editions in one page: comments stay with their edition</h1>
+  <p class="lede">
+    Muse's briefing is one page with a new edition every day. Today Pipeup sees one document, so Monday's comments turn
+    up on Tuesday's news, marked Moved. #109 works around it by giving each edition its own identity, which needs a
+    script in the shell and splits the history into separate documents. This proposal lets the page simply say which
+    edition it shows.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>A page can name the edition it shows</b> with one attribute, <code>data-pipeup-edition</code>, and change
+          it when the next edition is swapped in. Pipeup follows the change without a reload.</li>
+        <li><b>Each comment remembers its edition.</b> Comments from other editions never show on the page, are never
+          matched to the new edition's content, and are never marked Moved for it.</li>
+        <li><b>The comment control counts this edition only.</b> Earlier editions' comments wait in All comments, under
+          a folded <b>Earlier editions</b> heading with their count.</li>
+        <li><b>An earlier edition's thread still opens</b> from All comments, with what it was about, and can be replied
+          to or resolved. It goes to that edition only when the page tells Pipeup how.</li>
+        <li><b>Copy for my agent carries this edition's open comments</b>, and says how many on earlier editions it
+          left out.</li>
+        <li>It's still one document: one identity, one shared copy, no script needed. The per-edition identity in #109
+          stays valid for pages that want editions kept wholly apart, and for older versions of Pipeup.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <div class="story">
+      <div class="shot">
+        <span class="n">1</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><text x="26" y="24" font-size="8" fill="#888780">EDITION 2026-10-20</text><rect x="26" y="32" width="148" height="20" rx="4" fill="#fbf3e6" stroke="#e9cfa6"/><text x="32" y="45" font-size="8.5" fill="#2c2c2a">Markets · oil falls 3%</text><circle cx="176" cy="42" r="9" fill="#f6e3cf" stroke="#c98a4c"/><text x="176" y="46" text-anchor="middle" font-size="10" fill="#8a4b12">S</text><rect x="26" y="58" width="148" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/></svg>
+        </div>
+        <p>Monday's edition. Sam comments on Markets; the comment remembers it was on the 2026-10-20 edition.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">2 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="26" y="22" width="148" height="18" rx="4" fill="#edebfa"/><text x="32" y="34" font-size="8" fill="#2c2c2a" font-family="ui-monospace, Menlo, monospace">data-pipeup-edition="2026-10-21"</text><rect x="26" y="48" width="148" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/><rect x="26" y="66" width="110" height="12" rx="3" fill="#fafaf7" stroke="#eceae2"/></svg>
+        </div>
+        <p>Tuesday's edition is swapped in, and the shell sets the attribute to its date.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">3 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="16" y="10" width="168" height="74" rx="8" fill="#fff" stroke="#e5e3da"/><text x="26" y="24" font-size="8" fill="#888780">EDITION 2026-10-21</text><rect x="26" y="32" width="148" height="20" rx="4" fill="#fafaf7" stroke="#eceae2"/><text x="32" y="45" font-size="8.5" fill="#2c2c2a">Markets · rates hold</text><rect x="26" y="58" width="148" height="18" rx="4" fill="#fafaf7" stroke="#eceae2"/><rect x="138" y="62" width="40" height="16" rx="8" fill="#fff" stroke="#e5e3da"/><circle cx="148" cy="70" r="5" fill="#f1efe8"/><text x="148" y="73" text-anchor="middle" font-size="7" fill="#5f5e5a">0</text></svg>
+        </div>
+        <p>Tuesday is clean. Monday's comment isn't on Markets, and the control counts Tuesday's comments only.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">4 · new</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="8" width="120" height="76" rx="8" fill="#fafaf7" stroke="#e5e3da"/><text x="50" y="24" font-size="8.5" fill="#888780">This edition: none yet</text><line x1="48" y1="34" x2="152" y2="34" stroke="#eceae2"/><text x="50" y="46" font-size="8.5" fill="#5f5e5a">Earlier editions · 1</text><rect x="48" y="54" width="104" height="22" rx="5" fill="#fff" stroke="#e5e3da"/><text x="54" y="68" font-size="7.5" fill="#2c2c2a">Put the rates chart first</text></svg>
+        </div>
+        <p>In All comments, Monday's thread waits under <b>Earlier editions</b>. Sam can open it, reply or resolve.</p>
+      </div>
+      <div class="shot new">
+        <span class="n tag new">5 · changed</span>
+        <div class="pic" aria-hidden="true">
+          <svg viewBox="0 0 200 92" width="100%" height="100%"><rect x="40" y="10" width="120" height="72" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="46" y="18" width="108" height="16" rx="5" fill="#f1efe8"/><text x="54" y="30" font-size="9.5" fill="#2c2c2a">Copy for my agent</text><rect x="48" y="42" width="80" height="4" rx="2" fill="#d6d4cb"/><rect x="48" y="52" width="96" height="4" rx="2" fill="#edebfa"/><rect x="48" y="62" width="70" height="4" rx="2" fill="#d6d4cb"/></svg>
+        </div>
+        <p><b>Copy for my agent</b> sends Muse Tuesday's open comments, and says how many on earlier editions it left out.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what">Violet boxes are new. The dashed path is what happens today.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1320 520" role="img" aria-label="Swimlane flow: Muse publishes an edition, the shell names it, Pipeup sorts comments by edition, Sam sees this edition's and finds earlier ones in All comments">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="30" width="1320" height="110" fill="#fafaf7"/>
+          <rect x="0" y="150" width="1320" height="110" fill="#f4f3ee"/>
+          <rect x="0" y="270" width="1320" height="110" fill="#fafaf7"/>
+          <rect x="0" y="390" width="1320" height="110" fill="#f4f3ee"/>
+          <text x="16" y="80" font-size="14" font-weight="600" fill="#2c2c2a">Muse</text>
+          <text x="16" y="98" font-size="11.5" fill="#888780">publishes editions</text>
+          <text x="16" y="200" font-size="14" font-weight="600" fill="#2c2c2a">The shell</text>
+          <text x="16" y="218" font-size="11.5" fill="#888780">the page, fixed</text>
+          <text x="16" y="320" font-size="14" font-weight="600" fill="#2c2c2a">Pipeup</text>
+          <text x="16" y="338" font-size="11.5" fill="#888780">one document</text>
+          <text x="16" y="440" font-size="14" font-weight="600" fill="#2c2c2a">Sam</text>
+          <text x="16" y="458" font-size="11.5" fill="#888780">the reviewer</text>
+
+          <g stroke="#888780" stroke-width="1.4" fill="none" marker-end="url(#ar)">
+            <path d="M285 85L303 192"/>
+            <path d="M965 325L983 432"/>
+            <path d="M1135 445H1153"/>
+          </g>
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M455 205L473 312"/>
+            <path d="M625 325H643"/>
+            <path d="M795 325H813"/>
+          </g>
+          <g stroke="#9a2b2b" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ar)">
+            <path d="M380 235V413"/>
+          </g>
+          <text x="388" y="300" font-size="11" fill="#9a2b2b">today: no edition</text>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="135" y="55" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="210" y="81" fill="#2c2c2a">Publishes Tuesday's</text><text x="210" y="97" fill="#2c2c2a">edition as data</text>
+
+            <rect x="305" y="175" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="195" fill="#2c2c2a">Swaps it in and sets</text><text x="380" y="211" fill="#2c2c2a">data-pipeup-edition</text><text x="380" y="227" fill="#2c2c2a">="2026-10-21"</text>
+
+            <rect x="475" y="295" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="550" y="321" fill="#2c2c2a">Sees the edition</text><text x="550" y="337" fill="#2c2c2a">change, no reload</text>
+            <rect x="645" y="295" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="720" y="315" fill="#2c2c2a">Shows this edition's</text><text x="720" y="331" fill="#2c2c2a">comments; keeps the</text><text x="720" y="347" fill="#2c2c2a">rest off the page</text>
+            <rect x="815" y="295" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="890" y="315" fill="#2c2c2a">New comments</text><text x="890" y="331" fill="#2c2c2a">remember</text><text x="890" y="347" fill="#2c2c2a">2026-10-21</text>
+
+            <rect x="985" y="415" width="150" height="60" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="1060" y="441" fill="#2c2c2a">Reviews Tuesday;</text><text x="1060" y="457" fill="#2c2c2a">control counts it only</text>
+            <rect x="1155" y="415" width="150" height="60" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1230" y="435" fill="#2c2c2a">Finds Monday's under</text><text x="1230" y="451" fill="#2c2c2a">Earlier editions,</text><text x="1230" y="467" fill="#2c2c2a">replies or resolves</text>
+
+            <rect x="305" y="415" width="150" height="60" rx="10" fill="#fbeaea" stroke="#9a2b2b" stroke-dasharray="5 4"/>
+            <text x="380" y="435" fill="#9a2b2b">Monday's comments</text><text x="380" y="451" fill="#9a2b2b">on Tuesday's news,</text><text x="380" y="467" fill="#9a2b2b">marked Moved</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 1 · What the author adds</h2>
+    <p class="what">One attribute on <code>&lt;html&gt;</code>, set again when the next edition is swapped in. No script runs before Pipeup, and the identity never changes.</p>
+    <div class="stage">
+      <div class="code"><span class="dim">&lt;!-- the shell, fixed --&gt;</span>
+&lt;html data-pipeup-doc="k7Hq…:key…" <span class="hl">data-pipeup-edition="2026-10-21"</span>&gt;
+…
+<span class="dim">// when the shell swaps in the next edition</span>
+<span class="hl">document.documentElement.dataset.pipeupEdition = edition.date;</span></div>
+      <p class="cap"><b>The value is shown as written</b> ("the 2026-10-21 edition"), so a page may use a readable name ("Tue 21 Oct"). It must be the same every time that edition is shown.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · Tuesday's page, and All comments</h2>
+    <p class="what">Left: today, Monday's comment lands on Tuesday's Markets. Right: proposed, the control counts Tuesday only and Monday's thread waits in the panel.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today</span>
+        <div class="page">
+          <div class="ed">2026-10-21</div>
+          <h4>Daily briefing</h4>
+          <div class="blk hi"><b>Markets</b>Rates hold at 4.25%; the ten-year eases.<span class="bub2" style="top:84px">S</span></div>
+          <div class="blk"><b>CPI</b>3.1% year on year.</div>
+        </div>
+        <span class="ctl"><span class="num">1</span>Comment</span>
+        <p class="cap">"Put the rates chart first" sits on Tuesday's Markets, marked <span class="moved">Moved</span>.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed</span>
+        <div class="page">
+          <div class="ed">2026-10-21</div>
+          <h4>Daily briefing</h4>
+          <div class="blk"><b>Markets</b>Rates hold at 4.25%; the ten-year eases.</div>
+          <div class="blk"><b>CPI</b>3.1% year on year.</div>
+        </div>
+        <span class="ctl"><span class="num zero">0</span>Comment</span>
+      </div>
+      <div class="frame">
+        <span class="tag new">All comments</span>
+        <div class="card list">
+          <div class="lh"><span>No comments on this edition yet</span></div>
+          <div class="fold"><span>Earlier editions · 2</span><svg width="14" height="14" style="transform:rotate(90deg)"><use href="#chev"/></svg></div>
+          <div class="lc">
+            <div class="where">In the 2026-10-20 edition · Markets</div>
+            <div class="meta">Sam · yesterday</div>
+            Put the rates chart first.
+          </div>
+          <div class="lc">
+            <div class="where">In the 2026-10-19 edition · CPI</div>
+            <div class="meta">Lee · 2 days ago · 1 reply</div>
+            Year on year or month on month?
+          </div>
+        </div>
+        <p class="cap"><b>Folded by default</b>, opening once the person chooses it; its count says what's waiting. Resolved threads follow Show resolved as today.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 3 · Opening an earlier edition's thread</h2>
+    <p class="what">It opens on its own, with what it was about, as a thread from another view does today. Reply, Resolve and the rest work as usual.</p>
+    <div class="stage">
+      <div class="card pop">
+        <div class="root"><span class="av">S</span>
+          <div class="meta">Sam · yesterday</div>
+          <div class="tx">Put the rates chart first; it's what I check.</div>
+        </div>
+        <div class="snap">From the 2026-10-20 edition · Markets: “Oil falls 3% as supply worries ease”</div>
+        <div class="btns"><button>Go to that edition</button><button class="go">Resolve</button></div>
+      </div>
+      <p class="cap"><b>Go to that edition</b> shows only when the page tells Pipeup how to go there (it already can for views). Otherwise the thread stays on its own with its snapshot.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 4 · What Copy for my agent carries</h2>
+    <p class="what">Only the highlighted lines change.</p>
+    <div class="stage">
+      <div class="card clip">Please act on my review comments on Daily briefing (https://muse.example/briefing). The page uses Pipeup.
+The comments were left in my browser. …
+
+<span class="hl">## 1 open comment on the 2026-10-21 edition</span>
+
+1. [t-7c2e] On "CPI": Is this seasonally adjusted? (Sam)
+
+<span class="hl">(2 open comments on earlier editions left out.)</span>
+
+## How to answer
+…</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">Changes to §4 (Adding Pipeup), §8 (Staying attached), §7 (All comments), §15 and §15b (agents), and §19.</p>
+    <div class="spec">
+      <div class="h">§4 · Adding Pipeup to a page</div>
+      <div class="a">Authors can optionally mark up … an <b>edition</b>: a page that shows a new edition in the same shell (a daily briefing, say) can say which edition it is showing, and say so again when the next one is swapped in.</div>
+
+      <div class="h">§8 · Staying attached on changing pages</div>
+      <div class="a">On a page that names its edition, every new comment remembers the edition it was made on. Comments from another edition never show on the page, are never matched to the content of the edition showing, and are never marked Moved for it. When the page names a new edition while it is open, Pipeup follows without a reload.</div>
+      <div class="a">On a page that names its edition, a comment made before the page named one counts as an earlier edition's.</div>
+
+      <div class="h">§7 · All comments, and the comment control</div>
+      <div class="a">The comment control counts the open comments on the edition showing. All comments lists them first, then, folded under <b>Earlier editions</b> with how many open threads they hold, the threads of other editions, each saying which edition it is from.</div>
+      <div class="a">An earlier edition's thread opens on its own with a snapshot of what it was about, and can be replied to, reacted to and resolved. It goes to that edition only when the page tells Pipeup how.</div>
+
+      <div class="h">§15 · Agent support</div>
+      <div class="d">When each edition is meant to be reviewed on its own, the publisher gives each edition its own document identity …</div>
+      <div class="a">When each edition is meant to be reviewed on its own, the page names the edition it shows (§4), and agents that publish such pages do so. A page that wants editions kept wholly apart, or that runs a Pipeup without editions, gives each edition its own document identity instead.</div>
+
+      <div class="h">§15b · Copy for my agent</div>
+      <div class="a">On a page that names its edition, the copied text carries the open comments on the edition showing, and says how many open comments on earlier editions it left out.</div>
+
+      <div class="h">§19 · Open questions</div>
+      <div class="d">Editions: whether a page should be able to say which edition it is showing …</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. Do earlier editions' open comments count on the control?</h3>
+        <p><b>Recommended: no.</b> A daily page would pile up yesterday's threads forever and the dot would never clear. They wait, counted, under Earlier editions in All comments.</p></div>
+      <div class="q"><h3>2. Comments made before the page named its edition</h3>
+        <p><b>Recommended: they count as an earlier edition's</b> ("Before editions"), so a page that adopts the attribute stops the old ones landing on today's news at once. The alternative, letting them float onto whatever edition shows, keeps today's problem for them.</p></div>
+      <div class="q"><h3>3. Editions and identities together</h3>
+        <p><b>Recommended: the attribute is the default advice</b>; a separate identity per edition stays documented for pages that want editions wholly apart (separate shared copies, nothing listed across them) and for Pipeup versions before this one.</p></div>
+    </div>
+  </section>
+</main>

@@ -186,31 +186,28 @@ page opened from disk and in any script order, and they are released with Pipeup
   new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
   comments of different documents never mix.
 - **A page that shows a new edition in a fixed shell** (a daily briefing, say, whose shell stays the same while each
-  day's content is loaded as data) is one document to Pipeup, so yesterday's comments land on today's matching content,
-  marked Moved. When each edition is meant to be reviewed on its own, give each edition its own `data-pipeup-doc`: keep
-  the key (after the colon) and make a new 16-character id from the page's id and the edition. Pipeup refuses any other
-  form, so never just append a date. Set it before Pipeup starts: put `data-pipeup-auto="off"` on `<html>` and mount
-  Pipeup once the edition is known:
+  day's content is loaded as data) is one document to Pipeup, so yesterday's comments would land on today's matching
+  content, marked Moved. When each edition is meant to be reviewed on its own, **name the edition on `<html>`** and
+  set it again when the next one is swapped in; Pipeup follows without a reload:
 
   ```html
-  <html data-pipeup-doc="<the page's id>:<key>" data-pipeup-auto="off">
-  …
-  <script src="…/pipeup.min.js" integrity="…"></script>
-  <script type="module">
-    // Once the edition's data has loaded: `edition` is its date, or any name that is the same every time it is shown.
-    const html = document.documentElement;
-    const [id, key] = html.dataset.pipeupDoc.split(":");
-    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${id}:${edition}`));
-    const editionId = btoa(String.fromCharCode(...new Uint8Array(hash)))
-      .replace(/\+/g, "-").replace(/\//g, "_").slice(0, 16);
-    html.dataset.pipeupDoc = `${editionId}:${key}`;
-    await Pipeup.mount();
-  </script>
+  <html data-pipeup-doc="<id>:<key>" data-pipeup-edition="2026-10-21">
+  ```
+  ```js
+  // when the shell swaps in the next edition
+  document.documentElement.dataset.pipeupEdition = edition.date;
   ```
 
-  Each edition then keeps its own comments, and the same edition always gets the same id. Keep the shell's own
-  `data-pipeup-doc` unchanged when you regenerate it. On a page with `data-pipeup-share`, ask the author first: every
-  edition's comments then go to the one shared copy (each edition shows only its own).
+  The value is shown as written ("the 2026-10-21 edition"), so a readable name works too; it must be the same every
+  time that edition is shown. Comments then stay with their edition: the control counts this edition's, earlier
+  editions' wait folded under **Earlier editions** in All comments, and Copy for my agent carries this edition's. It
+  stays one document, with one identity and one shared copy, and needs no script before Pipeup. Keep
+  `data-pipeup-doc` unchanged. Only for a page that wants editions kept wholly apart (separate shared copies), or one
+  that runs a Pipeup older than the edition attribute, give each edition its own `data-pipeup-doc` instead: keep the
+  key (after the colon) and make a new 16-character id from the page's id and the edition (Pipeup refuses any other
+  form, so never just append a date), set before Pipeup starts (`data-pipeup-auto="off"` on `<html>`, then
+  `Pipeup.mount()` once the edition is known), for example the first 16 base64url characters of
+  SHA-256(`<id>:<edition>`). Ask the author first on a page with `data-pipeup-share`.
 - **Keep add-ons intentional (best effort).** When you add an add-on: pin its script with its `integrity` hash; add its id to
   `data-pipeup-addons` on `<html>` (append to an existing list and keep every entry it has, never remove one), so only the
   add-ons the author chose run on the page; and tell the author, in your reply, about a Content-Security-Policy that
@@ -254,6 +251,7 @@ Markup on the page:
 | `data-pipeup-addons` | `<html>` | Which add-ons may run, by id (`share,voice`; `none` for none). Without it every add-on runs. Keep every entry; add yours. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
+| `data-pipeup-edition` | `<html>` | The edition the page shows (a daily briefing in one shell); set it again when the next is swapped in. Comments stay with their edition. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |
 | `data-pipeup-label` | charts, images, icons | The name reviewers and AI tools see (Step 4). |
 | `data-pipeup-slide` | each slide | Slide number, 1-based (Step 5). |

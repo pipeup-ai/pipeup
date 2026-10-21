@@ -9,14 +9,17 @@ const BUDGETS = {
   voice: 4 * 1024,
   live: 11 * 1024,
   assist: 10 * 1024,
-  agents: 5 * 1024,
+  // 7 KB: Copy for my agent's instructions and the paste dialog, which reads and checks signed replies blocks
+  // (+2.8 KB; docs/design/agent-paste.md), with 0.8.2's commands for local agents (docs/design/local-agents.md).
+  // Only pages that have an agent load it.
+  agents: 7 * 1024,
   emoji: 32 * 1024,
   github: 3 * 1024,
   updates: 4 * 1024,
   inbox: 8 * 1024,
   identity: 4 * 1024,
 };
-const CORE = 60 * 1024;
+const CORE = 61 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.
