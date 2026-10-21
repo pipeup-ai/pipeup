@@ -1,0 +1,482 @@
+<title>One-Tap Commenting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: one-tap commenting, commenting on a selection outside comment mode, a small page API, and settings
+     outside <html>. Prompted by a reviewer's itinerary page built on 0.8.2. Light mode only, Pipeup's own tokens. -->
+<style>
+  /* Layout: one reading column; findings first, then storyboard, swimlanes, screens on grey stages, spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --ho: #f1efe8;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sel: #cfe0fb;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 6px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 62em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 340px; margin: 0; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); }
+  .tag.new { color: var(--ac); }
+  code { font: 0.92em var(--mono); background: var(--ho); border-radius: 4px; padding: 0 4px; }
+
+  /* findings table */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); font-size: 13.5px; min-width: 760px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td.v { white-space: nowrap; font-weight: 600; }
+  td.v.core { color: var(--ac); }
+  td.v.ok { color: var(--addk); }
+  td.v.no { color: var(--mu); }
+  td small { color: var(--fa); }
+
+  /* storyboard */
+  .story { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .shot { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .shot.new { border-color: #c9c4ef; }
+  .shot .pic { height: 96px; border-radius: 8px; background: var(--so); border: 1px solid var(--ru); overflow: hidden; }
+  .shot p { margin: 0; font-size: 13.5px; }
+
+  .scroll { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 10px; }
+  .scroll svg { display: block; min-width: 1060px; width: 100%; height: auto; }
+
+  /* a page in a window */
+  .win { width: 440px; max-width: 100%; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); overflow: hidden; position: relative; font-size: 13px; }
+  .win .bar { height: 26px; background: var(--so); border-bottom: 1px solid var(--ru); display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+  .win .bar i { width: 8px; height: 8px; border-radius: 50%; background: #d9d7ce; }
+  .win .pg { padding: 16px 18px 56px; min-height: 250px; }
+  .win h4 { margin: 0 0 2px; font-size: 17px; letter-spacing: -0.01em; }
+  .win .sub { color: var(--fa); font-size: 12px; margin: 0 0 12px; }
+  .win .day { font-weight: 600; font-size: 12.5px; margin: 12px 0 4px; color: var(--mu); }
+  .win p { margin: 0 0 6px; }
+  .win a { color: #2b5fb3; }
+  .hdr { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .pbtn { font: inherit; font-size: 12px; border: 1px solid #c9c7be; background: var(--su); border-radius: 999px; padding: 4px 11px; white-space: nowrap; }
+  .pbtn.on { background: var(--ac); border-color: var(--ac); color: #fff; }
+  .sel { background: var(--sel); border-radius: 2px; }
+  .outline { outline: 1.5px dashed var(--ac); outline-offset: 3px; border-radius: 3px; }
+
+  /* Pipeup's control: frosted square in the corner */
+  .ctl { position: absolute; right: 0; bottom: 0; width: 32px; height: 32px; border-top-left-radius: 10px; background: rgba(240, 239, 233, 0.82); backdrop-filter: blur(6px); display: grid; place-items: center; color: var(--k); }
+  .ctl.on { background: var(--ac); color: #fff; }
+  .ctl.touch { width: 44px; height: 44px; }
+  .reach { position: absolute; right: 32px; bottom: 0; height: 32px; display: flex; align-items: center; gap: 2px; padding: 0 4px 0 10px; background: rgba(240, 239, 233, 0.92); border-top-left-radius: 10px; font-size: 11.5px; color: var(--mu); }
+  .reach .k { padding: 0 6px; }
+  .reach .dots { width: 26px; height: 24px; border-radius: 6px; display: grid; place-items: center; color: var(--k); background: rgba(255,255,255,0.7); box-shadow: 0 0 0 1px var(--ln); }
+  .tab { position: absolute; right: 44px; bottom: 0; width: 30px; height: 44px; background: rgba(240, 239, 233, 0.82); border-top-left-radius: 10px; display: grid; place-items: center; color: var(--k); }
+  .hint { position: absolute; right: 40px; bottom: 6px; max-width: 260px; background: #222; color: #fff; border-radius: 9px; padding: 7px 11px; font-size: 12px; line-height: 1.4; box-shadow: var(--sh); }
+  .hint.touch { right: 52px; background: var(--ac); }
+  .press { position: absolute; width: 26px; height: 26px; border-radius: 50%; border: 2px solid rgba(83,74,183,0.55); background: rgba(83,74,183,0.12); }
+
+  /* Pipeup's look */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); font-size: 13px; line-height: 1.5; }
+  .menu { position: absolute; right: 6px; bottom: 40px; width: 230px; padding: 4px; }
+  .mi { display: flex; gap: 9px; align-items: center; min-height: 30px; padding: 5px 9px; border-radius: 8px; font-size: 12.5px; }
+  .mi .lb { flex: 1; }
+  .mi .kc { color: var(--fa); font-size: 11.5px; }
+  .mi.gone { color: var(--fa); text-decoration: line-through; text-decoration-color: var(--delk); }
+  .sep { height: 1px; margin: 3px 9px; background: var(--ru); }
+  .sw { position: relative; width: 26px; height: 16px; border-radius: 8px; background: var(--ln); flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.25); }
+  .sw.on { background: var(--ac); } .sw.on::after { transform: translateX(10px); }
+  .av { width: 20px; height: 20px; border-radius: 32%; display: grid; place-items: center; flex: none; font-size: 11px; font-weight: 600; background: #dbeedd; color: #2d6a3a; }
+  .selico { display: inline-grid; place-items: center; width: 28px; height: 26px; vertical-align: middle; margin-left: 6px; background: var(--su); border: 1px solid var(--ln); border-radius: 8px; box-shadow: var(--sh); color: var(--k); }
+  .box { position: absolute; left: 30px; right: 30px; top: 150px; padding: 10px 12px; }
+  .box .who { display: flex; gap: 7px; align-items: center; font-size: 12px; color: var(--mu); }
+  .box .line { margin: 8px 0; color: var(--fa); border-bottom: 1px solid var(--ln); padding-bottom: 6px; }
+  .box .q { font-size: 12px; color: var(--mu); border-left: 2px solid var(--sel); padding-left: 8px; margin-top: 6px; }
+  .btns { display: flex; gap: 8px; justify-content: flex-end; }
+  button.b { font: inherit; font-size: 12px; border-radius: 8px; padding: 5px 11px; border: 1px solid #b4b2a8; background: var(--su); color: var(--k); }
+  button.b.go { background: #111; border-color: #111; color: #fff; }
+  button.b.quiet { border-color: transparent; color: var(--mu); }
+
+  .codec { width: 520px; max-width: 100%; padding: 14px 16px; font: 12px/1.6 var(--mono); white-space: pre-wrap; word-break: break-word; }
+  .codec .c { color: var(--fa); }
+  .codec .hl { background: var(--as); border-radius: 3px; }
+  .codec .x { background: var(--del); color: var(--delk); border-radius: 3px; }
+
+  /* spec wording */
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); } .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .d { background: var(--del); color: var(--delk); text-decoration: line-through; text-decoration-color: rgba(154,43,43,0.5); }
+  .spec .d::before { content: "−"; }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .qs { display: grid; gap: 14px; max-width: 64em; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; }
+  .q p { margin: 6px 0 0; color: var(--mu); font-size: 14px; }
+  .q p b { color: var(--k); }
+  @media (max-width: 520px) { .stage { padding: 14px; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="cm" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3v-3H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18" cy="12" r="1.6" fill="currentColor"/></symbol>
+</svg>
+
+<main>
+  <h1>One tap to comment, and a page that can drive Pipeup</h1>
+  <p class="lede">
+    Ada built a trip itinerary with Pipeup 0.8.2 and shared it with Lee. To make it work for them, she had to build
+    her own Comment button, her own selection button and her own name field, by faking keystrokes and reading
+    Pipeup's internals. Each of those workarounds points at something Pipeup should do itself.
+  </p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>One tap on the comment control starts commenting</b>, and another stops it. Today the first tap opens
+          the menu, and Start commenting is a switch inside it.</li>
+        <li><b>Selecting words offers a comment outside comment mode too.</b> Today selecting words outside comment
+          mode does nothing, and Ada's reviewers concluded that commenting on text didn't work.</li>
+        <li><b>A page can drive Pipeup</b>: turn comment mode on and off, know when it changes, set the reviewer's
+          name and know when they change it, and learn why Pipeup didn't start.</li>
+        <li><b>Settings can go on Pipeup's own script line</b> or be given when the page starts Pipeup, not only on
+          <code>&lt;html&gt;</code>. Hosts such as claude.ai Artifacts wrap the page in their own
+          <code>&lt;html&gt;</code>, so attributes put there are lost.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ada's ten issues, checked against 0.8.2</h2>
+    <p class="what">Six lead to the changes above. Two already work or are by design. Two need her page, or guidance.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>#</th><th>She reported</th><th>What she built instead</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>No way for the page to turn comment mode on or off</td><td>Faked Esc and ⇧⌥C key presses, then checked and retried up to 4 times</td><td class="v core">Page API</td></tr>
+          <tr><td>2</td><td>⇧⌥C doesn't stop comment mode while a thread is open</td><td>Esc, a 250 ms wait, then ⇧⌥C</td><td class="v no">By design<br><small>The reply box has focus; ⇧⌥C types Ç there on a Mac. The API makes it moot.</small></td></tr>
+          <tr><td>3</td><td>No way to read comment mode, and no event when it changes</td><td>Polled a class name inside Pipeup's shadow root every 400 ms</td><td class="v core">Page API<br><small>Add-ons already get this; pages don't.</small></td></tr>
+          <tr><td>4</td><td>Words and links can only be commented on in comment mode</td><td>Her own floating button beside a selection, which turned comment mode on and clicked Pipeup's hidden button</td><td class="v core">Selection outside comment mode</td></tr>
+          <tr><td>5</td><td>The name can only be set when Pipeup starts</td><td>Unmounted and remounted Pipeup, and kept the name in her own storage</td><td class="v core">Page API</td></tr>
+          <tr><td>6</td><td>No event when the reviewer renames themselves</td><td>Polled the name every 1.5 s</td><td class="v core">Page API</td></tr>
+          <tr><td>7</td><td>Clicks on her own button were taken by comment mode, even inside <code>data-pipeup-ignore</code></td><td>Capture-phase listeners that stopped the events</td><td class="v ok">Should already work<br><small>0.8.2 leaves ignored areas to the page. Need her page to reproduce.</small></td></tr>
+          <tr><td>8</td><td>Nothing shows when storage is missing or the script doesn't load</td><td>Her own "Pipeup didn't load" message</td><td class="v ok">Mostly works<br><small>Without storage Pipeup starts and says comments can't be kept. A failed start only reaches the console: the API now says why.</small></td></tr>
+          <tr><td>9</td><td>Settings must sit on <code>&lt;html&gt;</code>, which Artifacts don't allow</td><td>An inline script that set the attributes before Pipeup loaded</td><td class="v core">Settings on the script line</td></tr>
+          <tr><td>10</td><td>Comments don't carry to the next version of the page</td><td>A new document identity for each version (V2, V3)</td><td class="v no">Guidance<br><small>A new version keeps its identity (§15); a new edition gets a new one (#98). Moving threads between identities is for later.</small></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="what" style="margin-top:14px">Her workarounds read class names inside Pipeup's shadow root (<code>button.mode.on</code>, <code>.selbar.show button</code>). They will break on the next release that renames them, which is one more reason to give pages a supported way.</p>
+  </section>
+
+  <section>
+    <h2>Storyboard</h2>
+    <p class="what">Lee reviews Ada's itinerary on a laptop. All five frames are new behaviour.</p>
+    <div class="story">
+      <div class="shot new"><span class="tag new">1</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 96" width="100%" height="100%"><rect x="14" y="12" width="100" height="8" rx="3" fill="#2c2c2a"/><rect x="14" y="30" width="150" height="5" rx="2" fill="#d6d4cb"/><rect x="14" y="42" width="120" height="5" rx="2" fill="#d6d4cb"/><path d="M176 96V82a10 10 0 0 1 10-10h14v24z" fill="#534ab7"/><circle cx="160" cy="62" r="11" fill="rgba(83,74,183,.15)" stroke="rgba(83,74,183,.6)" stroke-width="2"/></svg></div>
+        <p>Lee taps the comment control once. Comment mode is on.</p></div>
+      <div class="shot new"><span class="tag new">2</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 96" width="100%" height="100%"><rect x="14" y="14" width="150" height="5" rx="2" fill="#d6d4cb"/><rect x="14" y="30" width="60" height="9" rx="2" fill="#cfe0fb"/><rect x="74" y="31" width="80" height="5" rx="2" fill="#d6d4cb"/><rect x="160" y="26" width="24" height="18" rx="5" fill="#fff" stroke="#e5e3da"/><rect x="14" y="50" width="130" height="5" rx="2" fill="#d6d4cb"/><path d="M176 96V82a10 10 0 0 1 10-10h14v24z" fill="#e7e5dc"/></svg></div>
+        <p>Later, with comment mode off, Lee selects "brunch at 11". The comment icon eases in beside the line.</p></div>
+      <div class="shot new"><span class="tag new">3</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 96" width="100%" height="100%"><rect x="28" y="14" width="144" height="70" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="38" y="24" width="60" height="5" rx="2" fill="#888780"/><rect x="38" y="40" width="120" height="5" rx="2" fill="#d6d4cb"/><rect x="118" y="66" width="44" height="12" rx="4" fill="#111"/><path d="M176 96V82a10 10 0 0 1 10-10h14v24z" fill="#e7e5dc"/></svg></div>
+        <p>Lee writes "Can we push this to 11:30?" Comment mode stays off; the page carries on as normal.</p></div>
+      <div class="shot new"><span class="tag new">4</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 96" width="100%" height="100%"><rect x="14" y="14" width="80" height="8" rx="3" fill="#2c2c2a"/><rect x="120" y="10" width="66" height="18" rx="9" fill="#534ab7"/><text x="153" y="23" font-size="8.5" text-anchor="middle" fill="#fff">Stop commenting</text><rect x="14" y="40" width="150" height="5" rx="2" fill="#d6d4cb"/><path d="M176 96V82a10 10 0 0 1 10-10h14v24z" fill="#534ab7"/></svg></div>
+        <p>Ada's own header button and Pipeup's control always agree, whichever one Lee used.</p></div>
+      <div class="shot new"><span class="tag new">5</span>
+        <div class="pic" aria-hidden="true"><svg viewBox="0 0 200 96" width="100%" height="100%"><rect x="40" y="20" width="120" height="56" rx="8" fill="#fff" stroke="#e5e3da"/><rect x="50" y="32" width="16" height="16" rx="5" fill="#dbeedd"/><text x="74" y="44" font-size="10" fill="#2c2c2a">Lee</text><rect x="50" y="56" width="90" height="5" rx="2" fill="#d6d4cb"/></svg></div>
+        <p>Ada's page asks once for a name and hands it to Pipeup. Pipeup remembers it, and the page hears if Lee changes it later.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The system, in swimlanes</h2>
+    <p class="what">Violet is new. The page's own code is a lane of its own: it asks Pipeup for things and is told what happened, and never reaches inside.</p>
+    <div class="scroll">
+      <svg viewBox="0 0 1260 420" role="img" aria-label="Swimlanes: Lee, Ada's page code, and Pipeup, for one-tap commenting, the page's own button, and selection outside comment mode">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#888780"/></marker>
+          <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" fill="#534ab7"/></marker>
+        </defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="20" width="1260" height="120" fill="#fafaf7"/>
+          <rect x="0" y="150" width="1260" height="120" fill="#f4f3ee"/>
+          <rect x="0" y="280" width="1260" height="120" fill="#fafaf7"/>
+          <text x="16" y="76" font-size="14" font-weight="600" fill="#2c2c2a">Lee</text>
+          <text x="16" y="94" font-size="11.5" fill="#888780">the reviewer</text>
+          <text x="16" y="206" font-size="14" font-weight="600" fill="#2c2c2a">Ada's page</text>
+          <text x="16" y="224" font-size="11.5" fill="#888780">its own code</text>
+          <text x="16" y="336" font-size="14" font-weight="600" fill="#2c2c2a">Pipeup</text>
+          <text x="16" y="354" font-size="11.5" fill="#888780">core</text>
+
+          <g stroke="#534ab7" stroke-width="1.6" fill="none" marker-end="url(#arA)">
+            <path d="M200 112V306"/>
+            <path d="M275 340H303"/>
+            <path d="M380 306V244"/>
+            <path d="M455 210H483"/>
+            <path d="M560 112V176"/>
+            <path d="M635 210H663"/>
+            <path d="M740 244V306"/>
+            <path d="M960 112V306"/>
+            <path d="M1035 340H1063"/>
+          </g>
+          <text x="208" y="200" font-size="11" fill="#534ab7">one tap</text>
+          <text x="388" y="282" font-size="11" fill="#534ab7">"mode changed"</text>
+          <text x="748" y="282" font-size="11" fill="#534ab7">"turn it off"</text>
+          <text x="968" y="200" font-size="11" fill="#534ab7">selects words</text>
+          <line x1="860" y1="24" x2="860" y2="400" stroke="#d6d4cb" stroke-dasharray="3 4"/>
+
+          <g font-size="12" text-anchor="middle">
+            <rect x="125" y="48" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="200" y="76" fill="#2c2c2a">Taps the comment</text><text x="200" y="92" fill="#2c2c2a">control</text>
+            <rect x="125" y="306" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="200" y="334" fill="#2c2c2a">Comment mode on,</text><text x="200" y="350" fill="#2c2c2a">hint says so</text>
+            <rect x="305" y="306" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="380" y="334" fill="#2c2c2a">Tells the page</text><text x="380" y="350" fill="#2c2c2a">comment mode is on</text>
+            <rect x="305" y="176" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="380" y="204" fill="#2c2c2a">Header button reads</text><text x="380" y="220" fill="#2c2c2a">Stop commenting</text>
+            <rect x="485" y="48" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="560" y="76" fill="#2c2c2a">Clicks the page's</text><text x="560" y="92" fill="#2c2c2a">Stop commenting</text>
+            <rect x="485" y="176" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="560" y="204" fill="#2c2c2a">Hears its own</text><text x="560" y="220" fill="#2c2c2a">button's click</text>
+            <rect x="665" y="176" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="740" y="204" fill="#2c2c2a">Asks Pipeup to stop</text><text x="740" y="220" fill="#2c2c2a">comment mode</text>
+            <rect x="665" y="306" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="740" y="334" fill="#2c2c2a">Stops, then says</text><text x="740" y="350" fill="#2c2c2a">it has stopped</text>
+
+            <rect x="885" y="48" width="150" height="64" rx="10" fill="#fff" stroke="#c4c2b9"/>
+            <text x="960" y="70" fill="#2c2c2a">Comment mode off:</text><text x="960" y="86" fill="#2c2c2a">selects "brunch</text><text x="960" y="102" fill="#2c2c2a">at 11"</text>
+            <rect x="885" y="306" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="960" y="334" fill="#2c2c2a">Comment icon eases</text><text x="960" y="350" fill="#2c2c2a">in beside the line</text>
+            <rect x="1065" y="306" width="150" height="64" rx="10" fill="#edebfa" stroke="#534ab7"/>
+            <text x="1140" y="328" fill="#2c2c2a">Comment box on</text><text x="1140" y="344" fill="#2c2c2a">those words; mode</text><text x="1140" y="360" fill="#2c2c2a">stays off</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 1 · One tap starts commenting</h2>
+    <p class="what">The control's look doesn't change. What changes is what the first tap does, and where the menu went.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today · first click</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11 in SoHo, then the High Line.</p></div>
+          <div class="card menu">
+            <div class="mi"><span class="av">L</span><span class="lb">Lee</span></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="lb">Copy comments</span></div>
+            <div class="mi"><span class="lb">Theme</span><span class="kc">Automatic</span></div>
+            <div class="mi"><span class="lb">All comments</span><span class="kc">3</span></div>
+            <div class="mi"><span class="lb">Hide comments</span><span class="sw"></span></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="lb">Start commenting</span><span class="kc">⇧⌥C</span><span class="sw"></span></div>
+          </div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">The menu opens. Commenting is a second tap, on a switch at the bottom.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · first click</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p><span class="outline">Brunch at 11 in SoHo, then the High Line.</span></p></div>
+          <div class="hint">Commenting. Click what you want to comment on. Click here again to stop.</div>
+          <div class="ctl on"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">Comment mode is on at once: the glass turns the accent colour and the hint says how to stop. A second click stops it.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · pointed at</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p>Brunch at 11 in SoHo, then the High Line.</p></div>
+          <div class="reach"><span class="k">Comment · ⇧⌥C</span><span class="dots" title="More"><svg width="15" height="15"><use href="#dots"/></svg></span></div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">The reach that already shows the shortcut gains <b>⋯</b>, which opens the rest of the menu: name, Copy comments, Theme, All comments, Hide comments.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 2 · On a touch screen, with no pointer to hover</h2>
+    <p class="what">Two ways to reach the menu by touch. The open question below picks one.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">A · Press and hold (recommended)</span>
+        <div class="win" style="width:300px"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><p>Brunch at 11 in SoHo.</p></div>
+          <div class="card menu" style="bottom:52px">
+            <div class="mi"><span class="av">L</span><span class="lb">Lee</span></div>
+            <div class="sep"></div>
+            <div class="mi"><span class="lb">Copy comments</span></div>
+            <div class="mi"><span class="lb">All comments</span><span class="kc">3</span></div>
+            <div class="mi"><span class="lb">Hide comments</span><span class="sw"></span></div>
+          </div>
+          <span class="press" style="right:9px;bottom:9px"></span>
+          <div class="ctl touch"><svg width="20" height="20"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">A tap toggles comment mode. Press and hold opens the menu. The first time comment mode starts by touch, its hint adds "Press and hold for more".</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">B · A ⋯ tab beside the control</span>
+        <div class="win" style="width:300px"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><p>Brunch at 11 in SoHo.</p></div>
+          <div class="tab"><svg width="16" height="16"><use href="#dots"/></svg></div>
+          <div class="ctl touch"><svg width="20" height="20"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">Always visible, so nothing is hidden behind a gesture. It covers a strip of the page twice the size of today's control.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 3 · Commenting on words, with comment mode off</h2>
+    <p class="what">The selection icon is the same one comment mode shows today. It now also appears outside comment mode, and starting a comment from it doesn't turn comment mode on.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p><span class="sel">Brunch at 11</span> in SoHo, then the High Line.</p><p>Dinner: <a>Lucali</a>, 7:30.</p></div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">Nothing happens. Lee's reading: "comments on text don't work".</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · words selected</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p><span class="sel">Brunch at 11</span> in SoHo, then the High Line.<span class="selico"><svg width="15" height="15"><use href="#cm"/></svg></span></p><p>Dinner: <a>Lucali</a>, 7:30.</p></div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">The icon eases in just past the line, never over the words, as it does in comment mode.</p>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed · icon chosen</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p><div class="day">Saturday</div><p><span class="sel">Brunch at 11</span> in SoHo, then the High Line.</p><p>Dinner: <a>Lucali</a>, 7:30.</p></div>
+          <div class="card box">
+            <div class="who"><span class="av">L</span>Lee</div>
+            <div class="q">Brunch at 11</div>
+            <div class="line">Can we push this to 11:30?</div>
+            <div class="btns"><button class="b quiet">Cancel</button><button class="b go">Comment</button></div>
+          </div>
+          <div class="ctl"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+        <p class="cap">The comment box opens on the words. The control stays grey: links still open and the page still works.</p>
+      </div>
+    </div>
+    <p class="what" style="margin-top:14px"><b>Links:</b> a link's words can be selected and commented on like any others. Commenting on a link as a whole is still comment mode's job, where a click on a link doesn't follow it.</p>
+  </section>
+
+  <section>
+    <h2>Screen 4 · The page's own button, kept in step</h2>
+    <p class="what">Ada's header button and Pipeup's control show the same state, whichever one Lee used. The code is only an illustration of what the page can ask and hear; the names are for the design note.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag new">Lee used Pipeup's control</span>
+        <div class="win"><div class="bar"><i></i><i></i><i></i></div>
+          <div class="pg"><div class="hdr"><div><h4>NYC, 7–10 May</h4><p class="sub">Ada &amp; Lee</p></div><button class="pbtn on">Stop commenting</button></div><div class="day">Saturday</div><p>Brunch at 11 in SoHo, then the High Line.</p></div>
+          <div class="ctl on"><svg width="17" height="17"><use href="#cm"/></svg></div>
+        </div>
+      </div>
+      <div class="frame">
+        <span class="tag">What Ada had to write · 0.8.2</span>
+        <div class="card codec"><span class="c">// read: a class name inside the shadow root, every 400 ms</span>
+<span class="x">setInterval(() =&gt; {
+  const on = !!document.querySelector("pipeup-root")
+    .shadowRoot.querySelector("button.mode.on");
+  label(on);
+}, 400);</span>
+<span class="c">// write: fake ⇧⌥C, check, retry up to 4 times</span>
+<span class="x">dispatchEvent(new KeyboardEvent("keydown", {code: "KeyC", shiftKey: true, altKey: true}));</span></div>
+      </div>
+      <div class="frame">
+        <span class="tag new">What she could write · proposed</span>
+        <div class="card codec"><span class="c">// illustration only; names settled in the design note</span>
+<span class="hl">const pipeup = await Pipeup.mount();</span>
+
+<span class="hl">pipeup.on("change", (s) =&gt; label(s.commenting));</span>
+button.onclick = () =&gt; <span class="hl">pipeup.setCommenting(!pipeup.commenting)</span>;
+
+<span class="hl">await pipeup.setName("Lee");</span>   <span class="c">// Pipeup keeps it</span>
+<span class="hl">pipeup.on("change", (s) =&gt; showName(s.name));</span>
+
+Pipeup.mount().catch((e) =&gt; <span class="hl">showWhy(e.reason)</span>);</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screen 5 · Settings where the host lets you put them</h2>
+    <p class="what">claude.ai Artifacts, and other hosts that wrap a page, write their own <code>&lt;html&gt;</code>. The same settings can now sit on the line that loads Pipeup.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Today · lost on Artifacts</span>
+        <div class="card codec"><span class="x">&lt;html data-pipeup-doc="…" data-pipeup-layout="bubbles"&gt;</span>
+<span class="c">&lt;!-- the host replaces this tag with its own --&gt;</span>
+
+<span class="c">&lt;!-- Ada's workaround --&gt;</span>
+<span class="x">&lt;script&gt;document.documentElement.setAttribute("data-pipeup-doc", "…");&lt;/script&gt;</span>
+&lt;script src="…/pipeup.js" integrity="…"&gt;&lt;/script&gt;</div>
+      </div>
+      <div class="frame">
+        <span class="tag new">Proposed</span>
+        <div class="card codec">&lt;script src="…/pipeup.js" integrity="…"
+  <span class="hl">data-pipeup-doc="…"</span>
+  <span class="hl">data-pipeup-layout="bubbles"</span>&gt;&lt;/script&gt;
+
+<span class="c">&lt;!-- or, for a page that starts Pipeup itself --&gt;</span>
+Pipeup.mount(<span class="hl">{ doc: "…", layout: "bubbles" }</span>);</div>
+        <p class="cap">Every setting <code>&lt;html&gt;</code> takes works in either place. <b>pipeup init</b> puts them on the script line for a page that a host will wrap, and <b>pipeup check</b> reads them from all three places.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">Changes to §4 (Adding Pipeup), §5 (Starting a comment) and §7 (The comment control), and a new §4a.</p>
+    <div class="spec">
+      <div class="h">§4 · Adding Pipeup to a page</div>
+      <div class="a">Every setting a page can put on <code>&lt;html&gt;</code> can also be put on the line that loads Pipeup, or given when the page starts Pipeup itself, so pages on hosts that write their own <code>&lt;html&gt;</code> (such as claude.ai Artifacts) need no extra code. A setting given in more than one place takes the value given when the page starts Pipeup, then the one on Pipeup's line, then the one on <code>&lt;html&gt;</code>; the check names the places that disagree.</div>
+      <div class="h">§4a · Working with the page's own code (new)</div>
+      <div class="a">A page's own code can turn comment mode on and off, and is told once the change has happened.</div>
+      <div class="a">It can ask whether comment mode is on, and is told each time it changes, however it changed: Pipeup's control, the shortcut, Esc, or the page itself.</div>
+      <div class="a">It can set the reviewer's name at any time. Pipeup keeps it as if the reviewer had typed it, and the page is told each time the reviewer changes it in Pipeup.</div>
+      <div class="a">When Pipeup can't start, the page can learn why in words (for example, another copy of Pipeup is on the page), as well as the console.</div>
+      <div class="a">None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.</div>
+      <div class="h">§5 · Starting a comment</div>
+      <div class="d">Selecting text offers commenting only in comment mode. Outside it, selecting text offers nothing and the page behaves as normal.</div>
+      <div class="a">Selecting words offers commenting in and out of comment mode, with the same comment icon in the same place. Starting a comment from it outside comment mode doesn't turn comment mode on, and the page keeps working as normal. An author can turn this off, so that outside comment mode selecting words offers nothing.</div>
+      <div class="a">A link's words can be selected and commented on like any others; commenting on a link as a whole is done in comment mode.</div>
+      <div class="h">§7 · The comment control</div>
+      <div class="d">In comment mode, clicking it opens All comments… Otherwise, clicking it opens its menu…</div>
+      <div class="a">Clicking or tapping the comment control turns comment mode on; doing it again turns it off. Comment mode's hint says how to stop.</div>
+      <div class="a">Pointed at, the control's reach shows its shortcut and <b>⋯</b>, which opens the menu. By touch, pressing and holding the control opens the menu, and the first time comment mode starts by touch its hint says so. From the keyboard, ↑ or the menu key on the focused control opens the menu.</div>
+      <div class="a">The menu keeps its rows, and Start commenting stays in it with its switch, so the menu still shows the state and the shortcut. All comments is reached from the menu.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <div class="qs">
+      <div class="q"><h3>1. How does touch reach the menu?</h3>
+        <p><b>Recommended: press and hold, taught once by comment mode's hint (A).</b> It keeps the control as small as it is today. The ⋯ tab (B) is easier to find but covers twice as much of a phone's page.</p></div>
+      <div class="q"><h3>2. Selection outside comment mode: on by default?</h3>
+        <p><b>Recommended: on, with an author switch to turn it off.</b> Selecting words is how most people expect to comment. Apps where people select to copy can turn it off.</p></div>
+      <div class="q"><h3>3. Should the page also be able to start a comment on a given element or selection?</h3>
+        <p><b>Recommended: not now.</b> Ada asked for it to build her own selection button, which this proposal makes unnecessary. Add it if another page needs it.</p></div>
+      <div class="q"><h3>4. All comments while commenting</h3>
+        <p><b>Decided: from the menu.</b> Today a click in comment mode opens All comments. With one click toggling comment mode, All comments is the menu's row. The count sits inside the same 32 px square, too small to be a second target.</p></div>
+    </div>
+  </section>
+</main>

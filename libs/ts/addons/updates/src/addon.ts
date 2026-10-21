@@ -2,6 +2,7 @@ import type { AddonHost, PipeupAddon } from "pipeup";
 import { decide, type Notice } from "./decide";
 import { KEYS } from "./keys";
 import { check } from "./verify";
+import { pageSetting } from "@pipeup/kit";
 
 export const LIST_URL = "https://pipeup-ai.github.io/pipeup/updates.json";
 const DAY = 864e5;
@@ -29,9 +30,9 @@ const keep = (key: string, value: string): void => {
 /** Whether the author is the one looking: a page from disk, this computer, or where the author asked. */
 export function authorContext(
   loc: Pick<Location, "protocol" | "hostname"> = location,
-  html: Element = document.documentElement,
+  html?: Element,
 ): boolean {
-  const ask = html.getAttribute("data-pipeup-updates");
+  const ask = pageSetting("data-pipeup-updates", html);
   if (ask === "off") return false;
   if (ask === "on" || ask === "everyone") return true;
   const h = loc.hostname;
@@ -67,7 +68,7 @@ export function createAddon(): PipeupAddon {
       says: "Checks the Pipeup project's published update list (GitHub Pages) once a day, only on this computer or where the page's author asked; that service can see your network address.",
     },
     setup(host: AddonHost) {
-      if (document.documentElement.getAttribute("data-pipeup-updates") === "off")
+      if (pageSetting("data-pipeup-updates") === "off")
         return host.off('the page switched it off (data-pipeup-updates="off")');
       if (!authorContext())
         return host.off(

@@ -1,4 +1,4 @@
-import { settings, type Settings } from "@pipeup/kit";
+import { pageSetting, settings, type Settings } from "@pipeup/kit";
 import type { Comment, Identity, ItemHandle, MenuItem, PipeupAddon, Thread } from "pipeup";
 import { core, NAME, replyOp, type Core } from "./author";
 import { authorEngine, promptApi, type Availability, type Engine, type Session } from "./engine";
@@ -72,7 +72,7 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""):
 
 /** Pages the author named for the assistant to read and link to: Markdown files on this site. */
 const notesNamed = (): string[] =>
-  (document.documentElement.getAttribute("data-pipeup-assist-notes") ?? "").split(/[\s,]+/).filter(Boolean);
+  (pageSetting("data-pipeup-assist-notes") ?? "").split(/[\s,]+/).filter(Boolean);
 
 export function createAddon(): PipeupAddon {
   return {

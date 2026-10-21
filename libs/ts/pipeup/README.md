@@ -24,6 +24,10 @@ As a classic script (also works from `file://`), it mounts itself on pages that 
   <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
+On a host that writes its own `<html>` (claude.ai Artifacts, for example), put the same settings on the script
+line instead: `<script src="…/pipeup.min.js" data-pipeup-doc="<id>:<key>" …>`. Every `data-pipeup-*` setting works
+there, for add-ons too.
+
 Each release's notes on GitHub give the `integrity` value
 (`node scripts/sri.mjs` prints it for a local build). Make a document key with
 `await Pipeup.newDocumentAttribute()` and keep it once people have commented.
@@ -39,9 +43,19 @@ Install with `npm i pipeup`. From a bundler (no side effects; call `mount` yours
 
 ```js
 import { mount } from "pipeup";
-const pipeup = await mount({ name: "Sam" }); // options: root, name (optional), store, slides
+const pipeup = await mount({ name: "Sam" }); // options: root, name, store, slides, doc, layout, theme, select
 await pipeup.flush(); // write any unsaved changes now (this also happens when the page is hidden)
 pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
+```
+
+A page with its own review controls (a Comment button in its header, a name field) drives Pipeup without reaching
+inside it:
+
+```js
+await pipeup.setCommentMode(true); // resolves once comment mode is on; pipeup.commentMode reads it
+await pipeup.setName("Ada"); // kept as if the reviewer had typed it; pipeup.name reads it
+const stop = pipeup.on("change", ({ commentMode, name }) => label(commentMode, name)); // however it changed
+mount().catch((e) => show(e.code, e.message)); // "another-copy" or "failed", with words for people
 ```
 
 Pages designed for review can reserve a comment gutter: add `data-pipeup-reserve` to `<html>` and lay the
@@ -64,14 +78,17 @@ Examples in the source repository, one per kind of page, each following the agen
 - [examples/review-site.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-site.html) — a site: clear blocks with stable ids for comment mode and pins; navigation ignored.
 - [examples/review-deck.html](https://github.com/pipeup-ai/pipeup/blob/main/libs/ts/pipeup/examples/review-deck.html) — a deck: one marked element per slide; slide controls ignored so they keep working, and one line so Pipeup can go to a comment's slide.
 
+Selecting words offers a comment icon beside them, in comment mode or out of it; outside it, the comment leaves
+comment mode off and the page keeps working (`data-pipeup-select="comment-mode"` keeps it to comment mode).
 Comments show whether comment mode is on or off: highlights, bubbles and the column can be read and opened, and
 outside comment mode the rest of the page works as normal. **Hide comments** in the control's menu puts them out
 of sight on that page (remembered in the browser); the control still counts the open threads, and comment mode,
 All comments or a comment being written show them again while they last.
 
 The comment control is a small square of frosted glass tucked into the bottom-right corner: the comment icon, or
-the number of open threads inside a comment bubble. Pointed at, it reaches left to show its shortcut; clicking (or tapping) it opens its menu of
-one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
+the number of open threads inside a comment bubble. One click (or tap) starts comment mode and another stops it.
+Pointed at, it reaches left to show its shortcut and **⋯**, which opens its menu (by touch, press and hold the
+control; from the keyboard, ↑ on it): one-line rows, each explained by a tooltip on hover or focus. From the top: who you are (avatar and name, with
 Add name, edited in place in that row), Copy comments (as Markdown for AI, or as text), Theme, All comments, a Hide comments switch, and nearest the button **Start commenting** with its shortcut and a switch, which leaves the menu open so you see it move. The menu closes on Esc, a click outside, or 3 seconds after the pointer leaves it.
 **All comments** is a panel on the right that moves the page over to make room: every thread in page order as a
 card, threads whose content is gone under "No longer on the page", and two icon toggles in its header, **@** (mentions
@@ -86,7 +103,7 @@ comment goes away; deleting a thread's first comment removes the thread. The com
 reply boxes have Cancel and Comment (Reply) buttons; Enter also sends. Elements the page
 fixes to the window don't move over with the page.
 
-Comment mode (press **Shift+Alt+C**, or **⇧⌥C** on a Mac, or switch on Start commenting in the control's menu) lets reviewers comment on blocks and drop pins
+Comment mode (click the comment control, press **Shift+Alt+C**, or **⇧⌥C** on a Mac) lets reviewers comment on blocks and drop pins
 (Option-click, Alt-click, or the naming bar's Pin) on any page. While it is on, clicks and submits on the page do
 nothing, and selecting text offers a comment icon, clicking a highlight opens its thread, and
 clicking a block opens its comment box at once (a bar names the block; Around it and Inside it move the box to the

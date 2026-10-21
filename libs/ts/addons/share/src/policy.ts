@@ -1,4 +1,5 @@
 import type { SignedOp } from "pipeup";
+import { pageSetting } from "@pipeup/kit";
 
 /** What share remembers about one document: only op ids and choices, never a secret. */
 export interface Saved {
@@ -16,9 +17,7 @@ const AGENT_KINDS = new Set(["reply", "addressed", "react", "unreact"]);
 
 /** The agents the page lists: `<html data-pipeup-agents="<key> <key>">`. */
 export const listedAgents = (): string[] =>
-  (globalThis.document?.documentElement.getAttribute("data-pipeup-agents") ?? "")
-    .split(/[\s,]+/)
-    .filter(Boolean);
+  (pageSetting("data-pipeup-agents") ?? "").split(/[\s,]+/).filter(Boolean);
 
 /**
  * Whose comments are sent (add-ons design §7.3): this reviewer's own, plus ops received from the shared copy, plus

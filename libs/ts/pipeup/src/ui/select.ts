@@ -5,10 +5,15 @@ import { icon } from "./icons";
 import { ACTIVATES } from "./comment-mode";
 import { placeIcon, touch } from "./layout";
 import { IGNORED } from "./pick";
+import { setting } from "./settings";
 
 const NOT_HERE = `${IGNORED},input,textarea,select,[contenteditable]:not([contenteditable=false])`;
 
-/** In comment mode, selecting text offers commenting: one comment icon beside the selection's block, never over its words. */
+/**
+ * Selecting words offers commenting: one comment icon beside the selection's block, never over its words. Outside
+ * comment mode too, unless the page sets data-pipeup-select="comment-mode"; starting a comment from it there leaves
+ * comment mode off.
+ */
 export function createSelection(ctx: Ctx): View {
   const button = h(
     "button",
@@ -23,6 +28,8 @@ export function createSelection(ctx: Ctx): View {
   let settle = 0;
   let held = false; // a mouse button is down
 
+  /** Selecting words offers commenting now: in comment mode, or anywhere unless the page keeps it to comment mode. */
+  const offered = () => ctx.state.commenting || setting("data-pipeup-select") !== "comment-mode";
   const allowed = (node: Node | null) => {
     const el = node && (node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement);
     return !!el && ctx.root.contains(el) && !el.closest(NOT_HERE);
@@ -55,12 +62,12 @@ export function createSelection(ctx: Ctx): View {
   /** `mouse`: the selection was made with the mouse. */
   function check(mouse = false): void {
     const sel = selected();
-    if (!ctx.state.commenting || !sel || !allowed(sel.anchorNode) || !allowed(sel.focusNode)) {
+    if (!offered() || !sel || !allowed(sel.anchorNode) || !allowed(sel.focusNode)) {
       hide();
       return;
     }
-    // Said once for a selection not made with the mouse, not on every extension.
-    if (!range && !mouse) ctx.say("Enter comments on the selected words");
+    // Said once for a selection not made with the mouse, not on every extension; Enter is comment mode's alone.
+    if (!range && !mouse && ctx.state.commenting) ctx.say("Enter comments on the selected words");
     range = sel.getRangeAt(0).cloneRange();
     position();
     bar.inert = false;
@@ -110,11 +117,13 @@ export function createSelection(ctx: Ctx): View {
   window.addEventListener("mousedown", onUp, true);
   window.addEventListener("mouseup", onUp, true);
   window.addEventListener("keyup", onUp, true);
-  // While the icon shows, Enter on the page (not in a field, an ignored area or Pipeup) runs it.
+  // While the icon shows in comment mode, Enter on the page (not in a field, an ignored area or Pipeup) runs it.
   const onEnter = (e: KeyboardEvent) => {
+    // Outside comment mode Enter stays the page's.
     if (
       e.key !== "Enter" ||
       !range ||
+      !ctx.state.commenting ||
       ctx.owns(e) ||
       (e.target instanceof Element && e.target.closest(`${NOT_HERE},${ACTIVATES}`))
     )
@@ -127,7 +136,7 @@ export function createSelection(ctx: Ctx): View {
 
   return {
     render() {
-      if (!ctx.state.commenting && range) hide();
+      if (range && !offered()) hide();
     },
     frame() {
       if (range) position();

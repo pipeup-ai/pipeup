@@ -142,7 +142,7 @@ test("a site's bar at the highest z-index never hides Pipeup", async ({ page }) 
   });
   const c = await box(page, ".launch .mode");
   await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
-  await expect(page.locator(".menu.show")).toHaveCount(1);
+  await expect(page.locator(".launch .mode")).toHaveClass(/\bon\b/);
 });
 
 test("where a comment is names the section it is in, never another card's heading or a hidden tab's", async ({

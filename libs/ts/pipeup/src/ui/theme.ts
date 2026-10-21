@@ -1,3 +1,4 @@
+import { setting } from "./settings";
 export interface Theme {
   font: string;
   accent: string;
@@ -55,10 +56,12 @@ const contrast = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a
 
 export type Look = "light" | "dark";
 
-/** The look the author asked for with data-pipeup-theme="light|dark" on <html> or <body>, if any. */
+/** The look the author asked for with data-pipeup-theme="light|dark" (anywhere a setting goes, or <body>), if any. */
 export function authorLook(doc: Document): Look | null {
   const v =
-    doc.documentElement.getAttribute("data-pipeup-theme") ?? doc.body?.getAttribute("data-pipeup-theme");
+    (doc === document
+      ? setting("data-pipeup-theme")
+      : doc.documentElement.getAttribute("data-pipeup-theme")) ?? doc.body?.getAttribute("data-pipeup-theme");
   return v === "light" || v === "dark" ? v : null;
 }
 

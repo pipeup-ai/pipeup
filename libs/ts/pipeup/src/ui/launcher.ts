@@ -18,6 +18,8 @@ import { plural, replies, threadView, type ThreadActions, type ThreadView } from
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
 const AWAY_MS = 3000;
+/** A press held this long on the control (by touch or pen) opens its menu. */
+const HOLD_MS = 500;
 /** Where threads on content the page hides are listed, with no view of their own to name. */
 const HIDDEN = "Hidden on the page";
 
@@ -43,8 +45,7 @@ export function createLauncher(ctx: Ctx): View {
       type: "button",
       "aria-label": "Comment",
       "aria-keyshortcuts": SHORTCUT_ARIA,
-      "aria-haspopup": "menu",
-      "aria-expanded": "false",
+      "aria-pressed": "false",
     },
     h("span", { class: "plus" }, mark),
     cnt,
@@ -57,7 +58,13 @@ export function createLauncher(ctx: Ctx): View {
     { class: "ttip", "aria-hidden": "true" },
     h("span", {}, tipWords, h("small", {}, SHORTCUT_LABEL)),
   );
-  const launch = h("div", { class: "launch" }, btn, tip);
+  // One click on the control starts or stops comment mode; ⋯ at the end of its reach opens the menu.
+  const dots = h(
+    "button",
+    { class: "mm", type: "button", "aria-label": "More", "aria-haspopup": "menu", "aria-expanded": "false" },
+    icon("more", 15, 3),
+  );
+  const launch = h("div", { class: "launch" }, btn, tip, dots);
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
   // Screen readers hear All comments as a list of comments under a heading; the arrow keys still move through it.
   const list = h("div", { class: "list", role: "list", "aria-label": "Comments" });
@@ -226,7 +233,7 @@ export function createLauncher(ctx: Ctx): View {
     else menu.classList.toggle("inp", ctx.state.listing);
     menu.classList.toggle("show", on);
     inert(menu, !on);
-    btn.setAttribute("aria-expanded", String(on));
+    dots.setAttribute("aria-expanded", String(on));
     more.setAttribute("aria-expanded", String(on));
   };
   /** Opens or closes All comments; focus moves in on open, and back to the button when asked. */
@@ -1089,21 +1096,59 @@ export function createLauncher(ctx: Ctx): View {
     setMenu(true);
     if (e.detail === 0) items()[0]?.focus({ preventScroll: true });
   });
+  /** Opens the menu; from the keyboard, focus moves to Start commenting, nearest the button. */
+  const openMenu = (keys: boolean) => {
+    build();
+    setMenu(true);
+    if (keys) items().at(-1)?.focus({ preventScroll: true });
+  };
+  /** A press held on the control (by touch or pen) opened the menu: the click that ends it does nothing more. */
+  let held = false;
+  let holding = 0;
+  btn.addEventListener("pointerdown", (e) => {
+    held = false;
+    window.clearTimeout(holding);
+    if (e.pointerType === "mouse") return;
+    holding = window.setTimeout(() => {
+      held = true;
+      openMenu(false);
+    }, HOLD_MS);
+  });
+  for (const type of ["pointerup", "pointercancel", "pointerleave"])
+    btn.addEventListener(type, () => window.clearTimeout(holding));
+  // A held press is the menu's, never the phone's own menu for the button.
+  btn.addEventListener("contextmenu", (e) => {
+    if (held || touch()) e.preventDefault();
+  });
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
+    if (held) {
+      held = false;
+      return;
+    }
     if (menuOpen) {
       setMenu(false);
       return;
     }
-    // In comment mode it opens All comments, whose footer holds comment mode's switch and ⋯ for the menu.
-    if (ctx.state.commenting) return setList(true);
-    build();
-    setMenu(true);
-    // Opened from the keyboard (no pointer, so detail is 0): focus moves to Start commenting, nearest the button.
-    if (e.detail === 0) items().at(-1)?.focus({ preventScroll: true });
+    // One click starts comment mode, and another stops it. From the keyboard (detail 0) the block cursor starts.
+    const on = !ctx.state.commenting;
+    ctx.setCommenting(on, on && e.detail === 0);
+  });
+  dots.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (menuOpen) return closeToControl();
+    openMenu(e.detail === 0);
+  });
+  // ↑, the menu key or Shift+F10 on the control opens its menu.
+  btn.addEventListener("keydown", (e) => {
+    if (menuOpen || !(e.key === "ArrowUp" || e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)))
+      return;
+    e.preventDefault();
+    e.stopPropagation();
+    openMenu(true);
   });
   // A menu opened with the mouse leaves focus on its button: the arrows still move into it.
-  for (const b of [btn, more])
+  for (const b of [btn, dots, more])
     b.addEventListener("keydown", (e) => {
       const l = items();
       if (!menuOpen || !l.length || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
@@ -1113,7 +1158,13 @@ export function createLauncher(ctx: Ctx): View {
     });
   const onAnyClick = (e: Event) => {
     const path = e.composedPath();
-    if (menuOpen && !path.includes(menu) && !path.includes(btn) && !path.includes(more)) {
+    if (
+      menuOpen &&
+      !path.includes(menu) &&
+      !path.includes(btn) &&
+      !path.includes(dots) &&
+      !path.includes(more)
+    ) {
       setMenu(false);
       // In comment mode that click only closes the menu: it picks nothing and the page never hears it.
       if (ctx.state.commenting && !ctx.owns(e)) {
@@ -1131,7 +1182,10 @@ export function createLauncher(ctx: Ctx): View {
   const onPointer = (e: PointerEvent) => {
     if (!menuOpen || e.pointerType === "touch" || (e.type === "pointerout" && e.relatedTarget)) return;
     const path = e.composedPath();
-    if (e.type === "pointerover" && (path.includes(menu) || path.includes(btn) || path.includes(more))) {
+    if (
+      e.type === "pointerover" &&
+      (path.includes(menu) || path.includes(btn) || path.includes(dots) || path.includes(more))
+    ) {
       window.clearTimeout(away);
       away = 0;
     } else if (!away)
@@ -1147,7 +1201,7 @@ export function createLauncher(ctx: Ctx): View {
     const status = ctx.addons.statusText();
     const aria = `Comment${ctx.state.commenting ? ", comment mode on" : ""}${label ? `, ${label}` : n ? `, ${n} open` : ""}${status ? `, ${status}` : ""}`;
     if (btn.getAttribute("aria-label") !== aria) btn.setAttribute("aria-label", aria);
-    btn.setAttribute("aria-haspopup", ctx.state.commenting ? "dialog" : "menu");
+    btn.setAttribute("aria-pressed", String(ctx.state.commenting));
     // Only words worth reaching out for (the exact number when the bubble says 9+); the shortcut is always there.
     const lead = label || (n > 9 ? `${n} open` : "");
     const tipText = [lead, status].filter(Boolean).join(" · ") + (lead || status ? " · " : "");
@@ -1250,6 +1304,7 @@ export function createLauncher(ctx: Ctx): View {
       window.removeEventListener("pointerover", onPointer, true);
       window.removeEventListener("pointerout", onPointer, true);
       window.clearTimeout(away);
+      window.clearTimeout(holding);
       window.removeEventListener("keydown", onEscape, true);
       ctx.registerList(null);
       menu.remove();

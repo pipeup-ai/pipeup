@@ -1,5 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
-import { focusInPipeup, open, seedText, selectWords, showComments, stubClipboard } from "./helpers";
+import {
+  focusInPipeup,
+  open,
+  openAll,
+  openMenu,
+  seedText,
+  selectWords,
+  showComments,
+  stubClipboard,
+} from "./helpers";
 
 test("the comment icon goes as soon as the selection does", async ({ page }) => {
   await open(page, "doc.html");
@@ -15,7 +24,7 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   await stubClipboard(page);
   await open(page, "doc.html");
   await page.locator(".launch .mode").focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect(page.locator(".menu.show")).toHaveCount(1);
   // Focus starts on Start commenting, the item nearest the button, at the bottom of the menu.
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
@@ -45,7 +54,7 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   await stubClipboard(page);
   await open(page, "doc.html");
   await page.locator(".launch .mode").focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
@@ -65,20 +74,22 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   expect((await focusInPipeup(page)).cls).toContain("mode");
 });
 
-test("toggling the menu with the control keeps focus on the control", async ({ page }) => {
+test("a click on the control while the menu is open only closes it, and focus stays on the control", async ({
+  page,
+}) => {
   await open(page, "doc.html");
   const count = page.locator(".launch .mode");
-  await count.click();
-  await expect(page.locator(".menu.show")).toHaveCount(1);
+  await openMenu(page);
   await count.click();
   await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(count).not.toHaveClass(/\bon\b/);
   expect((await focusInPipeup(page)).cls).toContain("mode");
 });
 
 test("after editing the name, focus returns to the identity row", async ({ page }) => {
   await open(page, "doc.html", { name: "Sam" });
   await page.locator(".launch .mode").focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("Home");
   expect((await focusInPipeup(page)).text).toContain("Sam");
@@ -97,7 +108,7 @@ test("choosing Your name from the keyboard puts focus in the name field at once"
   await open(page, "doc.html", { name: "Sam" });
   await page.clock.pauseAt(T0 + 60_000);
   await page.locator(".launch .mode").focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("Home");
   expect((await focusInPipeup(page)).text).toContain("Sam");
@@ -140,11 +151,8 @@ test("hidden UI takes no focus: Tab never reaches a closed popover, menu or prev
   await open(page, "site.html", { name: "Sam" });
   await showComments(page);
   await seedText(page, "h1", "in minutes not meetings", "Love this line, see https://example.test/a");
-  // The menu, opened and closed.
-  const count = page.locator(".launch .mode");
-  // In comment mode the control opens All comments; its footer's menu, opened and closed; then the panel closed.
-  await count.click();
-  await expect(page.locator(".all.show")).toHaveCount(1);
+  // All comments, from the menu; its footer's menu, opened and closed; then the panel closed.
+  await openAll(page);
   await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
   await expect(page.locator(".menu.show")).toHaveCount(1);
   await page.keyboard.press("Escape");

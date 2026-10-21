@@ -10,7 +10,7 @@ npm run demo        # a local mailbox and relay, and the page at http://localhos
 
 Open the page in two browsers (Chrome and Firefox or Safari, or a normal and a private window). Each is a reviewer.
 
-- **Share.** Menu (the comment button in the bottom-right corner) → Start commenting → click a paragraph → comment. The other browser shows
+- **Share.** Click the comment button in the bottom-right corner to start commenting → click a paragraph → comment. The other browser shows
   it within about 30 seconds; the menu row says "Shared · up to date". Turn "Send my comments" off, comment, and
   check it does not arrive; turn it on again.
 - **Live.** Menu → Go live → Go live, in both. Comments appear in about a second; a cursor with a name shows while comments

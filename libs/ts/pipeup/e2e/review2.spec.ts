@@ -39,7 +39,7 @@ test("from the keyboard the shortcut is named for assistive tech and shown in th
   await page.keyboard.press("Shift+Tab");
   // Keyboard focus doesn't hold the slide-out open: it is only for a pointer resting on the control.
   await expect(tip(page)).toHaveCSS("opacity", "0");
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toContainText(
     /⇧⌥C|Shift\+Alt\+C/,
   );
