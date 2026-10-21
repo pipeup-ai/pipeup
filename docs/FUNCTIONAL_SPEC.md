@@ -1419,6 +1419,34 @@ The page's side of the link is part of the agents add-on (§15d); `pipeup watch`
   addressed, never resolves, reopens, edits or deletes.
 - Read the person's resolves and reopens, so it knows when "Still not right" has reopened a thread.
 
+**The shell link, without Node**
+- An author or agent without Node starts the same link with a short script published with each release of the agents
+  add-on, which needs only what the computer came with: one for macOS and Linux (bash, `nc`, `openssl`), one for
+  Windows (PowerShell). It can be read in full before it runs.
+- It works beside whatever already shows the page on this computer (a local preview address, or the file itself) and
+  changes neither the page's file nor its address. While it runs it leaves a link file next to the page, and removes it
+  when it stops.
+- With the agents add-on, a page on this computer (opened from a file, or shown at a local address) finds the link file
+  by itself within a few seconds, and **Share with my agent** appears; it goes again when the link stops. The switch
+  works as above: off on every load, and nothing is sent before the person turns it on.
+- The page sends one change at a time. If a send doesn't get through, it tries again for a few seconds before it turns
+  the switch off and says the link isn't reachable.
+- The agent reads the comments from the file the link keeps next to the page, and answers by giving the script the same
+  replies block it would paste (§15b); the script leaves it in the replies file.
+- Each time the person turns sharing on, the page makes a new key for that session and sends it with the comments; it is
+  never put in the page's file or its address. The script marks the replies it leaves with that key. Replies marked
+  with the current session's key are added by themselves, as replies pasted by the person (§15b). Any other unsigned
+  replies in the replies file wait: the menu says replies from the agent are waiting, and the page shows what it found,
+  as for a paste, and adds them only when the person agrees.
+- A reply already in its thread is never added twice.
+- Like `pipeup watch`, the script listens only on this computer, answers only pages on this computer and the secret it
+  made when it started, and says in words where it is and how to stop it.
+- Copy for my agent names the shell link that fits the kind of computer the page is on, pinned to the add-on's release
+  with its checksum, when the page is on this computer and no link is running; the page itself fetches nothing. On a
+  phone or tablet it names none. When a shell link is running, it says how to read and answer through it.
+- An agent on the person's computer that can run commands but has no Node uses the shell link, checks it against the
+  checksum before running it, and never asks the person to install anything to answer comments.
+
 **Keeping it private and safe**
 - Everything stays on the computer: the link talks only to the page it shows and to programs on the same computer, and
   nothing is sent to any server.
@@ -1453,10 +1481,13 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy for
   my agent** and **Paste my agent's replies** to the menu (§15b).
 - Reads replies the person pastes from an agent (§15b). Pasting sends nothing anywhere.
-- Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c).
-- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown
-  through `pipeup watch`, and only after you switch it on, it sends this page's comments to the program running on
-  this computer. Nothing leaves this computer."
+- Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c), for a page shown
+  through `pipeup watch` or next to a running shell link.
+- Looks for a shell link's file only on a page on this computer, and reads the replies file while an agent is listed or
+  a link is running.
+- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page, and replies you paste
+  from your agent. When a link is running on this computer, and only after you switch it on, it sends this page's
+  comments to that link. Nothing leaves this computer."
 - Follows the rules for every add-on (§11a): nothing is added to the page while comments are closed except words in the
   control's label and tooltip, it looks like Pipeup, and it never posts, edits or resolves for anyone.
 
@@ -1862,3 +1893,12 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-21 — Proposed and approved: **the shell link**, a live link without Node. A short script (bash and `nc` on
+  macOS and Linux, PowerShell on Windows) runs beside whatever shows the page, leaves a link file the page finds by
+  itself, and takes the comments once the person switches on Share with my agent. The page sends a new key each session;
+  replies the script tags with it are added by themselves, and other unsigned replies in the file wait for the person.
+  Copy for my agent names the script for the kind of computer, pinned with its checksum (sections 15c and 15d). Visual
+  spec: docs/design/shell-link-mockups.html.
+- 2026-10-21 — Built: the shell link in the agents add-on, with both scripts published in its package. Tagged replies
+  show as pasted by the person; a separate "through your link" marking would need Pipeup itself to change, and is left
+  for later (section 15c).

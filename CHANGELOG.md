@@ -12,11 +12,14 @@ change the API and the stored comment format.
 - **Copy for my agent** (agents add-on) replaces Copy a prompt for my agent. It copies the page's open comments together with how to answer them, says the comments live in your browser and not in the page's file, and gives the page's document id so an agent can sign its answer.
 - **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
 - `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
+- **The shell link** (agents add-on): the live link without Node. `pipeup-link.sh` (bash, `nc`, `openssl`) and `pipeup-link.ps1` (PowerShell) ship in `@pipeup/agents`; run beside a page on your computer, the page finds it by itself and offers Share with my agent. Replies the script tags with the session's key appear by themselves; others wait for you to look. Copy for my agent names the script for your kind of computer, with its checksum.
 
 ### Changed
 
+- The agents add-on sends to a link only while you have Share with my agent on, whether the link is `pipeup watch` or the shell link, and it sends one change at a time, trying a busy link again for a few seconds before saying it can't reach it.
+
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
-- Pipeup's budget rises from 60 to 60.5 KB gzip, and the agents add-on's from 5 to 7 KB.
+- Pipeup's budget rises from 60 to 60.5 KB gzip, and the agents add-on's from 5 to 7 KB, then to 9.5 KB for the shell link.
 
 ## [0.8.2] - 2026-10-19
 

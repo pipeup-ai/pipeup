@@ -1,7 +1,7 @@
 {
   "name": "@pipeup/agents",
   "version": "0.8.2",
-  "description": "Lets an AI agent read and answer a page's comments: its replies file, the live link on this computer and the prompt for an agent.",
+  "description": "Lets an AI agent read and answer a page's comments: its replies file, the live link on this computer (pipeup watch or the shell link) and the prompt for an agent.",
   "license": "MIT",
   "author": "Pipeup contributors",
   "homepage": "https://pipeup-ai.github.io/pipeup/",
@@ -19,6 +19,8 @@
   "unpkg": "dist/agents.min.js",
   "files": [
     "dist/*.js",
+    "dist/*.sh",
+    "dist/*.ps1",
     "dist/types",
     "README.md",
     "LICENSE"
@@ -31,9 +33,9 @@
       "when": "page-configured",
       "to": [
         "the replies file next to this page (this site or this computer)",
-        "the program running on this computer, when the page is shown with pipeup watch"
+        "a link running on this computer (pipeup watch, or the shell link), only after you switch on Share with my agent"
       ],
-      "says": "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown through pipeup watch, and only after you switch it on, it sends this page's comments to the program running on this computer. Nothing leaves this computer."
+      "says": "Reads a replies file next to this page, and replies you paste from your agent. When a link is running on this computer, and only after you switch it on, it sends this page's comments to that link. Nothing leaves this computer."
     }
   },
   "publishConfig": {

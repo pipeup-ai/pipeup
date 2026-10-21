@@ -1,3 +1,29 @@
+import type { System } from "./nearby";
+
+declare const __PIPEUP_SHELL__: { version: string; sha256: Record<string, string> } | undefined;
+
+/** The shell link scripts this add-on was built with: the version they're published under, and each file's SHA-256. */
+const SHELL = typeof __PIPEUP_SHELL__ === "undefined" ? null : __PIPEUP_SHELL__;
+
+/** The shell link for a kind of computer: where to fetch it (pinned to this add-on's release), its checksum, and how to run it. */
+export function shellLink(
+  system: System | undefined,
+  page: string,
+): { url: string; sha256: string; run: string; comments: string; reply: string } | null {
+  const name =
+    system === "windows" ? "pipeup-link.ps1" : system === "mac" || system === "linux" ? "pipeup-link.sh" : "";
+  const sha256 = name ? SHELL?.sha256[name] : undefined;
+  if (!name || !SHELL || !sha256) return null;
+  const run = name.endsWith(".ps1") ? `powershell -ExecutionPolicy Bypass -File ${name}` : `bash ${name}`;
+  return {
+    url: `https://cdn.jsdelivr.net/npm/@pipeup/agents@${SHELL.version}/dist/${name}`,
+    sha256,
+    run: `${run} ${page}`,
+    comments: `${run} comments ${page}`,
+    reply: `${run} reply ${page}`,
+  };
+}
+
 export interface PromptMeta {
   title: string;
   url: string;
@@ -14,6 +40,12 @@ export interface PromptMeta {
   listed: boolean;
   /** The page file on this computer when a live link is running, else "". */
   file?: string;
+  /** A shell link (the script, not `pipeup watch`) is running beside the page. */
+  shell?: boolean;
+  /** The page is on this computer (a file, or a local address), so an agent beside it can link to it. */
+  nearby?: boolean;
+  /** The kind of computer the page is on, to name the shell link that fits it. */
+  system?: System;
   /** The version of Pipeup the page runs: its commands ask for any release of its major version (a pre-release, itself). */
   version?: string;
 }
@@ -70,6 +102,7 @@ export function agentPrompt(m: PromptMeta): string {
   const site = `https://pipeup-ai.github.io/pipeup/${m.version?.includes("-") ? "next/" : ""}`;
   const { page, served } = pageToAnswer(m.url, m.file);
   const arg = served ? `<the HTML file your site serves at ${page}>` : page;
+  const sh = shellLink(m.system, served ? `<the HTML file your site serves at ${page}>` : page);
   const print = `\`${cli} reply --print --doc ${m.doc} --thread <thread id> "what you changed and where" --addressed "short note"\``;
   return [
     `Please act on my review comments on ${one(m.title)} (${one(m.url)}). The page uses Pipeup.`,
@@ -95,16 +128,25 @@ export function agentPrompt(m: PromptMeta): string {
     m.listed
       ? `- This page lists an agent's key. If it's yours, sign the block so it shows as yours, not as pasted by me: ${print} prints each reply signed with the key you keep (in ~/.pipeup/agent.json). Without your key, send the same block unsigned.`
       : `- If you keep a Pipeup key between sessions, sign the block with ${print}, and ask me whether to list you on the page (\`${cli} agent\` prints the line to add). If you can't keep a key, don't ask to be listed: the plain block works.`,
-    ...(m.file
+    ...(m.shell && sh
       ? [
-          `- You're on this computer, with a live link running: \`${cli} comments ${m.file}\` reads the comments and \`${cli} reply --page ${arg} --thread <thread id> "…" --addressed "…"\` answers in the page by itself.`,
+          `- You're on this computer, with a shell link running (${sh.url.split("/").at(-1)}). Once I switch on Share with my agent, \`${sh.comments}\` prints the comments; pipe your replies block into \`${sh.reply}\` and it appears in the page by itself.`,
         ]
-      : m.replies
+      : m.file && !m.shell
         ? [
-            `- If you can write next to the page on this computer, \`${cli} reply --page ${arg} --thread <thread id> "…" --addressed "…"\` writes ${one(placeOf(m.replies))}, and your replies appear by themselves. Pass the HTML file that runs Pipeup, not a file it shows.`,
+            `- You're on this computer, with a live link running: \`${cli} comments ${m.file}\` reads the comments and \`${cli} reply --page ${arg} --thread <thread id> "…" --addressed "…"\` answers in the page by itself.`,
           ]
-        : []),
-    ...((m.file || m.replies) && !m.listed
+        : m.replies
+          ? [
+              `- If you can write next to the page on this computer, \`${cli} reply --page ${arg} --thread <thread id> "…" --addressed "…"\` writes ${one(placeOf(m.replies))}, and your replies appear by themselves. Pass the HTML file that runs Pipeup, not a file it shows.`,
+            ]
+          : []),
+    ...(m.nearby && !m.file && sh
+      ? [
+          `- If you run on this computer without Node, you can link this page to you with nothing to install: fetch ${sh.url}, check its SHA-256 is ${sh.sha256}, read it, then run \`${sh.run}\` and leave it running. Don't ask me to install anything.`,
+        ]
+      : []),
+    ...((m.file || m.replies) && !m.listed && !m.shell
       ? [
           `- The page doesn't list you yet. Ask me first; after my yes, run \`${cli} agent --name <your name> --page ${arg} --yes\`.`,
         ]

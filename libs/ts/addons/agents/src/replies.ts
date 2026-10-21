@@ -1,9 +1,9 @@
 import type { AddonHost, SignedOp, Thread } from "pipeup";
+import { nextTo, runFile } from "./nearby";
 
 const KEY = /^[A-Za-z0-9_-]{43}$/;
 /** Where a page-loaded replies file leaves what it carries until the add-on takes it. */
 const QUEUE = "pipeupReplies";
-const WAIT_MS = 4000;
 /** How often a visible page looks for new replies. */
 const EVERY_MS = 4000;
 const AI = /^AI assistant\s*·?\s*/;
@@ -14,27 +14,18 @@ export function listedAgents(html: Element = document.documentElement): string[]
   return [...new Set(list.split(/[\s,]+/).filter((k) => KEY.test(k)))];
 }
 
-/**
- * The replies file next to the page (`report.html` → `report.replies.js`), or the page's own choice. Only
- * a file on the same computer or the same site is ever read.
- */
+/** The replies file next to the page (`report.html` → `report.replies.js`), or the page's own choice. */
 export function repliesUrl(
   here: Location = location,
   html: Element = document.documentElement,
 ): string | null {
-  const given = html.getAttribute("data-pipeup-replies");
-  try {
-    const page = here.href.split(/[?#]/)[0]!;
-    const url = new URL(
-      given ?? (/\/$/.test(page) ? `${page}index.replies.js` : page.replace(/\.[^./]*$/, "") + ".replies.js"),
-      here.href,
-    );
-    const ok = url.protocol === "file:" ? here.protocol === "file:" : url.origin === here.origin;
-    if (!ok) console.warn("pipeup: the replies file must be on this site or this computer; ignoring it");
-    return ok ? url.href : null;
-  } catch {
-    return null;
-  }
+  return nextTo(".replies.js", html.getAttribute("data-pipeup-replies"), here);
+}
+
+/** A replies block a shell link left in the replies file, with the tag it made from this session's key ("" for none). */
+export interface Block {
+  text: string;
+  tag: string;
 }
 
 export interface Replies {
@@ -51,12 +42,18 @@ export interface Replies {
   destroy(): void;
 }
 
-/** Brings agents' replies into the document. Nothing is fetched unless an agent is listed. */
-export function startReplies(host: AddonHost): Replies {
+/**
+ * Brings agents' replies into the document. Nothing is fetched unless an agent is listed or a link is running. Replies
+ * blocks a shell link left go to `blocks`, which decides what to do with them.
+ */
+export function startReplies(
+  host: AddonHost,
+  o: { linked?: () => boolean; blocks?: (found: Block[]) => void } = {},
+): Replies {
   const agents = listedAgents();
+  const linked = () => agents.length > 0 || !!o.linked?.();
   let ignored = 0;
   let name = "";
-  let live: HTMLScriptElement | null = null;
 
   /** Takes what a replies file left behind, keeping only signed replies, addressed notes and reactions from listed agents. */
   async function take(): Promise<number> {
@@ -64,8 +61,13 @@ export function startReplies(host: AddonHost): Replies {
     if (!Array.isArray(queue)) return 0;
     const files = queue.splice(0);
     const keep: SignedOp[] = [];
+    const blocks: Block[] = [];
     for (const file of files) {
-      const f = file as { format?: unknown; doc?: unknown; ops?: unknown };
+      const f = file as { format?: unknown; doc?: unknown; ops?: unknown; text?: unknown; tag?: unknown };
+      if (f?.format === "pipeup-replies-block" && typeof f.text === "string") {
+        blocks.push({ text: f.text, tag: typeof f.tag === "string" ? f.tag : "" });
+        continue;
+      }
       if (f?.format !== "pipeup-replies" || f.doc !== host.document.id || !Array.isArray(f.ops)) continue;
       for (const op of f.ops as SignedOp[]) {
         const b = op?.body;
@@ -79,35 +81,24 @@ export function startReplies(host: AddonHost): Replies {
         } else ignored++;
       }
     }
+    if (blocks.length) o.blocks?.(blocks);
     return keep.length ? host.merge(keep) : 0;
   }
 
   function load(): Promise<void> {
     const url = repliesUrl();
     if (!url) return Promise.reject(new Error("pipeup: the replies file can't be read from here"));
-    live?.remove();
-    return new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      live = s;
-      // A fresh address each time, so a file that changed is read again, not remembered.
-      s.src = `${url}?${Date.now()}`;
-      const done = (fail?: string) => {
-        window.clearTimeout(timer);
-        s.remove();
-        if (live === s) live = null;
-        if (fail) reject(new Error(`pipeup: ${fail}`));
-        else resolve();
-      };
-      const timer = window.setTimeout(() => done("the replies file didn't answer"), WAIT_MS);
-      s.addEventListener("load", () => done());
-      s.addEventListener("error", () => done("there is no replies file yet"));
-      // Inside Pipeup's own layer, so the page itself is never touched.
-      host.overlay().append(s);
+    return runFile(url, host.overlay()).catch((e: unknown) => {
+      throw new Error(
+        e instanceof Error && /didn't answer/.test(e.message)
+          ? "pipeup: the replies file didn't answer"
+          : "pipeup: there is no replies file yet",
+      );
     });
   }
 
   async function check(): Promise<number> {
-    if (!agents.length) return 0;
+    if (!linked()) return take();
     const before = await take();
     await load();
     return before + (await take());
@@ -122,13 +113,11 @@ export function startReplies(host: AddonHost): Replies {
       .catch(() => {})
       .finally(() => (looking = false));
   };
-  let timer = 0;
-  if (agents.length) {
-    look();
-    // New replies appear by themselves while the page is showing, and at once when it comes back into view.
-    timer = window.setInterval(look, EVERY_MS);
-    document.addEventListener("visibilitychange", look);
-  } else void take();
+  // New replies appear by themselves while the page is showing, and at once when it comes back into view; with no
+  // agent listed and no link running, only what the page itself loaded is taken.
+  const timer = window.setInterval(look, EVERY_MS);
+  document.addEventListener("visibilitychange", look);
+  look();
 
   return {
     enabled: agents.length > 0,
@@ -157,7 +146,6 @@ export function startReplies(host: AddonHost): Replies {
     destroy: () => {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", look);
-      live?.remove();
     },
   };
 }

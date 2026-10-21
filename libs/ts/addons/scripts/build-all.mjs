@@ -11,8 +11,10 @@ const BUDGETS = {
   assist: 10 * 1024,
   // 7 KB: Copy for my agent's instructions and the paste dialog, which reads and checks signed replies blocks
   // (+2.8 KB; docs/design/agent-paste.md), with 0.8.2's commands for local agents (docs/design/local-agents.md).
+  // 9.5 KB: the shell link (+2.1 KB; docs/design/shell-link.md): finding its file next to the page, sending with retries
+  // and a session key, checking tagged replies, and naming the script for each kind of computer.
   // Only pages that have an agent load it.
-  agents: 7 * 1024,
+  agents: 9.5 * 1024,
   emoji: 32 * 1024,
   github: 3 * 1024,
   updates: 4 * 1024,

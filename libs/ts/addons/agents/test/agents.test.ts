@@ -224,12 +224,12 @@ describe("the live link", () => {
 
   it("is absent unless the page is shown through a link, and then sends nothing until switched on", async () => {
     const off = startLink({ snapshot: async () => ({}), changes: () => () => {}, refresh() {} });
-    expect(off.enabled).toBe(false);
+    expect(off.enabled()).toBe(false);
     document.documentElement.setAttribute("data-pipeup-link", "/__pipeup/abcdefghijklmnop");
     const fetched: string[] = [];
     vi.stubGlobal("fetch", async (url: string) => (fetched.push(url), { ok: true }));
     const link = startLink({ snapshot: async () => ({ v: 1 }), changes: () => () => {}, refresh() {} });
-    expect(link.enabled).toBe(true);
+    expect(link.enabled()).toBe(true);
     expect(link.on()).toBe(false);
     expect(fetched).toEqual([]);
     await link.set(true);
@@ -254,7 +254,7 @@ describe("the live link", () => {
       "data-pipeup-link",
       "https://elsewhere.test/__pipeup/abcdefghijklmnop",
     );
-    expect(startLink({ snapshot: async () => ({}), changes: () => () => {}, refresh() {} }).enabled).toBe(
+    expect(startLink({ snapshot: async () => ({}), changes: () => () => {}, refresh() {} }).enabled()).toBe(
       false,
     );
   });

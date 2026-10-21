@@ -28,7 +28,7 @@ function h<K extends keyof HTMLElementTagNameMap>(
 }
 
 /** What this add-on borrows from the core's global to check an agent's signature. */
-const checkOp = (): ((op: unknown) => Promise<boolean>) | undefined =>
+export const checkOp = (): ((op: unknown) => Promise<boolean>) | undefined =>
   (globalThis as { Pipeup?: { checkOp?: (op: unknown) => Promise<boolean> } }).Pipeup?.checkOp;
 
 /**
@@ -39,6 +39,8 @@ export function openPaste(
   host: AddonHost,
   copy: (text: string) => Promise<void>,
   done: (added: number, agent: string) => void,
+  /** Replies already found (left by a shell link, untagged): shown filled in, under their own title. */
+  start?: { text: string; title: string },
 ): void {
   const box = h("textarea", {
     class: "ag-f",
@@ -82,18 +84,23 @@ export function openPaste(
   };
   box.addEventListener("input", () => void read());
 
+  const title = start?.title ?? "Paste your agent's replies";
   const dialog = host.openDialog(
     h(
       "div",
       {},
-      h("h2", { class: "ag-t" }, "Paste your agent's replies"),
+      h("h2", { class: "ag-t" }, title),
       box,
       found,
       note,
       h("div", { class: "ag-a" }, cancel, ask, add),
     ),
-    "Paste your agent's replies",
+    title,
   );
+  if (start) {
+    box.value = start.text;
+    void read();
+  }
   queueMicrotask(() => box.focus());
   cancel.addEventListener("click", () => dialog.close());
   ask.addEventListener("click", () => {
