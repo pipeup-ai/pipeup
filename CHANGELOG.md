@@ -15,6 +15,7 @@ change the API and the stored comment format.
 
 ### Changed
 
+- **Shared copies carry a listed agent's answers.** While you're sending, the share add-on also passes on the replies, addressed notes and reactions of an agent the page lists (from the replies file, the live link or a signed paste), so everyone who has the page sees them as the agent's. An answer to a comment you haven't shared waits with it.
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
 - Pipeup's budget rises from 60 to 60.5 KB gzip, and the agents add-on's from 5 to 7 KB.
 

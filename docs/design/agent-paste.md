@@ -87,13 +87,20 @@ each: how many replies signed by which agent, how many unsigned and why, how man
 out and why. **Add N replies** adds them; Cancel or Esc adds nothing. With nothing readable it says so and offers
 **Copy that request**, which copies a short request for the agent to answer in a replies block.
 
+## Passing on an agent's replies in a shared copy
+
+The share add-on sends only what the reviewer wrote (§11). It gains one case: an op whose writer is a key in
+`data-pipeup-agents` and whose kind is one an agent may write (`reply`, `addressed`, `react`, `unreact`) is sent while
+the reviewer is sending, unless the comment it answers is one the reviewer is holding back or keeping (then it waits
+with that comment, and goes when the comment does). It is never recorded as the reviewer's own, so "Send my comments"
+and the earlier-comments choice keep meaning the reviewer's own words. Receivers check the agent's signature as for any
+op, and show it as the agent's because the page lists the key.
+
 ## Not in this change
 
-- **Shared copies.** The share add-on sends only ops the reviewer wrote. Unsigned pasted replies are the reviewer's,
-  so they travel. Signed ones are the agent's and don't, as replies-file replies don't today. Sending them needs a
-  spec decision (§11 says a reviewer never sends comments they received).
 - The skills and `llms.txt` aren't changed here; the copied text carries the instructions an agent needs.
 
 ## Change log
 
 - 2026-10-18 — First version, with the two naming rules found while building it.
+- 2026-10-21 — The share add-on passes on a listed agent's replies.

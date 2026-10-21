@@ -840,6 +840,10 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
   someone else by file or live review. People who already received your comments could still pass them
   on themselves, and Pipeup says so where you choose whether to send.
+- The one exception is an agent the page lists (§15b). While a reviewer is sending, their Pipeup also passes on that
+  agent's replies, addressed notes and reactions that it holds (from the replies file, the live link, or a signed paste),
+  because the agent signed them and anyone can check that, and so everyone who has the page sees the agent's answers.
+  An agent's answer to a comment the reviewer hasn't shared stays with that comment and isn't sent.
 - Pipeup says in words whether the shared copy is:
   - up to date;
   - waiting to send changes;
@@ -1339,7 +1343,8 @@ an agent on the same computer is a later step and is not part of this one.)
   the person who pasted didn't write the agent's words, and which agent replies came to the page unchanged.
 - Pasted replies are accepted whether or not the page lists that agent, because pasting is the person's own act. They
   follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment.
-  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on.
+  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on: a reply
+  pasted by this reviewer as their own, and a reply signed by an agent the page lists as that agent's (§11).
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1862,3 +1867,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).

@@ -96,4 +96,34 @@ describe("send policy", () => {
     q.hold(me.ops());
     expect(q.held.size).toBe(1);
   });
+
+  it("passes on a listed agent's replies while sending, never an unlisted writer's, and holds them with an unshared comment", async () => {
+    const { me } = await setup();
+    const muse = await reviewer("Muse");
+    const lee = await reviewer("Lee");
+    const early = await me.comment(A, "early");
+    const p = new Policy(me.me, undefined, () => [muse.me]);
+    p.hold(me.ops());
+    const later = await me.comment(A, "later");
+    for (const w of [muse, lee]) await w.merge(me.ops(), "file");
+    const onLater = await muse.reply(later, "Done.");
+    const onEarly = await muse.reply(early, "Done too.");
+    const byLee = await lee.reply(later, "Me too.");
+    await me.merge([...muse.ops(), ...lee.ops()], "agents");
+    const sent = () =>
+      me
+        .ops()
+        .filter((o) => p.sendable(o))
+        .map((o) => o.body.id);
+    expect(sent()).toEqual(expect.arrayContaining([later, onLater]));
+    expect(sent()).not.toContain(onEarly);
+    expect(sent()).not.toContain(byLee);
+    // Sharing the earlier comments lets the agent's answer to them go too.
+    p.decide(true);
+    expect(sent()).toContain(onEarly);
+    // Not sending: nothing of the agent's goes either, and it isn't kept as mine.
+    p.send = false;
+    expect(sent()).not.toContain(onLater);
+    expect(p.kept.has(onLater)).toBe(false);
+  });
 });
