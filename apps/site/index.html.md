@@ -7,7 +7,15 @@ People comment right on an HTML page, and send their comments back. No accounts,
 - **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy comments, as Markdown or as text) and sends it themselves.
 - **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
 
-On the home page, the first screen shows Pipeup on a document, slides, a website and with the keyboard, and two buttons: **1. Add comments to an HTML** and **2. Create comment-enabled HTML**. Each opens its own page: [add-comments.html](https://pipeup-ai.github.io/pipeup/add-comments.html.md) and [create-html.html](https://pipeup-ai.github.io/pipeup/create-html.html.md).
+On the home page, a **Quick start** under the first screen has one Copy prompt button. The first screen shows Pipeup on a document, slides, a website and with the keyboard, and two buttons: **1. Add comments to an HTML** and **2. Create comment-enabled HTML**. Each opens its own page: [add-comments.html](https://pipeup-ai.github.io/pipeup/add-comments.html.md) and [create-html.html](https://pipeup-ai.github.io/pipeup/create-html.html.md).
+
+## Quick start
+
+Your AI agent adds Pipeup to your page. It edits only the HTML file.
+
+1. **Copy prompt**: the same prompt as "Create comment-enabled HTML" below, shown in full on the page.
+2. Paste it into your AI (Claude, Codex or any chat), with your HTML file.
+3. Open the page and press Shift+Option+C (Shift+Alt+C on Windows and Linux), or tap the comment button on a phone, and comment.
 
 ## 1. Add comments to an HTML (someone sent you an HTML file)
 

@@ -1,33 +1,5 @@
-// The walkthrough pages: each plays its scene, has its own prompt, and the footer menu.
+// The walkthrough pages: each plays its scene, and the footer menu. Their prompts are in prompts.js.
 (() => {
-const TAG = '<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"><\/script>';
-const SITE = "https://pipeup-ai.github.io/pipeup/"; // The canonical address.
-const base = location.protocol.startsWith("http") ? new URL(".", location.href).href : SITE; // From disk: the published site.
-const GUIDE = `${base}skills/pipeup-integrate/SKILL.md`;
-let docKey = null; // A fresh document key for the reader's page, made in this browser.
-const prompts = {
-  a: () => [
-    "Someone sent me this HTML file and I'd like to comment on it. Please add Pipeup to my copy so I can comment right on the page.",
-    "",
-    `1. Edit only the HTML file (there is nothing to download or run): add ${TAG} just before </body>.`,
-    `2. If the <html> element has no data-pipeup-doc attribute, add data-pipeup-doc="${docKey ?? "<a key from Pipeup.newDocumentAttribute()>"}". If it already has one, leave it exactly as it is.`,
-    "3. Don't change the page's layout or styling.",
-    "",
-    `When you are done, tell me how to start commenting. The full guide: ${GUIDE}`,
-  ].join("\n"),
-  b: () => [
-    "When you create this HTML page, add Pipeup so the people I share it with can comment on it right on the page.",
-    "",
-    `1. Add ${TAG} just before </body>. Edit only the HTML file: there is nothing to download or run.`,
-    `2. Add data-pipeup-doc="${docKey ?? "<a key from Pipeup.newDocumentAttribute()>"}" to the <html> element, and keep it exactly as it is from then on.`,
-    "3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.",
-    "4. Don't change the page's layout to make room for Pipeup.",
-    "",
-    "Later I will paste comments copied from Pipeup (Copy comments › As Markdown); apply each one to the page.",
-    `The full guide: ${GUIDE}`,
-  ].join("\n"),
-};
-
 // The scenes: each is a timeline of steps (ms into a loop); a step switches its class on, the CSS eases the change.
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 for (const demo of document.querySelectorAll(".demo")) {
@@ -73,15 +45,6 @@ for (const demo of document.querySelectorAll(".demo")) {
     else if (!e.isIntersecting && seen) { seen = false; cancelAnimationFrame(raf); }
   }).observe(demo);
 }
-for (const b of document.querySelectorAll("[data-scopy]")) {
-  b.addEventListener("click", async () => {
-    const text = prompts[b.dataset.scopy]();
-    try { await navigator.clipboard.writeText(text); } catch { const t = document.createElement("textarea"); t.value = text; document.body.append(t); t.select(); document.execCommand("copy"); t.remove(); }
-    const label = b.querySelector(".label"); const was = label.textContent;
-    b.classList.add("copied"); label.textContent = "Copied";
-    setTimeout(() => { b.classList.remove("copied"); label.textContent = was; }, 2000);
-  });
-}
 // For agents: hover or focus shows the menu; on touch screens (no hover) the first tap opens it.
 const agents = document.querySelector(".agents");
 const agentsLink = agents.querySelector(".agents-link");
@@ -93,6 +56,4 @@ agents.addEventListener("mouseenter", () => agentsLink.setAttribute("aria-expand
 agents.addEventListener("mouseleave", () => setAgents(false));
 agents.addEventListener("keydown", (e) => { if (e.key === "Escape") { setAgents(false); agentsLink.blur(); } });
 document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
-async function freshKey() { try { docKey = await window.Pipeup.newDocumentAttribute(); } catch {} }
-if (window.Pipeup) freshKey(); else addEventListener("load", freshKey);
 })();
