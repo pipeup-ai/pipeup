@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Quick Start</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: a Quick start section on the website's home page, built around one Copy prompt button. Light mode only, the site's own tokens. -->
+<style>
+  /* Layout: one reading column; what changes, where it sits, the prompt's words, the button's states, phone width, spec wording. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --stage: #e6e5de; --stagel: #c4c2b9;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --eo: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --sans: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    /* The site's own tokens, for the mock-ups. */
+    --s-ink: #2f3437; --s-strong: #111; --s-muted: #55544f; --s-faint: #7d7c76; --s-line: #d2d0c8; --s-bone: #eeede7;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 var(--sans); }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .stage { background: var(--stage); border: 1px solid var(--stagel); border-radius: 16px; padding: 24px; display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; }
+  .cap { font-size: 12.5px; color: var(--mu); max-width: 520px; }
+  .cap b { color: var(--k); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); margin-bottom: 2px; }
+  .tag.new { color: var(--ac); }
+
+  /* A browser window holding the home page, drawn at about two thirds of its size. */
+  .win { background: #fff; border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); overflow: hidden; width: 100%; }
+  .win .bar { display: flex; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--ru); background: var(--so); }
+  .win .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--ln); }
+  .page { padding: 0 28px; color: var(--s-ink); font-size: 12px; }
+  .ptop { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; font-weight: 600; color: var(--s-strong); font-size: 13px; }
+  .ptop span:last-child { font-weight: 400; color: var(--s-muted); font-size: 11px; }
+  .phero { display: grid; grid-template-columns: 11fr 13fr; gap: 30px; padding: 14px 0 30px; opacity: 0.55; }
+  .phero h3 { font-size: 30px; line-height: 1.02; letter-spacing: -0.045em; margin: 0 0 10px; color: var(--s-strong); }
+  .phero p { margin: 0 0 14px; color: var(--s-muted); font-size: 12px; max-width: 24em; }
+  .pbtn { display: block; width: 220px; padding: 8px 10px; border-radius: 7px; border: 1px solid #b4b2a8; margin-bottom: 7px; font-size: 11px; color: var(--s-strong); }
+  .pbtn.dark { background: var(--s-strong); color: #fff; border-color: var(--s-strong); }
+  .pshow { height: 210px; border-radius: 12px; background: var(--s-bone); border: 1px solid var(--s-line); display: grid; place-items: center; color: var(--s-faint); font-size: 11px; }
+  .pfoot { border-top: 1px solid var(--s-line); padding: 14px 0 18px; display: flex; justify-content: flex-end; gap: 14px; font-size: 11px; color: var(--s-muted); }
+  .pfoot b { font-weight: 500; background: #f1effc; color: var(--s-strong); padding: 2px 9px; border-radius: 99px; }
+
+  /* The new section, drawn at full size so its words can be read. */
+  .qs { border-top: 1px solid var(--s-line); display: grid; grid-template-columns: 11fr 13fr; gap: 48px; padding: 36px 0 44px; font-size: 16px; color: var(--s-ink); position: relative; }
+  .qs.mini { gap: 30px; padding: 22px 0 26px; font-size: 12px; }
+  .qs h4 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.035em; color: var(--s-strong); line-height: 1.1; }
+  .qs.mini h4 { font-size: 19px; }
+  .qs .sub { margin: 10px 0 0; color: var(--s-muted); font-size: 17px; max-width: 24em; }
+  .qs.mini .sub { font-size: 12px; margin-top: 6px; }
+  .qs ol { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 14px; }
+  .qs.mini ol { margin-top: 14px; gap: 9px; }
+  .qs li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: baseline; }
+  .qs.mini li { grid-template-columns: 18px 1fr; gap: 8px; }
+  .qs .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--s-bone); color: var(--s-strong); font-size: 12px; font-weight: 600; transform: translateY(-1px); }
+  .qs.mini .n { width: 17px; height: 17px; font-size: 9px; }
+  .qs li b { color: var(--s-strong); font-weight: 600; margin-right: 4px; }
+  .kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border: 1px solid var(--s-line); border-bottom-width: 2px; border-radius: 5px; font: 12px var(--sans); color: var(--s-strong); background: #fff; vertical-align: 1px; }
+  .qs.mini .kbd { min-width: 15px; height: 15px; font-size: 9px; }
+  .prompt { position: relative; border: 1px solid var(--s-line); border-radius: 12px; background: #fbfbf9; overflow: hidden; }
+  .prompt .ph { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px; border-bottom: 1px solid var(--s-line); font-size: 13px; color: var(--s-muted); }
+  .qs.mini .prompt .ph { padding: 6px 8px 6px 10px; font-size: 10px; }
+  .prompt pre { margin: 0; padding: 14px 16px 16px; font: 12.5px/1.65 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--s-ink); max-height: 236px; overflow: hidden; }
+  .qs.mini .prompt pre { font-size: 8.5px; padding: 9px 10px; max-height: 150px; }
+  .prompt pre::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 44px; background: linear-gradient(rgba(251, 251, 249, 0), #fbfbf9); pointer-events: none; }
+  .prompt.full pre { max-height: none; }
+  .prompt.full pre::after { display: none; }
+  .ring { position: absolute; inset: -6px; border: 2px dashed var(--ac); border-radius: 10px; pointer-events: none; }
+  .ring-label { position: absolute; right: 0; top: -22px; font-size: 11px; color: var(--ac); font-weight: 600; }
+
+  /* The button, in the site's look. */
+  .btn { display: inline-flex; align-items: center; gap: 8px; font: 500 14px var(--sans); border-radius: 8px; padding: 8px 13px; border: 1px solid var(--s-strong); background: var(--s-strong); color: #fff; white-space: nowrap; }
+  .qs.mini .btn { font-size: 10px; padding: 4px 8px; gap: 5px; border-radius: 6px; }
+  .qs.mini .btn svg { width: 11px; height: 11px; }
+  .btn.hover { background: #2a2a2a; }
+  .btn.focus { outline: 2px solid var(--s-violet, #534ab7); outline-offset: 2px; }
+  .btn.half { opacity: 1; }
+  .btn.half .lab { opacity: 0.45; }
+  .btn.half svg { opacity: 0.45; }
+  .states { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; width: 100%; }
+  .st { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .st .t { font-size: 12px; color: var(--fa); }
+  .st .btn { min-width: 136px; }
+  .st p { margin: 0; font-size: 13.5px; }
+  .timeline { width: 100%; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 16px 18px; }
+  .timeline svg { display: block; width: 100%; height: auto; min-width: 560px; }
+  .tl-scroll { overflow-x: auto; }
+
+  /* Phone. */
+  .phone { width: 375px; max-width: 100%; background: #fff; border: 1px solid var(--ln); border-radius: 28px; box-shadow: var(--sh); padding: 14px 0 0; overflow: hidden; }
+  .phone .page { padding: 0 20px; }
+  .phone .qs { grid-template-columns: 1fr; gap: 20px; padding: 26px 0 30px; }
+  .phone .qs h4 { font-size: 26px; }
+  .phone .qs .sub { font-size: 16px; }
+  .phone .prompt pre { max-height: 180px; font-size: 12px; }
+
+  /* The prompt's words and spec wording. */
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); max-width: 100%; }
+  .clip { width: 680px; max-width: 100%; padding: 14px 16px; font: 12.5px/1.65 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--k); }
+  .clip .hl { background: var(--as); border-radius: 3px; }
+  .clip .was { background: var(--del); color: var(--delk); border-radius: 3px; text-decoration: line-through; text-decoration-color: rgba(154, 43, 43, 0.5); }
+  .clip .dim { color: var(--fa); }
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 8px 0; max-width: 64em; }
+  .spec div { padding: 8px 18px 8px 40px; position: relative; font-size: 14px; }
+  .spec div::before { position: absolute; left: 18px; top: 8px; font: 600 14px/1.55 var(--mono); }
+  .spec .a { background: var(--add); }
+  .spec .a::before { content: "+"; color: var(--addk); }
+  .spec .h { font-weight: 600; color: var(--mu); font-size: 12.5px; padding-left: 18px; }
+  .q { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 18px; max-width: 64em; }
+  .q p { margin: 0 0 6px; }
+  .q p:last-child { margin: 0; color: var(--mu); }
+  code { font: 0.92em var(--mono); background: var(--ru); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 760px) {
+    .page { padding: 0 14px; }
+    .phero { grid-template-columns: 1fr; }
+    .pshow { height: 120px; }
+    .qs, .qs.mini { grid-template-columns: 1fr; gap: 18px; }
+    .stage { padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Quick start on the home page</h1>
+  <p class="lede">A visitor copies one prompt, pastes it into their AI agent with their HTML file, and the agent adds Pipeup. The prompt is the one the "Create comment-enabled HTML" page already copies, so the site still has one prompt for putting Pipeup in a page.</p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li>The home page gets a <b>Quick start</b> section under the first screen, above the footer: a heading, one sentence, three short steps and the prompt's words with a <b>Copy prompt</b> button.</li>
+        <li>The first screen doesn't change: the headline, the two buttons, the shortcut and the showcase stay as they are. On a laptop the Quick start's heading peeks in at the bottom of the window, so people see there is more.</li>
+        <li>The prompt is shown, not hidden behind the button, so people can read what they are about to give their agent. It is the same text the button copies, including a fresh document key made in their browser.</li>
+        <li>After a copy the button reads <b>Copied</b> with a check, then eases back to <b>Copy prompt</b>. Nothing snaps: the label and icon cross-fade both ways. The walkthrough pages' Copy prompt buttons ease back the same way.</li>
+        <li>The page's Markdown copy and llms.txt get the same Quick start, in words.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Where it sits</h2>
+    <p class="what">Under the hero and above the footer, on the same two columns as the hero, so its left edge lines up with the headline and the prompt lines up with the showcase. A hairline above it separates it from the first screen.</p>
+    <div class="stage">
+      <div class="frame" style="flex: 1 1 760px">
+        <span class="tag">Home page, laptop width (scrolled a little)</span>
+        <div class="win">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <div class="page">
+            <div class="ptop"><span>Pipeup</span><span>GitHub</span></div>
+            <div class="phero">
+              <div>
+                <h3>Feedback for<br>any HTML.</h3>
+                <p>People comment right on your page: documents, decks or whole sites. No accounts, no servers.</p>
+                <span class="pbtn dark">1 &nbsp;Add comments to an HTML</span>
+                <span class="pbtn">2 &nbsp;Create comment-enabled HTML</span>
+              </div>
+              <div class="pshow">The showcase (unchanged)</div>
+            </div>
+            <div class="qs mini" style="position: relative">
+              <span class="ring"></span><span class="ring-label">New</span>
+              <div>
+                <h4>Quick start</h4>
+                <p class="sub">Your AI agent adds Pipeup to your page. It edits only the HTML file.</p>
+                <ol>
+                  <li><span class="n">1</span><span><b>Copy the prompt</b> <span class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span></span></li>
+                  <li><span class="n">2</span><span><b>Paste it into your AI</b> Claude, Codex or any chat, with your HTML file.</span></li>
+                  <li><span class="n">3</span><span><b>Comment</b> Open the page and press <span class="kbd">⇧</span> <span class="kbd">⌥</span> <span class="kbd">C</span></span></li>
+                </ol>
+              </div>
+              <div class="prompt"><div class="ph"><span>The prompt</span></div><pre>Add Pipeup to this HTML page (or the one you are making) so the people I share it with can comment on it right on the page.
+
+1. Add &lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"&gt;&lt;/script&gt; just before &lt;/body&gt;. Edit only the HTML file: there is nothing to download or run.
+2. Add data-pipeup-doc="sAmPlEdOcKeY0001:Q2x…" to the &lt;html&gt; element, and keep it exactly as it is from then on.
+3. Mark stable blocks …</pre></div>
+            </div>
+            <div class="pfoot"><b>Add-ons</b><span>For agents</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The section, full size</h2>
+    <p class="what">The prompt box is a fixed height and fades out at the bottom; it scrolls inside if someone wants to read it all. Copy prompt sits in step 1, as it does on the walkthrough pages. The shortcut shows the visitor's own keys (<b>Shift Alt C</b> on Windows and Linux).</p>
+    <div class="stage">
+      <div class="frame" style="flex: 1 1 900px">
+        <span class="tag new">New: Quick start, laptop width</span>
+        <div class="win"><div class="page" style="padding: 0 32px">
+          <div class="qs">
+            <div>
+              <h4>Quick start</h4>
+              <p class="sub">Your AI agent adds Pipeup to your page. It edits only the HTML file.</p>
+              <ol>
+                <li><span class="n">1</span><span><b>Copy the prompt</b> <span class="btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span></span></li>
+                <li><span class="n">2</span><span><b>Paste it into your AI</b> Claude, Codex or any chat, with your HTML file.</span></li>
+                <li><span class="n">3</span><span><b>Comment</b> Open the page and press <span class="kbd">⇧</span> <span class="kbd">⌥</span> <span class="kbd">C</span></span></li>
+              </ol>
+            </div>
+            <div class="prompt"><div class="ph"><span>The prompt</span></div><pre>Add Pipeup to this HTML page (or the one you are making) so the people I share it with can comment on it right on the page.
+
+1. Add &lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"&gt;&lt;/script&gt; just before &lt;/body&gt;. Edit only the HTML file: there is nothing to download or run.
+2. Add data-pipeup-doc="sAmPlEdOcKeY0001:Q2xxZ0FkYV9zYW1wbGVfa2V5X29ubHlfZm9yX21vY2s" to the &lt;html&gt; element, and keep it exactly as it is from then on.
+3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.
+4. Don't change the page's layout to make room for Pipeup.
+
+Later I will paste comments copied from Pipeup (Copy comments › As Markdown); apply each one to the page.
+The full guide: https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md</pre></div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The copied prompt's exact words</h2>
+    <p class="what">The "Create comment-enabled HTML" prompt, with one change to its first line so it fits a page that already exists as well as one being made. The walkthrough page copies the same new words, so the two never differ. <b>Highlighted</b>: filled in when copied.</p>
+    <div class="card clip"><span class="was">When you create this HTML page, add Pipeup so the people I share it with can comment on it right on the page.</span>
+Add Pipeup to this HTML page (or the one you are making) so the people I share it with can comment on it right on the page.
+
+1. Add <span class="hl">&lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"&gt;&lt;/script&gt;</span> just before &lt;/body&gt;. Edit only the HTML file: there is nothing to download or run.
+2. Add data-pipeup-doc="<span class="hl">a fresh key made in the visitor's browser</span>" to the &lt;html&gt; element, and keep it exactly as it is from then on.
+3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.
+4. Don't change the page's layout to make room for Pipeup.
+
+Later I will paste comments copied from Pipeup (Copy comments › As Markdown); apply each one to the page.
+The full guide: <span class="hl">https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md</span>
+<span class="dim">(The version in the script tag is the site's release; on the pre-release copy it names the pre-release. The prompt runs no commands, so there is no npx line to pin.)</span></div>
+  </section>
+
+  <section>
+    <h2>The button's states</h2>
+    <p class="what">One button, three moments. The label and the icon cross-fade; the button keeps its width, so nothing beside it moves.</p>
+    <div class="stage">
+      <div class="states">
+        <div class="st"><span class="t">1 · Ready</span>
+          <span class="btn" style="align-self: flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span>
+          <p>Hover darkens it a little; keyboard focus shows the violet ring. Press shrinks it slightly (0.98).</p></div>
+        <div class="st"><span class="t">2 · Copied (0 to 2 seconds)</span>
+          <span class="btn" style="align-self: flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span class="lab">Copied</span><span class="lab" style="visibility: hidden; width: 0; overflow: hidden">prompt</span></span>
+          <p>The check eases in from a little smaller; "Copied" fades in as "Copy prompt" fades out. Screen readers hear "Prompt copied".</p></div>
+        <div class="st"><span class="t">3 · Easing back (after 2 seconds)</span>
+          <span class="btn half" style="align-self: flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span>
+          <p>Copy prompt and its icon fade back in over about a third of a second. Clicking again copies again and restarts the two seconds.</p></div>
+        <div class="st"><span class="t">If copying fails</span>
+          <span class="btn" style="align-self: flex-start"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span>
+          <p>The prompt's text is selected in its box, so the visitor can copy it themselves; the button doesn't claim "Copied".</p></div>
+      </div>
+      <div class="timeline tl-scroll">
+        <svg viewBox="0 0 640 86" role="img" aria-label="Timeline: click at 0 seconds, Copied until 2.00 seconds, back to Copy prompt by 2.35 seconds">
+          <line x1="20" y1="44" x2="620" y2="44" stroke="#c4c2b9" stroke-width="1.5"/>
+          <rect x="20" y="34" width="34" height="20" rx="4" fill="#edebfa"/>
+          <rect x="54" y="34" width="456" height="20" rx="4" fill="#e7f3ea"/>
+          <rect x="510" y="34" width="80" height="20" rx="4" fill="#edebfa"/>
+          <text x="20" y="22" font-size="11" fill="#5f5e5a" font-family="-apple-system, Arial">Click · 0.00 s</text>
+          <text x="58" y="48" font-size="11" fill="#1f6b3a" font-family="-apple-system, Arial" dominant-baseline="middle">Copied, with a check</text>
+          <text x="20" y="76" font-size="10.5" fill="#888780" font-family="-apple-system, Arial">ease in 0.30 s</text>
+          <text x="454" y="22" font-size="11" fill="#5f5e5a" font-family="-apple-system, Arial">2.00 s</text>
+          <text x="510" y="76" font-size="10.5" fill="#888780" font-family="-apple-system, Arial">ease back 0.35 s</text>
+          <text x="560" y="22" font-size="11" fill="#5f5e5a" font-family="-apple-system, Arial">2.35 s</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>At phone width</h2>
+    <p class="what">The two columns stack: heading, sentence and steps first, then the prompt box, a little shorter. The button keeps its size and stays in step 1, within thumb reach. The text wraps; nothing scrolls sideways. On a touch screen without a keyboard step 3 reads "Open the page and tap the comment button" instead of showing keys.</p>
+    <div class="stage" style="justify-content: center">
+      <div class="frame">
+        <span class="tag new">New: Quick start, 375 px wide</span>
+        <div class="phone"><div class="page">
+          <div class="qs">
+            <div>
+              <h4>Quick start</h4>
+              <p class="sub">Your AI agent adds Pipeup to your page. It edits only the HTML file.</p>
+              <ol>
+                <li><span class="n">1</span><span><b>Copy the prompt</b> <span class="btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span class="lab">Copy prompt</span></span></span></li>
+                <li><span class="n">2</span><span><b>Paste it into your AI</b> Claude, Codex or any chat, with your HTML file.</span></li>
+                <li><span class="n">3</span><span><b>Comment</b> Open the page and tap the comment button.</span></li>
+              </ol>
+            </div>
+            <div class="prompt"><div class="ph"><span>The prompt</span></div><pre>Add Pipeup to this HTML page (or the one you are making) so the people I share it with can comment on it right on the page.
+
+1. Add &lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"&gt;&lt;/script&gt; just before &lt;/body&gt;. Edit only the HTML file: there is nothing to download or run.
+2. Add data-pipeup-doc="…</pre></div>
+          </div>
+          <div class="pfoot" style="justify-content: flex-start"><b>Add-ons</b><span>For agents</span></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Spec wording (docs/WEBSITE_SPEC.md)</h2>
+    <div class="spec">
+      <div class="h">§3 Content, a new item after the first screen</div>
+      <div class="a"><b>Quick start</b>, under the first screen and above the footer, on the same columns as the first screen: the heading "Quick start", one sentence (an AI agent adds Pipeup, editing only the HTML file), three one-line steps (copy the prompt; paste it into an AI such as Claude, Codex or any chat, with the HTML file; open the page and comment, with the comment shortcut shown the way the visitor's keyboard labels it, or the comment button on a touch screen) and the prompt's full words in a box beside them.</div>
+      <div class="a">The <b>Copy prompt</b> button sits in the first step and copies exactly the words shown, the same prompt the "Create comment-enabled HTML" page copies, with a fresh document key made in the visitor's browser. Its icon becomes a check and its label "Copied" for two seconds, then it eases back; screen readers hear that the prompt was copied. If copying isn't allowed, the prompt's words are selected so the visitor can copy them, and the button doesn't say "Copied".</div>
+      <div class="a">The first screen is unchanged. At phone width the steps come first and the prompt box under them; nothing scrolls sideways. The page's Markdown copy and llms.txt carry the same Quick start in words.</div>
+      <div class="h">§3 item 2, the walkthrough pages</div>
+      <div class="a">The "Create comment-enabled HTML" prompt reads as fitting a page that already exists as well as one being made. Every Copy prompt button on the site eases back from "Copied".</div>
+      <div class="h">Change log</div>
+      <div class="a">2026-10-24 — Proposed (not built): a Quick start section on the home page, under the first screen: three steps and the prompt shown in full, with one Copy prompt button. It reuses the "Create comment-enabled HTML" prompt (its first line now fits an existing page too); Copy prompt buttons ease back from "Copied".</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>One question</h2>
+    <div class="q">
+      <p><b>The prompt's first line.</b> Recommended: change it in one place to "Add Pipeup to this HTML page (or the one you are making) …", so both the home page and the walkthrough copy the same words and it fits someone who already has a page.</p>
+      <p>The alternative is to keep "When you create this HTML page, add Pipeup …" word for word. That reads oddly for a visitor whose page already exists, which is most people arriving at a Quick start.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>
