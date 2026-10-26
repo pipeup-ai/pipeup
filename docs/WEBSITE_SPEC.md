@@ -40,7 +40,17 @@ visitor how to add it. Functional requirements only.
    picked on their own), while its tabs, pause and Try keep working.
    Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
    "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
-2. **The two walkthrough pages**, `add-comments.html` and `create-html.html`, one for each button, kept focused like the
+2. **Quick start**, under the first screen and above the footer, on the same columns as the first screen: the heading
+   "Quick start", one sentence (an AI agent adds Pipeup, editing only the HTML file), three one-line steps (copy the prompt;
+   paste it into an AI such as Claude, Codex or any chat, with the HTML file; open the page and comment, with the comment
+   shortcut shown the way the visitor's keyboard labels it, or the comment button on a touch screen) and the prompt's full
+   words in a box beside them. The **Copy prompt** button sits in the first step and copies exactly the words shown: the
+   same prompt the "Create comment-enabled HTML" page copies, with a fresh document key made in the visitor's browser. Its
+   icon becomes a check and its label "Copied" for two seconds, then it eases back; screen readers hear that the prompt was
+   copied. If copying isn't allowed, the prompt's words are selected so the visitor can copy them, and the button doesn't
+   say "Copied". The first screen is unchanged. At phone width the steps come first and the prompt box under them; nothing
+   scrolls sideways. The page's Markdown copy and llms.txt carry the same Quick start in words.
+3. **The two walkthrough pages**, `add-comments.html` and `create-html.html`, one for each button, kept focused like the
    Add-ons page: the same header and footer, a **back link** ("← Pipeup") above the heading, and each with its own Markdown
    copy. Each has a heading and a sentence on the left, top-aligned with an animated scene on the right, and, instead of cards, **four one-line steps** under the sentence (brief words, the Copy prompt button inside its
    step), so the whole page fits one screen with no scrolling, like the home page:
@@ -61,9 +71,10 @@ visitor how to add it. Functional requirements only.
    Everything lines up on the same edges and the text is drawn sharp. The scenes are light, ease everything, pause when
    out of view, and with reduced motion show their finished moment. Each **Copy prompt** copies a prompt written for
    that situation, including a fresh document key made in the reader's browser when the file has none; its icon
-   becomes a check and its label reads "Copied" for a moment. Ways to install for a particular agent (Claude Code,
+   becomes a check and its label reads "Copied" for a moment, then eases back. The "Create comment-enabled HTML" prompt
+   fits a page that already exists as well as one being made. Ways to install for a particular agent (Claude Code,
    Codex, the script tag, a download) are reached through **For agents** in the footer.
-3. **Try pages**: one real example each, running Pipeup, each with a very different look so
+4. **Try pages**: one real example each, running Pipeup, each with a very different look so
    visitors see Pipeup fit in anywhere:
    - **Document**: a short guide to how Pipeup works, laid out like a familiar word-processor page
      (a white page on a grey canvas, plain sans-serif type), without any product's branding.
@@ -76,13 +87,13 @@ visitor how to add it. Functional requirements only.
    one ticked, and the GitHub link. It stays on one line at any width; on phones the GitHub link is
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
-4. **Footer**: always at the bottom of the window, with no facts line (the first screen and the Markdown copy say
+5. **Footer**: always at the bottom of the window, with no facts line (the first screen and the Markdown copy say
    what matters), and on the right an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
 
-There is no separate set-up section: the two walkthroughs cover it.
+Set-up is the Quick start and the two walkthroughs; there is no other set-up section.
 
 **Add-on safety, for agents**: wherever the site tells an agent to add an add-on (llms.txt, llms-full.txt, the integrate
 skill, the Add-ons page's prompts and its Markdown copy, the guide page and its Markdown copy), it also tells the agent to pin
@@ -320,3 +331,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-15 — The footer's facts line goes altogether (One file, No dependencies, Works from disk, Stays on your device): it read as marketing. The footer keeps only its Add-ons and For agents links, on the right.
 - 2026-10-17 — On the pre-release copy, commands that run Pipeup (`npx pipeup …`) name the pre-release's version, so an agent following its skills runs the same release as the page.
 - 2026-10-19 — Commands that run Pipeup are `npx --yes pipeup@0 …` on the stable site (never asking, any release npm will give), and name the pre-release on the pre-release copy (FUNCTIONAL_SPEC 15b).
+- 2026-10-24 — A Quick start section on the home page, under the first screen: three steps and the prompt shown in full, with one Copy prompt button. It reuses the "Create comment-enabled HTML" prompt, whose first line now fits an existing page too; every Copy prompt button eases back from "Copied".

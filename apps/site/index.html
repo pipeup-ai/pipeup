@@ -118,10 +118,13 @@
       .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
       .btn .chev { transition: transform 0.26s var(--ease); }
       .btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
-      .ok { display: none; }
-      .copied .ok { display: block; animation: pop 0.3s var(--ease); }
-      @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
-      .copied .ic { display: none; }
+      /* Copy prompt: the icon and the label cross-fade to a check and "Copied", and ease back; the button keeps its width. */
+      .ics, .labels { display: inline-grid; justify-items: start; }
+      .ics > *, .labels > * { grid-area: 1 / 1; transition: opacity 0.35s var(--ease), transform 0.35s var(--ease); }
+      .ok, .said { opacity: 0; } .ok { transform: scale(0.6); }
+      .copied .ok, .copied .said { opacity: 1; transform: none; transition-duration: 0.3s; }
+      .copied .ic, .copied .label { opacity: 0; }
+      .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
       .choices {
         position: absolute; left: 0; top: calc(100% + 8px); z-index: 10; width: 340px; padding: 6px; background: var(--paper);
         border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
@@ -305,6 +308,23 @@
       .tryit:hover svg { transform: translateX(2px); }
       .tab:focus-visible, .pause:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
+      /* ---------- Quick start: the steps left, the prompt's words right, on the hero's columns ---------- */
+      .quick { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; border-top: 1px solid var(--line); padding: 44px 0 56px; }
+      .quick h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1; color: var(--strong); margin: 0; }
+      .quick .sub { font-size: 17px; color: var(--muted); margin: 12px 0 0; max-width: 26em; }
+      .qsteps { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 14px; }
+      .qsteps li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; font-size: 15.5px; line-height: 1.5; color: var(--muted); }
+      .qsteps .n { display: grid; place-items: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; border: 1px solid var(--violet); color: var(--violet); font-size: 12px; font-weight: 600; }
+      .qsteps b { font-weight: 600; color: var(--strong); margin-right: 4px; }
+      .qsteps .btn { margin-left: 4px; vertical-align: middle; white-space: nowrap; padding: 6px 12px; font-size: 13.5px; gap: 7px; border-radius: 8px; }
+      .qsteps kbd { min-width: 20px; height: 20px; font-size: 12px; vertical-align: 1px; }
+      .qsteps .qtouch { display: none; }
+      @media (hover: none) and (pointer: coarse) { .qsteps .qkeys { display: none; } .qsteps .qtouch { display: inline; } }
+      .prompt { border: 1px solid var(--line); border-radius: 12px; background: #fbfbf9; overflow: hidden; }
+      .prompt .ph { padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+      .prompt pre { margin: 0; padding: 14px 16px 16px; height: 248px; overflow: auto; font: 12.5px/1.65 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+      .prompt pre:focus-visible { outline: 2px solid var(--violet); outline-offset: -2px; }
+
       footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
       .rise { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
@@ -321,7 +341,9 @@
         .cursor { display: none; }
       }
       @media (max-width: 900px) {
-        .hero { grid-template-columns: 1fr; gap: 36px; }
+        .hero, .quick { grid-template-columns: 1fr; gap: 36px; }
+        .quick { gap: 24px; padding: 36px 0 44px; }
+        .prompt pre { height: 200px; }
       }
       @media (max-width: 680px) {
         main { padding: 0 20px; }
@@ -497,6 +519,22 @@
             </button>
             <a class="tryit" href="try/document.html">Try<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></a>
           </div>
+        </div>
+      </section>
+
+      <section class="quick" id="quick-start" data-pipeup-id="quick-start">
+        <div>
+          <h2 class="rise">Quick start</h2>
+          <p class="sub rise" style="--i: 1">Your AI agent adds Pipeup to your page. It edits only the HTML file.</p>
+          <ol class="qsteps rise" style="--i: 2">
+            <li><span class="n">1</span><span><b>Copy the prompt</b> <button class="btn primary" type="button" data-scopy="b"><span class="ics"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy prompt</span><span class="said" aria-hidden="true">Copied</span></span></button></span></li>
+            <li><span class="n">2</span><span><b>Paste it into your AI</b> Claude, Codex or any chat, with your HTML file.</span></li>
+            <li><span class="n">3</span><span><b>Comment</b> <span class="qkeys">Open the page and press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span></span><span class="qtouch">Open the page and tap the comment button.</span></span></li>
+          </ol>
+        </div>
+        <div class="prompt rise" style="--i: 2" data-pipeup-label="The Quick start prompt">
+          <div class="ph" id="prompt-title">The prompt</div>
+          <pre data-sprompt="b" tabindex="0" aria-labelledby="prompt-title"></pre>
         </div>
       </section>
 
@@ -722,6 +760,7 @@
         document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
       })();
     </script>
+    <script src="prompts.js"></script>
     <script src="pipeup.min.js"></script>
   </body>
 </html>

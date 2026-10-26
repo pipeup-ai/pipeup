@@ -41,7 +41,7 @@ done
 
 rm -rf "$out"
 mkdir -p "$out/skills"
-cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/fonts" "$out/"
+cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/prompts.js" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
 for id in voice live assist agents emoji github updates inbox identity; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done

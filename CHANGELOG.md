@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- Website: the home page has a Quick start under the first screen: three steps and the prompt shown in full, with one Copy prompt button for your AI agent. The "Create comment-enabled HTML" prompt now fits a page you already have, and Copy prompt buttons ease back from "Copied".
+
 ## [0.8.2] - 2026-10-19
 
 This release makes an agent on your own computer answer comments the first time it tries: its commands run on any computer and never stop to ask, it is told exactly which page to answer on, and it can list itself on the page after your yes. Pipeup itself is unchanged at 59.8 KB gzip.
