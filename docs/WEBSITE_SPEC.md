@@ -42,10 +42,12 @@ visitor how to add it. Functional requirements only.
    "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
 2. **Quick start**, under the first screen and above the footer, on the same columns as the first screen: the heading
    "Quick start", one sentence (an AI agent adds Pipeup, editing only the HTML file), three one-line steps (copy the prompt;
-   paste it into an AI such as Claude, Codex or any chat, with the HTML file; open the page and comment, with the comment
+   paste it into an AI such as Claude, Codex or any chat, with the HTML file, one copy per page; open the page and comment, with the comment
    shortcut shown the way the visitor's keyboard labels it, or the comment button on a touch screen) and the prompt's full
    words in a box beside them. The **Copy prompt** button sits in the first step and copies exactly the words shown: the
-   same prompt the "Create comment-enabled HTML" page copies, with a fresh document key made in the visitor's browser. Its
+   same prompt the "Create comment-enabled HTML" page copies, with a fresh document key made in the visitor's browser. Every
+   copy carries a key of its own (the box then shows the new one), and the prompt says the key is for that one page and
+   every other page needs its own, so two pages never share their comments by mistake. Its
    icon becomes a check and its label "Copied" for two seconds, then it eases back; screen readers hear that the prompt was
    copied. If copying isn't allowed, the prompt's words are selected so the visitor can copy them, and the button doesn't
    say "Copied". The first screen is unchanged. At phone width the steps come first and the prompt box under them; nothing
@@ -70,7 +72,8 @@ visitor how to add it. Functional requirements only.
      page; paste their comments into the AI. It says the author decides how comments travel.
    Everything lines up on the same edges and the text is drawn sharp. The scenes are light, ease everything, pause when
    out of view, and with reduced motion show their finished moment. Each **Copy prompt** copies a prompt written for
-   that situation, including a fresh document key made in the reader's browser when the file has none; its icon
+   that situation, including a fresh document key made in the reader's browser when the file has none (a new one for
+   every copy, for one page only; the author's first step says "one copy per page"); its icon
    becomes a check and its label reads "Copied" for a moment, then eases back. The "Create comment-enabled HTML" prompt
    fits a page that already exists as well as one being made. Ways to install for a particular agent (Claude Code,
    Codex, the script tag, a download) are reached through **For agents** in the footer.
@@ -332,3 +335,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-17 — On the pre-release copy, commands that run Pipeup (`npx pipeup …`) name the pre-release's version, so an agent following its skills runs the same release as the page.
 - 2026-10-19 — Commands that run Pipeup are `npx --yes pipeup@0 …` on the stable site (never asking, any release npm will give), and name the pre-release on the pre-release copy (FUNCTIONAL_SPEC 15b).
 - 2026-10-24 — A Quick start section on the home page, under the first screen: three steps and the prompt shown in full, with one Copy prompt button. It reuses the "Create comment-enabled HTML" prompt, whose first line now fits an existing page too; every Copy prompt button eases back from "Copied".
+- 2026-10-27 — Each Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only ("one copy per page"): reusing one prompt for several pages gave them all one key, so one page's comments showed on another (usability study, 27 October).

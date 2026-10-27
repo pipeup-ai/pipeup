@@ -17,7 +17,7 @@ The skills in this guide can be installed instead of pasted. Claude Code: `/plug
 The home page's Quick start (and the "Create comment-enabled HTML" page) gives people a prompt to paste into their agent with their HTML file; it asks for the steps below.
 
 1. Add the script tag just before `</body>`, pinned to a release: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
-2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented.
+2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented. Each page needs a key of its own: never copy one page's key onto another, or their comments mix.
 3. Only if the page must work offline or from a file: tell the user to save https://pipeup-ai.github.io/pipeup/pipeup.min.js next to the HTML file themselves, then use `<script src="pipeup.min.js"></script>` instead of the CDN tag. Don't download it for them.
 4. Mark stable blocks with short `data-pipeup-id` names, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
 5. Don't change the page's layout or styling to make room for Pipeup.
