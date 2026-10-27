@@ -9,18 +9,25 @@ The skills in this guide can be installed instead of pasted. Claude Code: `/plug
 ## Where it installs and where feedback goes
 
 - Nothing to install: one script goes in the HTML file (loaded from a CDN, or a copy the user saves next to the page). An AI agent can add it with the steps below, by editing the HTML file only.
-- Comments are stored only in the reviewer's own browser, on their device. Pipeup never sends them to any server.
-- Feedback leaves only when the reviewer copies it (Copy comments, as Markdown or as text) and sends it themselves, for example to the author or into an AI agent.
+- Comments are stored only in the reviewer's own browser, on their device. Pipeup never sends them to any server. Clearing the browser's data, or closing a private window, removes comments not yet sent.
+- Feedback leaves only when the reviewer copies it (Copy comments, as Markdown or as text) and sends it themselves, for example to the author or into an AI agent. Each reviewer sends their own; nobody sees anyone else's unless the author adds a sharing add-on.
 
 ## Add Pipeup to an HTML page
 
-The home page's Quick start (and the "Create comment-enabled HTML" page) gives people a prompt to paste into their agent with their HTML file; it asks for the steps below.
+The home page gives authors four steps: copy the prompt, paste it into their AI with their HTML file and save the file it gives back, send that file with the AI's note, and paste the comments they get back into the AI. The prompt (shown in full on What your AI does, prompt.html) asks for the steps below.
 
-1. Add the script tag just before `</body>`, pinned to a release: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
+1. Add the script tag just before `</body>`, pinned to a release with its integrity hash: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
 2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented. Each page needs a key of its own: never copy one page's key onto another, or their comments mix.
 3. Only if the page must work offline or from a file: tell the user to save https://pipeup-ai.github.io/pipeup/pipeup.min.js next to the HTML file themselves, then use `<script src="pipeup.min.js"></script>` instead of the CDN tag. Don't download it for them.
 4. Mark stable blocks with short `data-pipeup-id` names, label charts and images with `data-pipeup-label`, and mark navigation and toolbars with `data-pipeup-ignore`.
 5. Don't change the page's layout or styling to make room for Pipeup.
+6. When you're done: if you can't change the file on the author's computer (a chat, say), give them the whole new file to download and remind them to share that file, not the one they had. Tell them to open it in their web browser and check for the comment button in the bottom-right corner. Give them this note to send with it, word for word:
+
+   > You can comment right on this page. Open the file in a web browser such as Chrome, Safari, Edge or Firefox; a preview inside email, chat or a drive may not show the comments. Click the comment button in the bottom-right corner and choose Start commenting, then click anything, or select some words, and type. On a phone, tap instead of click. When you're done, click the comment button again, choose Copy comments › As Markdown and paste it into a reply to me. Your comments stay in your browser until you send them. Help: https://pipeup-ai.github.io/pipeup/add-comments.html
+
+7. Later the author pastes the comments people send them: apply each one to the page, say what you changed, and give the whole file again.
+
+Someone who was sent a page with no comment button can ask their AI to add it to their own copy (the reviewer help page, add-comments.html, has that prompt): the same script tag, a `data-pipeup-doc` key only if `<html>` has none (keep an existing one exactly as it is), no other change, the whole new file if you can't change theirs, and a reminder to open it in a web browser.
 
 ## Add-ons (only when the author asks)
 
@@ -42,8 +49,9 @@ The site is https://pipeup-ai.github.io/pipeup/; the source is https://github.co
 
 - [Everything in one file](https://pipeup-ai.github.io/pipeup/llms-full.txt): this guide plus all three skills.
 - [This site as Markdown](https://pipeup-ai.github.io/pipeup/index.html.md): the home page's content.
-- [Add comments to an HTML, as Markdown](https://pipeup-ai.github.io/pipeup/add-comments.html.md): someone sent you an HTML file and you want to give feedback.
-- [Create comment-enabled HTML, as Markdown](https://pipeup-ai.github.io/pipeup/create-html.html.md): you are making a page to share and want feedback.
+- [What your AI does, as Markdown](https://pipeup-ai.github.io/pipeup/prompt.html.md): what the home page's prompt asks for, and the note for reviewers.
+- [The details, as Markdown](https://pipeup-ai.github.io/pipeup/details.html.md): the two lines for adding Pipeup by hand, what it sends, and its licence, version and size.
+- [The reviewer help page, as Markdown](https://pipeup-ai.github.io/pipeup/add-comments.html.md): for people who were sent a page to comment on.
 - [Making your own add-on, as Markdown](https://pipeup-ai.github.io/pipeup/addons-guide.html.md): the guide, including inside a company and setting up Send to Git.
 - [Add-ons as Markdown](https://pipeup-ai.github.io/pipeup/addons.html.md): every add-on in one line, each with a link to its own page's Markdown copy (https://pipeup-ai.github.io/pipeup/addons/<id>.html.md: what it sends, and how to add it).
 

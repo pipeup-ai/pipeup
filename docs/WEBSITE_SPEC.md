@@ -14,15 +14,31 @@ visitor how to add it. Functional requirements only.
 - People who make and share HTML files — documents, decks, prototypes — and want feedback on them.
 - People who ask AI tools to make those files, and want the feedback to flow back to the AI.
 
-## 3. Content (one page, dense but calm, with little scrolling)
+## 3. Content (a home page that fits one screen, dense but calm, and a few pages one click away)
 
-1. **First screen**: the headline "Feedback for any HTML.", one sentence on the value, and the **showcase** beside
-   them (tops aligned; stacked on phones). Under the sentence are **two buttons**, one for each way people meet
-   Pipeup, each with a small arrow, leading to a page of its own:
-   - **1. Add comments to an HTML**: someone sent me a file and I want to give feedback.
-   - **2. Create comment-enabled HTML**: I'm making a page to share and I want feedback.
-   Under the buttons, the comment shortcut, so visitors can try Pipeup on this page. The page's Markdown copy and
-   llms.txt say the same, and that nothing leaves the reviewer's device until they copy and send it themselves.
+1. **First screen**, which is the whole home page: the footer follows it, with nothing else to scroll to on a
+   1280 × 800 window. The headline "Feedback for any HTML.", one sentence on the value that also says comments stay
+   in each person's browser until they send them, and the **showcase** beside them (tops aligned). Under the sentence,
+   **four numbered steps**, in few words, take an author from their HTML file to their reviewers and back:
+   - copy the prompt;
+   - paste it into an AI (Claude, ChatGPT or any chat) with the HTML file, and save the file it gives back;
+   - send that file with the AI's note; people comment in their browser and send their comments back;
+   - paste their comments into the AI, which makes the changes.
+   Each step is at most two lines on a computer. The first step holds the page's one main button, **Copy prompt**,
+   with "One copy per page" and a quiet link ("What it says") that opens What your AI does. The third step ends with a
+   quiet link to the reviewer help page ("How reviewing works"). The first screen has no other button and no choice
+   of paths.
+   **Copy prompt** copies exactly the prompt What your AI does shows, with a fresh document key made in the visitor's
+   browser; every copy carries a key of its own, for one page. Its icon becomes a check and its label "Copied" for two
+   seconds, then it eases back; screen readers hear that the prompt was copied. If copying isn't allowed, the button
+   doesn't say "Copied": it opens What your AI does with the prompt's words selected.
+   Under the steps is a line to **try it on this page**: the comment shortcut, shown the way the visitor's keyboard
+   labels it; on a touch screen, the comment button in the bottom-right corner, then Start commenting, then a tap on
+   anything. Under that, a quiet line for people adding Pipeup themselves ("Adding it yourself? The script tag,
+   licence and size.") opens The details.
+   At phone width the order is: headline, sentence, the try line, the showcase, then the steps, with Copy prompt at
+   full width. Reading and keyboard order follow what is shown, and nothing scrolls sideways. The page's Markdown copy
+   and llms.txt say the same in words.
    **The showcase**: a looping demo that swipes between a **document**, **slides**, a
    **website** and the **keyboard**, changing every 10 seconds, each showing a comment being added, with a cursor that
    moves only to act and holds still while the comment is typed. The keyboard scene uses no pointer
@@ -40,43 +56,80 @@ visitor how to add it. Functional requirements only.
    picked on their own), while its tabs, pause and Try keep working.
    Beside the showcase controls, a **Try** link follows the current scene (its accessible name says which:
    "Try the document", "Try the slides", "Try the website"; the keyboard scene opens the document) and opens that example as a real page in the same tab.
-2. **Quick start**, under the first screen and above the footer, on the same columns as the first screen: the heading
-   "Quick start", one sentence (an AI agent adds Pipeup, editing only the HTML file), three one-line steps (copy the prompt;
-   paste it into an AI such as Claude, Codex or any chat, with the HTML file, one copy per page; open the page and comment, with the comment
-   shortcut shown the way the visitor's keyboard labels it, or the comment button on a touch screen) and the prompt's full
-   words in a box beside them. The **Copy prompt** button sits in the first step and copies exactly the words shown: the
-   same prompt the "Create comment-enabled HTML" page copies, with a fresh document key made in the visitor's browser. Every
-   copy carries a key of its own (the box then shows the new one), and the prompt says the key is for that one page and
-   every other page needs its own, so two pages never share their comments by mistake. Its
-   icon becomes a check and its label "Copied" for two seconds, then it eases back; screen readers hear that the prompt was
-   copied. If copying isn't allowed, the prompt's words are selected so the visitor can copy them, and the button doesn't
-   say "Copied". The first screen is unchanged. At phone width the steps come first and the prompt box under them; nothing
-   scrolls sideways. The page's Markdown copy and llms.txt carry the same Quick start in words.
-3. **The two walkthrough pages**, `add-comments.html` and `create-html.html`, one for each button, kept focused like the
-   Add-ons page: the same header and footer, a **back link** ("← Pipeup") above the heading, and each with its own Markdown
-   copy. Each has a heading and a sentence on the left, top-aligned with an animated scene on the right, and, instead of cards, **four one-line steps** under the sentence (brief words, the Copy prompt button inside its
-   step), so the whole page fits one screen with no scrolling, like the home page:
-   - **Add comments to an HTML** ("Someone sent you an HTML file"). The scene shows two stories, one per loop, in turn:
-     an email arrives and is opened, the HTML attachment is downloaded, and the file is dragged into Claude's message
-     box; "Add comments with Pipeup" is typed, the prompt is pasted in (a paste key hint shows) and it is sent; Claude
-     says it is done. Then an HTML file arrives in a Slack message (drawn like Slack: purple sidebar, a channel, a file
-     card with a download button), is downloaded, and goes into Codex the same way. Each agent has its highlight
-     colour (Claude's orange, Codex's blue). The pointer always moves to what it acts on before it presses, and each
-     press shows a ring. The steps: open it (if a comment button shows in the corner, skip ahead); if not, **Copy prompt**
-     and paste it into an AI assistant along with the file; comment; send it back with **Copy comments › As Markdown**. It says
-     comments stay in the browser until copied and sent.
-   - **Create comment-enabled HTML** ("You're creating an HTML page to share"). The scene shows a conversation with an AI
-     agent (Claude, then Codex, in turn): "Make me a report to share" typed in the message box and sent, the agent's
-     report, then "Add comments with Pipeup" typed, the prompt pasted in and sent, and the agent saying comments are
-     built in. The steps: **Copy prompt** and add it to the request; share the file anywhere; people comment on the
-     page; paste their comments into the AI. It says the author decides how comments travel.
-   Everything lines up on the same edges and the text is drawn sharp. The scenes are light, ease everything, pause when
-   out of view, and with reduced motion show their finished moment. Each **Copy prompt** copies a prompt written for
-   that situation, including a fresh document key made in the reader's browser when the file has none (a new one for
-   every copy, for one page only; the author's first step says "one copy per page"); its icon
-   becomes a check and its label reads "Copied" for a moment, then eases back. The "Create comment-enabled HTML" prompt
-   fits a page that already exists as well as one being made. Ways to install for a particular agent (Claude Code,
-   Codex, the script tag, a download) are reached through **For agents** in the footer.
+   Only the scene on show reaches a screen reader, as one sentence saying what happens in it; the scenes not on show
+   are hidden from it. It stops moving on its own while keyboard focus or the pointer is on it, and while the visitor
+   is commenting on the home page, so a real comment never sits on a pretend one. On a touch screen its pointer is
+   drawn as a fingertip. Focus rings on its controls are never cut off.
+2. **What your AI does**, a page of its own (`prompt.html`), opened from the first step. It has the site's header (the
+   logo leads home) and footer and its own Markdown copy; its words sit on the left, top-aligned with the prompt on the
+   right (at phone width, the words first, then the prompt). One sentence (the prompt asks the AI to add Pipeup to the
+   HTML file and change nothing else; there is nothing to install), then four short lines:
+   - it adds one script line, and a key that keeps this page's comments apart from the author's other pages;
+   - it gives back the whole file, which the author opens in a web browser: a comment button in the bottom-right
+     corner means it worked;
+   - it writes a note for reviewers, and for when it didn't, **a note for reviewers** in a labelled box with its own
+     **Copy**. The note says:
+     open the file in a web browser, since a preview in email, chat or a drive may not show the comments; turn on
+     commenting from the comment button in the bottom-right corner (Start commenting); click or tap anything, or select
+     some words, and type; when done, choose Copy comments › As Markdown and paste it into a reply. It says comments
+     stay in the reviewer's browser until they send them, and ends with a link to the reviewer help page;
+   - when the author pastes the comments people send, it makes the changes and gives the file again.
+   A quiet line under them says each person sends their own comments, and that gathering everyone's in one place needs
+   a service to hold them, with a link to Share.
+   Beside them, **the prompt** in full in a labelled box: exactly the words Copy prompt copies, showing the key the copy
+   carries, with its own **Copy prompt** that behaves the same way (if copying isn't allowed, its words are selected).
+   The prompt asks the AI:
+   - to add the pinned script, with its integrity hash, just before `</body>`, editing only the HTML file;
+   - to add this copy's key to `<html>` and keep it as it is; the key is for this one page, and every other page needs
+     its own;
+   - to mark stable blocks, label charts and images, mark navigation, and leave the layout alone;
+   - when it can't change the author's file, to hand back the whole new file and say to share that one, not the old one;
+   - to tell the author to open it in a web browser and check for the comment button;
+   - to give the note for reviewers word for word;
+   - later, to apply each pasted comment, say what it changed, and give the whole file again.
+2a. **The details**, a page of its own (`details.html`), opened from the first screen's quiet line, with the site's
+   header and footer and its own Markdown copy; it fits one screen. One sentence (for adding Pipeup yourself, and what
+   it does to your page), then five paragraphs of one or two sentences each, in plain words, each led by a few bold
+   words and each saying its drawback; never a facts row, chips or tiles:
+   - **By hand**: the two lines go on the page, and each page needs its own key. Browsers load Pipeup from jsDelivr,
+     pinned by its integrity hash, or from a copy kept next to the page, which the site links.
+   - **What it sends**: nothing. Comments stay in each reviewer's browser until they send them, so clearing browser
+     data removes the ones not yet sent.
+   - **What it does to your page**: it adds one element of its own and never restyles or moves the page, including
+     pages a framework renders.
+   - **Claude Code or Codex**: the install command, run once (it asks first), then "add comments to this page".
+   - **Licence and version**: free and open source under the MIT licence, on GitHub; the version, linked to what
+     changed; one file of its compressed size, with no dependencies. The version and size always match the copy of
+     Pipeup the site carries, so they can't go out of date.
+   Beside them, a box, **For your page**, with the two lines (the key on `<html>` and the pinned script line) and its
+   own **Copy**: each copy carries a fresh key, it says "Copied" the same way, and the words are selected if copying
+   isn't allowed. Its Copy sits above the code, never over it.
+3. **The reviewer help page**, `add-comments.html`, for people who were sent a page. It is linked from the first
+   screen's third step, the note for reviewers and the reviewer prompt; it is not a door on the home page. It has the
+   site's header and footer (the logo leads home; there is no separate back link) and its own Markdown copy. Its
+   heading ("Someone sent you a page to comment on.") and sentence ("Comment right on it in your web browser, then
+   send your comments back. No account needed.") sit on the left, top-aligned with an animated scene on the right,
+   above four one-line steps:
+   - open it in a web browser (Chrome, Safari, Edge or Firefox); a preview inside email, chat or a drive may not show
+     the comment button;
+   - turn on commenting: the comment button in the bottom-right corner, then Start commenting, or the comment shortcut;
+   - comment: click anything, or select some words, and type;
+   - send them back: the comment button, then Copy comments › As Markdown, pasted into a reply to whoever sent the page.
+   On a touch screen the steps say tap (and press and hold on words). Under them, a quiet line says comments stay in
+   this browser until they are sent, nobody else sees them, and clearing the browser's data or closing a private
+   window removes them. A last quiet line covers a page with no comment button: ask the sender for the version with
+   comments built in, or add it to your own copy. That eases open two options, each shown in full before copying: the
+   reviewer prompt for an AI ("only if you're allowed to share the file with an AI"), with its Copy prompt, and the
+   pinned script line to paste before `</body>`, with its Copy. The reviewer prompt asks the AI for the whole new file
+   when it can't change the reviewer's copy, and to say to open it in a web browser.
+   The scene shows two stories in turn, an email and then a Slack message, each ending with the reviewer replying: the
+   file opens in a browser tab, the pointer chooses the comment button and Start commenting, a comment is typed on a
+   paragraph, Copy comments › As Markdown is chosen, and the comments are pasted into a reply. The pointer always moves
+   to what it acts on before it presses. The scene can be paused; it is light, eases everything, pauses when out of
+   view, and with reduced motion shows its finished moment. The whole page fits one screen with no scrolling.
+   `create-html.html` is retired: its address opens the home page's steps by itself, and shows one plain line ("Making
+   a page to share? Adding Pipeup is now on the home page.") with a link, in case it can't. Its Markdown copy points to
+   the home page's.
 4. **Try pages**: one real example each, running Pipeup, each with a very different look so
    visitors see Pipeup fit in anywhere:
    - **Document**: a short guide to how Pipeup works, laid out like a familiar word-processor page
@@ -90,13 +143,14 @@ visitor how to add it. Functional requirements only.
    one ticked, and the GitHub link. It stays on one line at any width; on phones the GitHub link is
    just its icon. The bar keeps working in comment mode and is never commented on; everything else
    on the home page and the Try pages, including buttons, links and navigation, can be commented on.
-5. **Footer**: always at the bottom of the window, with no facts line (the first screen and the Markdown copy say
+5. **Footer**: always at the bottom of the window, with no facts line (The details and the Markdown copy say
    what matters), and on the right an **Add-ons** link shown as a soft violet pill with a puzzle-piece icon (so it stands out) and one **For agents** link. Clicking
    it opens llms.txt; hovering or focusing it (or a first tap on touch screens) shows a short
    menu of every agent file. That is the only agent link on the page. The
    page doesn't describe the project's release status.
 
-Set-up is the Quick start and the two walkthroughs; there is no other set-up section.
+Set-up is the first screen's steps, with What your AI does and The details one click away; there is no other set-up
+section. The one other page on the path is the reviewer help page, for people who were sent a page.
 
 **Add-on safety, for agents**: wherever the site tells an agent to add an add-on (llms.txt, llms-full.txt, the integrate
 skill, the Add-ons page's prompts and its Markdown copy, the guide page and its Markdown copy), it also tells the agent to pin
@@ -115,7 +169,7 @@ site's light look), a title and a description. The pre-release copy's previews u
 ### Add-ons page
 
 Optional add-ons have a page of their own, reached from a quiet "Add-ons" link in the footer. Nothing else on the
-site changes: the first screen, the Copy prompt and the Install menu are about the core, which is what most people
+site changes: the first screen and its Copy prompt are about the core, which is what most people
 use. The page:
 
 - Says first that the core needs none of them and sends nothing anywhere, and that an add-on is an extra step the page's
@@ -336,3 +390,5 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-19 — Commands that run Pipeup are `npx --yes pipeup@0 …` on the stable site (never asking, any release npm will give), and name the pre-release on the pre-release copy (FUNCTIONAL_SPEC 15b).
 - 2026-10-24 — A Quick start section on the home page, under the first screen: three steps and the prompt shown in full, with one Copy prompt button. It reuses the "Create comment-enabled HTML" prompt, whose first line now fits an existing page too; every Copy prompt button eases back from "Copied".
 - 2026-10-27 — Each Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only ("one copy per page"): reusing one prompt for several pages gave them all one key, so one page's comments showed on another (usability study, 27 October).
+- 2026-10-27 — One front door again (usability study, 27 October; visual spec docs/design/one-front-door-mockups.html). The first screen's two buttons become four numbered steps with one Copy prompt, covering the whole trip from the author's file to reviewers and back, and the sentence under the headline says each person's comments stay in their own browser until they send them. Quick start becomes What your AI does, with a note for reviewers that has its own Copy, and the prompt asks the AI for the new file, a reminder to open it in a browser, and that note. A new The details section gives the two lines to add by hand, what Pipeup sends and does to a page, the skills, and the licence, version and size, which always match the copy the site carries. add-comments.html becomes the reviewer help page, linked from the steps and the note; create-html.html is retired and its address opens the home page's steps. The showcase reads one sentence per scene to screen readers, holds still under focus, the pointer or while the visitor comments, and draws a fingertip on touch screens.
+- 2026-10-27 — The home page fits one screen (visual spec docs/design/one-screen-home-mockups.html): What your AI does and The details become pages of their own (prompt.html, details.html), opened from the first screen's quiet links, and the first screen and The details say the same in fewer words. If copying the prompt isn't allowed, What your AI does opens with its words selected.

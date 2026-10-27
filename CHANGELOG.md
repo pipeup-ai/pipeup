@@ -16,6 +16,7 @@ change the API and the stored comment format.
 ### Changed
 
 - Website: the home page has a Quick start under the first screen: three steps and the prompt shown in full, with one Copy prompt button for your AI agent. The "Create comment-enabled HTML" prompt now fits a page you already have, and Copy prompt buttons ease back from "Copied".
+- Website: one front door again, and the home page fits one screen. Its two buttons become four short steps, from your HTML file to your reviewers and back, with one Copy prompt; the prompt now asks your AI for the whole new file, a reminder to open it in a browser, and a note for reviewers. Two new pages, one click from the steps: What your AI does (the prompt and the note, each with its own Copy) and The details (the two lines to add by hand with the integrity hash, what Pipeup sends, and its licence, version and size, taken from the copy the site carries). The reviewer page becomes help for people who were sent a page; the "Create comment-enabled HTML" page now opens the home page's steps. The showcase holds still while you point at it, focus it or comment, reads one sentence per scene to screen readers, and shows a fingertip on touch screens.
 
 ## [0.8.2] - 2026-10-19
 

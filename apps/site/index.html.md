@@ -1,43 +1,17 @@
 # Pipeup: feedback for any HTML
 
-People comment right on an HTML page, and send their comments back. No accounts, no servers. Their feedback comes back ready for your AI to act on.
+People comment right on your page: documents, decks or whole sites. No accounts, no servers. Comments stay in each person's browser until they send them to you.
 
-- **One file**, with no dependencies.
-- **Works from disk**: no server needed.
-- **Nothing to install, and it stays on your device**: one script goes in your HTML file (or loads from a CDN), and an AI agent can add it. Comments stay in the reviewer's own browser and are never sent to any server; feedback leaves only when the reviewer copies it (Copy comments, as Markdown or as text) and sends it themselves.
-- **Try it on this site**: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click on anything, or select some words.
+The home page shows Pipeup on a document, slides, a website and with the keyboard, beside four steps:
 
-On the home page, a **Quick start** under the first screen has one Copy prompt button. The first screen shows Pipeup on a document, slides, a website and with the keyboard, and two buttons: **1. Add comments to an HTML** and **2. Create comment-enabled HTML**. Each opens its own page: [add-comments.html](https://pipeup-ai.github.io/pipeup/add-comments.html.md) and [create-html.html](https://pipeup-ai.github.io/pipeup/create-html.html.md).
+1. **Copy the prompt** (the Copy prompt button). One copy per page: each copy carries a key of its own. What it says: [What your AI does](https://pipeup-ai.github.io/pipeup/prompt.html.md).
+2. **Paste it into your AI** with your HTML file: Claude, ChatGPT or any chat. Save the file it gives back.
+3. **Send that file** with your AI's note. People comment in their browser and send them back. How reviewing works: [the reviewer help page](https://pipeup-ai.github.io/pipeup/add-comments.html.md).
+4. **Paste their comments into your AI.** It makes the changes.
 
-## Quick start
+Try it on this page: press Shift+Option+C (Shift+Alt+C on Windows and Linux) and click anything. On a touch screen, tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.
 
-Your AI agent adds Pipeup to your page. It edits only the HTML file.
-
-1. **Copy prompt**: the same prompt as "Create comment-enabled HTML" below, shown in full on the page.
-2. Paste it into your AI (Claude, Codex or any chat), with your HTML file. One copy per page: each copy carries a key of its own.
-3. Open the page and press Shift+Option+C (Shift+Alt+C on Windows and Linux), or tap the comment button on a phone, and comment.
-
-## 1. Add comments to an HTML (someone sent you an HTML file)
-
-You want to read it and give feedback.
-
-1. Open the file in your browser. If you see a small comment button in the bottom-right corner, skip to step 3.
-2. No button? Paste the **Copy prompt** text into an AI assistant (Claude, ChatGPT, Codex) along with the file. It adds Pipeup to your copy: the pinned script tag `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>` just before `</body>`, a `data-pipeup-doc` attribute on `<html>` (kept exactly as it is if the file already has one), and no change to the page's layout. It edits only the HTML file.
-3. Comment: select words and click the comment icon, or press Shift+Option+C (Shift+Alt+C) and click any block. With the keyboard: Tab moves between blocks, Enter comments, Esc finishes.
-4. Send it back: **Copy comments › As Markdown** copies every comment with exactly where it is. Paste it in a message or email to whoever sent the file.
-
-Comments stay in your browser until you copy and send them.
-
-## 2. Create comment-enabled HTML (you are making a page to share)
-
-You want feedback on it.
-
-1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on, and never reused on another page: each page gets a key of its own, or their comments mix), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
-2. Share the file: email, chat, a drive or a website. It works straight from the file.
-3. People comment on the page.
-4. Hand their comments to your AI: paste them (Copy comments › As Markdown), or use **Copy a prompt for my agent** (with the [agents add-on](https://pipeup-ai.github.io/pipeup/addons/agents.html.md)) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
-
-You decide how comments travel. By default they stay in each reviewer's browser until they send them.
+Adding it yourself? The script tag, licence and size: [The details](https://pipeup-ai.github.io/pipeup/details.html.md).
 
 [Try it on a page](https://pipeup-ai.github.io/pipeup/try/document.html)
 
