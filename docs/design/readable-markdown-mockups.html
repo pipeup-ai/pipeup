@@ -1,0 +1,179 @@
+<title>Readable Markdown Copy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!-- Visual spec: Copy comments › As Markdown reads as a message to a person and still guides an AI. Light mode only, Pipeup's own tokens. -->
+<style>
+  /* Layout: one reading column; what changes, then the same copied export before and after as the author receives it, then what an AI keeps, the words, and the decisions. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff;
+    --ac: #534ab7; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f3ee; color: var(--k); font: 15px/1.55 -apple-system, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(28px, 5vw, 40px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 10px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 56px; }
+  h2 { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .changes { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .changes ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  code { font: 0.9em var(--mono); }
+  .stage { background: #e6e5de; border: 1px solid #c4c2b9; border-radius: 16px; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 24px; align-items: start; }
+  .frame { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tag { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fa); }
+  .tag.new { color: var(--ac); }
+  .cap { font-size: 12.5px; color: var(--mu); }
+  .cap b { color: var(--k); font-weight: 600; }
+
+  /* a plain-text mail client */
+  .mail { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; box-shadow: var(--sh); overflow: hidden; }
+  .mh { padding: 12px 16px; border-bottom: 1px solid var(--ru); font-size: 13px; display: grid; gap: 2px; }
+  .mh b { font-weight: 600; }
+  .mh span { color: var(--fa); }
+  .mb { padding: 14px 16px 18px; font-size: 13.5px; }
+  .mb p { margin: 0 0 12px; }
+  pre { margin: 0; font: 12px/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--k); }
+  .l { display: block; padding: 0 6px; margin: 0 -6px; border-radius: 3px; }
+  .l.ai { background: var(--del); color: var(--delk); }
+  .aiw { background: var(--del); color: var(--delk); border-radius: 3px; }
+  .l.new { background: var(--add); color: var(--addk); }
+  .l.q { color: var(--fa); }
+  .key { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--mu); }
+  .key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+  /* table */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; font-size: 13.5px; min-width: 720px; width: 100%; }
+  th, td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--ru); vertical-align: top; }
+  th { font-weight: 600; color: var(--mu); font-size: 12.5px; border-top: 0; }
+  td code { overflow-wrap: anywhere; }
+
+  .snip { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 14px 16px; max-width: 60em; }
+  .words { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; max-width: 60em; }
+  .words ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .words ul ul { margin-top: 8px; }
+  .q3 { display: grid; gap: 14px; max-width: 60em; }
+  .dec { background: var(--su); border: 1px solid var(--ln); border-radius: 12px; padding: 16px 20px; }
+  .dec p { margin: 0 0 6px; }
+  .dec .rec { color: var(--mu); margin: 0; }
+  .dec .rec b { color: var(--k); }
+</style>
+
+<main>
+  <h1>Copy comments › As Markdown, readable by a person</h1>
+  <p class="lede">Reviewers send their comments back to the author with Copy comments › As Markdown, pasted into a reply. Today that reply opens with a timestamp and a paragraph for coding agents (usability study, issue I7). This proposal makes it read as a message to the author, while an AI still gets everything it needs.</p>
+
+  <section>
+    <h2>What changes</h2>
+    <div class="changes">
+      <ul>
+        <li><b>The opening is for a person.</b> "Comments on Q3 launch plan", then how many open comments there are, who wrote them and when they were copied, in words: <code>3 open comments from Lee, copied 27 Oct 2026, 09:40 UTC.</code> Then the page's address. The ISO timestamp and the paragraph for agents are gone from the top.</li>
+        <li><b>Each thread leads with where it is</b>, as its heading, then the quoted words or the pin in a sentence ("On the words "20% lift".") and the comments.</li>
+        <li><b>What only an AI needs moves to one last line per thread</b>: open, addressed or resolved; the thread's id; and the element's <code>data-pipeup-id</code>, saying whether the comment is on it or inside it.</li>
+        <li><b>Replies carry no ids.</b> No command or skill uses them. They stay in <code>Pipeup.comments()</code> and <code>pipeup read --json</code>.</li>
+        <li><b>The instruction for an AI comes after the threads</b>, marked "For an AI assistant:", and now names the skill that says how to answer.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>The same copy, before and after</h2>
+    <p class="what">One reviewer, Lee, commented on three slides of a six-slide deck and resolved a fourth comment, then chose Copy comments › As Markdown and pasted the result into a reply to Ada, the author. Both copies came from the same session in Chromium. Only the file address is shortened, and the "before" thread ids are swapped for the "after" ones so the lines match.</p>
+    <div class="stage">
+      <div class="frame">
+        <span class="tag">Before (0.8.2)</span>
+        <div class="mail">
+          <div class="mh"><div><span>From</span> <b>Lee</b> <span>to</span> <b>Ada</b></div><div><b>Re: Q3 launch plan</b></div></div>
+          <div class="mb">
+            <p>Hi Ada, my comments are below.</p>
+<pre><span class="l "># Review comments: Q3 launch plan</span><span class="l "> </span><span class="l ">- **Page:** file:///Users/lee/Downloads/q3-launch-plan.html</span><span class="l ai">- **Exported:** 2026-10-27T09:40:00.000Z</span><span class="l ">- **Open threads:** 3 (1 resolved, not included)</span><span class="l "> </span><span class="l ai">Each thread says where it is: the slide or section, the element (its data-pipeup-id attribute in the HTML), and the exact quoted text or pin position. Work through the open threads in order, and for each one say what you changed or why you did not. Answer in the thread (the Pipeup skill says how) and mark it addressed; never resolve it, the author does.</span><span class="l "> </span><span class="l ">## Thread 1 · open</span><span class="l ai">- **Thread:** S31t_cxIMt3wgj21FSWyvIZrRR6v4-gNyOjeXBK8ZtQ</span><span class="l ">- **Where:** Slide 2 &quot;Revenue grew 42% year on year&quot; › Revenue by quarter</span><span class="l ai">- **Element:** `[data-pipeup-id=&quot;s2-chart&quot;]` (Revenue by quarter)</span><span class="l ">- **Pin:** 88% across, 30% down the element</span><span class="l ">- **Started by:** Lee, 22m ago</span><span class="l "> </span><span class="l ">**Lee** (22m ago): Make Q4 a lighter shade: it&#x27;s a forecast, not a result.</span><span class="l "> </span><span class="l ">## Thread 2 · open</span><span class="l ai">- **Thread:** g_Ynp1ATYwkwbjaZa7skmVJQi0Ue-nCXmTcKDiLtOTo</span><span class="l ">- **Where:** Slide 3 &quot;Week-one retention is 31%&quot; › Paragraph · The target for the new onboarding flow …</span><span class="l ai">- **Element:** Paragraph · The target for the new onboarding flow … in `[data-pipeup-id=&quot;s3&quot;]`</span><span class="l ">- **Quoted text:** &quot;20% lift&quot;</span><span class="l ">- **Started by:** Lee, 17m ago · 1 reply</span><span class="l "> </span><span class="l ">**Lee** (17m ago): Is 20% realistic? Last year&#x27;s flow gave 8%.</span><span class="l ">- **Lee** (13m ago): If it stays, say where it comes from. <span class="aiw">&lt;!-- comment:fbkB2ZTfg3Ct95YD3MdWCkiDyLBODh8mwRx6ae9xYVA --&gt;</span></span><span class="l "> </span><span class="l ">## Thread 3 · open</span><span class="l ai">- **Thread:** y05A7OyBV_uyq2WWPcmDBHg3Dv0yomKp2lZWvWxz_qc</span><span class="l ">- **Where:** Slide 4 &quot;Hiring&quot; › List item · No second designer until Q4.</span><span class="l ai">- **Element:** List item · No second designer until Q4. in `[data-pipeup-id=&quot;s4&quot;]`</span><span class="l ">- **Started by:** Lee, 9m ago</span><span class="l "> </span><span class="l ">**Lee** (9m ago): Why wait until Q4? Onboarding needs a designer in August.</span>
+</pre>
+          </div>
+        </div>
+        <div class="key"><span><i style="background: var(--del)"></i>Aimed at an agent, read past by a person</span></div>
+      </div>
+      <div class="frame">
+        <span class="tag new">After</span>
+        <div class="mail">
+          <div class="mh"><div><span>From</span> <b>Lee</b> <span>to</span> <b>Ada</b></div><div><b>Re: Q3 launch plan</b></div></div>
+          <div class="mb">
+            <p>Hi Ada, my comments are below.</p>
+<pre><span class="l new"># Comments on Q3 launch plan</span><span class="l "> </span><span class="l new">3 open comments from Lee, copied 27 Oct 2026, 09:40 UTC. 1 resolved comment is left out.</span><span class="l "> </span><span class="l new">Page: file:///Users/lee/Downloads/q3-launch-plan.html</span><span class="l "> </span><span class="l new">## 1. Slide 2 &quot;Revenue grew 42% year on year&quot; › Revenue by quarter</span><span class="l "> </span><span class="l new">Pinned 88% across, 30% down the element.</span><span class="l "> </span><span class="l ">**Lee** (22m ago): Make Q4 a lighter shade: it&#x27;s a forecast, not a result.</span><span class="l "> </span><span class="l q">Open · thread `S31t_cxIMt3wgj21FSWyvIZrRR6v4-gNyOjeXBK8ZtQ` · on `data-pipeup-id=&quot;s2-chart&quot;`</span><span class="l "> </span><span class="l new">## 2. Slide 3 &quot;Week-one retention is 31%&quot; › Paragraph · The target for the new onboarding flow …</span><span class="l "> </span><span class="l new">On the words &quot;20% lift&quot;.</span><span class="l "> </span><span class="l ">**Lee** (17m ago): Is 20% realistic? Last year&#x27;s flow gave 8%.</span><span class="l ">- **Lee** (13m ago): If it stays, say where it comes from.</span><span class="l "> </span><span class="l q">Open · thread `g_Ynp1ATYwkwbjaZa7skmVJQi0Ue-nCXmTcKDiLtOTo` · in `data-pipeup-id=&quot;s3&quot;`</span><span class="l "> </span><span class="l new">## 3. Slide 4 &quot;Hiring&quot; › List item · No second designer until Q4.</span><span class="l "> </span><span class="l ">**Lee** (9m ago): Why wait until Q4? Onboarding needs a designer in August.</span><span class="l "> </span><span class="l q">Open · thread `y05A7OyBV_uyq2WWPcmDBHg3Dv0yomKp2lZWvWxz_qc` · in `data-pipeup-id=&quot;s4&quot;`</span><span class="l "> </span><span class="l q">---</span><span class="l "> </span><span class="l q">For an AI assistant: work through the open comments in order and say what you changed, or why you didn&#x27;t. Each one&#x27;s last line gives the thread to answer and the element&#x27;s data-pipeup-id in the page&#x27;s HTML. Answer in the thread with Pipeup (its pipeup-apply skill says how) and mark it addressed; never resolve it, the author does.</span>
+</pre>
+          </div>
+        </div>
+        <div class="key"><span><i style="background: var(--add)"></i>New or reworded for a person</span><span><i style="background: #d9d8d2"></i>For an AI, kept last and quiet (grey)</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What an AI still gets</h2>
+    <p class="what">Nothing an agent uses is lost. The agents add-on, <code>pipeup read</code>, <code>pipeup comments</code> and <code>Pipeup.comments()</code> all carry this same text, and their data (<code>--json</code>, <code>threads</code>) doesn't change.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>An agent needs</th><th>Before</th><th>After</th></tr>
+        <tr><td>Where it is</td><td><code>- **Where:** Slide 2 "…" › Revenue by quarter</code></td><td>The heading: <code>## 1. Slide 2 "…" › Revenue by quarter</code></td></tr>
+        <tr><td>The element in the HTML</td><td><code>- **Element:** `[data-pipeup-id="s2-chart"]` (Revenue by quarter)</code></td><td>Last line: <code>on `data-pipeup-id="s2-chart"`</code>, or <code>in …</code> for a slide or section around it</td></tr>
+        <tr><td>Quoted words or pin</td><td><code>- **Quoted text:** "20% lift"</code> · <code>- **Pin:** 88% across, …</code></td><td><code>On the words "20% lift".</code> · <code>Pinned 88% across, 30% down the element.</code></td></tr>
+        <tr><td>The thread's id, to answer it</td><td><code>- **Thread:** S31t_cxIM…</code>, second line</td><td>Last line: <code>thread `S31t_cxIM…`</code></td></tr>
+        <tr><td>Open, addressed or resolved</td><td>The heading: <code>## Thread 1 · open</code></td><td>Last line starts <code>Open</code>, <code>Open, addressed</code> or <code>Resolved</code></td></tr>
+        <tr><td>An agent's addressed note</td><td><code>- **Addressed:** note (Claude, 5m ago)</code></td><td><code>Claude marked it addressed (5m ago): note</code>, after the comments</td></tr>
+        <tr><td>What to do</td><td>A paragraph at the top</td><td>A paragraph after the threads, starting "For an AI assistant:"</td></tr>
+        <tr><td>When it was copied</td><td><code>2026-10-27T09:40:00.000Z</code></td><td><code>27 Oct 2026, 09:40 UTC</code></td></tr>
+        <tr><td>Comment ids on replies</td><td><code>&lt;!-- comment:fbkB2ZTf… --&gt;</code></td><td>None in the text; still in the data</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>A thread an agent answered</h2>
+    <p class="what">What the author (or their agent) sees in <code>pipeup read</code> or Copy for my agent once an agent has replied and marked the thread addressed.</p>
+    <div class="snip"><pre><span class="l new">## 1. Slide 2 "Revenue grew 42% year on year" › Revenue by quarter</span><span class="l"> </span><span class="l new">Pinned 88% across, 30% down the element.</span><span class="l"> </span><span class="l">**Lee** (2h ago): Make Q4 a lighter shade: it's a forecast, not a result.</span><span class="l">- **Claude** (5m ago): Lightened the Q4 bar and added "forecast" to its label.</span><span class="l"> </span><span class="l new">Claude marked it addressed (5m ago): Q4 bar lightened and labelled.</span><span class="l"> </span><span class="l q">Open, addressed · thread `S31t_cxIMt3wgj21FSWyvIZrRR6v4-gNyOjeXBK8ZtQ` · on `data-pipeup-id="s2-chart"`</span></pre></div>
+  </section>
+
+  <section>
+    <h2>The spec's words (§7a)</h2>
+    <div class="words">
+      <ul>
+        <li>Copying a thread or copying all produces text a person can read in an email or chat reply, and an AI assistant can act on directly. Reviewers send it back to the author (§11); authors paste it into an AI.</li>
+        <li><b>Copy comments › As Markdown</b> and a thread's own copy button give <b>Markdown</b>:
+          <ul>
+            <li>Copying all opens with what a person needs, and nothing aimed at an AI: the page's title ("Comments on …"); how many open comments there are and who wrote them; when they were copied, as a date and a time with its time zone; how many resolved ones are left out; and the page's address.</li>
+            <li>Then, for each thread, a numbered heading saying where it is (slide or section, then the element); the words it quotes, or where it is pinned, in a sentence; the comment and its replies as a list, each with who and how long before copying; and, when an agent marked it addressed, who did and their note.</li>
+            <li>Each thread ends with one line for an AI: whether it is open, addressed or resolved; the thread's id, which an agent needs to answer it; and the element's stable identifier, saying whether the comment is on that element or inside it. These are the only ids in the text.</li>
+            <li>After the threads, one paragraph, marked as being for an AI assistant, says to work through the open comments in order, say what changed or why not, answer each in its thread with Pipeup (naming the skill that says how) and mark it addressed, and never resolve it: the author does.</li>
+            <li>A thread's own copy has its heading (without a number), the page's address and the same lines, without the opening or the closing paragraph.</li>
+          </ul>
+        </li>
+        <li>Unchanged: <b>As text</b>, Copy for my agent's own words, the menu's tooltips, and the data that <code>Pipeup.comments()</code> and <code>pipeup read --json</code> return.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Decisions for the maintainer</h2>
+    <div class="q3">
+      <div class="dec">
+        <h3>1. Where does the instruction for an AI go?</h3>
+        <p>At the top, a person reads it first. At the end, they read the comments first and can stop before it.</p>
+        <p class="rec"><b>Recommended: at the end</b>, after a rule, starting "For an AI assistant:". An AI reads the whole paste either way.</p>
+      </div>
+      <div class="dec">
+        <h3>2. Drop the comment ids on replies?</h3>
+        <p>No command, skill or reply block uses them: an agent answers a thread by the thread's id.</p>
+        <p class="rec"><b>Recommended: drop them from the text</b>; they stay in the data.</p>
+      </div>
+      <div class="dec">
+        <h3>3. Keep times as "22m ago"?</h3>
+        <p>They count back from when the comments were copied, which the opening line now says in words. Clock times would need a time zone on every line.</p>
+        <p class="rec"><b>Recommended: keep them</b>, unchanged.</p>
+      </div>
+    </div>
+  </section>
+</main>
