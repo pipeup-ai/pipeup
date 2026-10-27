@@ -64,6 +64,7 @@ def render(md: str) -> str:
 
 chassis = (site / "add-comments.html").read_text()
 head = chassis[: chassis.index("    <style>")]
+head = re.sub(r"<!--.*?-->", "<!-- The add-on guide, built by apps/site/build-guide.py from docs/ADDONS_GUIDE.md. Light only. -->", head, count=1, flags=re.S)
 head = re.sub(r"<title>.*?</title>", "<title>Making your own add-on · Pipeup</title>", head, flags=re.S)
 desc = "How to make, publish and run your own Pipeup add-on, including inside a company, with a worked example."
 head = re.sub(r'(<meta name="description" content=")[^"]*"', lambda m: m.group(1) + desc + '"', head)

@@ -62,6 +62,7 @@ python3 "$site/inject-sri.py" "$out"
     cat "$f"
   done
 } > "$out/llms-full.txt"
+python3 "$site/inject-core.py" "$out"
 
 if [[ $channel == next ]]; then
   python3 "$site/channel.py" "$out" "$(node -p 'require(process.argv[1]).version' "$lib/package.json")"
