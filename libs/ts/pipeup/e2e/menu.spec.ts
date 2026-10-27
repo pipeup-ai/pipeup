@@ -35,14 +35,15 @@ test("Copy comments: as Markdown copies Markdown with locations; as text copies 
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await menu(page);
   await copyAs(page, "As Markdown");
-  await expect.poll(() => lastCopy(page)).toContain("# Review comments: Q3 plan");
+  await expect.poll(() => lastCopy(page)).toContain("# Comments on Q3 plan");
   const md = await lastCopy(page);
-  expect(md).toContain("- **Thread:** ");
-  expect(md).toContain('- **Quoted text:** "20% lift"');
+  expect(md).toMatch(/\nOpen · thread `[\w-]{43}`/);
+  expect(md).toContain('On the words "20% lift".');
+  expect(md).toContain("\nFor an AI assistant: ");
   await menu(page);
   await copyAs(page, "As text");
   await expect.poll(() => lastCopy(page)).toMatch(/^Section "Q3 plan"/);
-  expect(await lastCopy(page)).not.toContain("**Thread:**");
+  expect(await lastCopy(page)).not.toContain("thread `");
 });
 
 test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ page }) => {
@@ -53,7 +54,7 @@ test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ 
   await th.locator(".tx").first().hover();
   await th.locator(".root").getByRole("button", { name: "More" }).click();
   await th.getByRole("menuitem", { name: "Copy thread" }).click();
-  await expect.poll(() => lastCopy(page)).toContain("- **Thread:** ");
+  await expect.poll(() => lastCopy(page)).toMatch(/\nOpen · thread `[\w-]{43}`/);
 });
 
 test("the menu has no Send feedback or Add feedback rows", async ({ page }) => {

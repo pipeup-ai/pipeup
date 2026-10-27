@@ -22,7 +22,8 @@ change the API and the stored comment format.
 - **Selecting words offers a comment outside comment mode too.** The comment icon appears beside the selection, and commenting from it leaves comment mode off, so links and the page keep working. A page can keep it to comment mode with `data-pipeup-select="comment-mode"`.
 - **Shared copies carry a listed agent's answers.** While you're sending, the share add-on also passes on the replies, addressed notes and reactions of an agent the page lists (from the replies file, the live link or a signed paste), so everyone who has the page sees them as the agent's. An answer to a comment you haven't shared waits with it.
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
-- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.6 KB), and the agents add-on's from 5 to 7.5 KB.
+- **Copy comments › As Markdown reads as a message to a person**, for a reviewer pasting it into a reply. It opens with "Comments on" the page's title, how many open comments there are, who wrote them and when they were copied, in words, then the page's address. Each thread's heading says where it is, then come the quoted words or pin and the comments. Its state, its id and the element's `data-pipeup-id` move to its last line, replies carry no ids, and the instruction for an AI assistant moves after the threads. `pipeup read`, `pipeup comments`, `Pipeup.comments()` and Copy for my agent carry the same text; their data is unchanged.
+- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.7 KB), and the agents add-on's from 5 to 7.5 KB.
 
 ### Documentation
 

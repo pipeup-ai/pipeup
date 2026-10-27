@@ -17,11 +17,11 @@ export interface ExportMeta {
   all?: boolean;
 }
 
-const INSTRUCTION =
-  "Each thread says where it is: the slide or section, the element (its data-pipeup-id attribute in the HTML), " +
-  "and the exact quoted text or pin position. Work through the open threads in order, and for each one say what " +
-  "you changed or why you did not. Answer in the thread (the Pipeup skill says how) and mark it addressed; " +
-  "never resolve it, the author does.";
+// After the threads, so a person reads the comments first.
+const AI =
+  "For an AI assistant: work through the open comments in order and say what you changed, or why you didn't. Each " +
+  "one's last line gives the thread to answer and the element's data-pipeup-id in the page's HTML. Answer in the " +
+  "thread with Pipeup (its pipeup-apply skill says how) and mark it addressed; never resolve it, the author does.";
 
 export function formatAgo(at: number, now: number): string {
   const seconds = Math.max(0, Math.round((now - at) / 1000));
@@ -35,27 +35,34 @@ export function formatAgo(at: number, now: number): string {
 
 /** Copy one thread — always the whole thread. */
 export function copyThread(item: ExportItem, as: CopyAs, page: string, now: number): string {
-  return as === "ai" ? threadMarkdown(item, "## Comment thread", now, page) : threadText(item);
+  return as === "ai" ? threadMarkdown(item, "## ", now, page) : threadText(item);
 }
 
 /** Copy every open thread, in the order given (page or slide order). */
 export function copyAll(items: ExportItem[], as: CopyAs, meta: ExportMeta): string {
   const open = meta.all ? items : items.filter((i) => !i.thread.resolved);
   if (as === "text") return open.map(threadText).join("\n");
-  const left = meta.all ? 0 : items.length - open.length;
+  const resolved = items.filter((i) => i.thread.resolved).length;
+  const n = items.length - resolved;
+  const who = people(open);
+  // "Tue, 27 Oct 2026 09:40:17 GMT" → "27 Oct 2026, 09:40 UTC"
+  const at = meta.exportedAt.toUTCString();
   const head = [
-    `# Review comments: ${one(meta.title)}`,
+    `# Comments on ${one(meta.title)}`,
     "",
-    `- **Page:** ${one(meta.url)}`,
-    `- **Exported:** ${meta.exportedAt.toISOString()}`,
-    `- **Open threads:** ${items.length - items.filter((i) => i.thread.resolved).length}${left ? ` (${left} resolved, not included)` : meta.all ? " (resolved ones included)" : ""}`,
+    `${n || "No"} open comment${n === 1 ? "" : "s"}${meta.all && resolved ? ` and ${resolved} resolved` : ""}` +
+      `${who ? ` from ${who}` : ""}, copied ${at.slice(5, 16).replace(/^0/, "")}, ${at.slice(17, 22)} UTC.` +
+      (meta.all || !resolved
+        ? ""
+        : ` ${resolved} resolved comment${resolved === 1 ? " is" : "s are"} left out.`),
     "",
-    INSTRUCTION,
+    `Page: ${one(meta.url)}`,
     "",
     "",
   ].join("\n");
   const now = meta.exportedAt.getTime();
-  return head + open.map((it, i) => threadMarkdown(it, `## Thread ${i + 1}`, now)).join("\n");
+  const body = open.map((it, i) => threadMarkdown(it, `## ${i + 1}. `, now)).join("\n");
+  return head + body + (open.length ? `\n---\n\n${AI}\n` : "");
 }
 
 /** A comment's reactions as one line: "👍 2 (Sam, Red Fox) · ❤️ 1 (Lee)"; empty when nobody reacted. */
@@ -70,38 +77,39 @@ function one(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
+/** Everyone in these threads, in the order they first appear: "Sam", "Sam and Lee", "Sam, Ada and 3 others". */
+function people(items: ExportItem[]): string {
+  const all = [
+    ...new Set(items.flatMap(({ thread: t }) => [t.root, ...t.root.replies].map((c) => one(nameOf(c))))),
+  ];
+  const named = all.length > 3 ? [...all.slice(0, 2), `${all.length - 2} others`] : all;
+  return named.length > 1 ? `${named.slice(0, -1).join(", ")} and ${named.at(-1)}` : (named[0] ?? "");
+}
+
+// Where it is, then who said what. What only an agent needs (its state and ids) is the thread's last line.
 function threadMarkdown(item: ExportItem, heading: string, now: number, page?: string): string {
   const { thread: t, location: l } = item;
-  const n = t.root.replies.length;
-  const lines = [`${heading} · ${t.resolved ? "resolved" : t.addressed ? "open, addressed" : "open"}`];
-  lines.push(`- **Thread:** ${t.id}`);
-  if (page) lines.push(`- **Page:** ${one(page)}`);
-  lines.push(`- **Where:** ${one(l.where)}`);
-  if (l.id) {
-    const id = `\`[data-pipeup-id="${one(l.id.replace(/`/g, ""))}"]\``;
-    // A slide's or section's id names where the element is, not the element itself.
-    lines.push(
-      `- **Element:** ${l.within && l.element ? `${one(l.element)} in ${id}` : `${id}${l.element ? ` (${one(l.element)})` : ""}`}`,
-    );
-  }
-  if (l.quote) lines.push(`- **Quoted text:** "${one(l.quote)}"`);
-  if (l.pin) lines.push(`- **Pin:** ${one(l.pin)}`);
-  if (t.addressed && !t.resolved)
-    lines.push(
-      `- **Addressed:** ${one(t.addressed.text)} (${one(nameOf(t.addressed))}, ${formatAgo(t.addressed.at, now)})`,
-    );
-  lines.push(
-    `- **Started by:** ${one(nameOf(t.root))}, ${formatAgo(t.root.at, now)}${n ? ` · ${n} ${n === 1 ? "reply" : "replies"}` : ""}`,
-    "",
-    `**${one(nameOf(t.root))}** (${formatAgo(t.root.at, now)}): ${words(t.root, "  ")}`,
-  );
+  const lines = [heading + one(l.where), ""];
+  if (page) lines.push(`Page: ${one(page)}`, "");
+  if (l.quote) lines.push(`On the words "${one(l.quote)}".`, "");
+  if (l.pin) lines.push(`Pinned ${one(l.pin)}.`, "");
+  lines.push(`**${one(nameOf(t.root))}** (${formatAgo(t.root.at, now)}): ${words(t.root, "  ")}`);
   if (t.root.reactions.length) lines.push(`Reactions: ${reactionsLine(t.root)}`);
   for (const r of t.root.replies) {
-    lines.push(
-      `- **${one(nameOf(r))}** (${formatAgo(r.at, now)}): ${words(r, "  ")} <!-- comment:${r.id} -->`,
-    );
+    lines.push(`- **${one(nameOf(r))}** (${formatAgo(r.at, now)}): ${words(r, "  ")}`);
     if (r.reactions.length) lines.push(`  - Reactions: ${reactionsLine(r)}`);
   }
+  if (t.addressed && !t.resolved)
+    lines.push(
+      "",
+      `**${one(nameOf(t.addressed))}** marked it addressed (${formatAgo(t.addressed.at, now)}): ${one(t.addressed.text)}`,
+    );
+  // A slide's or section's id names where the element is ("in"), not the element itself ("on").
+  const id = l.id ? ` · ${l.within ? "in" : "on"} \`data-pipeup-id="${one(l.id.replace(/`/g, ""))}"\`` : "";
+  lines.push(
+    "",
+    `${t.resolved ? "Resolved" : t.addressed ? "Open, addressed" : "Open"} · thread \`${t.id}\`${id}`,
+  );
   return lines.join("\n") + "\n";
 }
 
