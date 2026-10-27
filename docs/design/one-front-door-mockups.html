@@ -1,0 +1,616 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Front Door</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono&display=swap">
+<!-- Visual spec: the website's home page goes back to one front door, after the 27 October usability study. Light mode only, on purpose; the mock-ups use the site's own tokens. -->
+<style>
+  /* Layout: one reading column for the argument; mock-ups drawn at the site's real size and scaled to fit; spec wording last. */
+  :root {
+    --k: #2c2c2a; --mu: #5f5e5a; --fa: #888780; --ln: #e5e3da; --ru: #eceae2; --so: #fafaf7; --su: #fff; --bg: #f4f3ee;
+    --ac: #534ab7; --as: #edebfa; --add: #e7f3ea; --addk: #1f6b3a; --del: #fbeaea; --delk: #9a2b2b;
+    --stage: #e6e5de; --stagel: #c4c2b9; --fold: #c0392b;
+    --sh: 0 8px 28px rgba(44, 44, 42, 0.1);
+    --sans: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    /* The site's own tokens, for the mock-ups. */
+    --s-ink: #2f3437; --s-strong: #111; --s-muted: #55544f; --s-faint: #7d7c76; --s-line: #d2d0c8; --s-bone: #eeede7;
+    --s-paper: #fff; --s-violet: #534ab7; --s-sans: "Geist", "SF Pro Text", -apple-system, "Helvetica Neue", sans-serif;
+    --s-mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body { margin: 0; color: var(--k); font: 15px/1.55 var(--sans); }
+  main { max-width: 1180px; margin: 0 auto; padding-block: 40px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.04em; line-height: 1.05; margin: 0 0 12px; text-wrap: balance; }
+  .lede { font-size: 18px; color: var(--mu); max-width: 46em; margin: 0 0 28px; }
+  section { margin: 0 0 64px; }
+  h2 { font-size: 24px; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  h3 { font-size: 17px; letter-spacing: -0.01em; margin: 28px 0 6px; }
+  .what { color: var(--mu); max-width: 52em; margin: 0 0 18px; }
+  .what b { color: var(--k); }
+  .eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ac); font-weight: 600; margin: 0 0 8px; }
+  .card { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 18px 22px; }
+  .changes { max-width: 62em; }
+  .changes ul, .plain { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+  .changes li b, .plain li b { color: var(--k); }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+  .cap { font-size: 13px; color: var(--mu); margin: 10px 2px 0; max-width: 60em; }
+  .cap b { color: var(--k); }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fa); margin: 0 0 6px; font-weight: 600; }
+  .tag.new { color: var(--ac); }
+  .stage { background: var(--stage); border: 1px solid var(--stagel); border-radius: 16px; padding: 20px; }
+  .ref { font-size: 12px; color: var(--fa); white-space: nowrap; }
+
+  /* Storyboard: frames in reading order, wrapping to one column on phones. */
+  .story { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 14px; counter-reset: f; }
+  .frame { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .frame svg { width: 100%; height: auto; display: block; background: var(--so); border: 1px solid var(--ru); border-radius: 10px; }
+  .frame .who { font-size: 12px; color: var(--fa); }
+  .frame h4 { margin: 0; font-size: 15px; letter-spacing: -0.01em; }
+  .frame h4::before { counter-increment: f; content: counter(f) "  "; color: var(--ac); }
+  .frame p { margin: 0; font-size: 13.5px; color: var(--mu); }
+
+  /* The flow: a swimlane drawing that scrolls sideways inside itself on narrow screens. */
+  .flow { overflow-x: auto; background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 12px; }
+  .flow svg { display: block; min-width: 1060px; width: 100%; height: auto; }
+
+  /* Mock-ups: drawn at the site's real size, scaled to the column. */
+  .scale { position: relative; overflow: hidden; border-radius: 12px; box-shadow: var(--sh); background: var(--s-paper); }
+  .scale > .inner { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+  .fold { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--fold); pointer-events: none; }
+  .fold span { position: absolute; right: 12px; top: 4px; font: 600 13px var(--sans); color: var(--fold); background: rgba(255, 255, 255, 0.92); padding: 1px 8px; border-radius: 6px; }
+  .note-mark { position: absolute; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ac); color: #fff; font: 600 13px var(--sans); box-shadow: 0 0 0 4px rgba(83, 74, 183, 0.18); }
+  .notes { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; max-width: 64em; }
+  .notes li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 13.5px; color: var(--mu); align-items: start; }
+  .notes li i { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--ac); color: #fff; font: normal 600 12px var(--sans); }
+  .notes li b { color: var(--k); }
+
+  /* The site, as drawn inside the mock-ups. */
+  .site { font: 16px/1.55 var(--s-sans); color: var(--s-ink); background: var(--s-paper); -webkit-font-smoothing: antialiased; }
+  .site main { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  .site header { display: flex; justify-content: space-between; align-items: center; padding: 22px 0; }
+  .site .mark { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--s-strong); letter-spacing: -0.02em; }
+  .site .gh { font-size: 14px; color: var(--s-muted); display: flex; align-items: center; gap: 8px; }
+  .site h1 { font-size: 58px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--s-strong); margin: 0; }
+  .site .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; padding: 32px 0 48px; }
+  .site .lede { font-size: 18px; color: var(--s-muted); margin: 18px 0 0; max-width: 27em; }
+  .site .lede b { font-weight: 500; color: var(--s-ink); }
+  .site .doors { display: grid; grid-template-columns: 340px; gap: 10px; margin-top: 28px; }
+  .site .door { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 9px; border: 1px solid #b4b2a8; font: 500 15px var(--s-sans); color: var(--s-strong); }
+  .site .door.dark { background: var(--s-strong); color: #fff; border-color: var(--s-strong); }
+  .site .door .num { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--s-bone); color: var(--s-strong); font-size: 12px; font-weight: 600; }
+  .site .door.dark .num { background: #3a3a3a; color: #fff; }
+  .site .door .arr { margin-left: auto; }
+  .site .try { margin: 16px 0 0; font-size: 15px; color: var(--s-muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .site kbd { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border: 1px solid var(--s-line); border-bottom-width: 2px; border-radius: 6px; font: 500 13px var(--s-sans); color: var(--s-strong); background: #f6f5f0; }
+  .site .steps { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 13px; }
+  .site .steps li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; font-size: 15.5px; line-height: 1.5; color: var(--s-muted); }
+  .site .steps .n { display: grid; place-items: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; border: 1px solid var(--s-violet); color: var(--s-violet); font-size: 12px; font-weight: 600; }
+  .site .steps b { font-weight: 600; color: var(--s-strong); margin-right: 4px; }
+  .site .steps .first { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .site .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 9px; font: 500 14.5px var(--s-sans); background: var(--s-strong); color: #fff; white-space: nowrap; }
+  .site .btn.wide { width: 100%; justify-content: center; padding: 12px 16px; font-size: 15px; }
+  .site .btn.ghost { background: var(--s-paper); color: var(--s-strong); border: 1px solid #b4b2a8; padding: 4px 10px; font-size: 13px; border-radius: 7px; }
+  .site .quiet { color: var(--s-muted); text-decoration: underline; text-decoration-color: var(--s-line); text-underline-offset: 3px; }
+  .site .small { font-size: 14px; color: var(--s-faint); margin: 10px 0 0; }
+  .site .small a, .site .lnk { color: var(--s-strong); text-decoration: underline; text-decoration-color: var(--s-line); text-underline-offset: 3px; }
+  .site .copied { background: var(--s-strong); color: #fff; }
+
+  .site .sc { display: flex; flex-direction: column; gap: 14px; }
+  .site .scf { background: #e2e1da; border-radius: 16px; padding: 10px; box-shadow: inset 0 0 0 1px #cfcdc4; }
+  .site .win { position: relative; background: #fff; border-radius: 10px; height: 410px; overflow: hidden; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); border: 1px solid #d9d7cf; }
+  .site .win.short { height: 300px; }
+  .site .dots { display: flex; gap: 7px; padding: 12px 14px; }
+  .site .dots i { width: 9px; height: 9px; border-radius: 50%; background: #d8d6ce; }
+  .site .doc { padding: 16px 36px; }
+  .site .doc .ttl { height: 14px; width: 46%; background: var(--s-strong); border-radius: 3px; margin-bottom: 20px; }
+  .site .doc .words { font-size: 13px; line-height: 1.75; color: var(--s-muted); margin: 0 0 18px; }
+  .site .doc mark { background: #e6e3fb; color: var(--s-ink); border-radius: 3px; padding: 0 1px; }
+  .site .doc .ln { height: 7px; border-radius: 4px; background: #e2e0d8; margin: 0 0 12px; }
+  .site .cbox { position: absolute; right: 18px; top: 112px; width: 230px; background: #fff; border: 1px solid #e1dfd7; border-radius: 12px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1); padding: 11px 13px; font-size: 13px; }
+  .site .cbox .whoc { display: flex; align-items: center; gap: 7px; color: var(--s-strong); font-weight: 500; }
+  .site .cbox .whoc i { width: 20px; height: 20px; border-radius: 6px; background: #e3f1ea; display: inline-block; }
+  .site .cbox .whoc span { color: var(--s-faint); font-weight: 400; }
+  .site .cbox .q { color: var(--s-muted); font-size: 12px; margin-top: 3px; }
+  .site .cbox .t { color: var(--s-strong); margin-top: 4px; line-height: 1.45; }
+  .site .tabs { display: flex; align-items: center; gap: 22px; font-size: 14.5px; color: var(--s-muted); padding: 0 10px; }
+  .site .tabs .on { color: var(--s-strong); box-shadow: inset 0 -2px 0 var(--s-strong); padding-bottom: 6px; }
+  .site .tabs .pz { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--s-line); display: grid; place-items: center; }
+  .site .tabs .tryb { margin-left: auto; border: 1px solid #b4b2a8; border-radius: 9px; padding: 6px 12px; color: var(--s-strong); font-weight: 500; }
+  .site .corner { position: absolute; right: 14px; bottom: 14px; width: 32px; height: 32px; border-radius: 9px; background: rgba(255, 255, 255, 0.85); border: 1px solid #dcdad2; display: grid; place-items: center; }
+
+  .site .sect { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; border-top: 1px solid var(--s-line); padding: 44px 0 52px; }
+  .site .sect h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1; color: var(--s-strong); margin: 0 0 14px; }
+  .site .sect p { font-size: 15.5px; color: var(--s-muted); margin: 0 0 12px; max-width: 30em; }
+  .site .sect p b { color: var(--s-strong); font-weight: 600; }
+  .site .box { border: 1px solid var(--s-line); border-radius: 12px; background: #fbfbf9; overflow: hidden; }
+  .site .box + .box { margin-top: 16px; }
+  .site .box .bh { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px 8px 16px; border-bottom: 1px solid var(--s-line); font-size: 13px; color: var(--s-muted); }
+  .site .box pre { margin: 0; padding: 14px 16px 16px; font: 12.5px/1.65 var(--s-mono); white-space: pre-wrap; word-break: break-word; color: var(--s-ink); }
+  .site .box .prose { padding: 14px 16px 16px; font-size: 14px; line-height: 1.6; color: var(--s-ink); }
+  .site footer { border-top: 1px solid var(--s-line); display: flex; justify-content: flex-end; gap: 16px; padding: 18px 0 22px; font-size: 14px; color: var(--s-muted); }
+  .site footer .pill { background: #f1effc; color: var(--s-strong); border-radius: 999px; padding: 4px 12px; font-weight: 500; }
+
+  /* Phone mock-up. */
+  .phone .site main { padding: 0 20px; }
+  .phone .site h1 { font-size: 40px; }
+  .phone .site .lede { font-size: 17px; margin-top: 14px; }
+  .phone .site .hero { display: block; padding: 18px 0 28px; }
+  .phone .site .steps li { font-size: 15px; }
+  .phone .site .cbox { width: 190px; right: 10px; top: 96px; }
+  .phone .site .doc { padding: 10px 20px; }
+  .phone .site .tabs { gap: 14px; font-size: 13.5px; padding: 0 4px; }
+  .phone-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 20px; align-items: start; }
+
+  /* Before and after rows. */
+  .ba { display: grid; gap: 18px; }
+  .lbl { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; }
+  .lbl b { font-size: 14px; }
+  .lbl span { font-size: 13px; color: var(--mu); }
+
+  /* Tables and spec text. */
+  .tbl { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--su); border: 1px solid var(--ln); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--ru); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fa); font-weight: 600; background: var(--so); }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  .spec { background: var(--su); border: 1px solid var(--ln); border-radius: 14px; padding: 6px 24px 18px; font-size: 14.5px; }
+  .spec p, .spec li { max-width: 64em; }
+  .spec .ins { background: var(--add); color: var(--addk); border-radius: 4px; padding: 0 3px; }
+  .spec .gone { background: var(--del); color: var(--delk); border-radius: 4px; padding: 0 3px; text-decoration: line-through; }
+  .q { display: grid; gap: 12px; }
+  .q .card h3 { margin: 0 0 6px; }
+  .q .card p { margin: 0 0 6px; color: var(--mu); }
+  .q .rec { color: var(--k); }
+  a { color: var(--ac); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <p class="eyebrow">Visual spec · website · 27 October 2026 · proposed, not built</p>
+  <h1>One front door</h1>
+  <p class="lede">The home page goes back to one way in. Instead of two buttons that ask visitors to pick a role, the first screen shows the whole round trip in four steps, with one Copy prompt button in the first. The reviewer page stays, as help that authors link to rather than a door on the home page.</p>
+
+  <div class="card changes">
+    <p class="tag new">What changes</p>
+    <ul>
+      <li><b>The two buttons become four numbered steps</b> on the first screen: copy the prompt, paste it into your AI and save the file it gives back, send that file with a note, paste the comments you get back into your AI. Copy prompt is the only main button.</li>
+      <li><b>The sentence under the headline says where comments live</b>: each person's comments stay in their own browser until they send them to you.</li>
+      <li><b>Quick start becomes “What your AI does”</b>: what the prompt asks for, the prompt in full, and a note for reviewers with its own Copy, for when the AI doesn't write one.</li>
+      <li><b>A new “The details” section</b> for people adding Pipeup themselves: the two lines to paste, what it sends, what it does to the page, the licence, version and size.</li>
+      <li><b>add-comments.html becomes the reviewer help page</b>, linked from step 3 and from the note. <b>create-html.html is retired</b>: its address opens the home page's steps.</li>
+      <li><b>The prompt asks the AI for more</b>: the whole new file when it can't edit yours, a reminder to open it in a browser, and the reviewer note word for word.</li>
+    </ul>
+  </div>
+  <p class="cap">Why: in the study, four of seven people took the wrong door first (I2). Nobody saw how comments come back (I1, I3), and chat users weren't told to open the file in a browser or save the file their AI hands back (I15, I20). A design panel then drew up four one-door concepts, and five people from the study scored them (end of this page).</p>
+
+  <section style="margin-top: 48px">
+    <h2>The storyboard</h2>
+    <p class="what">Maya writes a quarterly report with Claude and wants Lee's comments on it. She has never used a terminal. Lee was sent the file and has never seen the Pipeup site.</p>
+    <div class="story">
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="28" y="26" width="70" height="9" rx="2" fill="#111"/><rect x="28" y="40" width="58" height="9" rx="2" fill="#111"/><g fill="none" stroke="#534ab7"><circle cx="33" cy="62" r="4"/><circle cx="33" cy="74" r="4"/><circle cx="33" cy="86" r="4"/><circle cx="33" cy="98" r="4"/></g><rect x="42" y="58" width="34" height="9" rx="3" fill="#111"/><g fill="#dcdad2"><rect x="42" y="71" width="70" height="5" rx="2"/><rect x="42" y="83" width="62" height="5" rx="2"/><rect x="42" y="95" width="66" height="5" rx="2"/></g><rect x="128" y="26" width="86" height="72" rx="6" fill="#eeede7"/></svg>
+        <p class="who">Maya, laptop</p>
+        <h4>Lands on the home page</h4>
+        <p>She reads four numbered steps beside the demo. Before scrolling, she sees the whole job: copy, paste into Claude with her report, send, paste the replies back.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="30" y="30" width="80" height="22" rx="6" fill="#111"/><path d="M44 36h8v10h-8z" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="58" y="38" width="42" height="5" rx="2" fill="#fff"/><rect x="122" y="30" width="88" height="62" rx="6" fill="#fbfbf9" stroke="#d2d0c8"/><g fill="#d8d6ce"><rect x="130" y="40" width="70" height="4" rx="2"/><rect x="130" y="50" width="62" height="4" rx="2"/><rect x="130" y="60" width="72" height="4" rx="2"/><rect x="130" y="70" width="50" height="4" rx="2"/></g></svg>
+        <p class="who">Maya</p>
+        <h4>Reads the prompt, then copies it</h4>
+        <p>“What it says” eases down to the prompt in full. She reads it, presses Copy, and sees “Copied”.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="120" y="24" width="92" height="26" rx="8" fill="#f1efe8"/><rect x="28" y="58" width="110" height="38" rx="8" fill="#faf0ea" stroke="#e8c9b5"/><path d="M38 66h16l6 6v16H38z" fill="#fff" stroke="#c2571a"/><rect x="66" y="70" width="60" height="5" rx="2" fill="#c2571a"/><rect x="66" y="80" width="40" height="4" rx="2" fill="#e0b9a2"/></svg>
+        <p class="who">Maya, Claude in the browser</p>
+        <h4>Pastes it with her report</h4>
+        <p>Claude gives back <i>quarterly-report.html</i> to download, says to open it in her browser and look for the comment button, and writes the note for reviewers.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><g fill="#e2e0d8"><rect x="30" y="30" width="120" height="6" rx="3"/><rect x="30" y="44" width="150" height="6" rx="3"/><rect x="30" y="58" width="132" height="6" rx="3"/></g><rect x="190" y="78" width="22" height="22" rx="6" fill="#fff" stroke="#b4b2a8"/><path d="M196 86h10M201 81v10" stroke="#111" stroke-width="1.6"/><circle cx="201" cy="89" r="17" fill="none" stroke="#534ab7" stroke-width="2"/></svg>
+        <p class="who">Maya, Chrome</p>
+        <h4>Checks it, then sends it</h4>
+        <p>The new file opens in Chrome with the comment button in the corner, so it worked. She emails it to Lee and Ada with Claude's note.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="28" y="26" width="184" height="14" rx="4" fill="#f4f3ee"/><g fill="#e2e0d8"><rect x="28" y="50" width="160" height="5" rx="2"/><rect x="28" y="60" width="170" height="5" rx="2"/><rect x="28" y="70" width="120" height="5" rx="2"/></g><path d="M30 84h16l5 5v12H30z" fill="#fff" stroke="#c2571a"/><rect x="56" y="88" width="70" height="5" rx="2" fill="#9b9a93"/></svg>
+        <p class="who">Lee, Mail and Safari</p>
+        <h4>Reads the note, opens the file</h4>
+        <p>The note says to open it in a web browser, since a mail preview may not show the comments. He opens it in Safari and sees the corner button.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="28" y="28" width="104" height="44" rx="5" fill="none" stroke="#534ab7" stroke-width="1.6"/><g fill="#e2e0d8"><rect x="34" y="36" width="90" height="5" rx="2"/><rect x="34" y="46" width="80" height="5" rx="2"/><rect x="34" y="56" width="70" height="5" rx="2"/></g><rect x="142" y="34" width="72" height="52" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="150" y="44" width="40" height="5" rx="2" fill="#111"/><rect x="150" y="56" width="56" height="5" rx="2" fill="#9b9a93"/><rect x="150" y="66" width="44" height="5" rx="2" fill="#9b9a93"/></svg>
+        <p class="who">Lee</p>
+        <h4>Turns on commenting and comments</h4>
+        <p>Corner button, then Start commenting. He clicks the revenue chart and types “Label the Q3 dip”, then comments on two more things.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="118" y="22" width="96" height="74" rx="8" fill="#fff" stroke="#d2d0c8"/><g fill="#9b9a93"><rect x="128" y="34" width="60" height="5" rx="2"/><rect x="138" y="48" width="56" height="5" rx="2"/><rect x="138" y="60" width="44" height="5" rx="2"/></g><rect x="124" y="44" width="86" height="13" rx="4" fill="#edebfa" opacity="0.8"/><rect x="28" y="70" width="80" height="22" rx="6" fill="#111"/><rect x="38" y="78" width="60" height="5" rx="2" fill="#fff"/></svg>
+        <p class="who">Lee</p>
+        <h4>Copies his comments and replies</h4>
+        <p>Corner button, Copy comments, As Markdown. He pastes them into a reply to Maya. The note told him they stay in his browser until he sends them.</p>
+      </div>
+      <div class="frame">
+        <svg viewBox="0 0 240 120" aria-hidden="true"><rect x="16" y="14" width="208" height="92" rx="8" fill="#fff" stroke="#d2d0c8"/><rect x="104" y="22" width="108" height="30" rx="8" fill="#f1efe8"/><g fill="#9b9a93"><rect x="112" y="30" width="80" height="4" rx="2"/><rect x="112" y="38" width="60" height="4" rx="2"/></g><rect x="28" y="60" width="120" height="36" rx="8" fill="#faf0ea" stroke="#e8c9b5"/><g fill="#c2571a"><rect x="38" y="68" width="90" height="4" rx="2"/><rect x="38" y="76" width="70" height="4" rx="2"/><rect x="38" y="84" width="80" height="4" rx="2"/></g></svg>
+        <p class="who">Maya, the same Claude chat</p>
+        <h4>Pastes the replies into Claude</h4>
+        <p>She pastes Lee's and Ada's replies; neither saw the other's, as the page told her. Claude makes each change, says what it changed, and gives her the file again.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The flow</h2>
+    <p class="what">Who does what, in order. The home page only has to start step 1. The note carries the reviewer's part to people who never visit the site.</p>
+    <div class="flow">
+      <svg viewBox="0 0 1060 330" role="img" aria-label="Swimlane flow: Maya copies the prompt and pastes it into her AI with her file; the AI adds Pipeup and hands back the new file and a note; Maya checks it in her browser and sends it with the note; Lee opens it in a browser, turns on commenting, comments, copies his comments and replies; Maya pastes the replies into her AI, which makes the changes and gives the file again.">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#534ab7"/></marker></defs>
+        <g font-family="-apple-system, Helvetica Neue, Arial, sans-serif">
+          <rect x="0" y="0" width="1060" height="110" fill="#fafaf7"/><rect x="0" y="110" width="1060" height="110" fill="#ffffff"/><rect x="0" y="220" width="1060" height="110" fill="#fafaf7"/>
+          <line x1="0" y1="110" x2="1060" y2="110" stroke="#e5e3da"/><line x1="0" y1="220" x2="1060" y2="220" stroke="#e5e3da"/>
+          <text x="14" y="30" font-size="13" font-weight="600" fill="#2c2c2a">Maya</text><text x="14" y="48" font-size="12" fill="#888780">author</text>
+          <text x="14" y="140" font-size="13" font-weight="600" fill="#2c2c2a">Her AI</text><text x="14" y="158" font-size="12" fill="#888780">Claude in a chat</text>
+          <text x="14" y="250" font-size="13" font-weight="600" fill="#2c2c2a">Lee</text><text x="14" y="268" font-size="12" fill="#888780">reviewer</text>
+          <g font-size="12.5" fill="#2c2c2a">
+            <rect x="110" y="30" width="118" height="54" rx="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="122" y="52" font-weight="600">1 Copy prompt</text><text x="122" y="70" fill="#5f5e5a">on the home page</text>
+            <rect x="250" y="30" width="118" height="54" rx="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="262" y="52" font-weight="600">2 Paste it</text><text x="262" y="70" fill="#5f5e5a">with her report</text>
+            <rect x="320" y="138" width="150" height="54" rx="9" fill="#fff" stroke="#c4c2b9"/><text x="332" y="160" font-weight="600">Adds Pipeup</text><text x="332" y="178" fill="#5f5e5a">new file + a note</text>
+            <rect x="420" y="30" width="138" height="54" rx="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="432" y="52" font-weight="600">Saves, checks it</text><text x="432" y="70" fill="#5f5e5a">corner button shows</text>
+            <rect x="580" y="30" width="128" height="54" rx="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="592" y="52" font-weight="600">3 Sends it</text><text x="592" y="70" fill="#5f5e5a">file + the note</text>
+            <rect x="580" y="248" width="128" height="54" rx="9" fill="#fff" stroke="#c4c2b9"/><text x="592" y="270" font-weight="600">Opens in browser</text><text x="592" y="288" fill="#5f5e5a">as the note says</text>
+            <rect x="730" y="248" width="128" height="54" rx="9" fill="#fff" stroke="#c4c2b9"/><text x="742" y="270" font-weight="600">Comments</text><text x="742" y="288" fill="#5f5e5a">Start commenting</text>
+            <rect x="880" y="248" width="160" height="54" rx="9" fill="#fff" stroke="#c4c2b9"/><text x="892" y="270" font-weight="600">Copies and replies</text><text x="892" y="288" fill="#5f5e5a">Copy comments</text>
+            <rect x="880" y="30" width="160" height="54" rx="9" fill="#fff" stroke="#534ab7" stroke-width="1.5"/><text x="892" y="52" font-weight="600">4 Pastes the replies</text><text x="892" y="70" fill="#5f5e5a">into the same chat</text>
+            <rect x="730" y="138" width="200" height="54" rx="9" fill="#fff" stroke="#c4c2b9"/><text x="742" y="160" font-weight="600">Makes the changes</text><text x="742" y="178" fill="#5f5e5a">says what, gives the file again</text>
+          </g>
+          <g fill="none" stroke="#534ab7" stroke-width="1.6" marker-end="url(#ah)">
+            <path d="M228 57h20"/><path d="M309 84v36q0 18 18 18h-6"/><path d="M470 165h0q20 0 20-20v-60"/><path d="M558 57h20"/><path d="M644 84v162"/><path d="M708 275h20"/><path d="M858 275h20"/><path d="M960 248v-162"/><path d="M905 84v52"/>
+          </g>
+          <text x="636" y="124" font-size="11.5" fill="#888780" text-anchor="end">email, chat or a drive</text>
+          <text x="968" y="124" font-size="11.5" fill="#888780">a reply</text>
+        </g>
+      </svg>
+    </div>
+    <p class="cap">Purple boxes are what the home page's four steps say. Grey boxes happen elsewhere: in the AI's reply and in the note the reviewer gets, which the page also offers with a Copy button.</p>
+  </section>
+
+  <section>
+    <h2>The first screen, before and after</h2>
+    <p class="what">Drawn at the site's real size for a 1280 × 800 window, then scaled to fit. The dashed red line is the bottom of that window. <b>What changes:</b> the two role buttons go; four steps with one Copy prompt take their place; the sentence says where comments live; one quiet line leads to the details for people adding it themselves. The headline, the showcase and the try line stay.</p>
+    <div class="ba">
+      <div>
+        <div class="lbl"><b>Today</b><span>two doors labelled by action</span></div>
+        <div class="scale" data-w="1280" data-h="840">
+          <div class="inner site" style="width: 1280px">
+            <main>
+              <header><span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M4 12a8 8 0 1 1 3.2 6.4L3 20l1.3-3.8A7.9 7.9 0 0 1 4 12z"/></svg>Pipeup</span><span class="gh">GitHub</span></header>
+              <div class="hero">
+                <div>
+                  <h1>Feedback for<br>any HTML.</h1>
+                  <p class="lede">People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback comes back ready for your AI to act on.</p>
+                  <div class="doors">
+                    <span class="door dark"><span class="num">1</span>Add comments to an HTML<span class="arr">→</span></span>
+                    <span class="door"><span class="num">2</span>Create comment-enabled HTML<span class="arr">→</span></span>
+                  </div>
+                  <p class="try">Press <kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd> and click on anything.</p>
+                </div>
+                <div class="sc">
+                  <div class="scf"><div class="win"><div class="dots"><i></i><i></i><i></i></div><div class="doc"><div class="ttl"></div><p class="words">We'll launch the new onboarding in July, aiming for a <mark>20% lift</mark> in week-one retention, then change pricing in August.</p><div class="ln" style="width:92%"></div><div class="ln" style="width:76%"></div><div class="ln" style="width:85%"></div><div class="ln" style="width:58%"></div></div><div class="cbox"><div class="whoc"><i></i>Otter <span>· just now</span></div><div class="q">“20% lift”</div><div class="t">Is 20% realistic? Q2 was 8%.</div></div></div></div>
+                  <div class="tabs"><span class="on">Document</span><span>Slides</span><span>Website</span><span>Keyboard</span><span class="pz"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" fill="#111"/><rect x="6" y="1" width="3" height="8" fill="#111"/></svg></span><span class="tryb">Try →</span></div>
+                </div>
+              </div>
+            </main>
+            <div class="fold" style="top: 800px"><span>800 px</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl"><b>Proposed</b><span>one door, the whole round trip</span></div>
+        <div class="scale" data-w="1280" data-h="840">
+          <div class="inner site" style="width: 1280px">
+            <main>
+              <header><span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M4 12a8 8 0 1 1 3.2 6.4L3 20l1.3-3.8A7.9 7.9 0 0 1 4 12z"/></svg>Pipeup</span><span class="gh">GitHub</span></header>
+              <div class="hero">
+                <div>
+                  <h1>Feedback for<br>any HTML.</h1>
+                  <p class="lede">People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Each person's comments stay in their own browser until they send them to you.</p>
+                  <ol class="steps">
+                    <li><span class="n">1</span><span class="first"><b>Copy the prompt</b><span class="btn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>Copy prompt</span><span>One copy per page. <span class="quiet">What it says</span></span></span></li>
+                    <li><span class="n">2</span><span><b>Paste it into your AI</b> with your HTML file: Claude, ChatGPT or any chat. Save the new file it gives back.</span></li>
+                    <li><span class="n">3</span><span><b>Send that file</b> with the note your AI writes. People open it in a web browser, comment, and send you their comments. <span class="quiet">How reviewing works</span></span></li>
+                    <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes and gives you the file again.</span></li>
+                  </ol>
+                  <p class="try">Try it on this page: press <kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd> and click on anything.</p>
+                  <p class="small">Adding it yourself? <a>See the script tag, licence and size.</a></p>
+                </div>
+                <div class="sc">
+                  <div class="scf"><div class="win"><div class="dots"><i></i><i></i><i></i></div><div class="doc"><div class="ttl"></div><p class="words">We'll launch the new onboarding in July, aiming for a <mark>20% lift</mark> in week-one retention, then change pricing in August.</p><div class="ln" style="width:92%"></div><div class="ln" style="width:76%"></div><div class="ln" style="width:85%"></div><div class="ln" style="width:58%"></div></div><div class="cbox"><div class="whoc"><i></i>Otter <span>· just now</span></div><div class="q">“20% lift”</div><div class="t">Is 20% realistic? Q2 was 8%.</div></div></div></div>
+                  <div class="tabs"><span class="on">Document</span><span>Slides</span><span>Website</span><span>Keyboard</span><span class="pz"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" fill="#111"/><rect x="6" y="1" width="3" height="8" fill="#111"/></svg></span><span class="tryb">Try →</span></div>
+                </div>
+              </div>
+            </main>
+            <div class="fold" style="top: 800px"><span>800 px</span></div>
+            <span class="note-mark" style="left: 74px; top: 242px">A</span>
+            <span class="note-mark" style="left: 74px; top: 376px">B</span>
+            <span class="note-mark" style="left: 74px; top: 694px">C</span>
+          </div>
+        </div>
+        <ul class="notes">
+          <li><i>A</i><span><b>Where comments live, said once, up front.</b> It replaces “Their feedback comes back ready for your AI to act on”, which promised the result without saying how. <span class="ref">I1</span></span></li>
+          <li><i>B</i><span><b>The numbers are real steps now.</b> People read the old 1 and 2 as an order to follow, so the steps make that reading right. Copy prompt is the one main button. “What it says” eases down to the prompt in full, and “How reviewing works” opens the reviewer help page. Step 2 says to save the new file; step 3 says reviewers open it in a web browser. <span class="ref">I2 I3 I15 I20 I43</span></span></li>
+          <li><i>C</i><span><b>A quiet way in for developers</b>, with no second door. <span class="ref">I13 I14</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>On a phone</h2>
+    <p class="what">390 px wide (iPhone 13). The phone shows the demo and a touch instruction first, because a phone visitor's first move is trying it. Setting a page up happens later, on a computer. The dashed line is the bottom of the first screen.</p>
+    <div class="phone-row phone">
+      <div>
+        <div class="lbl"><b>Today</b><span>a keyboard shortcut on a phone</span></div>
+        <div class="scale" data-w="390" data-h="790" style="max-width: 390px">
+          <div class="inner site" style="width: 390px">
+            <main>
+              <header><span class="mark">Pipeup</span><span class="gh">GitHub</span></header>
+              <div class="hero">
+                <h1>Feedback for<br>any HTML.</h1>
+                <p class="lede">People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback comes back ready for your AI to act on.</p>
+                <div class="doors" style="grid-template-columns: 1fr">
+                  <span class="door dark"><span class="num">1</span>Add comments to an HTML<span class="arr">→</span></span>
+                  <span class="door"><span class="num">2</span>Create comment-enabled HTML<span class="arr">→</span></span>
+                </div>
+                <p class="try">Press <kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd> and click on anything.</p>
+                <div class="sc" style="margin-top: 26px"><div class="scf"><div class="win short"><div class="dots"><i></i><i></i><i></i></div><div class="doc"><div class="ttl"></div><p class="words">We'll launch the new onboarding in July, aiming for a <mark>20% lift</mark>…</p><div class="ln" style="width:80%"></div><div class="ln" style="width:66%"></div></div></div></div></div>
+              </div>
+            </main>
+            <div class="fold" style="top: 750px"><span>first screen</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="lbl"><b>Proposed</b><span>try it first, then the steps</span></div>
+        <div class="scale" data-w="390" data-h="790" style="max-width: 390px">
+          <div class="inner site" style="width: 390px">
+            <main>
+              <header><span class="mark">Pipeup</span><span class="gh">GitHub</span></header>
+              <div class="hero">
+                <h1>Feedback for<br>any HTML.</h1>
+                <p class="lede">People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Each person's comments stay in their own browser until they send them to you.</p>
+                <p class="try" style="display: block">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</p>
+                <div class="sc" style="margin-top: 18px"><div class="scf"><div class="win short"><div class="dots"><i></i><i></i><i></i></div><div class="doc"><div class="ttl"></div><p class="words">We'll launch the new onboarding in July, aiming for a <mark>20% lift</mark> in week-one retention…</p><div class="ln" style="width:80%"></div><div class="ln" style="width:66%"></div></div><svg style="position:absolute; left: 132px; top: 92px" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="rgba(83,74,183,0.16)" stroke="#534ab7" stroke-width="1.5"/></svg><div class="cbox"><div class="whoc"><i></i>Otter <span>· just now</span></div><div class="t">Is 20% realistic?</div></div></div></div>
+                  <div class="tabs"><span class="on">Document</span><span>Slides</span><span>Website</span><span class="tryb">Try →</span></div>
+                </div>
+                <ol class="steps">
+                  <li><span class="n">1</span><span><b>Copy the prompt</b> One copy per page. <span class="quiet">What it says</span><br><span class="btn wide" style="margin-top: 10px">Copy prompt</span></span></li>
+                  <li><span class="n">2</span><span><b>Paste it into your AI</b> with your HTML file: Claude, ChatGPT or any chat. Save the new file it gives back.</span></li>
+                  <li><span class="n">3</span><span><b>Send that file</b> with the note your AI writes. People open it in a web browser, comment, and send you their comments. <span class="quiet">How reviewing works</span></span></li>
+                  <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes and gives you the file again.</span></li>
+                </ol>
+                <p class="small">Adding it yourself? <a>See the script tag, licence and size.</a></p>
+              </div>
+            </main>
+            <div class="fold" style="top: 750px"><span>first screen</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">The try line speaks touch on touch screens <span class="ref">I5</span>, and it now sits above the showcase, so it no longer stacks against the showcase's Try. On touch screens the showcase draws a fingertip, not a mouse arrow <span class="ref">I51</span>. Nothing scrolls sideways.</p>
+  </section>
+
+  <section>
+    <h2>Under the first screen: What your AI does</h2>
+    <p class="what">This replaces Quick start, whose steps are now on the first screen. It shows the prompt in full so people can read it before copying, explains the key in one sentence, says how to check the new file, and gives a note for reviewers that works even when the AI skips it.</p>
+    <div class="scale" data-w="1280" data-h="0">
+      <div class="inner site" style="width: 1280px">
+        <main>
+          <div class="sect">
+            <div>
+              <h2>What your AI does</h2>
+              <p>The prompt asks your AI to add one line to your HTML file, and a key that keeps this page's comments apart from your other pages. The key isn't tied to an account: it travels with the page, so anyone who has the page has it. Nothing else on the page changes, and there is nothing to install. If your AI is making the page, add the prompt to your request.</p>
+              <p>Your AI gives you back the new file to save, and a note to send with it. <b>Open the new file in your web browser before you send it:</b> a comment button in the bottom-right corner means it worked.</p>
+              <p style="margin-top: 18px">If your AI didn't write the note, send this one:</p>
+              <div class="box">
+                <div class="bh">A note for your reviewers <span class="btn ghost">Copy</span></div>
+                <div class="prose">You can comment right on this page. Open the file in a web browser such as Chrome, Safari, Edge or Firefox; a preview inside email, chat or a drive may not show the comments. Click the comment button in the bottom-right corner and choose Start commenting, then click anything, or select some words, and type. On a phone, tap instead of click. When you're done, click the comment button again, choose Copy comments › As Markdown and paste it into a reply to me. Your comments stay in your browser until you send them. Help: <span class="lnk">pipeup-ai.github.io/pipeup/add-comments.html</span></div>
+              </div>
+              <p style="margin-top: 18px">Each person sends you their own comments, and nobody sees anyone else's. Paste them into the same chat and your AI makes the changes. Gathering everyone's comments in one place needs a service to hold them: see <span class="lnk">Share</span>.</p>
+            </div>
+            <div class="box" style="margin-top: 52px">
+              <div class="bh">The prompt <span class="btn ghost">Copy</span></div>
+<pre>Add Pipeup to this HTML page (or the one you are making) so the people I share it with can comment on it right on the page.
+
+1. Add &lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous"&gt;&lt;/script&gt; just before &lt;/body&gt;. Edit only the HTML file: there is nothing to download or run.
+2. Add data-pipeup-doc="Xq3…:9fK…" to the &lt;html&gt; element, and keep it exactly as it is from then on. This key is for this one page: every other page needs a key of its own, never a copy of this one, or their comments mix.
+3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.
+4. Don't change the page's layout to make room for Pipeup.
+
+When you're done:
+- If you can't change the file on my computer, give me the whole new file to download, and remind me to share that file, not the one I had before.
+- Tell me to open it in my web browser and check for the comment button in the bottom-right corner.
+- Give me this note to send with it, word for word: "You can comment right on this page. …"
+
+Later I will paste the comments people send me. Apply each one to the page, tell me what you changed, and give me the whole file again.
+The full guide: https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md</pre>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <p class="cap">The box's own Copy shares the key and the “Copied” behaviour with the first screen's Copy prompt, so people who read first can copy where they read. Each copy carries a new key. The version and integrity hash are filled in from the release the site carries. <span class="ref">I3 I11 I15 I16 I20 I43</span></p>
+  </section>
+
+  <section>
+    <h2>Last on the page: The details</h2>
+    <p class="what">For the evaluator and anyone adding Pipeup by hand. Plain sentences led by a few bold words, each saying its drawbacks too: no facts row, chips or tiles. Reached from the first screen's quiet line.</p>
+    <div class="scale" data-w="1280" data-h="0">
+      <div class="inner site" style="width: 1280px">
+        <main>
+          <div class="sect">
+            <div>
+              <h2>The details</h2>
+              <p>What Pipeup sends, what it does to your page, and how to add it without an AI.</p>
+              <p><b>Adding it by hand.</b> Put the two lines in the box on your page. The script line alone starts Pipeup; the key keeps the page's comments with it when the file is moved or renamed, and each page needs its own. Readers' browsers load the file from jsDelivr, pinned to this version by its integrity hash, or you can keep <span class="lnk">a copy of pipeup.min.js</span> next to your page.</p>
+              <p><b>What it sends.</b> Nothing. Comments stay in each reviewer's browser and leave only when they copy and send them. Clearing browser data, or closing a private window, removes comments not yet sent. Add-ons that send anything say what, and to whom, on their own pages.</p>
+              <p><b>What it does to your page.</b> It adds one element of its own, with everything it draws inside it, and never restyles or moves your page. It works on pages a framework renders and keeps up when a single-page app changes route.</p>
+              <p><b>Using Claude Code or Codex?</b> Install the skills once and “add comments to this page” is enough: <span style="font-family: var(--s-mono); font-size: 13.5px">npx --yes pipeup@0 skills install</span> says what it will write and asks first; <span style="font-family: var(--s-mono); font-size: 13.5px">skills remove</span> takes them out.</p>
+              <p><b>Licence and version.</b> Free and open source under the MIT licence; source and releases are on <span class="lnk">GitHub</span>. Version 0.8.2 (<span class="lnk">what changed</span>): one file of about 60 KB compressed, with no dependencies.</p>
+            </div>
+            <div class="box" style="margin-top: 52px">
+              <div class="bh">For your page <span class="btn ghost">Copy</span></div>
+<pre>&lt;html data-pipeup-doc="Xq3…:9fK…"&gt;
+
+&lt;script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"
+  integrity="sha384-…" crossorigin="anonymous"&gt;&lt;/script&gt;</pre>
+            </div>
+          </div>
+        </main>
+        <div style="max-width: 1120px; margin: 0 auto; padding: 0 32px"><footer><span class="pill">Add-ons</span><span>For agents</span></footer></div>
+      </div>
+    </div>
+    <p class="cap">The version, size and hash come from the copy of Pipeup the site carries, so they can't go stale (open question 1). <span class="ref">I8 I13 I14 I22 I25 I34 I35 I36</span></p>
+  </section>
+
+  <section>
+    <h2>The reviewer help page</h2>
+    <p class="what"><b>add-comments.html keeps its address</b>, so links already sent still work. It stops being a door on the home page and becomes the page the note and step 3 link to. Commenting is turned on as its own step, and asking an AI moves to a quiet fallback.</p>
+    <div class="scale" data-w="1280" data-h="0">
+      <div class="inner site" style="width: 1280px">
+        <main>
+          <header><span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2"><path d="M4 12a8 8 0 1 1 3.2 6.4L3 20l1.3-3.8A7.9 7.9 0 0 1 4 12z"/></svg>Pipeup</span><span class="gh">GitHub</span></header>
+          <div class="hero">
+            <div>
+              <h1 style="font-size: 50px">Someone sent you a page to comment on.</h1>
+              <p class="lede">Comment right on it in your web browser, then send your comments back. No account needed.</p>
+              <ol class="steps">
+                <li><span class="n">1</span><span><b>Open it in your web browser:</b> Chrome, Safari, Edge or Firefox. A preview inside email, chat or a drive may not show the comment button.</span></li>
+                <li><span class="n">2</span><span><b>Turn on commenting:</b> click the comment button in the bottom-right corner, then Start commenting, or press <kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd>.</span></li>
+                <li><span class="n">3</span><span><b>Comment:</b> click anything, or select some words, and type.</span></li>
+                <li><span class="n">4</span><span><b>Send them back:</b> click the comment button, choose Copy comments › As Markdown, and paste it into a reply to whoever sent the page.</span></li>
+              </ol>
+              <p class="small" style="margin-top: 16px">Your comments stay in this browser until you send them, and nobody else sees them. Clearing your browser's data, or closing a private window, removes them, so send them first.</p>
+              <p class="small">No comment button? Ask whoever sent it for the version with comments built in, or <a>add it to your own copy</a>.</p>
+            </div>
+            <div class="sc">
+              <div class="scf"><div class="win"><div class="dots"><i></i><i></i><i></i></div><div class="doc"><div class="ttl" style="width: 38%"></div><p class="words">Revenue grew in every region but one. The Q3 dip came from the pricing change, which we reversed in August.</p><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:82%"></div></div><div class="corner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8"><path d="M4 12a8 8 0 1 1 3.2 6.4L3 20l1.3-3.8A7.9 7.9 0 0 1 4 12z"/><path d="M12 8v8M8 12h8"/></svg></div></div></div>
+              <div class="tabs"><span>The scene: the file opens in a browser tab, Start commenting, a comment, Copy comments, a reply</span><span class="pz" style="margin-left: auto"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="3" height="8" fill="#111"/><rect x="6" y="1" width="3" height="8" fill="#111"/></svg></span></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <ul class="plain" style="margin-top: 14px; font-size: 14px; color: var(--mu)">
+      <li><b>On touch screens</b> steps 2 and 3 say tap: “tap the comment button in the bottom-right corner, then Start commenting”; “tap anything, or press and hold on some words, and type”. <span class="ref">I27</span></li>
+      <li><b>“add it to your own copy”</b> eases open two options, each shown in full before copying: the reviewer prompt for an AI (“only if you're allowed to share the file with an AI”), or the script line to paste just before &lt;/body&gt;. <span class="ref">I13 I43</span></li>
+      <li><b>The scene</b> keeps its email and Slack stories, but each now ends with the reviewer replying, not with Claude or Codex, and it gets a Pause button. <span class="ref">I17 I42</span></li>
+      <li><b>The “← Pipeup” back link goes</b>, since the logo already goes home. <span class="ref">I50</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>create-html.html is retired</h2>
+    <p class="what">Its job is now the home page's four steps. The address stays, so links already shared still work: it opens the home page's steps by itself, and shows one plain line with a link in case it can't (from disk, or with scripts off).</p>
+    <div class="card" style="max-width: 560px; font-family: var(--s-sans)">
+      <p style="margin: 0; font-size: 17px; color: var(--s-strong)">Making a page to share? Adding Pipeup is now on the home page.</p>
+      <p style="margin: 8px 0 0"><a>Go to the steps</a></p>
+    </div>
+    <p class="cap">Its Claude and Codex scene, its own Copy prompt and the bare <code>npx</code> line go. The <code>npx</code> line now sits, explained, in The details <span class="ref">I9 I25</span>. Its Markdown copy points to the home page's.</p>
+  </section>
+
+  <section>
+    <h2>What goes</h2>
+    <ul class="plain card" style="padding-left: 40px">
+      <li>The two buttons, “1 Add comments to an HTML” and “2 Create comment-enabled HTML”, with their badges and arrows.</li>
+      <li>“Their feedback comes back ready for your AI to act on.” Steps 3 and 4 now say how.</li>
+      <li>The Quick start heading and its line “Your AI agent adds Pipeup to your page. It edits only the HTML file.”, which misled chat users, who have to save a new file. Its steps move up; its prompt box moves to What your AI does.</li>
+      <li>The keyboard-only try line on touch screens.</li>
+      <li>create-html.html as a page (the address opens the home page's steps).</li>
+      <li>On the author's path: the bare <code>npx</code> line, “Copy a prompt for my agent (with the agents add-on)” and “It works from disk”.</li>
+      <li>On the reviewer page: the back link, “No button? Ask your AI” as a main step, and the scene's hand-off to Claude and Codex.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p class="what">WEBSITE_SPEC §3. Items 1 and 2 are replaced, 2a is new, and item 3 shrinks to the reviewer help page. Functional requirements only. <span class="spec-key"><span class="ins" style="background: var(--add); color: var(--addk); border-radius: 4px; padding: 0 4px">green</span> is new.</span></p>
+    <div class="spec">
+      <p><b>1. First screen</b>: the headline “Feedback for any HTML.”, one sentence on the value <span class="ins">that also says each person's comments stay in their own browser until they send them</span>, and the <b>showcase</b> beside them (tops aligned).</p>
+      <p><span class="ins">Under the sentence, <b>four numbered steps</b> take an author from their HTML file to their reviewers and back: copy the prompt; paste it into an AI (Claude, ChatGPT or any chat) with the HTML file, and save the new file it gives back; send that file with the note the AI writes, and people open it in a web browser, comment, and send their comments back; paste their comments into the AI, which makes the changes. Each step is at most two lines on a computer, and the first screen still fits a 1280 × 800 window. The first step holds the page's one main button, <b>Copy prompt</b>, with “one copy per page” and a link that eases down to the prompt's words. The third step ends with a quiet link to the reviewer help page. The first screen has no other button and no choice of paths.</span></p>
+      <p><b>Copy prompt</b> copies exactly the words shown under What your AI does, with a fresh document key made in the visitor's browser; every copy carries a key of its own, for one page. Its icon becomes a check and its label “Copied” for two seconds, then it eases back, and screen readers hear that the prompt was copied. If copying isn't allowed, <span class="ins">the page eases down to the prompt and</span> selects its words, and the button doesn't say “Copied”.</p>
+      <p>Under the steps is a line to <b>try it on this page</b>: the comment shortcut, shown the way the visitor's keyboard labels it; <span class="ins">on a touch screen, the comment button in the bottom-right corner, then Start commenting, then a tap on anything. Under that, a quiet line for people adding Pipeup themselves leads to The details.</span></p>
+      <p><span class="ins">At phone width the order is: headline, sentence, the try line, the showcase, then the steps, with Copy prompt at full width.</span> Reading and keyboard order follow what is shown, and nothing scrolls sideways. The page's Markdown copy and llms.txt say the same in words.</p>
+      <p><b>The showcase</b>: as now, plus: <span class="ins">only the scene on show reaches a screen reader, as one sentence saying what happens in it. It stops moving on its own while keyboard focus or the pointer is on it, and while the visitor is commenting on the home page. On a touch screen its pointer is drawn as a fingertip. Focus rings on its controls are never cut off.</span></p>
+      <p><b>2. <span class="ins">What your AI does</span></b>, under the first screen, on the same columns. <span class="ins">In plain sentences: what the prompt asks for (one line in the HTML file, and a key that keeps this page's comments apart, isn't tied to an account and travels with the page; nothing else changes and nothing is installed); that the AI gives back a new file to save and a note to send with it, and that the author opens the new file in a web browser first, where a comment button in the bottom-right corner means it worked; a <b>note for reviewers</b> in a labelled box with its own Copy, for when the AI didn't write one (open the file in a web browser, since a preview may not show the comments; turn on commenting from the comment button; comment; Copy comments › As Markdown into a reply; comments stay in the browser until sent; a link to the reviewer help page); and that each person sends their own comments, nobody sees anyone else's, and one shared place needs a service, with a link to Share.</span> Beside them, <b>the prompt</b> in a labelled box, exactly the words Copy prompt copies, <span class="ins">with its own Copy that behaves the same way. The prompt asks the AI to add the pinned script with its integrity hash and this copy's key; to mark stable blocks and leave the layout alone; when it can't change the author's file, to hand back the whole new file and say to share that one; to tell the author to open it in a web browser and check for the comment button; to give the reviewer note word for word; and later to apply each pasted comment, say what changed, and give the whole file again.</span></p>
+      <p><span class="ins"><b>2a. The details</b>, the last section above the footer, on the same columns: one sentence, then short paragraphs led by a few bold words, each saying its drawbacks too, never a facts row, chips or tiles. Adding it by hand (the key and the script line; the script alone starts Pipeup; the key keeps comments with the page when it moves, one per page; jsDelivr with its integrity hash, or a copy next to the page). What it sends (nothing; unsent comments go when browser data is cleared). What it does to the page (one element of its own; never restyles or moves the page; works with frameworks and route changes). The agent skills (install once, asks first, how to remove). Licence and version (MIT, free, GitHub, the version with what changed, its size, no dependencies), always matching the copy of Pipeup the site carries. Beside them, a <b>For your page</b> box with the two lines and its own Copy (a fresh key every copy).</span></p>
+      <p><b>3. <span class="ins">The reviewer help page</span></b>, <code>add-comments.html</code>, <span class="ins">for people who were sent a page, linked from step 3, the note and the reviewer prompt: four steps (open it in a web browser; turn on commenting; comment; send them back with Copy comments › As Markdown in a reply), in tap words on a touch screen; a line saying comments stay in this browser until sent and go if browser data is cleared; and a quiet fallback for a page with no comment button, which shows the reviewer prompt or the script line in full before copying. Its scene ends with the reviewer replying and can be paused. <code>create-html.html</code> opens the home page's steps.</span></p>
+      <p style="color: var(--mu); font-size: 13.5px; margin-top: 16px">Change log: 2026-10-27 — One front door again. The first screen's two buttons become four steps with one Copy prompt, from the author's file to reviewers and back. Quick start becomes What your AI does, with a note for reviewers; The details adds the script lines, what Pipeup sends and does, licence, version and size from the release. create-html.html opens the home page's steps; add-comments.html becomes the reviewer help page (usability study, 27 October).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Three decisions for you</h2>
+    <div class="q">
+      <div class="card">
+        <h3>1. Show the version, size and licence again?</h3>
+        <p>They were taken off on 15 October: the size had gone out of date and the facts line read as marketing. In the study, Theo and Lee both stalled without them <span class="ref">I14</span>.</p>
+        <p class="rec"><b>Recommended: yes</b>, as one sentence in The details, filled in from the copy of Pipeup the site carries, with a site check that fails if the two differ.</p>
+      </div>
+      <div class="card">
+        <h3>2. Retire create-html.html, or keep it as a short page?</h3>
+        <p>Keeping it gives authors a second place to start, which is the split this change removes. Retiring it keeps one door, and its address still lands on the steps.</p>
+        <p class="rec"><b>Recommended: retire it</b>, with the address opening the home page's steps.</p>
+      </div>
+      <div class="card">
+        <h3>3. Keep “Copy comments › As Markdown” in the reviewer note?</h3>
+        <p>As Markdown opens with instructions for coding agents, which reviewers see in their reply <span class="ref">I7</span>. As text reads well, but drops where each comment is, which the author's AI needs.</p>
+        <p class="rec"><b>Recommended: keep As Markdown</b>, and in the same release rewrite its header in the library so it reads to a person and still guides an AI (a library change, spec first, for next).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How the concepts scored</h2>
+    <p class="what">Four designers each drew one front door from a different angle, then five people from the study scored all four: clear in 10 seconds, gets me there, and trust, each out of 10, so 150 points at most.</p>
+    <div class="tbl">
+      <table>
+        <tr><th>Concept</th><th>The idea</th><th style="text-align: right">Score</th><th>Favourite of</th></tr>
+        <tr><td><b>The round trip on the first screen</b> (chosen)</td><td>Four steps with Copy prompt in step 1; the prompt asks the AI for the file and the note.</td><td class="num">114</td><td>Maya, Sam</td></tr>
+        <tr><td>One door, details in reach</td><td>One big “Copy prompt for your AI”, with the loop and the facts below the first screen.</td><td class="num">118</td><td>Theo, Priya</td></tr>
+        <tr><td>Just the prompt</td><td>The fewest elements: one button, everything else one scroll down.</td><td class="num">104</td><td></td></tr>
+        <tr><td>The round trip, five steps</td><td>Five steps and a fifth showcase scene playing the return trip.</td><td class="num">100</td><td>Ada</td></tr>
+      </table>
+    </div>
+    <p class="cap"><b>Why the second-highest total won:</b> the top scorer's lead came from Theo and Priya rating two parts that can be moved: the details and a Copy button on the note. Both are grafted onto the chosen concept. Its one structural stall hit Maya: she would copy, paste and leave, never scrolling to the steps that say to save the file, send a note and get comments back. That is the failure the study found. The chosen concept had the most even scores (lowest single score 6), and the two newcomers who aren't developers, Maya and Sam, picked it. Not taken: the fifth scene, which Theo read as marketing and which made Ada wonder whether she needed an AI too.</p>
+  </section>
+
+  <section>
+    <h2>Not in this change</h2>
+    <ul class="plain card" style="padding-left: 40px">
+      <li><b>The library</b>: the tiny unlabelled corner button <span class="ref">I16</span>; the first click after Start commenting only closing the menu <span class="ref">I10</span>; Copy comments moving behind ⋯ while comments are open <span class="ref">I33</span>; empty copies that say “Copied 0 threads” <span class="ref">I18</span>; the local file path in exports <span class="ref">I12</span>. These need the functional spec first and go to next.</li>
+      <li><b>Shared comments without developer tools</b> <span class="ref">I4</span>. This change only says plainly that each person sends their own comments.</li>
+      <li><b>The Try pages, the reviewer deck, the Add-ons pages and the guide</b> <span class="ref">I17 I21 I26 I28 I52–I54</span>.</li>
+      <li><b>To check before the words ship</b>: whether Gmail, Outlook, Slack, Teams, Drive and the iPhone's Mail and Files previews really hide the comment button. Until then the site says “may not show”.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+  // Scales each mock-up, drawn at the site's real size, to the width of its column.
+  for (const box of document.querySelectorAll(".scale")) {
+    const inner = box.querySelector(".inner");
+    const w = Number(box.dataset.w), h = Number(box.dataset.h);
+    const fit = () => {
+      const k = Math.min(1, box.clientWidth / w);
+      inner.style.transform = "scale(" + k + ")";
+      box.style.height = Math.max(h, inner.scrollHeight) * k + "px";
+    };
+    fit();
+    if ("ResizeObserver" in window) new ResizeObserver(fit).observe(box);
+    if (document.fonts) document.fonts.ready.then(fit);
+  }
+</script>
