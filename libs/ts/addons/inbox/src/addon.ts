@@ -1,6 +1,7 @@
 import type { AddonHost, ItemHandle, PipeupAddon, SignedOp } from "pipeup";
 import { inboxId, keyFrom, open, seal, signedBy, type InboxKey } from "./crypto";
 import { Service } from "./service";
+import { pageSetting } from "@pipeup/kit";
 
 const KEEP = "pipeup:inbox-on";
 const PEOPLE = ["M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8z", "M4 20c0-4 3.6-6 8-6s8 2 8 6"];
@@ -36,8 +37,8 @@ const remember = (value: boolean): void => {
 };
 
 /** The inbox service the page's author named: `data-pipeup-inbox="https://…"`; http only for this computer. */
-export function serviceOf(html: Element = document.documentElement): string {
-  const v = html.getAttribute("data-pipeup-inbox") ?? "";
+export function serviceOf(html?: Element): string {
+  const v = pageSetting("data-pipeup-inbox", html) ?? "";
   try {
     const u = new URL(v);
     const here = u.hostname === "localhost" || u.hostname === "127.0.0.1" || u.hostname === "[::1]";
@@ -76,7 +77,7 @@ export function createAddon(): PipeupAddon {
       if (!base) return host.off('the page names no inbox service (data-pipeup-inbox="https://…")');
       const service = new Service(base, host.signal);
       const me = host.document.me;
-      const poll = Math.max(1, Number(document.documentElement.getAttribute("data-pipeup-inbox-poll")) || 60);
+      const poll = Math.max(1, Number(pageSetting("data-pipeup-inbox-poll")) || 60);
       let enabled = on();
       let mine: { key: InboxKey; id: string } | null = null;
       let cursor = "";

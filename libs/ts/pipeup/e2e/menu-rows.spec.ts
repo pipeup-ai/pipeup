@@ -80,7 +80,7 @@ test("every row is one line; its explanation is a tooltip on hover and on keyboa
   // From the keyboard, focus shows the tooltip too.
   await page.keyboard.press("Escape");
   await control(page).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toContain("Start commenting");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
@@ -125,7 +125,7 @@ test("the bottom row is Start commenting, with a switch that follows comment mod
   // the block cursor starts; Escape on it leaves comment mode.
   await page.keyboard.press("Escape");
   await control(page).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toBeFocused();
   await page.keyboard.press("Space");
   await commenting(page);
@@ -237,7 +237,7 @@ test.describe("on a touch screen with no hover", () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 800 } });
   test("the Start commenting switch works by tap", async ({ page }) => {
     await open(page, "doc.html");
-    await control(page).tap();
+    await openMenu(page);
     await expect(menu(page)).toHaveCount(1);
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
     await commenting(page);

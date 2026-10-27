@@ -126,47 +126,49 @@ export const control = (page: Page): Locator => page.locator(".launch .mode");
 /** Comment mode is on: the control shows it. */
 const isCommenting = (page: Page) => control(page).evaluate((b) => b.classList.contains("on"));
 
+/** The ⋯ at the end of the control's reach, which opens its menu. */
+export const moreButton = (page: Page): Locator => page.locator(".launch .mm");
+
 /**
- * Opens the comment control's menu: a click on it. In comment mode the control opens All comments instead, and the
- * menu is its footer's ⋯.
+ * Opens the comment control's menu: ⋯ at the end of the control's reach (pointed at), or the panel footer's ⋯ while
+ * All comments is open.
  */
 export async function openMenu(page: Page): Promise<void> {
-  const panelOpen = (await page.locator(".all.show").count()) > 0;
-  if (panelOpen || (await isCommenting(page))) {
-    if (!panelOpen) await control(page).click();
+  if ((await page.locator(".all.show").count()) > 0)
     await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
-  } else await control(page).click();
+  else if (await page.evaluate(() => matchMedia("(hover: none)").matches)) await holdControl(page);
+  else {
+    await control(page).hover();
+    await moreButton(page).click();
+  }
   await expect(page.locator(".menu.show")).toHaveCount(1);
 }
 
-/** Opens All comments: from the menu, or in comment mode straight from the control. */
+/** Presses and holds the control by touch, which opens its menu (the click that ends the press does nothing more). */
+export async function holdControl(page: Page): Promise<void> {
+  await control(page).evaluate(async (b) => {
+    const at = { bubbles: true, composed: true, pointerType: "touch", isPrimary: true };
+    b.dispatchEvent(new PointerEvent("pointerdown", at));
+    await new Promise((r) => setTimeout(r, 650));
+    b.dispatchEvent(new PointerEvent("pointerup", at));
+    b.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true, detail: 1 }));
+  });
+}
+
+/** Opens All comments from the menu. */
 export async function openAll(page: Page): Promise<void> {
-  if (await isCommenting(page)) await control(page).click();
-  else {
-    await openMenu(page);
-    await page.getByRole("menuitem", { name: /All comments/ }).click();
-  }
+  await openMenu(page);
+  await page.getByRole("menuitem", { name: /All comments/ }).click();
   await expect(page.locator(".all.show")).toHaveCount(1);
 }
 
-/**
- * Turns comment mode on from the menu's Start commenting switch (the menu closes with Esc), or off from the
- * Comment switch in All comments' footer (the panel then closes with ×).
- */
+/** Turns comment mode on or off with one click on the control (or the footer's switch while All comments is open). */
 export async function toggleCommenting(page: Page): Promise<void> {
-  if (await isCommenting(page)) {
-    await control(page).click();
-    const panel = page.locator(".all.show");
-    await panel.getByRole("switch", { name: /Comment/ }).click();
-    await panel.getByRole("button", { name: "Close" }).click();
-    await expect(page.locator(".all.show")).toHaveCount(0);
-    return;
-  }
-  await openMenu(page);
-  await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
-  // The menu stays open so the switch is seen to move.
-  await page.keyboard.press("Escape");
-  await expect(page.locator(".menu.show")).toHaveCount(0);
+  const was = await isCommenting(page);
+  const panel = page.locator(".all.show");
+  if ((await panel.count()) > 0) await panel.getByRole("switch", { name: /Comment/ }).click();
+  else await control(page).click();
+  await commenting(page, !was);
 }
 
 /** Turns comment mode on with its shortcut (comments only show in comment mode), and waits for it. */

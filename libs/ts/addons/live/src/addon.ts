@@ -1,5 +1,5 @@
 import type { AddonHost, PipeupAddon, PanelHandle } from "pipeup";
-import { derivedRoom, fromB64u, ladder, pageSecret, settings, sha256, utf8 } from "@pipeup/kit";
+import { derivedRoom, fromB64u, ladder, pageSecret, pageSetting, settings, sha256, utf8 } from "@pipeup/kit";
 import { Cursors, STYLES, core, track } from "./cursors";
 import { h } from "./dom";
 import { Mesh } from "./mesh";
@@ -55,10 +55,13 @@ export function createAddon(): PipeupAddon {
 
 async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLElement) {
   const docId = host.document.id;
-  const share = html.getAttribute("data-pipeup-share");
+  // The page's settings, wherever it put them (the script line on hosts that write their own <html>).
+  const read = (name: string) =>
+    html === document.documentElement ? pageSetting(name) : html.getAttribute(name);
+  const share = read("data-pipeup-share");
   const lad = ladder(docId, await roomFor(docId, secret, share));
-  const relays = relayList(html.getAttribute("data-pipeup-live-relays"));
-  const auto = html.getAttribute("data-pipeup-live") === "auto";
+  const relays = relayList(read("data-pipeup-live-relays"));
+  const auto = read("data-pipeup-live") === "auto";
   const st = await settings("live", { memory: host.ephemeral });
   const rec = (await st.get<{ on?: boolean; seen?: boolean }>(docId)) ?? {};
   // `seen`: this reviewer was told, in a panel, who sees their address. Nothing connects before that.
@@ -109,7 +112,7 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
     return n ? `Live with ${n} other${n === 1 ? "" : "s"}` : none;
   };
   const lostText = (claim: string) =>
-    `Can't reach ${claim ? nameOf(claim) : "someone"} directly${html.hasAttribute("data-pipeup-share") ? " — comments still arrive through the shared copy" : ""}`;
+    `Can't reach ${claim ? nameOf(claim) : "someone"} directly${share !== null ? " — comments still arrive through the shared copy" : ""}`;
 
   const goLive = host.addMenuItem({
     id: "live",

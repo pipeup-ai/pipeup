@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { MountOptions } from "../src/ui/mount";
 import {
+  commenting,
   copyAs,
   fixture,
   hideComments,
@@ -110,7 +111,7 @@ test("resolved threads hide; ✓ Resolved brings them back with Reopen", async (
   await expect(th.getByRole("button", { name: "Reopen" })).toBeVisible();
 });
 
-test("Hide comments hides threads and highlights and fades the column; outside comment mode selecting offers nothing", async ({
+test("Hide comments hides threads and highlights and fades the column; selecting words still offers a comment", async ({
   page,
 }) => {
   await open(page, "doc.html");
@@ -123,13 +124,10 @@ test("Hide comments hides threads and highlights and fades the column; outside c
   await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await expect(page.locator(".th")).toHaveCount(0);
-  await selectWords(page, "#p2", "second designer");
-  await page.waitForTimeout(100); // Pipeup looks at the selection a tick after the mouse is released.
-  await expect(page.locator(".selbar.show")).toHaveCount(0);
-  await showComments(page);
-  await page.mouse.click(900, 700); // move focus out of Pipeup so the next selection takes
+  // Outside comment mode, with comments hidden, selecting words still offers a comment (§5).
   await selectWords(page, "#p2", "second designer");
   await expect(page.locator(".selbar.show")).toHaveCount(1);
+  await commenting(page, false);
 });
 
 test("Your name changes the name on new comments", async ({ page }) => {

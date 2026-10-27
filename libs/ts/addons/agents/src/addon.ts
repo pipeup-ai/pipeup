@@ -3,6 +3,7 @@ import { type Link, startLink } from "./link";
 import { openPaste, STYLES } from "./paste-view";
 import { agentPrompt } from "./prompt";
 import { listedAgents, repliesUrl, startReplies } from "./replies";
+import { pageSetting } from "@pipeup/kit";
 
 /** What this add-on borrows from the core's global: the page's comments, as an agent reads them. */
 interface Core {
@@ -142,7 +143,7 @@ export function createAddon(): PipeupAddon {
                   comments: open.markdown,
                   open: open.threads.length,
                   resolved: all.threads.length - open.threads.length,
-                  edition: document.documentElement.getAttribute("data-pipeup-edition")?.trim() || "",
+                  edition: pageSetting("data-pipeup-edition")?.trim() || "",
                   earlier: every.threads.length - open.threads.length,
                   replies: repliesUrl(),
                   file: link.enabled ? link.file : "",

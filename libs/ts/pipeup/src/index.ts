@@ -1,5 +1,14 @@
 export * from "./core";
-export { comments, mount, type MountOptions, type PipeupInstance } from "./ui/mount";
+export {
+  comments,
+  mount,
+  type MountError,
+  type MountErrorCode,
+  type MountOptions,
+  type PipeupInstance,
+  type PipeupState,
+} from "./ui/mount";
+export { setting } from "./ui/settings";
 export type { Appearance } from "./ui/legible";
 export { setPeople, type Person } from "./ui/mentions";
 export {

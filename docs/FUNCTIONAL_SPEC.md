@@ -110,6 +110,26 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
 - Pages with none of this markup still work; Pipeup falls back to its own judgement.
 - Pipeup never requires the author to restructure or restyle their page, and never moves or
   restyles the page itself.
+- **Settings where the host allows them.** Every setting a page can put on `<html>` (its document identity, its
+  layout, its look, its add-ons and theirs) can instead go on the line that loads Pipeup or an add-on, so a page on a
+  host that writes its own `<html>` (such as claude.ai Artifacts) needs no extra code. A page that starts Pipeup itself
+  can also give its document identity, layout, look and selection setting (§5) when it does. A setting given in more
+  than one place takes the value given when the page starts Pipeup, then the one on a loading line, then the one on
+  `<html>`; the check names settings that disagree.
+
+## 4a. Working with the page's own code
+
+Some pages have controls of their own for reviewing (a Comment button in their header, a name field). They work with
+Pipeup without reaching inside it.
+
+- A page's own code can turn comment mode on and off, and is told once the change has happened.
+- It can ask whether comment mode is on, and is told each time it changes, however it changed: the comment control,
+  the shortcut, Esc, or the page itself.
+- It can set the reviewer's name at any time. Pipeup keeps it as if the reviewer had typed it, and the page is told
+  each time the reviewer changes it in Pipeup.
+- When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
+  copy of Pipeup already owns the page), as well as in the browser's console.
+- None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
 
@@ -118,17 +138,19 @@ any of them off.
 
 | Way | Gesture | Best for |
 |---|---|---|
-| **Text** | In comment mode, select words. A small comment control eases in beside them. | Wording, specific claims |
+| **Text** | Select words, in comment mode or out of it. A small comment control eases in beside them. | Wording, specific claims |
 | **Block** | In comment mode, hover: an outline glides to the most obvious thing under the pointer — a paragraph, card, image, table, chart or a single button. Click it and the comment box opens straight away. | Whole elements, including controls |
 | **Pin** | In comment mode, Option-click an exact spot, or choose a block and press **Pin** on its naming bar. | Slides, charts, canvases, designs |
 | **General** | Comment on the page or slide as a whole. | Overall reactions |
 
-- **Selecting text offers commenting only in comment mode.** Outside it, selecting text offers
-  nothing and the page behaves as normal. The control is a single comment icon, just past the end of
+- **Selecting words offers commenting, in comment mode and out of it.** Starting a comment from it outside comment
+  mode doesn't turn comment mode on: links still open and the page keeps working as normal. An author can turn this
+  off, so that outside comment mode selecting words offers nothing. A link's words can be selected and commented on
+  like any others; commenting on a link as a whole is done in comment mode. The control is a single comment icon, just past the end of
   the paragraph's text, level with the selection's last line. It never covers the selection or the words
   around it, such as a headline's line above; where there's no room beside the text it sits above the
   selection (below it at the top of the window).
-- **Comment mode** is switched on and off from the comment control or with **⇧⌥C** on a Mac
+- **Comment mode** is switched on and off with one click or tap on the comment control, or with **⇧⌥C** on a Mac
   (**Shift+Alt+C** elsewhere) — a shortcut chosen not to clash with common browser and page
   shortcuts. **Esc** steps back out of it. Outside comment mode the page behaves exactly as normal.
 - In comment mode the pointer becomes a **picking cursor** (an arrow over a dashed box, like a
@@ -426,8 +448,9 @@ any of them off.
   - In comment mode the glass turns the accent colour.
   - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
     add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
-    leaves, and while the menu is open. The control itself never moves. Its name, state and shortcut are read
-    out by screen readers, and the menu shows the shortcut beside Start commenting.
+    leaves, and while the menu is open. The reach ends with **⋯**, which opens the menu. The control itself never
+    moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
+    commenting.
 - **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
   the footer back into the control. Both shapes ease into each other.
@@ -437,9 +460,11 @@ any of them off.
   cover them, on a phone either. While All comments is open they sit inside the panel, above its footer, so
   they never cover the page beside it (nor a deck's own slide controls there). Nothing of Pipeup's covers a message: comment mode's hint waits
   until the menu has closed, then shows for its usual time.
-- **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
-  **⋯** for the rest of the menu.
-- **Otherwise, clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
+- **Clicking or tapping it turns comment mode on**, and doing it again turns it off. Comment mode's hint says how
+  to stop.
+- **Its menu** opens from the **⋯** at the end of its reach; by touch, from pressing and holding the control (the
+  first time comment mode starts by touch, its hint says so); and from the keyboard, with ↑ or the menu key on the
+  focused control. All comments is in the menu. The menu rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
@@ -1881,3 +1906,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
+- 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.

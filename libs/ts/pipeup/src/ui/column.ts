@@ -7,6 +7,7 @@ import { stackColumn, type StackItem } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
 import { plural, replies, threadView, type ThreadView } from "./thread-view";
+import { hasSetting, setting } from "./settings";
 
 /** Free width needed beside the content before comments get their own column. */
 export const COLUMN_MIN = 300;
@@ -27,11 +28,11 @@ const GUTTER_PADDING = 24;
 /** Where the column goes (viewport x and width), or null when the page should use bubbles. */
 export function columnSpot(root: Element, showing = false): { x: number; width: number } | null {
   const html = root.ownerDocument.documentElement;
-  const pref = html.getAttribute("data-pipeup-layout");
+  const pref = setting("data-pipeup-layout");
   if (pref === "bubbles" || root.querySelector("[data-pipeup-slide]")) return null;
   const main = root.querySelector("article, main, [role=main]") ?? (pref === "column" ? root : null);
   if (!main) return null;
-  if (html.hasAttribute("data-pipeup-reserve")) {
+  if (hasSetting("data-pipeup-reserve")) {
     // Decided from the window, not the free space: publishing the gutter changes the free space.
     const width = html.clientWidth;
     const style = getComputedStyle(main);

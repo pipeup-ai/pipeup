@@ -227,15 +227,17 @@ test("a bubble clicked while a draft with words is away goes back to the draft; 
   await backAtDraft(page, line);
   await page.evaluate(() => (window as any).deck.go(1));
   await expect(page.locator("#count")).toHaveText("2 / 3");
-  // A row chosen in All comments opens out in the panel and leaves the draft where it is.
+  // Opening All comments brings the draft into the panel, on its own slide.
   await openAll(page);
+  await expect(page.locator("#count")).toHaveText("1 / 3");
+  // A row chosen there opens out in the panel and leaves the draft where it is, words and all.
   await page
     .locator(".all.show")
     .getByRole("button", { name: /Bar on two/ })
     .click();
   await expect(page.locator(".all.show .xr")).toContainText("Bar on two");
-  await expect(page.locator("#count")).toHaveText("2 / 3");
-  await expect(line).toHaveValue(/./);
+  await expect(page.locator("#count")).toHaveText("1 / 3");
+  await expect(line).toHaveValue("unsent words");
 });
 
 test("a comment whose content is found and showing shows on the page, even when the page's view differs in another way (a new revision)", async ({

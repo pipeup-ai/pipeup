@@ -27,6 +27,7 @@ import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
 import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
+import { hasSetting } from "./settings";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
 const RESOLVE_BUDGET_MS = 40;
@@ -45,6 +46,8 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
+  /** Called on every render: the page's code hears comment mode and the name changing (§4a). */
+  onRender?(): void;
   /** Pipeup's stylesheet (passed in so the bundles can carry it last, where it compresses best). */
   styles: string;
 }
@@ -109,7 +112,7 @@ export function startApp(o: AppOptions): App {
   const sheet = installPageSheet(document);
   sheet.fade(0);
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-  const reserve = document.documentElement.hasAttribute("data-pipeup-reserve");
+  const reserve = hasSetting("data-pipeup-reserve");
   const resolved = new Map<string, Resolved>();
   const pendingFuzzy = new Set<string>();
   const claimed = new WeakSet<Event>();
@@ -184,12 +187,33 @@ export function startApp(o: AppOptions): App {
   const tapping = () => state.commenting && !state.listing && touch();
   /** A tap has opened a comment box on this page: the hint's words have done their job, and only Done stays. */
   let taught = false;
+  /** Comment mode's touch hint has said, once, that pressing and holding the control opens the menu. */
+  const HELD_KEY = "pipeup:held";
+  let heldSaid = false;
   function tapHint(): void {
     if (!tapping() || state.menu) return;
-    toast("Tap what you want to comment on", 0, true, false, {
-      label: "Done",
-      run: () => setCommenting(false),
-    });
+    // The first time by touch, it also says where the menu went: pressing and holding the control.
+    let first = false;
+    try {
+      first = localStorage.getItem(HELD_KEY) === null;
+      if (first) localStorage.setItem(HELD_KEY, "1");
+    } catch {
+      /* no storage: said once per visit */
+      first = !heldSaid;
+    }
+    heldSaid = true;
+    toast(
+      first
+        ? "Tap what you want to comment on · Press and hold this button for more"
+        : "Tap what you want to comment on",
+      0,
+      true,
+      false,
+      {
+        label: "Done",
+        run: () => setCommenting(false),
+      },
+    );
     toastEl.classList.add("tap");
     learnt();
   }
@@ -775,6 +799,7 @@ export function startApp(o: AppOptions): App {
 
   function render(): void {
     if (destroyed) return;
+    o.onRender?.();
     const threads = threadsNow();
     classify();
     // A thread open on a slide or view that is no longer here closes; a reply half-typed in it waits for it.
@@ -1010,7 +1035,7 @@ export function startApp(o: AppOptions): App {
         ? tapHint
         : () =>
             toast(
-              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · ${SHORTCUT_LABEL} or Esc to finish`,
+              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · This button, ${SHORTCUT_LABEL} or Esc to finish`,
               HINT_MS,
               true,
             );

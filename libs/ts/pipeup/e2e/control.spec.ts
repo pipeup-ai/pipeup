@@ -19,7 +19,9 @@ test("the control is one small square tucked into the corner, flush with the win
 }) => {
   await open(page, "site.html");
   await expect(page.locator(".launch .opts, .launch .count, .launch .lbl")).toHaveCount(0);
-  await expect(page.locator(".launch button")).toHaveCount(1);
+  // The control, and ⋯ for the menu, folded away until the control is pointed at.
+  await expect(page.locator(".launch button")).toHaveCount(2);
+  await expect(page.locator(".launch .mm")).toHaveCSS("opacity", "0");
   await settled(page.locator(".launch"));
   const empty = (await control(page).boundingBox())!;
   expect(empty.width).toBe(32);
@@ -79,7 +81,7 @@ test("the number cross-fades when it changes, and shows 9+ above 9, with the exa
   await expect(page.locator(".launch .ttip")).toContainText("10 open");
 });
 
-test("pointed at, the control reaches left just far enough to show its shortcut, after a short delay, and stays put", async ({
+test("pointed at, the control reaches left just far enough to show its shortcut and ⋯, after a short delay, and stays put", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -90,11 +92,16 @@ test("pointed at, the control reaches left just far enough to show its shortcut,
   await expect(tip).toHaveCSS("opacity", "1");
   await expect(tip).toHaveText(/^(⇧⌥C|Shift\+Alt\+C)$/);
   await settled(page.locator(".launch .ttip"));
-  // It grows to the left only, and only by the keys (their width, whatever the platform calls them).
+  await expect(page.locator(".launch .mm")).toHaveCSS("opacity", "1");
+  await settled(page.locator(".launch .mm"));
+  // It grows to the left only, and only by the keys (their width, whatever the platform calls them) and ⋯.
   const tab = (await page.locator(".launch").boundingBox())!;
   expect(tab.x + tab.width).toBe(before.x + before.width);
   const words = await tip.locator("> span").evaluate((e) => e.scrollWidth);
-  expect(Math.abs(tab.width - before.width - words)).toBeLessThan(1.5);
+  const more = await page
+    .locator(".launch .mm")
+    .evaluate((e) => (e as HTMLElement).offsetWidth + parseFloat(getComputedStyle(e).marginLeft));
+  expect(Math.abs(tab.width - before.width - words - more)).toBeLessThan(1.5);
   expect(await tip.evaluate((e) => parseFloat(getComputedStyle(e).transitionDelay))).toBeGreaterThan(0);
   await settled(page.locator(".launch"));
   expect((await control(page).boundingBox())!).toEqual(before);
@@ -102,11 +109,11 @@ test("pointed at, the control reaches left just far enough to show its shortcut,
   await expect(tip).toHaveCSS("opacity", "0");
 });
 
-test("a click opens the menu above the button; the item nearest it is Start commenting, a switch for comment mode", async ({
+test("⋯ opens the menu above the button; the item nearest it is Start commenting, a switch for comment mode", async ({
   page,
 }) => {
   await open(page, "site.html");
-  await control(page).click();
+  await openMenu(page);
   const menu = page.locator(".menu.show");
   await expect(menu).toHaveCount(1);
   await settled(menu);
@@ -151,15 +158,17 @@ test("the menu shows the open count on All comments", async ({ page }) => {
 
 test.describe("on a touch screen with no hover", () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 800 } });
-  test("a tap opens the menu and Comment starts comment mode", async ({ page }) => {
+  test("a tap starts comment mode with no menu, and ⋯ stays out of the way", async ({ page }) => {
     await open(page, "site.html");
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "hover", value: "none" }] });
     expect(await page.evaluate(() => matchMedia("(hover: none)").matches)).toBe(true);
+    await expect(page.locator(".launch .mm")).toBeHidden();
     await control(page).tap();
-    await expect(page.locator(".menu.show")).toHaveCount(1);
-    await page.locator(".menu.show .mi").last().tap();
     await commenting(page);
+    await expect(page.locator(".menu.show")).toHaveCount(0);
+    await control(page).tap();
+    await commenting(page, false);
   });
 });
 
@@ -383,18 +392,22 @@ test("the button's comment bubble is drawn with a thinner line than other icons,
   expect(await n.evaluate((e) => getComputedStyle(e).fontWeight)).toBe("500");
 });
 
-test("in comment mode the control opens All comments, whose footer has the switch and ⋯ for the menu", async ({
+test("in comment mode a click on the control stops it; All comments, from the menu, has the switch and ⋯ in its footer", async ({
   page,
 }) => {
   await open(page, "doc.html");
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await expect(control(page)).toHaveAttribute("aria-haspopup", "menu");
+  await expect(control(page)).toHaveAttribute("aria-pressed", "false");
   await page.keyboard.press("Shift+Alt+KeyC");
   await commenting(page);
-  await expect(control(page)).toHaveAttribute("aria-haspopup", "dialog");
+  await expect(control(page)).toHaveAttribute("aria-pressed", "true");
   await control(page).click();
+  await commenting(page, false);
+  await expect(page.locator(".all.show")).toHaveCount(0);
+  await page.keyboard.press("Shift+Alt+KeyC");
+  await commenting(page);
+  await openAll(page);
   const panel = page.locator(".all.show");
-  await expect(panel).toHaveCount(1);
   await expect(page.locator(".menu.show")).toHaveCount(0);
   await expect(panel).toContainText("Is 20% realistic?");
   // The footer: comment mode's switch, on, and ⋯ for the rest of the menu.
@@ -407,7 +420,7 @@ test("holding Space never brings out the shortcut, even with focus left on the c
   await open(page, "controls.html");
   // Comment mode turned on from the menu, the menu closed with Escape: focus is back on the control, shown as
   // keyboard focus, and the pointer is away on the page.
-  await control(page).click();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
   await commenting(page);
   await page.keyboard.press("Escape");

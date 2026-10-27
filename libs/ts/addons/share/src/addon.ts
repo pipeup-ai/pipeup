@@ -1,5 +1,5 @@
 import type { AddonHost, ItemHandle, PipeupAddon } from "pipeup";
-import { ladder, pageSecret, settings, SyncEngine } from "@pipeup/kit";
+import { ladder, pageSecret, pageSetting, settings, SyncEngine } from "@pipeup/kit";
 import { parseShare } from "./address";
 import { idsOf, type Backend } from "./backend";
 import { Mailbox } from "./mailbox";
@@ -30,10 +30,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
     },
     async setup(host: AddonHost) {
       const doc = host.document;
-      const address = parseShare(
-        options.share ?? document.documentElement.getAttribute("data-pipeup-share"),
-        true,
-      );
+      const address = parseShare(options.share ?? pageSetting("data-pipeup-share"), true);
       if (address.kind === "off") return host.off(address.reason);
       if (!pageSecret(doc.id)) return host.off("needs a document identity");
 

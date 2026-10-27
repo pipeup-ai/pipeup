@@ -153,6 +153,7 @@ export interface UiSnapshot {
 }
 
 import type { ReactionPicker } from "./reactions";
+import { setting } from "./settings";
 export type { ReactionPicker } from "./reactions";
 export type { ComposerHandle, ComposerTool, Dictation } from "./composer";
 
@@ -665,8 +666,7 @@ export function addons(): readonly AddonInfo[] {
  * can already edit the page.
  */
 function allowed(id: string): boolean {
-  const list =
-    typeof document === "undefined" ? null : document.documentElement.getAttribute("data-pipeup-addons");
+  const list = setting("data-pipeup-addons");
   return (
     list === null ||
     list

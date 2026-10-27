@@ -1,5 +1,6 @@
 import { EDITION } from "../anchor/locate";
 import { LIMITS } from "../model/ops";
+import { setting } from "./settings";
 
 /** Where the reviewer is: the slide ("1"-based) and whatever the page reports about itself. */
 export type ViewState = Record<string, string>;
@@ -160,9 +161,9 @@ export function isHere(
   );
 }
 
-/** The edition the page names on `<html data-pipeup-edition>`, as written; null when it names none. */
+/** The edition the page names (`data-pipeup-edition`, wherever settings go), as written; null when it names none. */
 export function pageEdition(): string | null {
-  const e = document.documentElement.getAttribute("data-pipeup-edition")?.trim() ?? "";
+  const e = setting("data-pipeup-edition")?.trim() ?? "";
   return e && e.length <= LIMITS.viewValue ? e : null;
 }
 
