@@ -1,5 +1,6 @@
 // The prompts, the note for reviewers and the lines for a page, and the Copy buttons that copy them: one source for
-// the home page and the reviewer help page. A box marked data-sprompt shows a text's words exactly as copied.
+// the home page, What your AI does, The details and the reviewer help page. A box marked data-sprompt shows a text's
+// words exactly as copied.
 (() => {
 const SRC = "https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js";
 const SRI = "{{SRI:pipeup}}"; // The core's integrity hash for that version, put in when the site is built (inject-core.py).
@@ -57,6 +58,13 @@ const texts = {
   tag: () => TAG,
 };
 const keyed = new Set(["a", "b", "lines"]); // The texts that carry a document key.
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Arriving from a Copy prompt that couldn't copy (prompt.html#select): the prompt's words are selected, ready to copy.
+let selecting = location.hash === "#select";
+const select = (box) => {
+  box.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
+  getSelection().selectAllChildren(box);
+};
 const show = () => {
   for (const box of document.querySelectorAll("[data-sprompt]")) {
     const words = texts[box.dataset.sprompt]();
@@ -64,12 +72,13 @@ const show = () => {
     if (words.endsWith(HELP)) box.replaceChildren(words.slice(0, -HELP.length), Object.assign(document.createElement("a"), { href: HELP, textContent: HELP }));
     else box.textContent = words;
   }
+  const wanted = selecting && document.querySelector('[data-sprompt="b"]');
+  if (wanted) select(wanted);
 };
 show();
 
-// Copying: the clipboard, else the old copy command; if neither is allowed, the page eases to the shown words and
-// selects them instead.
-const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Copying: the clipboard, else the old copy command. If neither is allowed, the page eases to the shown words and
+// selects them instead; where they aren't shown (the home page's Copy prompt), What your AI does opens with them selected.
 const copy = async (text) => {
   try { await navigator.clipboard.writeText(text); return true; } catch {}
   const t = document.createElement("textarea"); t.value = text; t.style.position = "fixed"; t.style.opacity = "0";
@@ -84,6 +93,7 @@ for (const b of document.querySelectorAll("[data-scopy]")) {
   let timer = 0;
   b.addEventListener("click", async () => {
     const which = b.dataset.scopy;
+    selecting = false;
     if (keyed.has(which) && docKey && docKey === copiedKey && nextKey) { docKey = nextKey; nextKey = null; show(); }
     if (await copy(texts[which]())) {
       if (keyed.has(which) && docKey && docKey !== copiedKey) { copiedKey = docKey; makeNext(); }
@@ -91,9 +101,8 @@ for (const b of document.querySelectorAll("[data-scopy]")) {
       clearTimeout(timer); timer = setTimeout(() => { b.classList.remove("copied"); said.textContent = ""; }, 2000);
     } else {
       const box = document.querySelector(`[data-sprompt="${which}"]`);
-      if (!box) return;
-      box.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "nearest" });
-      getSelection().selectAllChildren(box);
+      if (box) select(box);
+      else if (which === "b") location.href = "prompt.html#select";
     }
   });
 }

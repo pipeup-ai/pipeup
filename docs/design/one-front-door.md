@@ -1,7 +1,9 @@
 # One front door: how the site builds it
 
 Design note for WEBSITE_SPEC §3 items 1, 2, 2a and 3 (change log 2026-10-27). What it looks like and says is the visual
-spec, [one-front-door-mockups.html](one-front-door-mockups.html); this note is how the site does it.
+spec, [one-front-door-mockups.html](one-front-door-mockups.html), revised by
+[one-screen-home-mockups.html](one-screen-home-mockups.html) (the home page fits one screen; What your AI does and The
+details get pages of their own); this note is how the site does it.
 
 ## Pages
 
@@ -9,12 +11,13 @@ spec, [one-front-door-mockups.html](one-front-door-mockups.html); this note is h
   the quiet line to The details) and `.ad` (the showcase). Side by side they sit in named areas (`intro ad` / `start
   ad`). Stacked (≤ 900 px) a small script moves the try line into `.intro` and the showcase before `.start`, so the DOM
   order (and with it reading and keyboard order) is what is shown: headline, sentence, try line, showcase, steps. The
-  try line has a keyboard and a touch version, picked with `(hover: none) and (pointer: coarse)`.
-  "What it says" and "See the script tag…" scroll smoothly (at once with reduced motion) and move focus to the box or
-  section they name. `#steps` has `scroll-margin-top: 100vh` side by side, so arriving there from create-html.html
+  try line has a keyboard and a touch version, picked with `(hover: none) and (pointer: coarse)`. Nothing follows the
+  hero but the footer. `#steps` has `scroll-margin-top: 100vh` side by side, so arriving there from create-html.html
   leaves the page at its top, where the steps already are.
-- **What your AI does** and **The details** are `.sect` grids on the hero's columns, each with labelled boxes whose Copy
-  sits in the box's header row, never over the words.
+- **prompt.html** (What your AI does) and **details.html** (The details) are plain pages linked from the steps: the
+  reviewer page's head, inline styles, header and footer, plus `pages.css` (words left, a labelled box to copy right,
+  on the home page's columns; stacked below 900 px). Each box's Copy sits in its header row, never over the words.
+  walk.js runs on them for the shortcut's labels and the footer menu.
 - **add-comments.html** is the reviewer help page. Its head, inline styles, header and footer are still the add-on
   guide's chassis (build-guide.py), so the `.back` link style stays in it. "Add it to your own copy" is a disclosure
   button that eases a `grid-template-rows` 0fr → 1fr panel open; the panel is `inert` while closed.
@@ -26,7 +29,9 @@ spec, [one-front-door-mockups.html](one-front-door-mockups.html); this note is h
 
 `prompts.js` holds every text a Copy button copies and a `data-sprompt` box shows: `b` (the author prompt), `a` (the
 reviewer prompt), `note` (the note for reviewers, embedded word for word in `b`), `lines` (For your page) and `tag` (the
-script line alone). Boxes are filled from it, so the words shown are the words copied. The note's help address is drawn
+script line alone). Boxes are filled from it, so the words shown are the words copied. The home page shows none of
+them: its Copy prompt copies `b` unseen, and if copying isn't allowed it opens `prompt.html#select`, where the prompt's
+words are selected (again once the fresh key arrives) and scrolled into view. The note's help address is drawn
 as a link; its text is the same.
 
 Keys: one document key is shown at a time. A copy of a keyed text (`a`, `b`, `lines`) uses the shown key unless it was
@@ -42,7 +47,7 @@ words are selected.
 - reads the version from `libs/ts/pipeup/package.json` and fails the build if the site's `pipeup.min.js` wasn't built as
   that version, or if any page, Markdown copy, llms file or prompts.js pins another `pipeup@X.Y.Z/`;
 - fills `{{VERSION}}` and `{{SIZE}}` (the site's `pipeup.min.js`, gzipped at level 6 as `scripts/size.mjs` measures it,
-  rounded to whole KB) in The details and its Markdown copy;
+  rounded to whole KB) in details.html and its Markdown copy;
 - fills `{{SRI:pipeup}}` with the hash of the file jsDelivr serves for that version. If the CDN can't be reached the
   attribute is dropped from text files and prompts.js keeps its placeholder (it then writes the tag without integrity),
   with a warning. It never falls back to the local build: unlike a released add-on, the core on `main` can differ from
@@ -77,11 +82,11 @@ for checking.
 
 ## Open points
 
-- At 1280 × 800 step 3 ("Send that file … How reviewing works") takes three lines in the mock-up's 11/13 columns. Two
-  lines would need 13/11 (the showcase 462 px wide instead of 546). Left as drawn.
-- "The script line alone starts Pipeup" and the reviewer page's script-line option rely on PR #112's library fix, which
+- The reviewer page's script-line option relies on PR #112's library fix (the script line alone starts Pipeup), which
   the pinned 0.8.2 doesn't have. The site should go live with the release that carries it.
 
 ## Change log
 
 - 2026-10-27 — First version, with the build of WEBSITE_SPEC §3's one front door.
+- 2026-10-27 — The home page fits one screen: What your AI does and The details move to prompt.html and details.html,
+  with shorter words (step 3 now fits two lines); a refused Copy prompt opens prompt.html#select.

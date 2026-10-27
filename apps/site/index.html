@@ -118,7 +118,6 @@
       /* On a wide screen the steps are on the first screen, so arriving at #steps (create-html.html sends people
          there) leaves the page at its top; stacked, it lands on the steps. */
       #steps { scroll-margin-top: 100vh; }
-      [id][tabindex="-1"]:focus { outline: none; }
 
       .btn {
         appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
@@ -131,7 +130,6 @@
       .btn:active { transform: scale(0.98); }
       .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
       .btn.primary:hover { background: #2a2a2a; }
-      .btn.ghost { padding: 4px 10px; font-size: 13px; gap: 6px; border-radius: 7px; }
       .btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
       /* Copy: the icon and the label cross-fade to a check and "Copied", and ease back; the button keeps its width. */
       .ics, .labels { display: inline-grid; justify-items: start; }
@@ -309,21 +307,6 @@
       .tryit:hover svg { transform: translateX(2px); }
       .tab:focus-visible, .pause:focus-visible, .tryit:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
-      /* ---------- What your AI does, and The details: words left, their boxes right, on the hero's columns ---------- */
-      .sect { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; border-top: 1px solid var(--line); padding: 44px 0 52px; }
-      .sect h2 { font-size: 32px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1; color: var(--strong); margin: 0 0 14px; }
-      .sect p { font-size: 15.5px; color: var(--muted); margin: 0 0 12px; max-width: 30em; }
-      .sect p b { font-weight: 600; color: var(--strong); }
-      .sect p.then { margin-top: 18px; }
-      .sect code { font: 13.5px var(--mono); color: var(--ink); }
-      .sect > .box { margin-top: 52px; scroll-margin-top: 24px; }
-      .sect .box + p { margin-top: 18px; }
-      /* A labelled box of words to copy: its Copy sits above them, never over them. */
-      .box { border: 1px solid var(--line); border-radius: 12px; background: #fbfbf9; overflow: hidden; }
-      .box .bh { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
-      .box pre { margin: 0; padding: 14px 16px 16px; font: 12.5px/1.65 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
-      .sect .box .prose { margin: 0; padding: 14px 16px 16px; max-width: none; font-size: 14px; line-height: 1.6; color: var(--ink); overflow-wrap: anywhere; }
-
       footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
       .rise { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); transition-delay: calc(var(--i, 0) * 80ms); }
@@ -346,8 +329,6 @@
         .intro, .start, .ad { grid-area: auto; }
         .hero > .ad { margin-top: 20px; margin-bottom: -4px; }
         #steps { scroll-margin-top: 16px; }
-        .sect { grid-template-columns: 1fr; gap: 24px; padding: 36px 0 44px; }
-        .sect > .box { margin-top: 0; }
       }
       @media (max-width: 680px) {
         main { padding: 0 20px; }
@@ -386,20 +367,20 @@
         <div class="intro" data-pipeup-id="intro">
           <h1 class="rise">Feedback for<br />any HTML.</h1>
           <p class="lede rise" style="--i: 1">
-            People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Each
-            person's comments stay in their own browser until they send them to you.
+            People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Comments
+            stay in each person's browser until they send them to you.
           </p>
         </div>
 
         <div class="start" id="steps" data-pipeup-id="steps">
           <ol class="steps rise" style="--i: 2">
-            <li><span class="n">1</span><span class="first"><b>Copy the prompt</b><button class="btn primary" type="button" data-scopy="b"><span class="ics"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy prompt</span><span class="said" aria-hidden="true">Copied</span></span></button><span>One copy per page. <a class="quiet" href="#the-prompt" data-ease>What it says</a></span></span></li>
-            <li><span class="n">2</span><span><b>Paste it into your AI</b> with your HTML file: Claude, ChatGPT or any chat. Save the new file it gives back.</span></li>
-            <li><span class="n">3</span><span><b>Send that file</b> with the note your AI writes. People open it in a web browser, comment, and send you their comments. <a class="quiet" href="add-comments.html">How reviewing works</a></span></li>
-            <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes and gives you the file again.</span></li>
+            <li><span class="n">1</span><span class="first"><b>Copy the prompt</b><button class="btn primary" type="button" data-scopy="b"><span class="ics"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy prompt</span><span class="said" aria-hidden="true">Copied</span></span></button><span>One copy per page. <a class="quiet" href="prompt.html">What it says</a></span></span></li>
+            <li><span class="n">2</span><span><b>Paste it into your AI</b> with your HTML file: Claude, ChatGPT or any chat. Save the file it gives back.</span></li>
+            <li><span class="n">3</span><span><b>Send that file</b> with your AI's note. People comment in their browser and send them back. <a class="quiet" href="add-comments.html">How reviewing works</a></span></li>
+            <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes.</span></li>
           </ol>
-          <p class="try rise" style="--i: 3"><span class="keys">Try it on this page: press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span><span class="touch">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</span></p>
-          <p class="small rise" style="--i: 3">Adding it yourself? <a href="#details" data-ease>See the script tag, licence and size.</a></p>
+          <p class="try rise" style="--i: 3"><span class="keys">Try it on this page: press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click anything.</span><span class="touch">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</span></p>
+          <p class="small rise" style="--i: 3">Adding it yourself? <a href="details.html">The script tag, licence and size.</a></p>
         </div>
         <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides, a website and with the keyboard">
           <div class="viewport" data-pipeup-id="showcase" data-pipeup-label="Showcase">
@@ -530,78 +511,6 @@
         </div>
       </section>
 
-      <section class="sect" id="what-your-ai-does" data-pipeup-id="what-your-ai-does">
-        <div>
-          <h2 class="rise">What your AI does</h2>
-          <div class="rise" style="--i: 1">
-            <p>
-              The prompt asks your AI to add one line to your HTML file, and a key that keeps this page's comments apart from
-              your other pages. The key isn't tied to an account: it travels with the page, so anyone who has the page has it.
-              Nothing else on the page changes, and there is nothing to install. If your AI is making the page, add the prompt
-              to your request.
-            </p>
-            <p>
-              Your AI gives you back the new file to save, and a note to send with it. <b>Open the new file in your web browser
-              before you send it:</b> a comment button in the bottom-right corner means it worked.
-            </p>
-            <p class="then">If your AI didn't write the note, send this one:</p>
-            <div class="box" role="group" aria-labelledby="note-title" data-pipeup-label="A note for your reviewers">
-              <div class="bh"><span id="note-title">A note for your reviewers</span><button class="btn ghost" type="button" data-scopy="note" aria-label="Copy the note"><span class="ics"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy</span><span class="said" aria-hidden="true">Copied</span></span></button></div>
-              <p class="prose" data-sprompt="note"></p>
-            </div>
-            <p>
-              Each person sends you their own comments, and nobody sees anyone else's. Paste them into the same chat and your
-              AI makes the changes. Gathering everyone's comments in one place needs a service to hold them: see
-              <a href="addons/share.html">Share</a>.
-            </p>
-          </div>
-        </div>
-        <div class="box rise" id="the-prompt" tabindex="-1" style="--i: 2" role="group" aria-labelledby="prompt-title" data-pipeup-label="The prompt">
-          <div class="bh"><span id="prompt-title">The prompt</span><button class="btn ghost" type="button" data-scopy="b" aria-label="Copy the prompt"><span class="ics"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy</span><span class="said" aria-hidden="true">Copied</span></span></button></div>
-          <pre data-sprompt="b"></pre>
-        </div>
-      </section>
-
-      <section class="sect" id="details" tabindex="-1" data-pipeup-id="details">
-        <div>
-          <h2 class="rise">The details</h2>
-          <div class="rise" style="--i: 1">
-            <p>What Pipeup sends, what it does to your page, and how to add it without an AI.</p>
-            <p>
-              <b>Adding it by hand.</b> Put the two lines in the box on your page. The script line alone starts Pipeup; the key
-              keeps the page's comments with it when the file is moved or renamed, and each page needs its own. Readers'
-              browsers load the file from jsDelivr, pinned to this version by its integrity hash, or you can keep
-              <a href="pipeup.min.js">a copy of pipeup.min.js</a> next to your page.
-            </p>
-            <p>
-              <b>What it sends.</b> Nothing. Comments stay in each reviewer's browser and leave only when they copy and send
-              them. Clearing browser data, or closing a private window, removes comments not yet sent. Add-ons that send
-              anything say what, and to whom, on their own pages.
-            </p>
-            <p>
-              <b>What it does to your page.</b> It adds one element of its own, with everything it draws inside it, and never
-              restyles or moves your page. It works on pages a framework renders and keeps up when a single-page app changes
-              route.
-            </p>
-            <p>
-              <b>Using Claude Code or Codex?</b> Install the skills once and “add comments to this page” is enough:
-              <code>npx --yes pipeup@0 skills install</code> says what it will write and asks first; <code>skills remove</code>
-              takes them out.
-            </p>
-            <p>
-              <b>Licence and version.</b> Free and open source under the MIT licence; source and releases are on
-              <a href="https://github.com/pipeup-ai/pipeup">GitHub</a>. Version {{VERSION}}
-              (<a href="https://github.com/pipeup-ai/pipeup/releases/tag/v{{VERSION}}">what changed</a>): one file of about
-              {{SIZE}} compressed, with no dependencies.
-            </p>
-          </div>
-        </div>
-        <div class="box rise" style="--i: 2" role="group" aria-labelledby="lines-title" data-pipeup-label="For your page">
-          <div class="bh"><span id="lines-title">For your page</span><button class="btn ghost" type="button" data-scopy="lines" aria-label="Copy the two lines"><span class="ics"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy</span><span class="said" aria-hidden="true">Copied</span></span></button></div>
-          <pre data-sprompt="lines"></pre>
-        </div>
-      </section>
-
       <footer>
         <div class="more-links">
         <a class="agents-link addons-link" href="addons.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4a2 2 0 1 1 4 0v1h3a1 1 0 0 1 1 1v3h-1a2 2 0 1 0 0 4h1v3a1 1 0 0 1-1 1h-3v-1a2 2 0 1 0-4 0v1H7a1 1 0 0 1-1-1v-3h1a2 2 0 1 0 0-4H6V6a1 1 0 0 1 1-1h3V4z"/></svg>Add-ons</a>
@@ -644,18 +553,6 @@
         place();
         stacked.addEventListener("change", place);
       })();
-
-      // "What it says" and "See the script tag…" ease down to what they name (at once with reduced motion), and focus it.
-      for (const a of document.querySelectorAll("a[data-ease]")) {
-        a.addEventListener("click", (e) => {
-          const to = document.querySelector(a.hash);
-          if (!to) return;
-          e.preventDefault();
-          to.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
-          to.focus({ preventScroll: true });
-          history.replaceState(null, "", a.hash);
-        });
-      }
 
       // ---------- The showcase: each scene acts out a comment being added, then the next slides in ----------
       (() => {

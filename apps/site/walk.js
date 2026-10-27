@@ -1,4 +1,6 @@
-// The reviewer help page: its scene, the fallback that eases open, and the footer menu. Its prompts are in prompts.js.
+// The pages beside the home page (the reviewer help page, What your AI does, The details): the reviewer help page's
+// scene and the fallback that eases open, and on every one the shortcut's labels and the footer menu. Their prompts are
+// in prompts.js.
 (() => {
 const isMac = /Mac|iP(hone|ad|od)/.test(navigator.platform);
 if (!isMac) {

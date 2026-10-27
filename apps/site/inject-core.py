@@ -1,5 +1,5 @@
 """Fills in what the site says about the copy of Pipeup it carries, and checks it: the core's integrity hash in the
-prompts and the lines for a page, and the version and compressed size in the home page's The details.
+prompts and the lines for a page, and the version and compressed size in The details (details.html).
 
 Run by `apps/site/build.sh`, once every page is in place. The version is the one the site's pipeup.min.js was built as
 (libs/ts/pipeup/package.json), and the size is that file's, gzipped as the size budget measures it; the build stops if
@@ -14,7 +14,7 @@ root = pathlib.Path(__file__).resolve().parents[2]
 out = pathlib.Path(sys.argv[1])
 version = json.loads((root / "libs/ts/pipeup/package.json").read_text())["version"]
 lib = (out / "pipeup.min.js").read_bytes()
-pages = [out / n for n in ("index.html", "index.html.md", "add-comments.html", "add-comments.html.md", "create-html.html.md", "llms.txt", "llms-full.txt")]
+pages = [out / n for n in ("index.html", "index.html.md", "prompt.html", "prompt.html.md", "details.html", "details.html.md", "add-comments.html", "add-comments.html.md", "create-html.html.md", "llms.txt", "llms-full.txt")]
 script = out / "prompts.js"
 
 def fail(why: str) -> None:

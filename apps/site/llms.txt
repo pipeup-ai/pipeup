@@ -14,7 +14,7 @@ The skills in this guide can be installed instead of pasted. Claude Code: `/plug
 
 ## Add Pipeup to an HTML page
 
-The home page gives authors four steps: copy the prompt, paste it into their AI with their HTML file and save the new file it gives back, send that file with the note the AI writes, and paste the comments they get back into the AI. The prompt asks for the steps below.
+The home page gives authors four steps: copy the prompt, paste it into their AI with their HTML file and save the file it gives back, send that file with the AI's note, and paste the comments they get back into the AI. The prompt (shown in full on What your AI does, prompt.html) asks for the steps below.
 
 1. Add the script tag just before `</body>`, pinned to a release with its integrity hash: `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>`. Only edit the HTML file; there is nothing to download, fetch or run. The reader's browser loads the script when the page is opened.
 2. On the `<html>` element, add `data-pipeup-doc="<key>"`. A key can be made in any browser with `await Pipeup.newDocumentAttribute()`. Keep it exactly as it is once people have commented. Each page needs a key of its own: never copy one page's key onto another, or their comments mix.
@@ -49,6 +49,8 @@ The site is https://pipeup-ai.github.io/pipeup/; the source is https://github.co
 
 - [Everything in one file](https://pipeup-ai.github.io/pipeup/llms-full.txt): this guide plus all three skills.
 - [This site as Markdown](https://pipeup-ai.github.io/pipeup/index.html.md): the home page's content.
+- [What your AI does, as Markdown](https://pipeup-ai.github.io/pipeup/prompt.html.md): what the home page's prompt asks for, and the note for reviewers.
+- [The details, as Markdown](https://pipeup-ai.github.io/pipeup/details.html.md): the two lines for adding Pipeup by hand, what it sends, and its licence, version and size.
 - [The reviewer help page, as Markdown](https://pipeup-ai.github.io/pipeup/add-comments.html.md): for people who were sent a page to comment on.
 - [Making your own add-on, as Markdown](https://pipeup-ai.github.io/pipeup/addons-guide.html.md): the guide, including inside a company and setting up Send to Git.
 - [Add-ons as Markdown](https://pipeup-ai.github.io/pipeup/addons.html.md): every add-on in one line, each with a link to its own page's Markdown copy (https://pipeup-ai.github.io/pipeup/addons/<id>.html.md: what it sends, and how to add it).
