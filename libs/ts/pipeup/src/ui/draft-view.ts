@@ -68,6 +68,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   const you = h("div", { class: "you" }, say, nf);
   let shown = "";
   let saving = false;
+  let naming = false;
 
   /** Shows the current name (or animal) on the avatar and the quiet line. */
   const sync = () => {
@@ -92,6 +93,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   };
 
   const setNaming = (on: boolean) => {
+    naming = on;
     you.classList.toggle("naming", on);
     inert(say, on);
     inert(nf, !on);
@@ -106,9 +108,23 @@ export function renderDraft(o: DraftOptions): DraftBox {
     field.select();
   }
 
-  const closeName = () => {
+  /** Closes the name field; `back` returns to the writing box (Enter and Escape), a click elsewhere keeps its focus. */
+  const closeName = (back = true) => {
     setNaming(false);
-    comp.focus();
+    if (back) comp.focus();
+  };
+
+  /** Saves the typed name (an empty or unchanged one keeps the name), then closes the field. */
+  const saveName = (back: boolean) => {
+    const value = field.value.trim();
+    if (!value || value === o.name()) return closeName(back);
+    if (saving) return;
+    saving = true;
+    void o.rename(value).finally(() => {
+      saving = false;
+      sync();
+      closeName(back);
+    });
   };
 
   me.addEventListener("click", openName);
@@ -120,16 +136,12 @@ export function renderDraft(o: DraftOptions): DraftBox {
       closeName();
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const value = field.value.trim();
-      if (!value || value === o.name()) return closeName();
-      if (saving) return;
-      saving = true;
-      void o.rename(value).finally(() => {
-        saving = false;
-        sync();
-        closeName();
-      });
+      saveName(true);
     }
+  });
+  // Leaving the field saves too, as the menu's name row does; Escape has already closed it, so it doesn't count.
+  field.addEventListener("blur", () => {
+    if (naming && !saving) saveName(false);
   });
 
   sync();

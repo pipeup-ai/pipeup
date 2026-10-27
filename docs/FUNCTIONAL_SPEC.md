@@ -105,7 +105,9 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
   - a **reserved comment gutter**: a page can lay itself out around the space comments need (see
     §9), so its content stays centred in what remains;
   - for decks, which element is a **slide**.
-- Pages with none of this markup still work; Pipeup falls back to its own judgement.
+- Pages with none of this markup still work; Pipeup falls back to its own judgement. The script line alone starts
+  Pipeup; a page without a document identity is known by its address. A page that starts Pipeup from its own code
+  can turn the automatic start off.
 - Pipeup never requires the author to restructure or restyle their page, and never moves or
   restyles the page itself.
 
@@ -181,7 +183,9 @@ any of them off.
   Korean) only cancels the composition. On a deck, Tab or a click on nothing in particular leaves a waiting box
   where it is, on its own slide.
 - **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
-  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
+  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name"). That
+  opens a name field in place: **Enter** or leaving the field saves the name, as the menu's name row does, so a name
+  typed before clicking into the comment box signs the comment; **Esc** cancels.
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
 - The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
@@ -1822,3 +1826,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — By touch, comment mode's hint is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done (section 5).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).

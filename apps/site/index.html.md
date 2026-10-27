@@ -14,7 +14,7 @@ On the home page, a **Quick start** under the first screen has one Copy prompt b
 Your AI agent adds Pipeup to your page. It edits only the HTML file.
 
 1. **Copy prompt**: the same prompt as "Create comment-enabled HTML" below, shown in full on the page.
-2. Paste it into your AI (Claude, Codex or any chat), with your HTML file.
+2. Paste it into your AI (Claude, Codex or any chat), with your HTML file. One copy per page: each copy carries a key of its own.
 3. Open the page and press Shift+Option+C (Shift+Alt+C on Windows and Linux), or tap the comment button on a phone, and comment.
 
 ## 1. Add comments to an HTML (someone sent you an HTML file)
@@ -32,7 +32,7 @@ Comments stay in your browser until you copy and send them.
 
 You want feedback on it.
 
-1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
+1. Add the **Copy prompt** text to your request to your AI, or paste it afterwards. It puts Pipeup in the page: the script tag above, `data-pipeup-doc="<key>"` on `<html>` (a key made with `await Pipeup.newDocumentAttribute()`, kept exactly as it is from then on, and never reused on another page: each page gets a key of its own, or their comments mix), `data-pipeup-id` on stable blocks, `data-pipeup-label` on charts and images, `data-pipeup-ignore` on navigation and toolbars, and no change to layout.
 2. Share the file: email, chat, a drive or a website. It works straight from the file.
 3. People comment on the page.
 4. Hand their comments to your AI: paste them (Copy comments › As Markdown), or use **Copy a prompt for my agent** (with the [agents add-on](https://pipeup-ai.github.io/pipeup/addons/agents.html.md)) so it reads them, makes the changes you approve, and answers each comment in the page. It marks a comment addressed; you close it.
