@@ -171,7 +171,7 @@
 </style>
 
 <main>
-  <p class="eyebrow">Visual spec · website · 27 October 2026 · proposed, not built</p>
+  <p class="eyebrow">Visual spec · website · 27 October 2026 · approved, not built</p>
   <h1>One front door</h1>
   <p class="lede">The home page goes back to one way in. Instead of two buttons that ask visitors to pick a role, the first screen shows the whole round trip in four steps, with one Copy prompt button in the first. The reviewer page stays, as help that authors link to rather than a door on the home page.</p>
 
@@ -473,7 +473,7 @@ The full guide: https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL
         <div style="max-width: 1120px; margin: 0 auto; padding: 0 32px"><footer><span class="pill">Add-ons</span><span>For agents</span></footer></div>
       </div>
     </div>
-    <p class="cap">The version, size and hash come from the copy of Pipeup the site carries, so they can't go stale (open question 1). <span class="ref">I8 I13 I14 I22 I25 I34 I35 I36</span></p>
+    <p class="cap">The version, size and hash come from the copy of Pipeup the site carries, so they can't go stale (decision 1). <span class="ref">I8 I13 I14 I22 I25 I34 I35 I36</span></p>
   </section>
 
   <section>
@@ -536,8 +536,8 @@ The full guide: https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL
   </section>
 
   <section>
-    <h2>Proposed spec wording</h2>
-    <p class="what">WEBSITE_SPEC §3. Items 1 and 2 are replaced, 2a is new, and item 3 shrinks to the reviewer help page. Functional requirements only. <span class="spec-key"><span class="ins" style="background: var(--add); color: var(--addk); border-radius: 4px; padding: 0 4px">green</span> is new.</span></p>
+    <h2>The spec wording</h2>
+    <p class="what">As written into WEBSITE_SPEC §3 (in short here; the spec has it in full). Items 1 and 2 are replaced, 2a is new, and item 3 shrinks to the reviewer help page. Functional requirements only. <span class="spec-key"><span class="ins" style="background: var(--add); color: var(--addk); border-radius: 4px; padding: 0 4px">green</span> is new.</span></p>
     <div class="spec">
       <p><b>1. First screen</b>: the headline “Feedback for any HTML.”, one sentence on the value <span class="ins">that also says each person's comments stay in their own browser until they send them</span>, and the <b>showcase</b> beside them (tops aligned).</p>
       <p><span class="ins">Under the sentence, <b>four numbered steps</b> take an author from their HTML file to their reviewers and back: copy the prompt; paste it into an AI (Claude, ChatGPT or any chat) with the HTML file, and save the new file it gives back; send that file with the note the AI writes, and people open it in a web browser, comment, and send their comments back; paste their comments into the AI, which makes the changes. Each step is at most two lines on a computer, and the first screen still fits a 1280 × 800 window. The first step holds the page's one main button, <b>Copy prompt</b>, with “one copy per page” and a link that eases down to the prompt's words. The third step ends with a quiet link to the reviewer help page. The first screen has no other button and no choice of paths.</span></p>
@@ -553,22 +553,22 @@ The full guide: https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL
   </section>
 
   <section>
-    <h2>Three decisions for you</h2>
+    <h2>Three decisions, as decided</h2>
     <div class="q">
       <div class="card">
         <h3>1. Show the version, size and licence again?</h3>
         <p>They were taken off on 15 October: the size had gone out of date and the facts line read as marketing. In the study, Theo and Lee both stalled without them <span class="ref">I14</span>.</p>
-        <p class="rec"><b>Recommended: yes</b>, as one sentence in The details, filled in from the copy of Pipeup the site carries, with a site check that fails if the two differ.</p>
+        <p class="rec"><b>Decided: yes</b>, as one sentence in The details, filled in from the copy of Pipeup the site carries, with a site check that fails if the two differ.</p>
       </div>
       <div class="card">
         <h3>2. Retire create-html.html, or keep it as a short page?</h3>
         <p>Keeping it gives authors a second place to start, which is the split this change removes. Retiring it keeps one door, and its address still lands on the steps.</p>
-        <p class="rec"><b>Recommended: retire it</b>, with the address opening the home page's steps.</p>
+        <p class="rec"><b>Decided: retire it</b>, with the address opening the home page's steps.</p>
       </div>
       <div class="card">
         <h3>3. Keep “Copy comments › As Markdown” in the reviewer note?</h3>
         <p>As Markdown opens with instructions for coding agents, which reviewers see in their reply <span class="ref">I7</span>. As text reads well, but drops where each comment is, which the author's AI needs.</p>
-        <p class="rec"><b>Recommended: keep As Markdown</b>, and in the same release rewrite its header in the library so it reads to a person and still guides an AI (a library change, spec first, for next).</p>
+        <p class="rec"><b>Decided: keep As Markdown</b>, and in the same release rewrite its header in the library so it reads to a person and still guides an AI (a library change, spec first, for next).</p>
       </div>
     </div>
   </section>
