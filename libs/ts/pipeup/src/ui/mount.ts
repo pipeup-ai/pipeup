@@ -187,10 +187,12 @@ export async function comments(options?: { all?: boolean }): Promise<AgentCommen
   return (await current).comments(options);
 }
 
-/** Pages that carry data-pipeup-doc mount themselves, unless data-pipeup-auto="off". */
+/**
+ * The script line alone is enough: every page mounts itself, unless data-pipeup-auto="off". A page without
+ * data-pipeup-doc is known by its address.
+ */
 export function autoMount(): void {
-  const html = document.documentElement;
-  if (!html.hasAttribute("data-pipeup-doc") || html.getAttribute("data-pipeup-auto") === "off") return;
+  if (document.documentElement.getAttribute("data-pipeup-auto") === "off") return;
   const go = () => void mount().catch((e: unknown) => console.error(e));
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go, { once: true });
   else go();

@@ -7,6 +7,12 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The script line alone starts Pipeup.** A page with only `<script src="…/pipeup.min.js"></script>` loaded Pipeup but never started it, with no message. Every page now starts itself unless `data-pipeup-auto="off"`; a page without `data-pipeup-doc` is known by its address.
+- **A name typed in the comment box is kept.** Typing a name in the new comment's name field and then clicking into the comment box dropped the name, so the comment was signed with your animal. Leaving the field now saves it, as the menu's name row does; Esc still cancels.
+- Website: every Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only. Reusing one prompt for several pages gave them one key, so one page's comments showed on another.
+
 ### Changed
 
 - Website: the home page has a Quick start under the first screen: three steps and the prompt shown in full, with one Copy prompt button for your AI agent. The "Create comment-enabled HTML" prompt now fits a page you already have, and Copy prompt buttons ease back from "Copied".

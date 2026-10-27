@@ -16,7 +16,9 @@ colour on a tint of it) at the top right of their comments; once they add a name
 identity row at the top of the menu) the avatar shows their initial in the same colours. Copy for AI names unnamed reviewers by
 their colour and animal.
 
-As a classic script (also works from `file://`), it mounts itself on pages that carry a document id:
+As a classic script (also works from `file://`), it mounts itself (`data-pipeup-auto="off"` stops that). The script
+line alone is enough; a document id on `<html>` keeps comments with the page wherever it is opened, instead of with
+its address:
 
 ```html
 <html data-pipeup-doc="<id>:<key>">
