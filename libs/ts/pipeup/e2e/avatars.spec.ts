@@ -121,6 +121,38 @@ test("the first comment needs no name; the draft says who you are and takes a na
   await expect(th.locator(".root > .hdr > .av").last()).toHaveText("S");
 });
 
+test("a name typed in the draft is kept when you click away from the field; Escape still cancels it", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await showComments(page);
+  const me = await animal(page);
+  await selectWords(page, "#p1", "pricing changes");
+  await page.locator(".selbar.show button").click();
+  const draft = page.locator(".draft");
+
+  // Escape closes the field without saving.
+  await draft.getByRole("button", { name: "add your name" }).click();
+  await page.keyboard.type("Lee");
+  await page.keyboard.press("Escape");
+  await expect(draft.locator(".say")).toHaveText(`You're ${me} · add your name`);
+  await expect(draft.getByRole("textbox", { name: "Comment" })).toBeFocused();
+
+  // Typing a name and then clicking into the comment box (no Enter) saves it.
+  await draft.getByRole("button", { name: "add your name" }).click();
+  await page.keyboard.type("Ada");
+  const box = draft.getByRole("textbox", { name: "Comment" });
+  await box.click();
+  await expect(draft.locator(".say")).toHaveText("Ada · change");
+  await expect(draft.locator(".nf")).toHaveAttribute("inert", "");
+  await expect(box).toBeFocused();
+  await page.keyboard.type("Who is this for?");
+  await page.keyboard.press("Enter");
+  const th = page.locator(".th", { hasText: "Who is this for?" });
+  await th.locator(".root").hover();
+  await expect(th.locator(".who").first()).toHaveText("Ada");
+});
+
 test("one identity is the same animal after a reload", async ({ page }) => {
   await open(page, "doc.html");
   await showComments(page);
