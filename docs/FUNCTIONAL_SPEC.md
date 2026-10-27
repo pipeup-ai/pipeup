@@ -473,8 +473,8 @@ any of them off.
     and leaves the menu open; the row then shows the name and avatar again. The menu never closes
     while the name is being edited;
   - **Copy comments**, one row that opens to its two choices beneath it (a second click, or → from the
-    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown for
-    AI, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
+    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown a
+    person can read and an AI can act on, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
     then just the names and words (§7a). Each has a one-line tooltip, and the choices are folded each time the
     menu opens. There is no copy-format setting;
   - **Theme**, showing Automatic, Light or Dark; each press moves on to the next, and the menu stays open so
@@ -549,13 +549,23 @@ any of them off.
 
 ## 7a. Copying comments for AI
 
-- Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy comments › As Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
-  for each one: where it is (slide or section, then the element), the element's stable identifier,
-  the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copying all comments as Markdown adds the page title and address, the export time, the number of open threads
-  (noting resolved ones are left out) and a one-line instruction to work through them and say what
-  changed.
+- Copying a thread or copying all produces text a person can read in an email or chat reply, and an AI assistant
+  can act on directly. Reviewers send it back to the author (§11); authors paste it into an AI.
+- **Copy comments › As Markdown** and a thread's own copy button give **Markdown**:
+  - Copying all opens with what a person needs, and nothing aimed at an AI: the page's title ("Comments on …"); how
+    many open comments there are and who wrote them; when they were copied, as a date and a time with its time zone;
+    how many resolved ones are left out; and the page's address.
+  - Then, for each thread, a numbered heading saying where it is (slide or section, then the element); the words it
+    quotes, or where it is pinned, in a sentence; the comment and its replies as a list, each with who and how long
+    before copying; and, when an agent marked it addressed, who did and their note.
+  - Each thread ends with one line for an AI: whether it is open, addressed or resolved; the thread's id, which an
+    agent needs to answer it; and the element's stable identifier, saying whether the comment is on that element or
+    inside it. These are the only ids in the text.
+  - After the threads, one paragraph, marked as being for an AI assistant, says to work through the open comments in
+    order, say what changed or why not, answer each in its thread with Pipeup (naming the skill that says how) and
+    mark it addressed, and never resolve it: the author does.
+  - A thread's own copy has its heading (without a number), the page's address and the same lines, without the
+    opening or the closing paragraph.
 - **Copy comments › As text** gives **plain text** — where it is, then just the names and words.
 - Where a thread is and the words it quotes are copied the same whether or not its slide or view is showing.
 - There is no copy-format setting.
@@ -1907,3 +1917,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
 - 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
+- 2026-10-27 — Copy comments › As Markdown reads as a message to a person and still guides an AI (usability study, issue I7). It opens with the title, the open comments and who wrote them, when they were copied in words, and the address; each thread leads with where it is, the quoted words or pin in a sentence, and the comments; its state, its id and the element's identifier move to its last line; replies carry no ids; and the instruction for an AI moves after the threads (section 7a).

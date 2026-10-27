@@ -67,7 +67,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 ### Gaps found while drafting (to fix by 0.6)
 
 1. **Thread ids are missing from Copy-for-AI output.** *(Closed in 0.3.0: thread and comment ids are in the output.)* `pipeup-apply` must reply to a specific
-   thread, so each `## Thread N` block needs `- **Thread:** <id>` (and comment ids for replies).
+   thread, so each thread carries its id (now on its last line; replies carry none, as nothing answers a reply by id).
 2. **Agents need their own identity.** *(Closed: `pipeup agent` and `pipeup reply`; the page lists the keys it trusts.)* `pipeup reply` signs as an "Agent" profile kept by the command line,
    named after the tool (for example "Claude"), so people can see which comments an agent wrote.
 3. **Ids must survive edits.** The apply skill tells agents never to rename or remove a

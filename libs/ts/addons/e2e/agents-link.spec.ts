@@ -88,7 +88,7 @@ test("sharing is off until the person switches it on; then the agent reads and a
   await share(page).click();
   await expect(share(page)).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".menu .sec").getByText("Sharing comments with Claude")).toBeVisible();
-  await expect.poll(async () => (await pipeup("comments", file)).stdout).toContain(`- **Thread:** ${id}`);
+  await expect.poll(async () => (await pipeup("comments", file)).stdout).toContain(`Open · thread \`${id}\``);
   const data = JSON.parse((await pipeup("comments", file, "--json")).stdout);
   expect(data.threads[0]).toMatchObject({ id, state: "open" });
 

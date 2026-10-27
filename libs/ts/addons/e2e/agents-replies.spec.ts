@@ -51,7 +51,7 @@ test("an agent reads the comments, answers in the replies file, and the person c
 
   // Reading: Markdown with the thread id, and the same threads as data.
   const read = await page.evaluate(() => (window as any).Pipeup.comments());
-  expect(read.markdown).toContain(`- **Thread:** ${id}`);
+  expect(read.markdown).toContain(`Open · thread \`${id}\``);
   expect(read.threads[0]).toMatchObject({
     id,
     state: "open",

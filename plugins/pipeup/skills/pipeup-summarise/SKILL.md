@@ -11,12 +11,13 @@ Written for Pipeup 0.8.2 This skill is published at https://pipeup-ai.github.io/
 
 The input is the Markdown a reviewer copied with **Copy comments › As Markdown** and pasted into the conversation, or, if you
 can run the page in a browser, `(await Pipeup.comments()).markdown` (add `{ all: true }` for resolved threads). It
-starts with `# Review comments:`. Use it directly. A thread marked "open, addressed" has an agent's note: report it as
+starts with `# Comments on` (`# Review comments:` on older pages). Use it directly. A thread whose last line starts
+"Open, addressed" has an agent's note: report it as
 answered, still waiting for the author to close it. Summarising changes nothing, so don't reply in the page.
 
-Each thread in that text says **where** it is (slide or section › element), the element's
-`data-pipeup-id`, the **quoted text** or **pin position**, who started it and when, and the
-comments with replies nested one level.
+Each thread in that text has a numbered heading saying **where** it is (slide or section › element), then
+the **quoted words** or **pin position**, the comments with replies nested one level, each with who and when, and
+a last line with its state, its id and the element's `data-pipeup-id`.
 
 ## 2. Read it as a reviewer would
 
@@ -33,7 +34,7 @@ comments with replies nested one level.
 ## 3. Report
 
 Lead with the decisions the author needs to make, then clear changes, then questions. For each
-item, give the theme, the reviewers involved, and where it is (use the thread's "Where" line so
+item, give the theme, the reviewers involved, and where it is (use the thread's heading so
 the author can find it). Keep it short; link each item to its thread number.
 
 Do not edit the page or reply to threads — that is `pipeup-apply`, and only when asked.

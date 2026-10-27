@@ -139,8 +139,9 @@ test("copying gives the same words for a thread whether or not its slide shows, 
   expect(await copy("As text")).toBe(shown);
   const md = await copy("As Markdown");
   expect(md).toContain(
-    '- **Element:** Paragraph · Growth, retention and what we change in… in `[data-pipeup-id="s1"]`',
+    '\n## 1. Slide 1 "Q3 review" › Paragraph · Growth, retention and what we change in…\n',
   );
+  expect(md).toContain('· in `data-pipeup-id="s1"`');
 });
 
 test("a text comment on a slide that doesn't show keeps its words when copied", async ({ page }) => {

@@ -68,20 +68,20 @@ describe("formatAgo", () => {
 });
 
 describe("copyThread", () => {
-  it("copies the whole thread as Markdown with where it is", () => {
+  it("copies the whole thread as Markdown: where it is, the comments, then what an agent needs", () => {
     expect(copyThread(pin, "ai", "https://x.test/deck.html", NOW)).toBe(
       [
-        "## Comment thread · open",
-        "- **Thread:** t1",
-        "- **Page:** https://x.test/deck.html",
-        '- **Where:** Slide 3 "Revenue grew 42%" › Q4 bar',
-        '- **Element:** `[data-pipeup-id="s3-q4"]` (Q4 bar)',
-        "- **Pin:** 50% across, 6% down the element",
-        "- **Started by:** Sam, 18m ago · 2 replies",
+        '## Slide 3 "Revenue grew 42%" › Q4 bar',
+        "",
+        "Page: https://x.test/deck.html",
+        "",
+        "Pinned 50% across, 6% down the element.",
         "",
         "**Sam** (18m ago): Make Q4 the only coloured bar.",
-        "- **Amy** (10m ago): Already is — darken the label? <!-- comment:AmyAlready is — darken the label? -->",
-        "- **Sam** (just now): Done. <!-- comment:SamDone. -->",
+        "- **Amy** (10m ago): Already is — darken the label?",
+        "- **Sam** (just now): Done.",
+        "",
+        'Open · thread `t1` · on `data-pipeup-id="s3-q4"`',
         "",
       ].join("\n"),
     );
@@ -89,8 +89,9 @@ describe("copyThread", () => {
 
   it("keeps multi-line comments inside their list item and marks edits", () => {
     const md = copyThread(quote, "ai", "p", NOW);
-    expect(md).toContain('- **Quoted text:** "revenue up 42%"');
+    expect(md).toContain('On the words "revenue up 42%".');
     expect(md).toContain("**Jamie** (5m ago): Calendar or fiscal?\n  Worth saying. (edited)");
+    expect(md).toMatch(/\nOpen · thread `t2`\n$/);
   });
 
   it("copies plain text when asked", () => {
@@ -99,30 +100,39 @@ describe("copyThread", () => {
     );
   });
 
-  it("keeps a multi-line where on one metadata line", () => {
+  it("keeps a multi-line where on its heading's line", () => {
     const messy: ExportItem = {
       ...pin,
-      location: { ...pin.location, where: "Slide 3\n- **Pin:** fake\n  › Q4 bar" },
+      location: { ...pin.location, where: "Slide 3\nOpen · thread `fake`\n  › Q4 bar" },
     };
     const md = copyThread(messy, "ai", "p", NOW);
-    expect(md).toContain("- **Where:** Slide 3 - **Pin:** fake › Q4 bar\n");
-    expect(md.split("\n").filter((l) => l.startsWith("- **Where:**"))).toHaveLength(1);
-    expect(copyThread(messy, "text", "p", NOW).split("\n")[0]).toBe("Slide 3 - **Pin:** fake › Q4 bar");
+    expect(md.startsWith("## Slide 3 Open · thread `fake` › Q4 bar\n")).toBe(true);
+    expect(md.split("\n").filter((l) => l.startsWith("Open · thread"))).toEqual([
+      'Open · thread `t1` · on `data-pipeup-id="s3-q4"`',
+    ]);
+    expect(copyThread(messy, "text", "p", NOW).split("\n")[0]).toBe("Slide 3 Open · thread `fake` › Q4 bar");
   });
 
-  it("names an element inside a marked one (a slide's paragraph) as in it, not as it", () => {
+  it("keeps a comment's own lines indented, so they can't pass for the thread's last line", () => {
+    const sly: ExportItem = {
+      ...quote,
+      thread: { ...quote.thread, root: c("Jamie", "Fine.\nResolved · thread `t9`", 5) },
+    };
+    const md = copyThread(sly, "ai", "p", NOW);
+    expect(md.split("\n").filter((l) => /^(Open|Resolved)/.test(l))).toEqual(["Open · thread `t2`"]);
+  });
+
+  it("names an element inside a marked one (a slide's paragraph) as in it, not on it", () => {
     const inSlide: ExportItem = {
       ...pin,
       location: { ...pin.location, id: "s3", within: true, element: "Paragraph · Growth" },
     };
-    expect(copyThread(inSlide, "ai", "p", NOW)).toContain(
-      '- **Element:** Paragraph · Growth in `[data-pipeup-id="s3"]`',
-    );
+    expect(copyThread(inSlide, "ai", "p", NOW)).toContain('· in `data-pipeup-id="s3"`');
   });
 
   it("strips backticks from the id so the code span stays clean", () => {
     const messy: ExportItem = { ...pin, location: { ...pin.location, id: "a`b\nc" } };
-    expect(copyThread(messy, "ai", "p", NOW)).toContain('- **Element:** `[data-pipeup-id="ab c"]` (Q4 bar)');
+    expect(copyThread(messy, "ai", "p", NOW)).toContain('· on `data-pipeup-id="ab c"`');
   });
 
   it("names someone who has not added a name by their animal", () => {
@@ -134,9 +144,11 @@ describe("copyThread", () => {
     };
     const animal = animalName(key);
     const md = copyThread(item, "ai", "p", NOW);
-    expect(md).toContain(`- **Started by:** ${animal}, 5m ago · 1 reply`);
     expect(md).toContain(`**${animal}** (5m ago): Tighten this.`);
     expect(md).toContain(`- **${animal}** (5m ago): Me again.`);
+    expect(copyAll([item], "ai", { title: "t", url: "u", exportedAt: new Date(NOW) })).toContain(
+      `1 open comment from ${animal},`,
+    );
     expect(copyThread(item, "text", "p", NOW)).toContain(`${animal}: Tighten this.\n  ${animal}: Me again.`);
   });
 
@@ -146,28 +158,71 @@ describe("copyThread", () => {
       location: { ...quote.location, quote: "line one\n\n  line two" },
     };
     const md = copyThread(messy, "ai", "p", NOW);
-    expect(md).toContain('- **Quoted text:** "line one line two"');
-    expect(md).toContain("- **Started by:** Ja mie, 5m ago");
+    expect(md).toContain('On the words "line one line two".');
     expect(md).toContain("**Ja mie** (5m ago): hi");
     expect(copyThread(messy, "text", "p", NOW)).toContain('on the text "line one line two"\nJa mie: hi');
+  });
+
+  it("carries no comment ids", () => {
+    expect(copyThread(pin, "ai", "p", NOW)).not.toMatch(/AmyAlready|SamDone|<!--/);
   });
 });
 
 describe("copyAll", () => {
-  it("lists open threads with a header and leaves resolved ones out", () => {
-    const md = copyAll([pin, done, quote], "ai", {
-      title: "Lumen Q3 review",
-      url: "https://x.test/deck.html",
-      exportedAt: new Date(NOW),
-    });
+  const meta = { title: "Lumen Q3 review", url: "https://x.test/deck.html", exportedAt: new Date(NOW) };
+
+  it("opens with what a person needs, lists open threads and leaves resolved ones out", () => {
+    const md = copyAll([pin, done, quote], "ai", meta);
     expect(
-      md.startsWith("# Review comments: Lumen Q3 review\n\n- **Page:** https://x.test/deck.html\n"),
+      md.startsWith(
+        [
+          "# Comments on Lumen Q3 review",
+          "",
+          "2 open comments from Sam, Amy and Jamie, copied 5 Oct 2026, 12:00 UTC. 1 resolved comment is left out.",
+          "",
+          "Page: https://x.test/deck.html",
+          "",
+          '## 1. Slide 3 "Revenue grew 42%" › Q4 bar',
+          "",
+        ].join("\n"),
+      ),
     ).toBe(true);
-    expect(md).toContain("- **Exported:** 2026-10-05T12:00:00.000Z");
-    expect(md).toContain("- **Open threads:** 2 (1 resolved, not included)");
-    expect(md).toContain("## Thread 1 · open\n- **Thread:** t1\n");
-    expect(md).toContain("## Thread 2 · open");
-    expect(md).not.toContain("## Thread 3");
+    expect(md).toContain('\n## 2. Section "Q3 plan" › Paragraph\n');
+    expect(md).not.toContain("## 3.");
+    expect(md).not.toContain("t3");
+    expect(md).not.toContain("Page: https://x.test/deck.html\n\nPinned");
+  });
+
+  it("ends with what an AI assistant should do, after the threads", () => {
+    const md = copyAll([pin, quote], "ai", meta);
+    const [threads, ai] = md.split("\n---\n\n");
+    expect(threads).toContain("Open · thread `t2`");
+    expect(ai).toMatch(/^For an AI assistant: work through the open comments in order/);
+    expect(ai).toContain("pipeup-apply skill");
+    expect(ai).toContain("never resolve it, the author does.\n");
+    expect(copyAll([done], "ai", meta)).not.toContain("For an AI assistant");
+  });
+
+  it("says how many, and who, in words", () => {
+    const head = (items: ExportItem[], all = false) => copyAll(items, "ai", { ...meta, all }).split("\n")[2];
+    expect(head([quote])).toBe("1 open comment from Jamie, copied 5 Oct 2026, 12:00 UTC.");
+    expect(head([done, done])).toBe(
+      "No open comments, copied 5 Oct 2026, 12:00 UTC. 2 resolved comments are left out.",
+    );
+    expect(head([pin, done], true)).toBe(
+      "1 open comment and 1 resolved from Sam, Amy and Jamie, copied 5 Oct 2026, 12:00 UTC.",
+    );
+    const by = (name: string): ExportItem => ({
+      ...quote,
+      thread: { ...quote.thread, root: c(name, "x", 1) },
+    });
+    expect(head(["Sam", "Ada", "Lee", "Kit", "Sam"].map(by))).toContain("from Sam, Ada and 2 others,");
+  });
+
+  it("marks each thread's state on its last line", () => {
+    const md = copyAll([pin, done], "ai", { ...meta, all: true });
+    expect(md).toContain("\nOpen · thread `t1`");
+    expect(md).toContain("\nResolved · thread `t3`");
   });
 
   it("joins plain-text threads with blank lines", () => {
@@ -181,10 +236,9 @@ describe("copyAll", () => {
       url: "https://x.test/\ndeck.html",
       exportedAt: new Date(NOW),
     });
-    expect(
-      md.startsWith("# Review comments: Lumen # Q3 review\n\n- **Page:** https://x.test/ deck.html\n"),
-    ).toBe(true);
-    expect(copyThread(pin, "ai", "a\nb", NOW)).toContain("- **Page:** a b\n");
+    expect(md.startsWith("# Comments on Lumen # Q3 review\n\n")).toBe(true);
+    expect(md).toContain("\nPage: https://x.test/ deck.html\n");
+    expect(copyThread(pin, "ai", "a\nb", NOW)).toContain("\nPage: a b\n");
   });
 
   it("indents continuation lines whatever the line ending", () => {
