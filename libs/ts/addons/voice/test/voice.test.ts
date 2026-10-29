@@ -14,6 +14,10 @@ class FakeRecognition {
   static installed = true;
   static available?: (o: { langs: string[]; processLocally: boolean }) => Promise<string>;
   static install?: (o: { langs: string[]; processLocally: boolean }) => Promise<boolean>;
+  /** WebKit's ways: `error` without `end`. */
+  static safari = false;
+  /** What `available({processLocally: false})` answers (Firefox's engine has no service, so "unavailable"). */
+  static service: string | undefined = "available";
   lang = "";
   interimResults = false;
   continuous = false;
@@ -47,8 +51,10 @@ class FakeRecognition {
     const list = results.map((r) => Object.assign([{ transcript: r.t }], { isFinal: !!r.final }));
     (this.onresult as (e: unknown) => void)({ resultIndex: at, results: list });
   }
-  fail(error: string) {
-    (this.onerror as (e: unknown) => void)({ error });
+  /** A failure: it ends the session in every engine. Only some then say `onend` (the Safari-shaped fake never does). */
+  fail(error: string, message?: string) {
+    this.running = false;
+    (this.onerror as (e: unknown) => void)(message === undefined ? { error } : { error, message });
   }
   finish() {
     this.running = false;
@@ -60,8 +66,11 @@ const install = (kind: "standard" | "webkit" | "webkit-no-available" | "none") =
   const g = globalThis as Record<string, unknown>;
   delete g.SpeechRecognition;
   delete g.webkitSpeechRecognition;
+  FakeRecognition.safari = kind === "webkit-no-available";
   FakeRecognition.available =
-    kind === "standard" ? async (o) => (void o, FakeRecognition.availability!) : undefined;
+    kind === "standard"
+      ? async (o) => (o.processLocally ? FakeRecognition.availability! : FakeRecognition.service!)
+      : undefined;
   FakeRecognition.install =
     kind === "standard"
       ? async (o) => {
@@ -170,6 +179,7 @@ beforeEach(() => {
   FakeRecognition.availability = "available";
   FakeRecognition.installs = [];
   FakeRecognition.installed = true;
+  FakeRecognition.service = "available";
   install("standard");
   document.documentElement.lang = "en-US";
 });
@@ -209,28 +219,50 @@ describe("the consent panel", () => {
     const m = await mount();
     await m.press(box());
     expect(m.sentence()).toBe(
-      "Your browser will first download a speech pack for English (United States) from Google. Your words stay on this device.",
+      "Your browser will first download a speech pack for English (United States), once. Your words stay on this device.",
     );
     await m.click("Start");
     expect(FakeRecognition.installs).toEqual([{ langs: ["en-US"], processLocally: true }]);
     expect(last().processLocally).toBe(true);
   });
 
-  it("says the voice goes to Google or Apple when only the service is possible", async () => {
+  it("says the voice goes to the browser's service when only the service is possible", async () => {
     FakeRecognition.availability = "unavailable";
     const m = await mount();
     await m.press(box());
-    expect(m.sentence()).toMatch(/^Your voice is sent to Google \(in Chrome\) or Apple \(in Safari\)/);
+    expect(m.sentence()).toMatch(/^Your voice is sent to the browser's speech service/);
     expect(m.sentence()).toMatch(/Pipeup doesn't keep it\.$/);
     await m.click("Start");
     expect(last().processLocally).toBeUndefined();
   });
 
-  it("always says the same in a browser that cannot say where it listens (Safari)", async () => {
+  it("says Pipeup can't tell where Safari works the words out", async () => {
     install("webkit-no-available");
     const m = await mount();
     await m.press(box());
-    expect(m.sentence()).toMatch(/^Your voice is sent to Google \(in Chrome\) or Apple \(in Safari\)/);
+    expect(m.sentence()).toMatch(/^Safari uses Apple's speech recognition\./);
+    expect(m.sentence()).toMatch(/Pipeup can't tell which, and doesn't keep it\.$/);
+  });
+
+  it("says so, with Start greyed, when the engine can't do the language anywhere (Firefox)", async () => {
+    FakeRecognition.availability = "unavailable";
+    FakeRecognition.service = "unavailable";
+    const m = await mount();
+    await m.press(box());
+    expect(m.sentence()).toBe(
+      "This browser can't dictate in English (United States) on this device. Choose another language.",
+    );
+    const start = [...m.panel()!.querySelectorAll("button")].find((x) => x.textContent === "Start")!;
+    expect(start.disabled).toBe(true);
+    FakeRecognition.availability = "available";
+    const sel = m.panel()!.querySelector("select") as HTMLSelectElement;
+    sel.value = "fr-FR";
+    sel.dispatchEvent(new Event("change"));
+    await settle();
+    expect(m.sentence()).toBe("Your words are worked out on this device. Nothing is sent.");
+    expect(start.disabled).toBe(false);
+    await m.click("Start");
+    expect(last().lang).toBe("fr-FR");
   });
 
   it("starts nothing on Not now, and asks again next time", async () => {
@@ -455,10 +487,18 @@ describe("dictating", () => {
 
   it("says in words what went wrong", async () => {
     const cases: [string, RegExp][] = [
-      ["not-allowed", /microphone is blocked/],
+      [
+        "not-allowed",
+        /^The microphone is blocked\. Allow it for this page, then press the microphone again\./,
+      ],
+      [
+        "service-not-allowed",
+        /^This browser's speech service isn't available for that language, or is turned off/,
+      ],
       ["no-speech", /Didn't hear anything/],
       ["network", /speech service couldn't be reached/],
       ["audio-capture", /No microphone was found/],
+      ["language-not-supported", /^This browser can't dictate in that language\./],
       ["aborted", /Dictation stopped\./],
     ];
     for (const [error, words] of cases) {
@@ -469,6 +509,39 @@ describe("dictating", () => {
       expect(m.log.notices.at(-1)).toMatch(words);
       FakeRecognition.all = [];
     }
+  });
+
+  it("works again at once after an error the engine never follows with end (Firefox, a language with no model)", async () => {
+    const { m, b, rec } = await started();
+    rec.fail("service-not-allowed");
+    expect(b.pressed).toBe(false);
+    expect(m.log.notices.at(-1)).toMatch(/^This browser's speech service isn't available/);
+    await m.press(b);
+    expect(FakeRecognition.all).toHaveLength(2);
+    expect(last().running).toBe(true);
+    expect(FakeRecognition.overlaps).toBe(0);
+  });
+
+  it("passes on the engine's own reason when it gives one", async () => {
+    const { m, rec } = await started();
+    rec.begin();
+    rec.fail("aborted", " No speech detected ");
+    rec.finish();
+    expect(m.log.notices).toEqual(["Dictation stopped: No speech detected"]);
+  });
+
+  it("ends the run once, however the engine says so: an error and then its end", async () => {
+    const { m, b, rec } = await started();
+    rec.begin();
+    rec.say([{ t: "half a" }]);
+    rec.fail("network");
+    expect(b.pressed).toBe(false);
+    expect(b.done).toBe("half a");
+    rec.finish();
+    expect(b.done).toBe("half a");
+    expect(m.log.announced).toEqual(["Listening", "Stopped listening"]);
+    await m.press(b);
+    expect(FakeRecognition.all).toHaveLength(2);
   });
 
   it("is quiet about an abort it asked for", async () => {
@@ -486,6 +559,146 @@ describe("dictating", () => {
     (m.teardown as () => void)();
     expect(rec.calls).toEqual(["start", "abort"]);
     expect(m.tool()).toBeUndefined();
+  });
+});
+
+describe("in Safari (error without end, finals sent again)", () => {
+  const started = async () => {
+    install("webkit-no-available");
+    const m = await mount();
+    const b = box();
+    await m.press(b);
+    await m.click("Start");
+    return { m, b, rec: last() };
+  };
+
+  it("works again at once after a refused prompt, which Safari ends with no `end`", async () => {
+    const { m, b, rec } = await started();
+    rec.fail("not-allowed");
+    expect(rec.running).toBe(false);
+    expect(b.pressed).toBe(false);
+    expect(m.log.notices).toEqual([
+      "The microphone or speech recognition was refused for this page. Allow it, reload the page, then press the microphone again.",
+    ]);
+    expect(m.log.announced).toEqual([]);
+    await m.press(b);
+    expect(FakeRecognition.all).toHaveLength(2);
+    expect(last().running).toBe(true);
+    expect(b.pressed).toBe(true);
+    expect(FakeRecognition.overlaps).toBe(0);
+  });
+
+  it("names Apple's speech recognition, not the microphone, when Safari may not use it", async () => {
+    const { m, b, rec } = await started();
+    rec.fail("service-not-allowed", "Speech recognition service permission check has failed");
+    expect(m.log.notices.at(-1)).toMatch(
+      /^Safari isn't allowed to use Apple's speech recognition\. Turn on Siri or Dictation, allow Safari under System Settings/,
+    );
+    expect(b.pressed).toBe(false);
+    await m.press(b);
+    expect(FakeRecognition.all).toHaveLength(2);
+  });
+
+  it("says it in Safari's words for the network and an unsupported language", async () => {
+    const one = await started();
+    one.rec.fail("network");
+    expect(one.m.log.notices.at(-1)).toMatch(/^Apple's speech service couldn't be reached/);
+    FakeRecognition.all = [];
+    const two = await started();
+    two.rec.fail("language-not-supported");
+    expect(two.m.log.notices.at(-1)).toMatch(/^Safari can't dictate in that language\./);
+  });
+
+  it("passes on Apple's reason for stopping, and stays plain without one", async () => {
+    const one = await started();
+    one.rec.begin();
+    one.rec.fail("aborted", "No speech detected");
+    expect(one.m.log.notices).toEqual(["Dictation stopped: No speech detected"]);
+    expect(one.m.log.announced).toEqual(["Listening", "Stopped listening"]);
+    FakeRecognition.all = [];
+    const two = await started();
+    two.rec.begin();
+    two.rec.fail("aborted");
+    expect(two.m.log.notices).toEqual(["Dictation stopped."]);
+  });
+
+  it("writes words Safari sends again only once", async () => {
+    const { b, rec } = await started();
+    rec.begin();
+    rec.say([{ t: "hello there", final: true }]);
+    expect(b.done).toBe("hello there");
+    // Everything said so far comes back as a new final, with the new words on the end.
+    rec.say(
+      [
+        { t: "hello there", final: true },
+        { t: "hello there and more", final: true },
+      ],
+      1,
+    );
+    expect(b.done).toBe("hello there and more");
+    rec.say([{ t: "hello there and more", final: true }], 0);
+    expect(b.done).toBe("hello there and more");
+    rec.say([{ t: "something else", final: true }], 0);
+    expect(b.done).toBe("hello there and more something else");
+  });
+
+  it("takes whole words off only: a new final that merely begins with the same letters is kept", async () => {
+    const { b, rec } = await started();
+    rec.begin();
+    rec.say([{ t: "ok", final: true }]);
+    rec.say([{ t: "okay let's go", final: true }], 0);
+    expect(b.done).toBe("ok okay let's go");
+    rec.say([{ t: "ok okay let's go", final: true }], 0); // all of it again: nothing new
+    expect(b.done).toBe("ok okay let's go");
+  });
+
+  it("writes a phrase that exactly repeats everything so far once: the price of the Safari rule", async () => {
+    const { b, rec } = await started();
+    rec.begin();
+    rec.say([{ t: "No.", final: true }]);
+    rec.say([{ t: "No.", final: true }], 0);
+    expect(b.done).toBe("No.");
+  });
+
+  it("takes the repeat off the words in progress too, so a stop mid-sentence writes them once", async () => {
+    const { m, b, rec } = await started();
+    rec.begin();
+    rec.say([{ t: "hello there", final: true }]);
+    rec.say([{ t: "hello there", final: true }, { t: "hello there and" }], 1);
+    expect(b.prog).toBe(" and");
+    await m.press(b); // stop
+    rec.fail("aborted"); // Safari's way of ending
+    expect(b.done).toBe("hello there and");
+  });
+
+  it("still writes a repeated word twice in Chrome, where finals are never sent again", async () => {
+    const m = await mount();
+    const b = box();
+    await m.press(b);
+    await m.click("Start");
+    last().begin();
+    last().say([{ t: "No.", final: true }]);
+    last().say(
+      [
+        { t: "No.", final: true },
+        { t: "No.", final: true },
+      ],
+      1,
+    );
+    expect(b.done).toBe("No. No.");
+  });
+
+  it("stays quiet about an abort it asked for, and is ready again when Safari ends it", async () => {
+    const { m, b, rec } = await started();
+    rec.begin();
+    b.end();
+    rec.fail("aborted");
+    expect(m.log.notices).toEqual([]);
+    expect(b.pressed).toBe(false);
+    rec.finish(); // Chrome would also say end; nothing runs twice
+    expect(m.log.announced).toEqual(["Listening", "Stopped listening"]);
+    await m.press(b);
+    expect(FakeRecognition.all).toHaveLength(2);
   });
 });
 
