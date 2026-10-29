@@ -61,6 +61,12 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await expect(a.page.locator(".draft .note")).toHaveText(
         "Comments here are shared with everyone who has this page.",
       );
+      // Pipeup's own "stays in this browser" glyph never shows while Share reports, before or after the first comment.
+      await expect(a.page.locator(".draft .here")).toHaveClass(/\boff\b/);
+      await a.page.locator(".draft textarea").fill("Looks right");
+      await a.page.locator(".draft textarea").press("Enter");
+      await a.page.locator("[data-pipeup-id=p1]").click();
+      await expect(a.page.locator(".draft .here").last()).toHaveClass(/\boff\b/);
       await a.context.close();
     });
 

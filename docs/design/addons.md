@@ -297,6 +297,7 @@ export interface AddonHost {
   addStyles(css: string): Off;
 
   // stage 3
+  /** One quiet line at the top of the menu; without any add-on's status it says comments stay in this browser. */
   setStatus(status: Status | null): void;
   /** A quiet line under the All comments header, with an optional text button; null removes it. Capability `listnote`. */
   setListNote(note: { text: string; action?: { label: string; run(): Promise<void> } } | null): void;
@@ -370,7 +371,8 @@ core's `hidden` state, which `onUi().shown` mirrors, is unchanged. Spec §1 prom
   summary of other people's new comments, not to an add-on's own words.
 - **`setComposerNote(text)`** sets one quiet line Pipeup shows above the new-comment box while it is
   open (one note per add-on; the latest set wins if two exist). Share uses it to tell a reviewer,
-  before their first comment, that comments are shared. `null` removes it.
+  before their first comment, that comments are shared. `null` removes it; the box shows Pipeup's own glyph (a
+  browser window whose tooltip says comments stay in this browser) only while no add-on has a note or a status.
 
 ### 3.3 Composer tool (stage 2)
 
@@ -1791,3 +1793,4 @@ gets into the core").
 - 2026-10-12: `setListNote` and the `listnote` capability (additive, `ADDON_API` stays 1): a line under the All comments header with an optional button, eased in and out, removed with the add-on. First user: the agents add-on ([agents-addon.md](agents-addon.md)).
 - 2026-10-13: `openDialog` (capability `dialog`) and `identity` (capability `identity`), additive, `ADDON_API` stays 1. `identity.use(key)` takes only an extractable Ed25519 private key; any add-on given the capability can read a portable identity's seed, as any script on the page could. First user: the identity add-on ([size-pass.md](size-pass.md)).
 - 2026-10-29: dictation's consent sentences name no maker, Safari's says Pipeup can't tell where the words are worked out, and a language with no way to dictate is said before starting; the sentences and failures are kept current in voice-safari-firefox.md.
+- 2026-10-29: the menu's status line reads "Only in this browser until you send them." while no add-on has a status, and the comment box carries a glyph named "Comments stay in this browser until you send them." while no add-on has a status or a composer note.

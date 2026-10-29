@@ -267,6 +267,7 @@ export class Surface {
     setComposerSource({
       tools: () => this.toolList,
       note: () => [...this.notes.values()].at(-1) ?? null,
+      reporting: () => this.statuses.size > 0,
     });
   }
 

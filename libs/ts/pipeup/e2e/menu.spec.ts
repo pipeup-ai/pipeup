@@ -55,6 +55,21 @@ test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ 
   await expect.poll(() => lastCopy(page)).toContain("- **Thread:** ");
 });
 
+test("the menu's top line says comments stay in this browser; the box's glyph says the same on hover", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { name: "Sam" });
+  await openMenu(page);
+  const line = page.locator(".menu.show .sec");
+  await expect(line).toHaveText("Only in this browser until you send them.");
+  // The line is the first thing in the menu, above who you are.
+  await expect(page.locator(".menu.show > :first-child")).toHaveClass(/\bsec\b/);
+  await page.keyboard.press("Escape");
+  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+  await page.locator(".th").first().click();
+  await expect(page.locator(".rbox .here")).toHaveCount(0);
+});
+
 test("the menu has no Send feedback or Add feedback rows", async ({ page }) => {
   await open(page, "doc.html");
   await menu(page);

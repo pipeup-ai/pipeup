@@ -186,6 +186,10 @@ any of them off.
   their avatar and name show who they are and invite them to add a name ("You're Otter · add your name"). That
   opens a name field in place: **Enter** or leaving the field saves the name, as the menu's name row does, so a name
   typed before clicking into the comment box signs the comment; **Esc** cancels.
+- **The comment box shows where comments go.** With plain Pipeup, a small glyph at the foot of the box, left of
+  Cancel (a browser window), says, on hover and to screen readers, that comments stay in this browser until the
+  reviewer sends them; the menu's top line says the same in words. The glyph goes while an add-on reports in the
+  menu's top line or shows a line of its own in the box. The reply line under a thread carries neither.
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
 - The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
@@ -444,6 +448,9 @@ any of them off.
 - **Otherwise, clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
+  - **where comments go**, one quiet line (not an item: no tooltip, and the arrow keys pass over it): with plain
+    Pipeup, that they stay in this browser until the reviewer sends them; an add-on with something to report puts
+    its status there instead (Share's "Shared · up to date", Live's "Live · 2 here");
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
     **Add name** or an edit mark at the end; choosing it turns that row into a name field in place
     (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
@@ -1838,3 +1845,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).
 - 2026-10-29 — Dictation after a failure (§11a, §14): the microphone always works again, notices name what to change and pass on the browser's reason, repeated words are written once, a language the engine can't do is said before starting, and a browser with no engine says so in the console. The consent sentence no longer claims Safari always sends the voice to Apple. Design note: docs/design/voice-safari-firefox.md.
+- 2026-10-29 — Comments stay here (sections 5 and 7): the menu's top line says comments stay in this browser until sent, where Share and Live already report, and the comment box carries a small glyph saying the same on hover, after reviewers expected their comments to appear on other copies. Design note: docs/design/comments-stay-here.md.
