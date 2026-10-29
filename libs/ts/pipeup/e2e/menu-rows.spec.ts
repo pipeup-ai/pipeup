@@ -19,6 +19,7 @@ test("the menu, top down: who you are, Copy comments, Theme, All comments, then 
     ),
   );
   expect(shape).toEqual([
+    "sec", // where comments go: "Only in this browser until you send them."
     me,
     "|",
     "Copy comments",

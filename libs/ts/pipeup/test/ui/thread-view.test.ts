@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ANIMALS, animalName, animalOf, colourOf } from "../../src/model/animals";
 import { ANIMAL_ICONS, avatar, initial } from "../../src/ui/animals";
-import { composer } from "../../src/ui/composer";
+import { composer, setComposerSource, SOURCE_CHANGED } from "../../src/ui/composer";
 import { renderDraft } from "../../src/ui/draft-view";
 import { threadView, type ThreadActions } from "../../src/ui/thread-view";
 import { threadMarks, threadNotes } from "../../src/ui/notes";
@@ -313,6 +313,38 @@ describe("renderDraft", () => {
     text.value = "Needs a baseline";
     key(text, "Enter");
     await vi.waitFor(() => expect(onSend).toHaveBeenCalledWith("Needs a baseline", []));
+  });
+
+  it("carries a glyph saying comments stay in this browser, until an add-on reports or shows a line", () => {
+    const { d } = draft();
+    const here = d.element.querySelector(".bts .here") as HTMLElement;
+    expect(here.nextElementSibling?.textContent).toBe("Cancel");
+    const note = d.element.querySelector(".note") as HTMLElement;
+    const shown = () => !here.classList.contains("off") && here.getAttribute("aria-hidden") === "false";
+    expect(shown()).toBe(true);
+    expect(here.getAttribute("aria-label")).toBe("Comments stay in this browser until you send them.");
+    expect(here.title).toBe("Comments stay in this browser until you send them.");
+    expect(here.querySelector("svg")).not.toBeNull();
+    expect(note.hidden).toBe(true);
+    const change = () =>
+      d.element.querySelector(".row")!.dispatchEvent(new Event(SOURCE_CHANGED, { bubbles: true }));
+    setComposerSource({
+      tools: () => [],
+      note: () => "Comments here are shared with everyone who has this page.",
+      reporting: () => true,
+    });
+    change();
+    expect(shown()).toBe(false);
+    expect(note.textContent).toBe("Comments here are shared with everyone who has this page.");
+    // An add-on that reports in the menu (Share after the first shared comment) takes the glyph away without a line.
+    setComposerSource({ tools: () => [], note: () => null, reporting: () => true });
+    change();
+    expect(shown()).toBe(false);
+    expect(note.hidden).toBe(true);
+    setComposerSource(null);
+    change();
+    expect(shown()).toBe(true);
+    expect(note.hidden).toBe(true);
   });
 
   it("shows your avatar and who you are, with an invitation to add a name", () => {

@@ -7,6 +7,13 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- **Where comments go, said in the menu.** Its top line reads "Only in this browser until you send them"
+  unless an add-on reports there (Share's "Shared · up to date", Live's "Live · 2 here"), and the comment box
+  carries a small browser-window glyph that says the same on hover. Reviewers had expected their comments to
+  appear on other people's copies.
+
 ### Fixed
 
 - **Dictation in Safari.** A refused prompt (the microphone, speech recognition, or macOS's one-time Speech

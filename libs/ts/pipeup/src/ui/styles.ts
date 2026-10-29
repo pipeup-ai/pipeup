@@ -301,6 +301,7 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .tools[hidden]{display:none}
 .tool[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
 .note{display:block;padding:0 0 4px;font-size:12px;color:var(--fa)}
+.bts .here{flex:none;display:grid;place-items:center;margin-right:auto;padding:0 2px;color:var(--fa);transition:opacity var(--in) var(--eo)}.here.off{opacity:0;pointer-events:none}
 .note[hidden]{display:none}
 .ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 /* An add-on's panel (.xp) is the same full-height panel as All comments (.all), with its own body. */

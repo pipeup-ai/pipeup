@@ -58,9 +58,10 @@ test("an agent reads the comments, answers in the replies file, and the person c
     comments: [{ text: "Is 20% realistic?", agent: false }],
   });
 
-  // Not listed yet: nothing says an agent can answer, but the prompt is offered on every page.
+  // Not listed yet: nothing says an agent can answer (the menu's top line is Pipeup's own), but the prompt is offered
+  // on every page.
   await openMenu(page);
-  await expect(page.locator(".menu .sec")).toHaveCount(0);
+  await expect(page.locator(".menu .sec")).toHaveText("Only in this browser until you send them.");
   await expect(page.getByRole("menuitem", { name: "Copy a prompt for my agent" })).toBeVisible();
   await page.keyboard.press("Escape");
 
