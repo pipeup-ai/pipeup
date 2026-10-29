@@ -9,6 +9,15 @@ change the API and the stored comment format.
 
 ### Fixed
 
+- **Dictation in Safari.** A refused prompt (the microphone, speech recognition, or macOS's one-time Speech
+  Recognition alert) left the microphone pressed and dead for the rest of the page; it now works again at once.
+  Notices name what to change: a refusal needs a reload, and "Safari isn't allowed to use Apple's speech
+  recognition" replaces "The microphone is blocked" when the microphone is fine. Apple's own reason for stopping
+  is passed on, and words Safari sends again are written once. The consent sentence no longer claims Safari
+  always sends your voice to Apple.
+- **Dictation in Firefox.** Firefox up to 159 has no speech engine, so no microphone is drawn; the page now says
+  so once in the browser console. A language the engine can't do at all is said before anything starts.
+
 - **The script line alone starts Pipeup.** A page with only `<script src="…/pipeup.min.js"></script>` loaded Pipeup but never started it, with no message. Every page now starts itself unless `data-pipeup-auto="off"`; a page without `data-pipeup-doc` is known by its address.
 - **A name typed in the comment box is kept.** Typing a name in the new comment's name field and then clicking into the comment box dropped the name, so the comment was signed with your animal. Leaving the field now saves it, as the menu's name row does; Esc still cancels.
 - Website: every Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only. Reusing one prompt for several pages gave them one key, so one page's comments showed on another.

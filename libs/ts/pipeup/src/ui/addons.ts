@@ -839,6 +839,8 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       stop();
       info.state = "off";
       info.reason = offReason;
+      // The reason reaches authors and agents through addons(); one line in the console says it on the page too.
+      console.warn(`pipeup: the add-on "${id}" is off: ${offReason}`);
       return;
     }
     info.state = "on";

@@ -943,6 +943,14 @@ which Pipeup discards. It also can't tell when something is missing.
 - An add-on that can't work with the Pipeup version on the page stays off and says why. It never
   half-works.
 - Authors and agents can see which add-ons a page has, and whether each one is on.
+- **Dictation.** A browser without a speech engine draws no microphone; the reason is available to authors
+  and agents, and is written to the browser console once. After dictation stops for any reason, including a
+  refused permission or a browser error, the microphone can be pressed again at once. A notice about a failed
+  start names what the reviewer must change (the microphone, the browser's speech service, or a page reload),
+  passes on the browser's own reason when it gives one, and never blames the microphone for a speech-service
+  problem. Words the engine delivers more than once are written into the comment once. Where the engine has no
+  way to dictate in the chosen language on this device, Pipeup says so before anything starts and lets the
+  reviewer choose another language.
 - Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
   dark appearance and reduced motion, and keep every rule that words being written are never lost.
 - **While comments are closed (hidden with Hide comments, and nothing showing them), add-ons add nothing
@@ -1135,8 +1143,10 @@ permission, a registration, or a place in its npm scope.
 - **Pipeup itself makes no network requests** and has no analytics, tracking or telemetry.
 - Add-ons published by the Pipeup project send only what they declare, only to the services they name,
   and only encrypted so those services can't read it. **The one exception is dictation through a
-  browser maker's speech service** (Google in Chrome, Apple in Safari): that service hears the
-  reviewer's voice, and dictation uses it only after the reviewer agrees to a sentence saying so.
+  browser maker's speech service**: that service hears the reviewer's voice, and dictation uses it only
+  after the reviewer agrees to a sentence saying so. Before the first dictation the reviewer is told where
+  the words are worked out: on this device, after a one-time speech-pack download, or by the browser
+  maker's service. Where a browser can't say which, the sentence says so.
 - Dictation may make the browser download a speech pack from its maker once; Pipeup says so first.
 - With live review, the other people who are live see your network address. The services that help
   people find each other see it too.
@@ -1827,3 +1837,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).
+- 2026-10-29 — Dictation after a failure (§11a, §14): the microphone always works again, notices name what to change and pass on the browser's reason, repeated words are written once, a language the engine can't do is said before starting, and a browser with no engine says so in the console. The consent sentence no longer claims Safari always sends the voice to Apple. Design note: docs/design/voice-safari-firefox.md.

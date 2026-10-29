@@ -13,7 +13,7 @@ interface Recognition {
   onstart: (() => void) | null;
   onspeechstart: (() => void) | null;
   onend: (() => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
+  onerror: ((e: { error: string; message?: string }) => void) | null;
   onresult: ((e: { resultIndex: number; results: ArrayLike<Result> }) => void) | null;
   start(): void;
   stop(): void;
@@ -25,8 +25,11 @@ interface Engine {
   install?(o: { langs: string[]; processLocally: boolean }): Promise<boolean>;
 }
 
-/** Where the words would be worked out: on this device, after a speech-pack download, or by the browser's service. */
-type Where = "device" | "download" | "service";
+/**
+ * Where the words would be worked out: on this device, after a speech-pack download, by the browser's service, or
+ * nowhere (the engine says it can't do the language at all, on the device or otherwise).
+ */
+type Where = "device" | "download" | "service" | "none";
 interface Choice {
   engine: string;
   mode: "device" | "service";
@@ -51,19 +54,45 @@ const ICON = [
   "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z",
   "M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6",
 ];
-const SAYS = {
-  device: "Your words are worked out on this device. Nothing is sent.",
-  service:
-    "Your voice is sent to Google (in Chrome) or Apple (in Safari) to be turned into words. Pipeup doesn't keep it.",
+const DEVICE = "Your words are worked out on this device. Nothing is sent.";
+/** The service sentence. Safari works some languages out on the device and can't say which, so it says so. */
+const SERVICE = {
+  speech:
+    "Your voice is sent to the browser's speech service to be turned into words. Pipeup doesn't keep it.",
+  webkit:
+    "Safari uses Apple's speech recognition. Depending on the language and device the words are worked out here or your voice is sent to Apple; Pipeup can't tell which, and doesn't keep it.",
 };
-const FAILS: Record<string, string> = {
-  "not-allowed": "The microphone is blocked. Allow it for this page, then press the microphone again.",
-  "service-not-allowed":
-    "The microphone is blocked. Allow it for this page, then press the microphone again.",
-  "no-speech": "Didn't hear anything. Press the microphone to try again.",
-  network: "The browser's speech service couldn't be reached. Check your connection and try again.",
-  "audio-capture": "No microphone was found.",
-  "language-not-supported": "This browser can't dictate in that language.",
+const BLOCKED = "The microphone is blocked. Allow it for this page, then press the microphone again.";
+/**
+ * What went wrong, in words. Safari remembers a refusal for the life of the page (only a reload asks again), and its
+ * "service-not-allowed" is never the microphone: it is Siri and Dictation off, Safari denied under Speech
+ * Recognition in System Settings, or a language Apple has no recogniser for.
+ */
+const FAILS: Record<string, { speech: string; webkit: string }> = {
+  "not-allowed": {
+    speech: BLOCKED,
+    webkit:
+      "The microphone or speech recognition was refused for this page. Allow it, reload the page, then press the microphone again.",
+  },
+  "service-not-allowed": {
+    speech:
+      "This browser's speech service isn't available for that language, or is turned off in its settings.",
+    webkit:
+      "Safari isn't allowed to use Apple's speech recognition. Turn on Siri or Dictation, allow Safari under System Settings › Privacy & Security › Speech Recognition, then reload.",
+  },
+  "no-speech": {
+    speech: "Didn't hear anything. Press the microphone to try again.",
+    webkit: "Didn't hear anything. Press the microphone to try again.",
+  },
+  network: {
+    speech: "The browser's speech service couldn't be reached. Check your connection and try again.",
+    webkit: "Apple's speech service couldn't be reached. Check your connection and try again.",
+  },
+  "audio-capture": { speech: "No microphone was found.", webkit: "No microphone was found." },
+  "language-not-supported": {
+    speech: "This browser can't dictate in that language.",
+    webkit: "Safari can't dictate in that language.",
+  },
 };
 const CSS = `.voice-p{margin:0 0 10px}.voice-p.voice-swap{animation:voice-in .25s ease}
 @keyframes voice-in{from{opacity:0}to{opacity:1}}
@@ -107,7 +136,7 @@ export function createAddon(): PipeupAddon {
     },
     setup(host) {
       const SR = engineOf();
-      // No engine (Firefox): draw nothing at all.
+      // No engine (Firefox up to 159): draw nothing at all. The core says why in the console.
       if (!SR) return host.off("this browser has no speech engine");
       const engine = (globalThis as { SpeechRecognition?: Engine }).SpeechRecognition ? "speech" : "webkit";
       const offStyles = host.addStyles(CSS);
@@ -123,13 +152,14 @@ export function createAddon(): PipeupAddon {
       const detect = async (lang: string): Promise<Where> => {
         let w: Where = "service";
         try {
-          const s = SR.available && (await SR.available({ langs: [lang], processLocally: true }));
-          w =
-            s === "available"
-              ? "device"
-              : s === "downloadable" || s === "downloading"
-                ? "download"
-                : "service";
+          if (SR.available) {
+            const s = await SR.available({ langs: [lang], processLocally: true });
+            if (s === "available") w = "device";
+            else if (s === "downloadable" || s === "downloading") w = "download";
+            // Not on the device: an engine with no service either (Firefox) says so here, before anything starts.
+            else if ((await SR.available({ langs: [lang], processLocally: false })) === "unavailable")
+              w = "none";
+          }
         } catch {
           /* Safari and the rest: no way to ask, so the service sentence */
         }
@@ -158,8 +188,12 @@ export function createAddon(): PipeupAddon {
           const say = el("p", "voice-p");
           const sentence = () =>
             w === "download"
-              ? `Your browser will first download a speech pack for ${langName(lang)} from Google. Your words stay on this device.`
-              : SAYS[w];
+              ? `Your browser will first download a speech pack for ${langName(lang)}, once. Your words stay on this device.`
+              : w === "none"
+                ? `This browser can't dictate in ${langName(lang)} on this device. Choose another language.`
+                : w === "device"
+                  ? DEVICE
+                  : SERVICE[engine];
           const show = (text: string) => {
             say.textContent = text;
             say.classList.remove("voice-swap");
@@ -168,6 +202,10 @@ export function createAddon(): PipeupAddon {
           };
           say.textContent = sentence();
           const select = document.createElement("select");
+          // Where there is no way to dictate in the language, Start stays greyed until another is chosen.
+          const refresh = () => {
+            start.disabled = w === "none";
+          };
           select.setAttribute("aria-label", "Language");
           for (const t of new Set([first, ...LANGS])) {
             const o = el("option", "", langName(t));
@@ -194,12 +232,18 @@ export function createAddon(): PipeupAddon {
             resolve(r);
             panel?.close();
           };
+          refresh();
+          // Two quick changes answer in the order chosen, not the order the engine answers.
+          let seq = 0;
           select.onchange = async () => {
+            const my = ++seq;
             lang = select.value;
             start.disabled = true;
-            w = caps.get(lang) ?? (await detect(lang));
+            const got = caps.get(lang) ?? (await detect(lang));
+            if (my !== seq) return;
+            w = got;
             show(sentence());
-            start.disabled = false;
+            refresh();
           };
           no.onclick = () => finish(null);
           start.onclick = async () => {
@@ -231,16 +275,23 @@ export function createAddon(): PipeupAddon {
         } catch {
           return host.notify("Dictation couldn't start in this browser.");
         }
-        rec.lang = lang;
-        rec.interimResults = true;
-        rec.continuous = true;
-        if (local) rec.processLocally = true;
+        try {
+          rec.lang = lang;
+          rec.interimResults = true;
+          rec.continuous = true;
+          if (local) rec.processLocally = true;
+        } catch {
+          return host.notify("Dictation couldn't start in this browser.");
+        }
         const dict: Dictation = handle.dictate();
         let sep = !!handle.text() && !/\s$/.test(handle.text());
         let interim = "";
+        /** Every final transcript of this run so far: Safari can send them all again as one new final. */
+        let said = "";
         let began = false;
         let ours = false;
         let dropped = false;
+        let ended = false;
         let timer: ReturnType<typeof setTimeout>;
         const poll = setInterval(() => {
           if (!handle.connected()) end(true);
@@ -266,6 +317,16 @@ export function createAddon(): PipeupAddon {
           }
         };
         const words = (t: string) => (t.trim() ? (sep ? " " : "") + t.trim() : "");
+        /**
+         * What is new in a transcript. Safari may deliver everything said so far again, in a final or in the words in
+         * progress before it: a transcript that repeats all of it, whole words, has that part taken off. (A phrase
+         * said twice in a row that exactly repeats everything so far is written once there; Chrome is left alone.)
+         */
+        const fresh = (raw: string) => {
+          const t = raw.trim();
+          if (engine !== "webkit" || !said) return t;
+          return t === said ? "" : t.startsWith(`${said} `) ? t.slice(said.length).trim() : t;
+        };
         rec.onstart = () => {
           began = true;
           quiet();
@@ -279,21 +340,21 @@ export function createAddon(): PipeupAddon {
           for (let i = e.resultIndex; i < e.results.length; i++) {
             const r = e.results[i]!;
             if (r.isFinal) {
-              const t = words(r[0].transcript);
+              const t = fresh(r[0].transcript);
               if (t) {
-                dict.commit(t);
+                said = said ? `${said} ${t}` : t;
+                dict.commit(words(t));
                 sep = true;
               }
             } else live += r[0].transcript;
           }
-          interim = live;
-          if (live.trim()) dict.update(words(live));
+          interim = fresh(live);
+          if (interim) dict.update(words(interim));
         };
-        rec.onerror = (e) => {
-          if (e.error === "aborted" && ours) return;
-          host.notify(FAILS[e.error] || "Dictation stopped.");
-        };
-        rec.onend = () => {
+        /** The run is over, whether the engine said `end`, said `error` (Safari says only that), or never started. */
+        const finish = () => {
+          if (ended) return;
+          ended = true;
           clearInterval(poll);
           clearTimeout(timer);
           offEnd();
@@ -303,13 +364,24 @@ export function createAddon(): PipeupAddon {
           handle.setPressed(false);
           if (began) host.announce("Stopped listening");
         };
+        rec.onerror = (e) => {
+          if (!(e.error === "aborted" && ours)) {
+            const reason = e.error === "aborted" && e.message?.trim();
+            host.notify(
+              reason ? `Dictation stopped: ${reason}` : FAILS[e.error]?.[engine] || "Dictation stopped.",
+            );
+          }
+          // Every error ends the session. Safari sends no `end` after it; the others do, and finish() runs once.
+          finish();
+        };
+        rec.onend = finish;
         cur = { stop: () => end(false), abort: () => end(true) };
         handle.setPressed(true);
         try {
           rec.start();
         } catch {
           host.notify("Dictation couldn't start. Try again.");
-          rec.onend();
+          finish();
         }
       };
 
