@@ -38,8 +38,14 @@ and before pressing the microphone paste a wrapper that logs every engine event 
 remembered refusal; `service-not-allowed … permission check has failed` is Safari denied under Speech Recognition;
 `… service is not available` is Siri and Dictation off, or the language.
 
+## Checked
+
+- 2026-10-29 — Safari 27 on macOS 27.2, the demo page over `http://localhost`: the microphone lights, Safari shows
+  its red microphone, and words arrive. The first press took a moment (the consent panel and Safari's sheets).
+
 ## Change log
 
 - 2026-10-29 — Written, with the fix: errors end the run, Safari's sentences, Apple's reason passed on, repeated
   finals written once, the maker-free download sentence, a language with no model refused before starting, and the
   core's console line for an add-on that ends up off.
+- 2026-10-29 — Checked by the maintainer in Safari 27: works.
