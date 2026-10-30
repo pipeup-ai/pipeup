@@ -9,6 +9,11 @@ change the API and the stored comment format.
 
 ### Added
 
+- **Only in this browser, on a shared page.** Each of your comments that isn't in the shared copy (written before the
+  page was shared, written while Send my comments is off, or kept by choice) is marked "Only in this browser", with
+  why in its tooltip; the mark goes when the comment is shared. "Keep them on this machine" reads "Keep them in this
+  browser". Add-ons can mark one comment with `setCommentMark` (capability `commentmark`).
+
 - **Where comments go, said in the menu.** Its top line reads "Only in this browser until you send them"
   unless an add-on reports there (Share's "Shared · up to date", Live's "Live · 2 here"), and the comment box
   carries a small browser-window glyph that says the same on hover. Reviewers had expected their comments to

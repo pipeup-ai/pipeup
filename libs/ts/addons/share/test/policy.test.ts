@@ -53,6 +53,62 @@ describe("send policy", () => {
     expect(p.noted).toBe(true);
   });
 
+  it("says why one of my comments isn't in the shared copy: held, kept while not sending, by choice, or its thread", async () => {
+    const { me, other } = await setup();
+    const early = await me.comment(A, "early");
+    const theirs = await other.comment(A, "from Ada");
+    await me.merge(other.ops(), "share");
+    const p = new Policy(me.me);
+    p.hold(me.ops().filter((o) => o.body.id === early));
+    p.recv.add(theirs);
+    const op = (id: string) => me.ops().find((o) => o.body.id === id)!;
+    const placed = (id: string) => (p.sendable(op(id)), p.local(op(id)));
+    expect(p.local(op(early))).toBe("held");
+    expect(p.local(op(theirs))).toBeNull();
+    const later = await me.reply(early, "more on it");
+    expect(placed(later)).toBe("thread");
+    const sent = await me.comment(A, "sent");
+    expect(placed(sent)).toBeNull();
+    p.send = false;
+    // Sent before sending was turned off: reading never places it again, so it stays unmarked.
+    expect(p.local(op(sent))).toBeNull();
+    const quiet = await me.comment(A, "while not sending");
+    expect(placed(quiet)).toBe("kept");
+    const reply = await me.reply(theirs, "my reply in Ada's thread");
+    expect(placed(reply)).toBe("kept");
+    p.decide(false);
+    expect(p.local(op(early))).toBe("chosen");
+    expect(p.local(op(later))).toBe("thread");
+  });
+
+  it("an earlier comment shared by choice is no longer local", async () => {
+    const { me } = await setup();
+    await me.comment(A, "early");
+    const p = new Policy(me.me);
+    p.hold(me.ops());
+    expect(p.local(me.ops()[0]!)).toBe("held");
+    p.decide(true);
+    expect(p.local(me.ops()[0]!)).toBeNull();
+  });
+
+  it("comments kept by an earlier version that didn't say why get a reason that is true either way", async () => {
+    const { me } = await setup();
+    const kept = await me.comment(A, "kept before");
+    const p = new Policy(me.me, {
+      init: true,
+      held: [],
+      kept: [kept],
+      recv: [],
+      send: true,
+      noted: false,
+      gen: null,
+    });
+    expect(p.local(me.ops()[0]!)).toBe("unknown");
+    // Saved and loaded again, the reason stays unknown rather than turning into "while not sending".
+    const again = new Policy(me.me, structuredClone({ ...p }));
+    expect(again.local(me.ops()[0]!)).toBe("unknown");
+  });
+
   it("keeping earlier comments keeps them out for good, including later edits and replies", async () => {
     const { me } = await setup();
     const early = await me.comment(A, "early");

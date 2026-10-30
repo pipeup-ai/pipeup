@@ -842,12 +842,17 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - Before a reviewer writes their first comment on a shared page, Pipeup tells them that comments there
   are shared with everyone who has the page.
 - **Comments a reviewer wrote before the page was shared are not sent until they choose.** They can
-  share those earlier comments or keep them on their machine.
+  share those earlier comments or keep them in this browser.
 - Each reviewer chooses whether **to send their own comments** to the shared copy. They still see
   everyone else's.
-  - Comments written while they aren't sending stay on their machine, including later edits and replies
+  - Comments written while they aren't sending stay in this browser, including later edits and replies
     in those threads.
   - What was already sent stays in the shared copy.
+- **Each of the reviewer's own comments that isn't in the shared copy is marked "Only in this browser"**, in its
+  thread and in All comments, with a tooltip saying why (written before the page was shared, written while not
+  sending, kept by choice, or part of such a comment's thread). The mark eases away when the comment is shared. Other people's comments, the reviewer's
+  shared ones, and every comment on a page that isn't shared carry no mark. A reply is marked on its own, not its
+  thread.
 - Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
   someone else by file or live review. People who already received your comments could still pass them
   on themselves, and Pipeup says so where you choose whether to send.
@@ -1846,3 +1851,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).
 - 2026-10-29 — Dictation after a failure (§11a, §14): the microphone always works again, notices name what to change and pass on the browser's reason, repeated words are written once, a language the engine can't do is said before starting, and a browser with no engine says so in the console. The consent sentence no longer claims Safari always sends the voice to Apple. Design note: docs/design/voice-safari-firefox.md.
 - 2026-10-29 — Comments stay here (sections 5 and 7): the menu's top line says comments stay in this browser until sent, where Share and Live already report, and the comment box carries a small glyph saying the same on hover, after reviewers expected their comments to appear on other copies. Design note: docs/design/comments-stay-here.md.
+- 2026-10-30 — Only in this browser (section 11): on a shared page, each of the reviewer's comments that isn't in the shared copy is marked, with why in its tooltip, and keeping earlier comments reads "in this browser". Design note: docs/design/only-in-this-browser.md.

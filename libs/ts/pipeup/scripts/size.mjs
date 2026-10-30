@@ -31,10 +31,12 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // keyboard, an input method's Esc, the block cursor in a dialog, and dialogs that are moved, closed or re-rendered
 // (+0.7 KB; docs/design/words-and-focus.md, page-dialogs.md); then 60 KB for iPhones: taps on the page reaching
 // Pipeup, the menu closing after Start commenting by touch, boxes above the on-screen keyboard, the layer following a
-// panned page, and the selection's icon beside the phone's own menu, and a touch hint that stands out and folds to Done (+0.9 KB; docs/design/iphone-taps-keyboard.md).
+// panned page, and the selection's icon beside the phone's own menu, and a touch hint that stands out and folds to Done (+0.9 KB; docs/design/iphone-taps-keyboard.md);
+// then 60.5 KB for saying where comments are: the menu's "Only in this browser" line and the box's glyph, and a mark
+// on each comment a sharing add-on hasn't sent (+0.3 KB; docs/design/comments-stay-here.md, only-in-this-browser.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 60 * 1024,
-  "dist/pipeup.esm.js": 60 * 1024,
+  "dist/pipeup.min.js": 60.5 * 1024,
+  "dist/pipeup.esm.js": 60.5 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

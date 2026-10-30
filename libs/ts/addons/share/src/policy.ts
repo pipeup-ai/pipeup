@@ -6,6 +6,9 @@ export interface Saved {
   held: Iterable<string>;
   kept: Iterable<string>;
   recv: Iterable<string>;
+  chosen: Iterable<string>;
+  follow: Iterable<string>;
+  legacy: Iterable<string>;
   send: boolean;
   noted: boolean;
   gen: string | null;
@@ -20,6 +23,12 @@ export class Policy {
   readonly held: Set<string>;
   readonly kept: Set<string>;
   readonly recv: Set<string>;
+  /** Earlier comments the reviewer chose to keep (they are also in `kept`). */
+  readonly chosen: Set<string>;
+  /** Ops held or kept because of the comment they answer or change, not for a reason of their own. */
+  readonly follow: Set<string>;
+  /** Ops kept by a version that didn't say why (no `chosen` saved): their reason is unknown. */
+  readonly legacy: Set<string>;
   send: boolean;
   noted: boolean;
   gen: string | null;
@@ -32,6 +41,9 @@ export class Policy {
     this.held = new Set(s?.held);
     this.kept = new Set(s?.kept);
     this.recv = new Set(s?.recv);
+    this.chosen = new Set(s?.chosen);
+    this.follow = new Set(s?.follow);
+    this.legacy = new Set(s?.legacy ?? (s?.init && s.chosen === undefined ? s.kept : undefined));
     this.send = s?.send ?? true;
     this.noted = s?.noted ?? false;
     this.gen = s?.gen ?? null;
@@ -51,8 +63,10 @@ export class Policy {
     if (this.recv.has(b.id)) return true;
     if (b.author !== this.me || this.held.has(b.id) || this.kept.has(b.id)) return false;
     const parent = [b.target, b.thread].find((x) => x && (this.held.has(x) || this.kept.has(x)));
-    if (parent) (this.held.has(parent) ? this.held : this.kept).add(b.id);
-    else if (!this.send) this.kept.add(b.id);
+    if (parent) {
+      (this.held.has(parent) ? this.held : this.kept).add(b.id);
+      this.follow.add(b.id);
+    } else if (!this.send) this.kept.add(b.id);
     else {
       if (b.kind === "create" || b.kind === "reply") this.noted = true;
       return true;
@@ -60,9 +74,24 @@ export class Policy {
     return false;
   }
 
+  /**
+   * Why one of this reviewer's comments isn't in the shared copy, or null when it is (or will be sent): written
+   * before sharing began and not decided, written while not sending, kept by choice, part of such a thread, or kept
+   * by an earlier version that didn't say. It only reads: ops are placed by `sendable`.
+   */
+  local(op: SignedOp): "held" | "kept" | "chosen" | "thread" | "unknown" | null {
+    const b = op.body;
+    if (b.author !== this.me || this.recv.has(b.id) || !(this.held.has(b.id) || this.kept.has(b.id)))
+      return null;
+    if (this.follow.has(b.id)) return "thread";
+    if (this.held.has(b.id)) return "held";
+    if (this.chosen.has(b.id)) return "chosen";
+    return this.legacy.has(b.id) ? "unknown" : "kept";
+  }
+
   /** The reviewer's choice about earlier comments. */
   decide(share: boolean): void {
-    if (!share) for (const id of this.held) this.kept.add(id);
+    if (!share) for (const id of this.held) (this.kept.add(id), this.chosen.add(id));
     this.held.clear();
   }
 }
