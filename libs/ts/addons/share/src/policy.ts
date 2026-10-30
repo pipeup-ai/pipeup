@@ -91,7 +91,11 @@ export class Policy {
 
   /** The reviewer's choice about earlier comments. */
   decide(share: boolean): void {
-    if (!share) for (const id of this.held) (this.kept.add(id), this.chosen.add(id));
+    if (!share)
+      for (const id of this.held) {
+        this.kept.add(id);
+        this.chosen.add(id);
+      }
     this.held.clear();
   }
 }
