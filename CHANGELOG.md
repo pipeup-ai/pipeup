@@ -16,6 +16,15 @@ change the API and the stored comment format.
 - `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
 - **A page's own code can drive Pipeup**: `setCommentMode()` and `commentMode`, `setName()` and `name`, and `on("change", …)`, which hears comment mode and the name changing however they changed. `mount()` rejects with a `code` (`"another-copy"` or `"failed"`) and words when Pipeup can't start.
 - **Settings on the script line.** Every `data-pipeup-*` setting, for Pipeup and its add-ons, can go on the line that loads it instead of `<html>`, for hosts that write their own `<html>` such as claude.ai Artifacts. `mount()` also takes `doc`, `layout`, `theme` and `select`. `Pipeup.setting(name)` reads a setting wherever the page put it.
+- **Only in this browser, on a shared page.** Each of your comments that isn't in the shared copy (written before the
+  page was shared, written while Send my comments is off, or kept by choice) is marked "Only in this browser", with
+  why in its tooltip; the mark goes when the comment is shared. "Keep them on this machine" reads "Keep them in this
+  browser". Add-ons can mark one comment with `setCommentMark` (capability `commentmark`).
+
+- **Where comments go, said in the menu.** Its top line reads "Only in this browser until you send them"
+  unless an add-on reports there (Share's "Shared · up to date", Live's "Live · 2 here"), and the comment box
+  carries a small browser-window glyph that says the same on hover. Reviewers had expected their comments to
+  appear on other people's copies.
 
 ### Changed
 
@@ -25,6 +34,22 @@ change the API and the stored comment format.
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
 - **Copy comments › As Markdown reads as a message to a person**, for a reviewer pasting it into a reply. It opens with "Comments on" the page's title, how many open comments there are, who wrote them and when they were copied, in words, then the page's address. Each thread's heading says where it is, then come the quoted words or pin and the comments. Its state, its id and the element's `data-pipeup-id` move to its last line, replies carry no ids, and the instruction for an AI assistant moves after the threads. `pipeup read`, `pipeup comments`, `Pipeup.comments()` and Copy for my agent carry the same text; their data is unchanged.
 - Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.7 KB), and the agents add-on's from 5 to 7.5 KB.
+- Website: the home page has a Quick start under the first screen: three steps and the prompt shown in full, with one Copy prompt button for your AI agent. The "Create comment-enabled HTML" prompt now fits a page you already have, and Copy prompt buttons ease back from "Copied".
+- Website: one front door again, and the home page fits one screen. Its two buttons become four short steps, from your HTML file to your reviewers and back, with one Copy prompt; the prompt now asks your AI for the whole new file, a reminder to open it in a browser, and a note for reviewers. Two new pages, one click from the steps: What your AI does (the prompt and the note, each with its own Copy) and The details (the two lines to add by hand with the integrity hash, what Pipeup sends, and its licence, version and size, taken from the copy the site carries). The reviewer page becomes help for people who were sent a page; the "Create comment-enabled HTML" page now opens the home page's steps. The showcase holds still while you point at it, focus it or comment, reads one sentence per scene to screen readers, and shows a fingertip on touch screens.
+
+### Fixed
+- **Dictation in Safari.** A refused prompt (the microphone, speech recognition, or macOS's one-time Speech
+  Recognition alert) left the microphone pressed and dead for the rest of the page; it now works again at once.
+  Notices name what to change: a refusal needs a reload, and "Safari isn't allowed to use Apple's speech
+  recognition" replaces "The microphone is blocked" when the microphone is fine. Apple's own reason for stopping
+  is passed on, and words Safari sends again are written once. The consent sentence no longer claims Safari
+  always sends your voice to Apple.
+- **Dictation in Firefox.** Firefox up to 159 has no speech engine, so no microphone is drawn; the page now says
+  so once in the browser console. A language the engine can't do at all is said before anything starts.
+
+- **The script line alone starts Pipeup.** A page with only `<script src="…/pipeup.min.js"></script>` loaded Pipeup but never started it, with no message. Every page now starts itself unless `data-pipeup-auto="off"`; a page without `data-pipeup-doc` is known by its address.
+- **A name typed in the comment box is kept.** Typing a name in the new comment's name field and then clicking into the comment box dropped the name, so the comment was signed with your animal. Leaving the field now saves it, as the menu's name row does; Esc still cancels.
+- Website: every Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only. Reusing one prompt for several pages gave them one key, so one page's comments showed on another.
 
 ### Documentation
 

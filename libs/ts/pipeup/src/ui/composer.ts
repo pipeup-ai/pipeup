@@ -4,6 +4,8 @@ import type { Mention } from "../model/types";
 import { draw } from "./icons";
 
 export interface ComposerOptions {
+  /** Something quiet at the start of the button row, left of Cancel: the draft's "stays in this browser" glyph. */
+  lead?: Node;
   /** The send button's word ("Comment", "Reply", "Save"), and the line's name for screen readers unless `name`. */
   label: string;
   /** The line's name for screen readers, when it isn't the button's word ("Edit comment"). */
@@ -68,6 +70,8 @@ export interface ComposerTool {
 export interface ComposerSource {
   tools(): ComposerTool[];
   note(): string | null;
+  /** Some add-on reports in the menu's top line (comments may be going elsewhere). */
+  reporting(): boolean;
 }
 let source: ComposerSource | null = null;
 export const setComposerSource = (s: ComposerSource | null): void => {
@@ -75,6 +79,8 @@ export const setComposerSource = (s: ComposerSource | null): void => {
 };
 /** The one quiet line add-ons may show above the new-comment box. */
 export const composerNote = (): string | null => source?.note() ?? null;
+/** Whether an add-on reports in the menu's top line, where Pipeup's own "stays in this browser" would otherwise be. */
+export const composerReporting = (): boolean => source?.reporting() ?? false;
 /** Sent to a writing line or a new-comment box when what add-ons put in it changes. */
 export const SOURCE_CHANGED = "pu-source";
 
@@ -99,7 +105,7 @@ export function composer(o: ComposerOptions): Composer {
   const slot = h("span", { class: "tools" });
   slot.hidden = true;
   const line = h("div", { class: "line" }, input, slot);
-  const element = h("div", { class: "row" }, line, h("div", { class: "bts" }, cancel, send));
+  const element = h("div", { class: "row" }, line, h("div", { class: "bts" }, o.lead ?? null, cancel, send));
   const kind = o.kind ?? "comment";
   let busy = false;
   const ends = new Set<() => void>();

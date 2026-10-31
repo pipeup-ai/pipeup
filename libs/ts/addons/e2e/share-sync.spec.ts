@@ -61,6 +61,12 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await expect(a.page.locator(".draft .note")).toHaveText(
         "Comments here are shared with everyone who has this page.",
       );
+      // Pipeup's own "stays in this browser" glyph never shows while Share reports, before or after the first comment.
+      await expect(a.page.locator(".draft .here")).toHaveClass(/\boff\b/);
+      await a.page.locator(".draft textarea").fill("Looks right");
+      await a.page.locator(".draft textarea").press("Enter");
+      await a.page.locator("[data-pipeup-id=p1]").click();
+      await expect(a.page.locator(".draft .here").last()).toHaveClass(/\boff\b/);
       await a.context.close();
     });
 
@@ -73,7 +79,7 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await open(b.page, svc.address);
       const m = await menu(a.page);
       await expect(m.getByText("Share my 1 earlier comment")).toBeVisible();
-      await expect(m.getByText("Keep them on this machine")).toBeVisible();
+      await expect(m.getByText("Keep them in this browser")).toBeVisible();
       await comment(a.page, "Written after");
       await converge(b.page, ["Written after"]);
       expect(await texts(b.page)).not.toContain("Written early");
@@ -81,12 +87,37 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await converge(b.page, ["Written after", "Written early"]);
       // The choice is made: the menu, open again, no longer offers it.
       if ((await a.page.locator(".menu.show").count()) === 0) await menu(a.page);
-      await expect(a.page.getByText("Keep them on this machine")).toHaveCount(0);
+      await expect(a.page.getByText("Keep them in this browser")).toHaveCount(0);
       await a.context.close();
       await b.context.close();
     });
 
-    test("'Keep them on this machine' keeps earlier comments and their later edits out for good", async ({
+    test("each of my comments that isn't in the shared copy is marked 'Only in this browser', until it is shared", async ({
+      browser,
+    }) => {
+      const a = await reviewer(browser);
+      await open(a.page, null);
+      await comment(a.page, "Written early");
+      await open(a.page, svc.address);
+      const m = await menu(a.page);
+      await m.getByRole("menuitem", { name: /All comments/ }).click();
+      const marks = a.page.locator(".all.show .cd .cm:not(.out)");
+      await expect(marks).toHaveCount(1);
+      await expect(marks.first()).toHaveAttribute("aria-label", "Only in this browser");
+      await expect(marks.first()).toHaveAttribute(
+        "title",
+        "Written before this page was shared. Share it or keep it from the menu.",
+      );
+      await a.page.keyboard.press("Escape");
+      await (await menu(a.page)).getByText("Share my 1 earlier comment").click();
+      // Opened again: the comment, now in the shared copy, carries no mark.
+      await (await menu(a.page)).getByRole("menuitem", { name: /All comments/ }).click();
+      await expect(a.page.locator(".all.show .cd")).toHaveCount(1);
+      await expect(marks).toHaveCount(0);
+      await a.context.close();
+    });
+
+    test("'Keep them in this browser' keeps earlier comments and their later edits out for good", async ({
       browser,
     }) => {
       const a = await reviewer(browser);
@@ -96,7 +127,7 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await open(a.page, svc.address);
       await open(b.page, svc.address);
       const m = await menu(a.page);
-      await m.getByText("Keep them on this machine").click();
+      await m.getByText("Keep them in this browser").click();
       await a.page.evaluate((i) => (window as any).pu.document.edit(i, "Private early, edited"), id);
       await comment(a.page, "Public later");
       await converge(b.page, ["Public later"]);
@@ -124,6 +155,15 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await a.page.waitForTimeout(3500);
       expect(await texts(b.page)).toEqual(["From Ada"]);
       expect(await svc.count()).toBe(1);
+      // Only the comment that stayed here is marked, and says why; Ada's, from the shared copy, isn't.
+      await expect
+        .poll(() =>
+          a.page.evaluate(() => {
+            const sr = document.querySelector("pipeup-root")!.shadowRoot!;
+            return [...sr.querySelectorAll(".cm:not(.out)")].map((e) => (e as HTMLElement).title);
+          }),
+        )
+        .toEqual(["Written while Send my comments was off. It stays here."]);
       // Turning it back on sends only later comments.
       await m.getByText("Send my comments").click();
       await comment(a.page, "Shared again");

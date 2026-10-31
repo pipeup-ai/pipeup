@@ -155,9 +155,14 @@ test('"Listening" and "Stopped listening" are heard at once, even while words ar
   await expect(page.locator(".sr")).toHaveText("Stopped listening");
 });
 
-test("without a speech engine there is no microphone anywhere", async ({ page }) => {
+test("without a speech engine there is no microphone anywhere, and the console says why once", async ({
+  page,
+}) => {
   await page.addInitScript(NONE);
+  const warned: string[] = [];
+  page.on("console", (m) => m.type() === "warning" && warned.push(m.text()));
   const draft = await newBox(page);
+  expect(warned).toEqual(['pipeup: the add-on "voice" is off: this browser has no speech engine']);
   await expect(draft.locator("textarea")).toBeVisible();
   await expect(page.locator(".tool")).toHaveCount(0);
   const [a] = await page.evaluate(() =>

@@ -297,6 +297,9 @@ export interface AddonHost {
   addStyles(css: string): Off;
 
   // stage 3
+  /** A quiet mark on one comment, root or reply ("Only in this browser"), with its tooltip; null removes it. Capability `commentmark`. */
+  setCommentMark(comment: string, mark: { text: string; tip?: string } | null): void;
+  /** One quiet line at the top of the menu; without any add-on's status it says comments stay in this browser. */
   setStatus(status: Status | null): void;
   /** A quiet line under the All comments header, with an optional text button; null removes it. Capability `listnote`. */
   setListNote(note: { text: string; action?: { label: string; run(): Promise<void> } } | null): void;
@@ -370,7 +373,8 @@ core's `hidden` state, which `onUi().shown` mirrors, is unchanged. Spec §1 prom
   summary of other people's new comments, not to an add-on's own words.
 - **`setComposerNote(text)`** sets one quiet line Pipeup shows above the new-comment box while it is
   open (one note per add-on; the latest set wins if two exist). Share uses it to tell a reviewer,
-  before their first comment, that comments are shared. `null` removes it.
+  before their first comment, that comments are shared. `null` removes it; the box shows Pipeup's own glyph (a
+  browser window whose tooltip says comments stay in this browser) only while no add-on has a note or a status.
 
 ### 3.3 Composer tool (stage 2)
 
@@ -1116,17 +1120,23 @@ re-sends its own shared comments and those it received from the old copy, as in 
 2. The first press per browser and engine opens a consent panel with one sentence, the language, and
    "Start" / "Not now":
    - on-device: "Your words are worked out on this device. Nothing is sent." If the browser must first
-     download a speech pack from Google or Apple, the panel says so: "Your browser will first download
-     a speech pack for English (UK) from Google. Your words stay on this device." (Pipeup asks the
-     browser to install it; the browser makes the request.)
-   - the browser's speech service: "Your voice is sent to Google (in Chrome) or Apple (in Safari) to be
-     turned into words. Pipeup doesn't keep it."
+     download a speech pack from its maker, the panel says so: "Your browser will first download a speech
+     pack for English (UK), once. Your words stay on this device." (Pipeup asks the browser to install
+     it; the browser makes the request.)
+   - the browser's speech service: "Your voice is sent to the browser's speech service to be turned into
+     words. Pipeup doesn't keep it." In Safari, which may work the words out on the device and can't say
+     so: "Safari uses Apple's speech recognition. Depending on the language and device the words are
+     worked out here or your voice is sent to Apple; Pipeup can't tell which, and doesn't keep it."
+   - no way at all (an engine with no model for the language and no service): "This browser can't
+     dictate in English (UK) on this device. Choose another language.", with Start greyed.
+
+   The current word on dictation's sentences and failures is [voice-safari-firefox.md](voice-safari-firefox.md).
 
    The choice is kept in the add-on's settings (not a secret). Where settings don't last (§6), the panel
    says "This browser won't remember this choice". On `file://` that choice may apply to every local
    file; the docs say so.
    - **Safari can't say where it listens.** It has no `available()` or `processLocally` (S3), so Pipeup
-     can't tell on-device from Apple's service and always shows the service sentence there.
+     can't tell on-device from Apple's service, and its sentence says so.
 3. The browser asks for the microphone. **On `file://`, Chrome and Safari ask again on every page load**
    (S3): the grant lasts only until the page is reloaded. The docs say so, and the consent panel isn't
    shown again, since that choice is Pipeup's own and is kept.
@@ -1784,3 +1794,6 @@ gets into the core").
 - 2026-10-12: styling hooks `data-pipeup-ai` and `data-pipeup-writing` (row, words); the AI avatar's pulse and the writing dots moved from core to the assist add-on's own styles.
 - 2026-10-12: `setListNote` and the `listnote` capability (additive, `ADDON_API` stays 1): a line under the All comments header with an optional button, eased in and out, removed with the add-on. First user: the agents add-on ([agents-addon.md](agents-addon.md)).
 - 2026-10-13: `openDialog` (capability `dialog`) and `identity` (capability `identity`), additive, `ADDON_API` stays 1. `identity.use(key)` takes only an extractable Ed25519 private key; any add-on given the capability can read a portable identity's seed, as any script on the page could. First user: the identity add-on ([size-pass.md](size-pass.md)).
+- 2026-10-29: dictation's consent sentences name no maker, Safari's says Pipeup can't tell where the words are worked out, and a language with no way to dictate is said before starting; the sentences and failures are kept current in voice-safari-firefox.md.
+- 2026-10-29: the menu's status line reads "Only in this browser until you send them." while no add-on has a status, and the comment box carries a glyph named "Comments stay in this browser until you send them." while no add-on has a status or a composer note.
+- 2026-10-30: `setCommentMark` and the `commentmark` capability (additive, `ADDON_API` stays 1): a quiet mark on one comment, under its words in a thread and a glyph on a closed card; Share uses it for comments not in the shared copy.

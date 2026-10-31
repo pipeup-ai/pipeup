@@ -1,10 +1,14 @@
 import { animalName } from "../model/animals";
 import type { Mention } from "../model/types";
 import { avatar, easeIn, retire } from "./animals";
-import { composer, composerNote, SOURCE_CHANGED } from "./composer";
+import { composer, composerNote, composerReporting, SOURCE_CHANGED } from "./composer";
 import type { Ctx, Draft } from "./context";
 import { h, inert } from "./dom";
+import { icon } from "./icons";
 import type { Person } from "./mentions";
+
+/** Where comments go with plain Pipeup; the menu's top line says the same in words. */
+const HERE = "Comments stay in this browser until you send them.";
 
 export interface DraftOptions {
   /** What the comment is on: a quote or an element label. */
@@ -44,6 +48,13 @@ export function renderDraft(o: DraftOptions): DraftBox {
   const me = h("button", { class: "me", type: "button", tabindex: "-1", "aria-hidden": "true" });
   // A click must not leave focus on a button screen readers can't see.
   me.addEventListener("mousedown", (e) => e.preventDefault());
+  // Without a line from an add-on (below), a small glyph at the foot of the box, left of Cancel, says comments stay
+  // here; the words are its tooltip and its name to screen readers.
+  const here = h(
+    "span",
+    { class: "here", role: "img", "aria-label": HERE, title: HERE },
+    icon("browser", 14),
+  );
   const comp = composer({
     label: "Comment",
     placeholder: "Comment or add others with @",
@@ -51,6 +62,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
     onSend: o.onSend,
     onCancel: o.onCancel,
     people: o.people,
+    lead: here,
   });
   // One quiet line from add-ons above the box, such as "Comments here are shared with everyone who has this page".
   const note = h("div", { class: "note" });
@@ -58,6 +70,10 @@ export function renderDraft(o: DraftOptions): DraftBox {
     const text = composerNote();
     note.textContent = text ?? "";
     note.hidden = !text;
+    // The glyph shows only while the menu's top line is Pipeup's own: never while an add-on reports there or here.
+    const off = !!text || composerReporting();
+    here.classList.toggle("off", off);
+    here.setAttribute("aria-hidden", String(off));
   };
   syncNote();
 
@@ -68,6 +84,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   const you = h("div", { class: "you" }, say, nf);
   let shown = "";
   let saving = false;
+  let naming = false;
 
   /** Shows the current name (or animal) on the avatar and the quiet line. */
   const sync = () => {
@@ -92,6 +109,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   };
 
   const setNaming = (on: boolean) => {
+    naming = on;
     you.classList.toggle("naming", on);
     inert(say, on);
     inert(nf, !on);
@@ -106,9 +124,23 @@ export function renderDraft(o: DraftOptions): DraftBox {
     field.select();
   }
 
-  const closeName = () => {
+  /** Closes the name field; `back` returns to the writing box (Enter and Escape), a click elsewhere keeps its focus. */
+  const closeName = (back = true) => {
     setNaming(false);
-    comp.focus();
+    if (back) comp.focus();
+  };
+
+  /** Saves the typed name (an empty or unchanged one keeps the name), then closes the field. */
+  const saveName = (back: boolean) => {
+    const value = field.value.trim();
+    if (!value || value === o.name()) return closeName(back);
+    if (saving) return;
+    saving = true;
+    void o.rename(value).finally(() => {
+      saving = false;
+      sync();
+      closeName(back);
+    });
   };
 
   me.addEventListener("click", openName);
@@ -120,16 +152,12 @@ export function renderDraft(o: DraftOptions): DraftBox {
       closeName();
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const value = field.value.trim();
-      if (!value || value === o.name()) return closeName();
-      if (saving) return;
-      saving = true;
-      void o.rename(value).finally(() => {
-        saving = false;
-        sync();
-        closeName();
-      });
+      saveName(true);
     }
+  });
+  // Leaving the field saves too, as the menu's name row does; Escape has already closed it, so it doesn't count.
+  field.addEventListener("blur", () => {
+    if (naming && !saving) saveName(false);
   });
 
   sync();

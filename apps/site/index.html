@@ -66,8 +66,6 @@
       .gh svg { display: block; transition: transform 0.26s var(--ease); }
       .gh:hover, .gh:focus-visible { color: var(--strong); }
       .gh:hover svg { transform: translateY(-1px); }
-      .status { font-size: 13px; color: var(--muted); text-decoration: none; }
-      .status:hover { color: var(--strong); }
       .more-links { display: flex; gap: 22px; align-items: baseline; margin-left: auto; }
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
@@ -94,20 +92,37 @@
       a:hover { text-decoration-color: var(--strong); }
       h1 { font-size: clamp(40px, 5vw, 58px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; color: var(--strong); margin: 0; }
 
-      /* ---------- Hero: words and actions left, the showcase right, tops aligned ---------- */
+      /* ---------- Hero: the words and four steps left, the showcase right, tops aligned ---------- */
       /* Beside the words the showcase never narrows below 440 px, so its scenes keep the room they're drawn for. */
-      .hero { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; padding: 32px 0 48px; }
+      .hero {
+        display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); grid-template-rows: auto 1fr;
+        grid-template-areas: "intro ad" "start ad"; column-gap: 48px; align-items: start; padding: 32px 0 48px;
+      }
+      .intro { grid-area: intro; } .start { grid-area: start; } .ad { grid-area: ad; }
       .lede { font-size: 18px; color: var(--muted); margin: 18px 0 0; max-width: 27em; }
       .lede b { font-weight: 500; color: var(--ink); }
 
-      /* Two actions: copy the prompt (one click), or pick how to install. */
-      .actions { position: relative; display: grid; grid-template-columns: 240px; gap: 10px; margin-top: 28px; }
-      .actions .btn { justify-content: center; position: relative; }
-      .actions .btn .chev { position: absolute; right: 14px; }
+      /* The round trip in four numbered steps, the page's one main button in the first. */
+      .steps { list-style: none; margin: 26px 0 0; padding: 0; display: grid; gap: 13px; }
+      .steps li { display: grid; grid-template-columns: 24px 1fr; gap: 12px; align-items: start; font-size: 15.5px; line-height: 1.5; color: var(--muted); }
+      .steps .n { display: grid; place-items: center; width: 22px; height: 22px; margin-top: 1px; border-radius: 50%; border: 1px solid var(--violet); color: var(--violet); font-size: 12px; font-weight: 600; }
+      .steps li:first-child .n { margin-top: 8px; }
+      .steps b { font-weight: 600; color: var(--strong); margin-right: 4px; }
+      .steps .first { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+      .steps .first b { margin-right: 0; }
+      .steps .btn { padding: 9px 14px; font-size: 14.5px; gap: 8px; white-space: nowrap; }
+      /* Quiet links: muted words, underlined in the line colour until hovered. */
+      .quiet { color: var(--muted); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; transition: color 0.2s var(--ease), text-decoration-color 0.2s var(--ease); }
+      .quiet:hover, .quiet:focus-visible { color: var(--strong); text-decoration-color: var(--strong); }
+      .small { font-size: 14px; color: var(--faint); margin: 10px 0 0; }
+      /* On a wide screen the steps are on the first screen, so arriving at #steps (create-html.html sends people
+         there) leaves the page at its top; stacked, it lands on the steps. */
+      #steps { scroll-margin-top: 100vh; }
+
       .btn {
         appearance: none; display: inline-flex; align-items: center; gap: 9px; font: 500 15px var(--sans); border-radius: 9px;
         padding: 12px 16px; cursor: pointer; border: 1px solid var(--line); background: var(--paper); color: var(--strong);
-        transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+        transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease), transform 0.2s var(--ease);
       }
       .btn:hover { background: var(--bone); }
       .btn:not(.primary) { border-color: #b4b2a8; }
@@ -115,47 +130,31 @@
       .btn:active { transform: scale(0.98); }
       .btn.primary { background: var(--strong); border-color: var(--strong); color: #fff; }
       .btn.primary:hover { background: #2a2a2a; }
-      .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
-      .btn .chev { transition: transform 0.26s var(--ease); }
-      .btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
-      .ok { display: none; }
-      .copied .ok { display: block; animation: pop 0.3s var(--ease); }
-      @keyframes pop { from { transform: scale(0.6); opacity: 0; } }
-      .copied .ic { display: none; }
-      .choices {
-        position: absolute; left: 0; top: calc(100% + 8px); z-index: 10; width: 340px; padding: 6px; background: var(--paper);
-        border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-        opacity: 0; transform: translateY(-4px); pointer-events: none; transition: opacity 0.2s var(--exit), transform 0.2s var(--exit);
-      }
-      .choices.open { opacity: 1; transform: none; pointer-events: auto; transition: opacity 0.26s var(--ease), transform 0.26s var(--ease); }
-      .choices .sep { height: 1px; background: var(--line); margin: 6px 8px; }
-      .choice {
-        appearance: none; border: 0; background: none; width: 100%; text-align: left; cursor: pointer; display: grid;
-        grid-template-columns: 30px 1fr auto; gap: 0 10px; align-items: center; padding: 9px 10px; border-radius: 8px;
-        font: 14px var(--sans); color: var(--strong); text-decoration: none; transition: background-color 0.15s var(--ease);
-      }
-      .choice:hover, .choice:focus-visible { background: var(--bone); }
-      .choice .glyph { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); display: grid; place-items: center; background: var(--paper); }
-      .choice small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
-      .choice .state { font-size: 12px; color: var(--violet); opacity: 0; transition: opacity 0.2s var(--ease); }
-      .choice.copied .state { opacity: 1; }
-      .done { font-size: 13px; color: var(--muted); min-height: 20px; margin: 10px 0 0; opacity: 0; transition: opacity 0.26s var(--ease); }
-      .done.show { opacity: 1; }
+      .btn:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      /* Copy: the icon and the label cross-fade to a check and "Copied", and ease back; the button keeps its width. */
+      .ics, .labels { display: inline-grid; justify-items: start; }
+      .ics > *, .labels > * { grid-area: 1 / 1; transition: opacity 0.35s var(--ease), transform 0.35s var(--ease); }
+      .ok, .said { opacity: 0; } .ok { transform: scale(0.6); }
+      .copied .ok, .copied .said { opacity: 1; transform: none; transition-duration: 0.3s; }
+      .copied .ic, .copied .label { opacity: 0; }
+      .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-      .try { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+      /* Try it on this page: the shortcut as the visitor's keyboard labels it, or, on a touch screen, the taps. */
+      .try { margin: 16px 0 0; font-size: 15px; color: var(--muted); }
       .keys { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .try .touch { display: none; }
+      @media (hover: none) and (pointer: coarse) { .try .keys { display: none; } .try .touch { display: inline; } }
       [data-shortcut] { display: inline-flex; gap: 4px; }
       kbd {
         display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px;
         font: 500 14px/1 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; color: var(--ink);
         background: var(--bone); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px;
       }
-      /* Where it lives and where feedback goes: one calm line under the actions. */
-      /* "Stays on your device": a lock and a short note on hover, focus or tap. */
 
       /* ---------- The showcase: Document → Slides → Website ---------- */
-      /* The showcase has a smallest size: on a screen narrower than that it scrolls sideways rather than squeeze or cut its scenes. */
-      .ad { min-width: 0; overflow-x: auto; }
+      /* The showcase has a smallest size: on a screen narrower than that it scrolls sideways rather than squeeze or cut its scenes.
+         Its padding (taken back by the margin) keeps its controls' focus rings inside, so they're never cut off. */
+      .ad { min-width: 0; overflow-x: auto; padding: 4px; margin: -4px; }
       .viewport { min-width: 320px; overflow: hidden; border: 1px solid #c4c2b9; border-radius: 14px; background: #e6e5de; touch-action: pan-y; }
       /* The moving demo is never a target itself: pointing anywhere in it picks the whole showcase to comment on. */
       .track { display: flex; transition: transform 0.7s var(--move); pointer-events: none; }
@@ -224,6 +223,9 @@
       .cursor.down svg { transform: scale(0.82); }
       .cursor::before { content: ""; position: absolute; left: -9px; top: -9px; width: 22px; height: 22px; border-radius: 50%; background: rgba(83, 74, 183, 0.22); transform: scale(0.3); opacity: 0; transition: transform 0.3s var(--ease), opacity 0.4s var(--ease); }
       .cursor.down::before { transform: scale(1); opacity: 1; }
+      /* On a touch screen the pointer is a fingertip, centred on where it acts. */
+      .cursor .finger { display: none; position: absolute; left: -13px; top: -13px; transform-origin: 13px 13px; }
+      @media (hover: none) and (pointer: coarse) { .cursor .arrow { display: none; } .cursor .finger { display: block; } }
 
       /* Document */
       .doc .page { position: absolute; left: 36px; right: 36px; top: 46px; }
@@ -303,7 +305,7 @@
       .tryit:hover { background: var(--bone); }
       .tryit svg { transition: transform 0.26s var(--ease); }
       .tryit:hover svg { transform: translateX(2px); }
-      .tab:focus-visible, .pause:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+      .tab:focus-visible, .pause:focus-visible, .tryit:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 
       footer { border-top: 1px solid var(--line); padding: 22px 0 28px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
@@ -311,7 +313,7 @@
       .rise.in { opacity: 1; transform: none; }
       @media (prefers-reduced-motion: reduce) {
         .agents-menu { transform: none !important; }
-        .rise, .choices, .choices.open { transform: none; transition: opacity 0.16s ease-in-out; transition-delay: 0s; }
+        .rise { transform: none; transition: opacity 0.16s ease-in-out; transition-delay: 0s; }
         .btn:active { transform: none; }
         .track, .canvas { transition: none; }
         .cbox, .slides .pin, .selicon { transform: none !important; }
@@ -321,7 +323,12 @@
         .cursor { display: none; }
       }
       @media (max-width: 900px) {
-        .hero { grid-template-columns: 1fr; gap: 36px; }
+        /* Stacked: the headline, the sentence and the try line, then the showcase, then the steps (the script moves the
+           showcase and the try line, so reading and keyboard order follow what is shown). */
+        .hero { grid-template-columns: 1fr; grid-template-rows: none; grid-template-areas: none; }
+        .intro, .start, .ad { grid-area: auto; }
+        .hero > .ad { margin-top: 20px; margin-bottom: -4px; }
+        #steps { scroll-margin-top: 16px; }
       }
       @media (max-width: 680px) {
         main { padding: 0 20px; }
@@ -336,15 +343,10 @@
         .controls { flex-wrap: wrap; row-gap: 10px; }
         .tab { padding: 6px 8px 12px; }
         .tab .prog { left: 8px; right: 8px; }
-        .actions { grid-template-columns: 1fr; }
-        .choices { width: 100%; }
+        .steps li { font-size: 15px; }
+        .steps li:first-child .n { margin-top: 1px; }
+        .steps .first .btn { flex-basis: 100%; justify-content: center; padding: 12px 16px; font-size: 15px; margin-top: 4px; }
       }
-      .actions.two { grid-template-columns: 340px; }
-      .actions.two .btn { justify-content: flex-start; gap: 12px; padding-right: 16px; }
-      .actions.two .btn .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 600; background: rgba(255,255,255,.18); }
-      .actions.two .btn:not(.primary) .num { background: var(--bone); color: var(--strong); }
-      .actions.two .btn svg { margin-left: auto; transition: transform 0.26s var(--ease); } .actions.two .btn:hover svg { transform: translateX(3px); }
-      .actions.two a.btn { text-decoration: none; }
 
     </style>
   </head>
@@ -362,25 +364,31 @@
       </header>
 
       <section class="hero">
-        <div data-pipeup-id="intro">
+        <div class="intro" data-pipeup-id="intro">
           <h1 class="rise">Feedback for<br />any HTML.</h1>
           <p class="lede rise" style="--i: 1">
-            People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Their feedback
-            comes back ready for your AI to act on.
+            People comment right on your page: documents, decks or whole sites. <b>No accounts, no servers.</b> Comments
+            stay in each person's browser until they send them to you.
           </p>
-          <div class="actions two rise" style="--i: 2">
-            <a class="btn primary go" href="add-comments.html"><span class="num">1</span><span class="label">Add comments to an HTML</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-            <a class="btn go" href="create-html.html"><span class="num">2</span><span class="label">Create comment-enabled HTML</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-          </div>
-          <p class="try rise" style="--i: 3"><span class="keys">Press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click on anything.</span></p>
         </div>
 
+        <div class="start" id="steps" data-pipeup-id="steps">
+          <ol class="steps rise" style="--i: 2">
+            <li><span class="n">1</span><span class="first"><b>Copy the prompt</b><button class="btn primary" type="button" data-scopy="b"><span class="ics"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></svg><svg class="ok" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg></span><span class="labels"><span class="label">Copy prompt</span><span class="said" aria-hidden="true">Copied</span></span></button><span>One copy per page. <a class="quiet" href="prompt.html">What it says</a></span></span></li>
+            <li><span class="n">2</span><span><b>Paste it into your AI</b> with your HTML file: Claude, ChatGPT or any chat. Save the file it gives back.</span></li>
+            <li><span class="n">3</span><span><b>Send that file</b> with your AI's note. People comment in their browser and send them back. <a class="quiet" href="add-comments.html">How reviewing works</a></span></li>
+            <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes.</span></li>
+          </ol>
+          <p class="try rise" style="--i: 3"><span class="keys">Try it on this page: press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click anything.</span><span class="touch">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</span></p>
+          <p class="small rise" style="--i: 3">Adding it yourself? <a href="details.html">The script tag, licence and size.</a></p>
+        </div>
         <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides, a website and with the keyboard">
           <div class="viewport" data-pipeup-id="showcase" data-pipeup-label="Showcase">
             <div class="track">
               <!-- Document: select words, then comment -->
               <div class="scene" role="group" aria-roledescription="slide" aria-label="Document">
-                <div class="win doc" data-scene>
+                <p class="sr">Someone selects the words “20% lift” in a document and comments: “Is 20% realistic? Q2 was 8%.”</p>
+                <div class="win doc" data-scene aria-hidden="true">
                   <div class="bar-dots"><i></i><i></i><i></i></div>
                   <div class="canvas">
                     <div class="content">
@@ -401,13 +409,14 @@
                       <div class="fold box"><div><div class="bts"><span class="cnl">Cancel</span><span class="send">Comment</span></div></div></div>
                       <div class="fold card"><div><div class="reply">Reply or add others with @</div></div></div>
                     </div>
-                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                    <span class="cursor" aria-hidden="true"><svg class="arrow" width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg><svg class="finger" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="rgba(83,74,183,0.16)" stroke="#534ab7" stroke-width="1.5" /></svg></span>
                   </div>
                 </div>
               </div>
               <!-- Slides: drop a pin on the chart, then comment -->
               <div class="scene" role="group" aria-roledescription="slide" aria-label="Slides">
-                <div class="win slides" data-scene>
+                <p class="sr">Someone pins a comment to the last bar of a chart on a slide: “Make Q4 the only coloured bar.”</p>
+                <div class="win slides" data-scene aria-hidden="true">
                   <div class="bar-dots"><i></i><i></i><i></i></div>
                   <div class="canvas">
                     <div class="content">
@@ -424,13 +433,14 @@
                       <div class="fold box"><div><div class="bts"><span class="cnl">Cancel</span><span class="send">Comment</span></div></div></div>
                       <div class="fold card"><div><div class="reply">Reply or add others with @</div></div></div>
                     </div>
-                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                    <span class="cursor" aria-hidden="true"><svg class="arrow" width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg><svg class="finger" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="rgba(83,74,183,0.16)" stroke="#534ab7" stroke-width="1.5" /></svg></span>
                   </div>
                 </div>
               </div>
               <!-- Website: pick the button, then comment -->
               <div class="scene" role="group" aria-roledescription="slide" aria-label="Website">
-                <div class="win site" data-scene>
+                <p class="sr">Someone picks the Start free button on a website and comments: “Say what's free: no card needed?”</p>
+                <div class="win site" data-scene aria-hidden="true">
                   <div class="bar-dots"><i></i><i></i><i></i></div>
                   <div class="canvas">
                     <div class="content">
@@ -448,13 +458,14 @@
                       <div class="fold box"><div><div class="bts"><span class="cnl">Cancel</span><span class="send">Comment</span></div></div></div>
                       <div class="fold card"><div><div class="reply">Reply or add others with @</div></div></div>
                     </div>
-                    <span class="cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg></span>
+                    <span class="cursor" aria-hidden="true"><svg class="arrow" width="18" height="20" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round" /></svg><svg class="finger" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="rgba(83,74,183,0.16)" stroke="#534ab7" stroke-width="1.5" /></svg></span>
                   </div>
                 </div>
               </div>
               <!-- Keyboard: no pointer; the block cursor moves as keys are pressed, each key captioned -->
               <div class="scene" role="group" aria-roledescription="slide" aria-label="Keyboard">
-                <div class="win kb" data-scene>
+                <p class="sr">With no mouse, someone turns on commenting with the shortcut, moves to a paragraph with Tab and the arrow keys, presses Enter and comments: “Give the date, not just summer.”</p>
+                <div class="win kb" data-scene aria-hidden="true">
                   <div class="bar-dots"><i></i><i></i><i></i></div>
                   <div class="canvas">
                     <div class="content">
@@ -525,15 +536,44 @@
       document.querySelectorAll(".rise").forEach((el) => io.observe(el));
       const isMac = /Mac|iP(hone|ad|od)/.test(navigator.platform);
       if (!isMac) document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd><kbd>Alt</kbd><kbd>C</kbd>"));
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      // Stacked in one column, the try line joins the sentence and the showcase comes before the steps; side by side, the
+      // try line is under the steps and the showcase is on the right. They move, so reading and keyboard order follow
+      // what is shown.
+      (() => {
+        const hero = document.querySelector(".hero");
+        const [intro, start, ad] = [".intro", ".start", ".ad"].map((s) => hero.querySelector(s));
+        const tryLine = hero.querySelector(".try"), small = start.querySelector(".small");
+        const stacked = matchMedia("(max-width: 900px)");
+        const place = () => {
+          if (stacked.matches) { intro.append(tryLine); start.before(ad); }
+          else { small.before(tryLine); hero.append(ad); }
+        };
+        place();
+        stacked.addEventListener("change", place);
+      })();
 
       // ---------- The showcase: each scene acts out a comment being added, then the next slides in ----------
       (() => {
         const SCENE_MS = 10000;
-        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
         const track = document.querySelector(".track");
         const scenes = [...document.querySelectorAll("[data-scene]")];
         const tabs = [...document.querySelectorAll(".tab")];
         const pauseBtn = document.querySelector(".pause");
+        const ad = document.querySelector(".ad");
+        const canHover = matchMedia("(hover: hover)");
+        // It holds still while the pointer or keyboard focus is on it, and while the visitor is commenting on this page
+        // (comment mode, Pipeup's menu or All comments is open, or they're typing in one of its boxes), so a real comment
+        // never sits on a pretend one.
+        const held = () => {
+          if (canHover.matches && ad.matches(":hover")) return true;
+          if (ad.querySelector(":focus-visible")) return true;
+          const pipeup = document.querySelector("pipeup-root")?.shadowRoot;
+          if (!pipeup) return false;
+          if (pipeup.querySelector('.launch .mode.on, .launch .mode[aria-expanded="true"], .layer.listing')) return true;
+          return !!pipeup.activeElement?.matches("textarea, input, [contenteditable]");
+        };
         // When each step happens, in ms into the scene: chosen, marked, comment opens (the view slides over), posted.
         // `still`: the moment shown with reduced motion (the end, unless a scene says otherwise).
         const POINTER = { steps: [[1200, "s1"], [2400, "s2"], [3200, "s3"], [7800, "s4"]], typeFrom: 4300, typeTo: 6700 };
@@ -664,6 +704,8 @@
           elapsed = reduced ? SCENE_MS : 0;
           track.style.transform = `translateX(${-index * 100}%)`;
           tabs.forEach((t, k) => { t.setAttribute("aria-selected", String(k === index)); t.tabIndex = k === index ? 0 : -1; });
+          // Only the scene on show reaches a screen reader.
+          scenes.forEach((s, k) => s.parentElement.setAttribute("aria-hidden", String(k !== index)));
           apply(scenes[index], elapsed);
           // The scene we left resets once it has slid away.
           if (prev !== index) setTimeout(() => prev !== index && apply(scenes[prev], 0), 750);
@@ -671,7 +713,7 @@
         function frame(now) {
           const dt = Math.min(now - last, 100);
           last = now;
-          if (playing) {
+          if (playing && !held()) {
             elapsed += dt;
             if (elapsed >= SCENE_MS) show(index + 1);
             else apply(scenes[index], elapsed);
@@ -722,6 +764,7 @@
         document.addEventListener("click", (e) => { if (!agents.contains(e.target)) setAgents(false); });
       })();
     </script>
+    <script src="prompts.js"></script>
     <script src="pipeup.min.js"></script>
   </body>
 </html>

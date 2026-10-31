@@ -275,9 +275,12 @@ export async function comments(options?: { all?: boolean; edition?: boolean }): 
   return (await current).comments(options);
 }
 
-/** Pages that set data-pipeup-doc (on <html> or a loading line) mount themselves, unless data-pipeup-auto="off". */
+/**
+ * The script line alone is enough: every page mounts itself, unless data-pipeup-auto="off" (on <html> or a loading
+ * line). A page without data-pipeup-doc is known by its address.
+ */
 export function autoMount(): void {
-  if (setting("data-pipeup-doc") === null || setting("data-pipeup-auto") === "off") return;
+  if (setting("data-pipeup-auto") === "off") return;
   const go = () => void mount().catch((e: unknown) => console.error(e));
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go, { once: true });
   else go();

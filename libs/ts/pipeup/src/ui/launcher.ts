@@ -941,8 +941,10 @@ export function createLauncher(ctx: Ctx): View {
   );
   startRow.dataset.item = "comment";
   startRow.setAttribute("aria-keyshortcuts", SHORTCUT_ARIA);
-  /** Add-ons' status, one quiet line at the top of the menu. */
+  /** One quiet line at the top of the menu: the add-ons' status, or where comments go without one. */
   const statusRow = h("div", { class: "sec", role: "presentation" });
+  // One line at the menu's width; the box's glyph carries the longer sentence.
+  const HERE = "Only in this browser until you send them.";
   const sepA = sep();
   const sepB = sep();
   /** Rows add-ons added, kept by item so a rebuilt menu reuses them. */
@@ -1014,10 +1016,8 @@ export function createLauncher(ctx: Ctx): View {
     lookEnd.textContent = lookWord;
     set(allRow, "All comments", "Every thread, and where it is");
     count.textContent = n ? String(n) : "";
-    const status = ctx.addons.statusText();
-    statusRow.textContent = status;
-    if (!status) statusRow.remove();
-    else if (!statusRow.isConnected && menu.contains(idRow)) menu.prepend(statusRow);
+    statusRow.textContent = ctx.addons.statusText() || HERE;
+    if (!statusRow.isConnected && menu.contains(idRow)) menu.prepend(statusRow);
     for (const item of ctx.addons.menuRows) {
       const b = extra.get(item);
       if (!b) continue;

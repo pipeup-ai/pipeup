@@ -3,7 +3,7 @@ import type { Listener, PipeupDocument } from "../document";
 import { animalName } from "../model/animals";
 import type { SignedOp, Thread } from "../model/types";
 import { avatar } from "./animals";
-import { markAgain, threadMarks, threadNotes } from "./notes";
+import { commentMarks, markAgain, threadMarks, threadNotes } from "./notes";
 import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
@@ -31,6 +31,7 @@ export type Capability =
   | "here"
   | "sign"
   | "listnote"
+  | "commentmark"
   | "reactions"
   | "identity"
   | "dialog"
@@ -51,6 +52,7 @@ const CAPABILITIES: readonly Capability[] = [
   "here",
   "sign",
   "listnote",
+  "commentmark",
   "reactions",
   "identity",
   "dialog",
@@ -223,6 +225,11 @@ export interface AddonHost {
   setThreadNote(thread: string, text: string | null): void;
   /** A quiet line at the end of a thread, with a still AI ring ("Reviewed by AI · nothing to add"); null removes it. */
   setThreadMark(thread: string, text: string | null, again?: () => void): void;
+  /**
+   * A quiet mark on one comment, a root or a reply: under its words in an open thread, and as a small glyph beside its
+   * time on a closed card, with `tip` as its tooltip ("Only in this browser"); null removes it. Capability `commentmark`.
+   */
+  setCommentMark(comment: string, mark: { text: string; tip?: string } | null): void;
   addComposerTool(tool: ComposerTool): Off;
   openPanel(content: Node, options: PanelOptions): PanelHandle;
   addStyles(css: string): Off;
@@ -326,6 +333,7 @@ export class Surface {
     setComposerSource({
       tools: () => this.toolList,
       note: () => [...this.notes.values()].at(-1) ?? null,
+      reporting: () => this.statuses.size > 0,
     });
     for (const t of PRESSES) window.addEventListener(t, this.onPress, true);
   }
@@ -393,6 +401,21 @@ export class Surface {
       if (again) markAgain.set(thread, again);
       else markAgain.delete(thread);
       mine.add(thread);
+    }
+    this.repaint();
+  }
+
+  /** One mark per comment: the latest add-on to set it owns it, and only the owner's null (or removal) takes it away. */
+  setCommentMark(id: string, comment: string, mark: { text: string; tip?: string } | null): void {
+    const had = commentMarks.get(comment);
+    if (mark === null) {
+      if (had?.by !== id) return;
+      commentMarks.delete(comment);
+    } else {
+      const text = String(mark.text);
+      const tip = mark.tip === undefined ? undefined : String(mark.tip);
+      if (had?.by === id && had.text === text && had.tip === tip) return;
+      commentMarks.set(comment, { text, tip, by: id });
     }
     this.repaint();
   }
@@ -766,6 +789,7 @@ export class Surface {
     }
     this.marked.delete(id);
     this.places.delete(id);
+    for (const [comment, m] of commentMarks) if (m.by === id) commentMarks.delete(comment);
     this.repaint();
     this.changed(true);
   }
@@ -943,6 +967,7 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     setComposerNote: live((text) => surface.setIn(surface.notes, id, text)),
     setThreadNote: live((thread, text) => surface.setThread(id, thread, text)),
     setThreadMark: live((thread, text, again) => surface.setMark(id, thread, text, again)),
+    setCommentMark: live((comment, mark) => surface.setCommentMark(id, comment, mark)),
     addComposerTool: live((tool) => surface.addTool(id, tool)),
     openPanel: live((content, o) => surface.panel(id, content, o)),
     addStyles: live((css) => surface.addSheet(id, css)),
@@ -1014,6 +1039,8 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       stop();
       info.state = "off";
       info.reason = offReason;
+      // The reason reaches authors and agents through addons(); one line in the console says it on the page too.
+      console.warn(`pipeup: the add-on "${id}" is off: ${offReason}`);
       return;
     }
     info.state = "on";
