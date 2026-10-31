@@ -97,10 +97,13 @@ export function wordsOf(el: Element): string {
   );
 }
 
-/** "Paragraph · We will launch…": its kind and its own words, or the author's own name for it. */
+/** "Paragraph · We will launch…": its kind and its own words, the author's own name for it, or an ask's question. */
 export function labelOf(el: Element): string {
   const own = el.getAttribute("data-pipeup-label");
   if (own) return own;
+  // An ask the author put in the content (§11b): its comments answer the question.
+  const ask = el.getAttribute("data-pipeup-ask");
+  if (ask) return `Ask "${ask}"`;
   const text = wordsOf(el);
   return text ? `${kindOf(el)} · ${text}` : kindOf(el);
 }

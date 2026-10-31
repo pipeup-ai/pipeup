@@ -19,8 +19,10 @@ const BUDGETS = {
   updates: 4 * 1024,
   inbox: 8 * 1024,
   identity: 4 * 1024,
+  // Asks in the content, answered in place, and comments in place (docs/design/inline-comments.md).
+  inline: 6 * 1024,
 };
-const CORE = 62 * 1024;
+const CORE = 63 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.

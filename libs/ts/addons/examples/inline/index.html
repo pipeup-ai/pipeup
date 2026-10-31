@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="IdcfoX7tQXv_KVa9:weNTpnL4l-cjef5zse_nlDeno1P2xKQpHF6x3mLeZNQ">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Review rounds: the comment journeys</title>
+    <style>
+      body {
+        font:
+          17px/1.6 system-ui,
+          -apple-system,
+          "Segoe UI",
+          Helvetica,
+          Arial,
+          sans-serif;
+        max-width: 660px;
+        margin: 48px auto;
+        padding: 0 20px;
+        color: #222;
+        background: #fff;
+      }
+      h1 {
+        font-size: 28px;
+        line-height: 1.2;
+      }
+      figure {
+        margin: 24px 0;
+        padding: 20px;
+        border-radius: 12px;
+        background: #f4f2ec;
+      }
+      .note {
+        font-size: 14px;
+        color: #5f5e5a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 data-pipeup-id="title">Review rounds: the comment journeys</h1>
+      <p class="note" data-pipeup-id="note">
+        A worked example of the inline add-on. Answer the asks below; open this file in a second browser (or a
+        private window) to be a second reviewer, and use Copy comments or a feedback file to bring their
+        answers in.
+      </p>
+
+      <h2 data-pipeup-id="h-journeys">Journeys</h2>
+      <p data-pipeup-id="p-journeys">
+        Sam reads every open comment in order, replies to some, and resolves the rest. Ada does the same, but
+        only for comments that mention her.
+      </p>
+
+      <!-- A choice, with Other, that the author needs answered. Without the add-on, the paragraph inside shows. -->
+      <div
+        data-pipeup-id="q-journeys"
+        data-pipeup-ask="Is “Go through every comment” one journey or two?"
+        data-pipeup-ask-kind="choice"
+        data-pipeup-ask-options="One|Two"
+        data-pipeup-ask-other
+        data-pipeup-ask-needed
+      >
+        <p>Is “Go through every comment” one journey or two? Comment on this with ⇧⌥C.</p>
+      </div>
+
+      <h2 data-pipeup-id="h-requirements">Requirements</h2>
+      <!-- Agree or Needs change, on the requirement itself. -->
+      <section
+        data-pipeup-id="FR-012"
+        data-pipeup-ask="Agree with this requirement?"
+        data-pipeup-ask-kind="agree"
+        data-pipeup-ask-needed
+      >
+        <p><strong>FR-012.</strong> A reviewer can answer an ask without comment mode or a shortcut.</p>
+        <p>Agree with this requirement? Comment on this with ⇧⌥C.</p>
+      </section>
+
+      <!-- An open ask: answered in words. -->
+      <div data-pipeup-id="q-name" data-pipeup-ask="What would you call this feature?">
+        <p>What would you call this feature? Comment on this with ⇧⌥C.</p>
+      </div>
+
+      <h2 data-pipeup-id="h-hero">The home page</h2>
+      <!-- A block whose comments show in place, under it. -->
+      <figure data-pipeup-id="home-hero" data-pipeup-inline>
+        <p>
+          <strong>Comments, right on the page.</strong> One script tag. No account. Nothing sent anywhere.
+        </p>
+        <p class="note">Comment on this block with ⇧⌥C: its comments show here, under it.</p>
+      </figure>
+    </main>
+    <script src="../../../pipeup/dist/pipeup.min.js"></script>
+    <script src="../../inline/dist/inline.min.js"></script>
+  </body>
+</html>

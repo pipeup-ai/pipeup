@@ -9,6 +9,8 @@ import type { Ctx } from "./context";
 import { h } from "./dom";
 import type { ViewState } from "./here";
 import { draw } from "./icons";
+import { describeElement } from "../anchor/describe";
+import { normalizeText } from "../util/encoding";
 
 /** Bumped only for breaking changes to the add-on object, the host, AddonDocument or the data slots. */
 export const ADDON_API = 1;
@@ -32,7 +34,9 @@ export type Capability =
   | "reactions"
   | "identity"
   | "dialog"
-  | "paste";
+  | "paste"
+  | "place"
+  | "post";
 
 const CAPABILITIES: readonly Capability[] = [
   "sync",
@@ -51,6 +55,8 @@ const CAPABILITIES: readonly Capability[] = [
   "identity",
   "dialog",
   "paste",
+  "place",
+  "post",
 ];
 
 export interface NetworkUse {
@@ -175,6 +181,19 @@ export interface IdentityAccess {
   unshare(): Promise<void>;
 }
 
+/** What the reviewer sent from an add-on's own place or panel (§11b): a new thread on a block, a reply, or a change to their own comment. */
+export interface PostOptions {
+  /** A new thread's block: an element the author marked for the add-on (`data-pipeup-ask` or `data-pipeup-inline`). */
+  anchor?: Element;
+  text: string;
+  /** What the reviewer saw there (an ask's question), kept with a new thread instead of the block's own words. */
+  excerpt?: string;
+  /** The comment answered. */
+  replyTo?: string;
+  /** The reviewer's own comment, changed to `text`. */
+  edit?: string;
+}
+
 export interface AddonHost {
   readonly api: number;
   /** The core's version, for diagnostics only. */
@@ -230,11 +249,31 @@ export interface AddonHost {
    * under the agent's name, so it shows as "pasted by you". It never resolves, reopens, edits or deletes.
    */
   paste(thread: string, agent: string, text: string, note?: string): Promise<void>;
+  /**
+   * A shadow root to draw in, inside `element`: one the author marked for add-ons (`data-pipeup-ask` or
+   * `data-pipeup-inline`), and nothing else (it throws). The same element gives the same root. It follows Pipeup's
+   * light and dark looks, comment mode leaves it to the add-on, and it is gone, with the page as it was, at teardown.
+   */
+  place(element: Element): ShadowRoot;
+  /**
+   * Posts what the reviewer wrote or chose and sent themselves, from this add-on's own place or panel: it is refused
+   * (rejects) unless a press or key there started it. Resolves to the new comment's id (or, for `edit`, the one changed).
+   */
+  post(o: PostOptions): Promise<string>;
 }
 
 const ID = /^[a-z][a-z0-9-]{1,23}$/;
+/** The presses and keys that count as the reviewer acting (what the browser counts as a user activation). */
+/** The parts of Pipeup's look an add-on's CSS uses, as `--pu-<name>`. */
+const LOOK = ["text", "muted", "faint", "line", "surface", "soft", "hover", "shadow", "ease"];
+const PRESSES = ["pointerdown", "pointerup", "keydown", "click"];
 const RESERVED = new Set(["local", "file", "page", "user", "pipeup", "presence", "sync"]);
 const ANNOUNCE_MS = 10_000;
+/** The elements an author marks for add-ons to draw in (§11b). */
+const MARKS = "[data-pipeup-ask],[data-pipeup-inline]";
+const PLACED = "data-pipeup-placed";
+/** The one rule Pipeup puts in the page: an ask's own content (its fallback) steps aside while an add-on draws it. */
+const ASIDE = `[data-pipeup-ask][${PLACED}]>:not(pipeup-place){display:none}`;
 
 /**
  * Everything add-ons put on the page, held by the app (not by the views) so it survives layout rebuilds. Each
@@ -266,6 +305,15 @@ export class Surface {
   private last = 0;
   private timer = 0;
   private uiKey = "";
+  /** Where each add-on draws in the page: marked element → its <pipeup-place>. */
+  private readonly places = new Map<string, Map<Element, HTMLElement>>();
+  private aside: Off | null = null;
+  private looked = false;
+  /** Where the reviewer's latest press or key happened: `post` is only for what they sent from the add-on's own UI. */
+  private pressed: EventTarget[] = [];
+  private readonly onPress = (e: Event) => {
+    if (e.isTrusted) this.pressed = e.composedPath();
+  };
 
   constructor(
     readonly ctx: Ctx,
@@ -276,6 +324,7 @@ export class Surface {
       tools: () => this.toolList,
       note: () => [...this.notes.values()].at(-1) ?? null,
     });
+    for (const t of PRESSES) window.addEventListener(t, this.onPress, true);
   }
 
   subscribe(fn: (structure: boolean) => void): Off {
@@ -499,8 +548,109 @@ export class Surface {
     };
   }
 
+  /** The data-pipeup-id of each block an add-on draws in: its threads show there, not in the margin. */
+  inPlace(): Set<string> {
+    const ids = new Set<string>();
+    for (const m of this.places.values())
+      for (const el of m.keys()) ids.add(el.getAttribute("data-pipeup-id") ?? "");
+    return ids;
+  }
+
+  place(id: string, el: Element): ShadowRoot {
+    const mine = this.places.get(id) ?? this.places.set(id, new Map()).get(id)!;
+    const had = mine.get(el);
+    if (had) return had.shadowRoot!;
+    if (
+      !(el instanceof Element) ||
+      !el.matches(MARKS) ||
+      !this.ctx.root.contains(el) ||
+      el.closest(`[${PLACED}]`)
+    )
+      throw new Error("pipeup: not an element marked for add-ons");
+    const doc = el.ownerDocument;
+    this.aside ??= this.pageSheet(doc, ASIDE);
+    const box = doc.createElement("pipeup-place");
+    const root = box.attachShadow({ mode: "open" });
+    const look =
+      ":host{all:initial;display:block;font:14px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--pu-text)}";
+    const Sheet = doc.defaultView?.CSSStyleSheet;
+    if (Sheet && "adoptedStyleSheets" in root) {
+      const sheet = new Sheet();
+      sheet.replaceSync(look);
+      root.adoptedStyleSheets = [sheet];
+    } else root.append(h("style", {}, look));
+    this.colour(box);
+    el.setAttribute(PLACED, "");
+    el.append(box);
+    mine.set(el, box);
+    this.own(id, () => {
+      box.remove();
+      el.removeAttribute(PLACED);
+      mine.delete(el);
+      if (![...this.places.values()].some((m) => m.size)) {
+        this.aside?.();
+        this.aside = null;
+      }
+      this.repaint();
+    });
+    this.repaint();
+    return root;
+  }
+
+  /** Gives a place Pipeup's look as it is now, light or dark: the colours and easing add-ons use (`--pu-text`…). */
+  private colour(box: HTMLElement): void {
+    const look = getComputedStyle(this.ctx.layer);
+    for (const k of LOOK) box.style.setProperty(`--pu-${k}`, look.getPropertyValue(`--pu-${k}`));
+  }
+
+  /** A stylesheet for the page itself, without adding an element where it can (a constructed sheet). */
+  private pageSheet(doc: Document, css: string): Off {
+    const Sheet = doc.defaultView?.CSSStyleSheet;
+    if (Sheet && "adoptedStyleSheets" in doc) {
+      const sheet = new Sheet();
+      sheet.replaceSync(css);
+      doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];
+      return () => void (doc.adoptedStyleSheets = doc.adoptedStyleSheets.filter((x) => x !== sheet));
+    }
+    const node = doc.head.appendChild(h("style", {}, css));
+    return () => node.remove();
+  }
+
+  /** The reviewer's latest press or key was in this add-on's place or panel, and the browser still counts it. */
+  private sentFrom(id: string): boolean {
+    const boxes = [...(this.places.get(id)?.values() ?? [])];
+    return (
+      (navigator as { userActivation?: { isActive: boolean } }).userActivation?.isActive !== false &&
+      this.pressed.some(
+        (n) => boxes.includes(n as HTMLElement) || (n instanceof HTMLElement && n.dataset.addon === id),
+      )
+    );
+  }
+
+  async post(id: string, o: PostOptions): Promise<string> {
+    if (!this.sentFrom(id)) throw new Error("pipeup: not sent by the reviewer here");
+    const { doc, root, here } = this.ctx;
+    const text = String(o.text ?? "");
+    if (o.edit) {
+      await doc.edit(o.edit, text);
+      return o.edit;
+    }
+    if (o.replyTo) return doc.reply(o.replyTo, text);
+    const el = o.anchor;
+    if (!el || !this.places.get(id)?.has(el) || !el.getAttribute("data-pipeup-id"))
+      throw new Error("pipeup: not a marked block with a data-pipeup-id");
+    const anchor = describeElement(el, root, undefined, here.view(el));
+    if (o.excerpt) anchor.snapshot = normalizeText(o.excerpt).slice(0, 200);
+    return doc.comment(anchor, text);
+  }
+
   /** Runs once per animation frame, after the views; a callback that throws is removed. */
   frame(): void {
+    const dark = this.ctx.layer.classList.contains("dark");
+    if (dark !== this.looked) {
+      this.looked = dark;
+      for (const m of this.places.values()) for (const box of m.values()) this.colour(box);
+    }
     for (const fn of [...this.frames]) this.call(this.frames, fn);
     if (this.uis.size === 0) return;
     const ui = this.uiState();
@@ -569,7 +719,7 @@ export class Surface {
 
   dialog(id: string, content: Node, label: string): DialogHandle {
     this.ctx.layer.querySelector(".dlg")?.remove();
-    const box = h("div", { class: "dlg", role: "dialog", "aria-label": label }, content);
+    const box = h("div", { class: "dlg", role: "dialog", "aria-label": label, "data-addon": id }, content);
     let off: Off = () => {};
     const close = () => {
       box.classList.remove("show");
@@ -608,11 +758,13 @@ export class Surface {
       markAgain.delete(thread);
     }
     this.marked.delete(id);
+    this.places.delete(id);
     this.repaint();
     this.changed(true);
   }
 
   destroy(): void {
+    for (const t of PRESSES) window.removeEventListener(t, this.onPress, true);
     window.clearTimeout(this.timer);
     setComposerSource(null);
     this.subs.clear();
@@ -823,6 +975,11 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
       alive()
         ? doc.paste(thread, agent, text, note)
         : Promise.reject(new Error("pipeup: this add-on is off")),
+    place: (el) => {
+      if (!alive()) throw new Error("pipeup: this add-on is off");
+      return surface.place(id, el);
+    },
+    post: (o) => (alive() ? surface.post(id, o) : Promise.reject(new Error("pipeup: this add-on is off"))),
   };
   let teardown: void | Teardown;
   let offReason: string | undefined;

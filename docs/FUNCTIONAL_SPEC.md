@@ -981,7 +981,7 @@ which Pipeup discards. It also can't tell when something is missing.
 - **Add-ons published by the Pipeup project:**
   - send only to the services they name;
   - send nothing before the reviewer agrees, where they need agreement (going live, dictating);
-  - never change the page's own content, except inside an element the author marked for that add-on (§11b, proposed);
+  - never change the page's own content, except inside an element the author marked for that add-on (§11b);
   - never post, edit or resolve anything on a reviewer's behalf; they may only fill in words that the
     reviewer then sends;
   - never send one reviewer's comments to a sharing service on another reviewer's behalf.
@@ -1003,7 +1003,8 @@ permission, a registration, or a place in its npm scope.
 
 - **A guide, in plain words, on one page.** It explains, in this order: what an add-on is and what a page's author
   does to include one; what an add-on can do (add a row to the menu, open a panel, show a note on a thread, show a
-  status, read the comments, and bring in other people's comments, which Pipeup checks as strictly as any); what it
+  status, read the comments, bring in other people's comments, which Pipeup checks as strictly as any, draw inside an
+  element the author marked for it, and post what the reviewer sent from its own box); what it
   can't do (make Pipeup accept a comment that is forged, altered or for another document); the one plain sentence
   every add-on gives about what it sends and to whom, and that reviewers are shown it before anything is sent; how a
   page includes the add-on; how to try it and test it; and what the Pipeup project does and doesn't stand behind (it
@@ -1139,7 +1140,7 @@ permission, a registration, or a place in its npm scope.
 
 ## 11b. Inline comments (inline add-on)
 
-*Proposed (not built).* Today every comment starts with the reviewer: comment mode, pick a block, write. An author
+*Built (inline add-on).* Today every comment starts with the reviewer: comment mode, pick a block, write. An author
 often knows what they want to ask, and where. The **inline** add-on lets the author put those asks in the content
 itself, and show a block's comments in the flow of the page. Everything after the entry point is an ordinary comment.
 
@@ -1985,3 +1986,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-27 — Copy comments › As Markdown reads as a message to a person and still guides an AI (usability study, issue I7). It opens with the title, the open comments and who wrote them, when they were copied in words, and the address; each thread leads with where it is, the quoted words or pin in a sentence, and the comments; its state, its id and the element's identifier move to its last line; replies carry no ids; and the instruction for an AI moves after the threads (section 7a).
 - 2026-10-31 — Proposed (not built): inline comments, an add-on (§11b). An author puts asks in the content (open, agree, choice), answered in place without comment mode; each answer is an ordinary comment, one per reviewer per ask, with others' answers counted only after one's own; a block can show its comments in place. Needs two additions for any add-on: posting what the reviewer wrote and sent in the add-on's own box, and drawing inside an element the author marked for it (§11a amended to match). From Designup's review rounds, where reviewers are not told what is asked. Design note: docs/design/inline-comments.md.
 - 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.
+- 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.

@@ -1,7 +1,7 @@
 # Inline comments
 
-Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §11b (proposed), and the two additions to §11a. Status: **proposed,
-for the maintainer's agreement**. Nothing is built.
+Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §11b (proposed), and the two additions to §11a. Status: **built** (2026-10-31),
+with the decisions and the differences from the proposal below.
 
 Asked for from Designup's review rounds: a design workspace wants to ask its reviewers specific questions ("Is this one
 journey or two?", "Agree with this requirement?") in the page, and get the answers back as ordinary Pipeup comments,
@@ -79,6 +79,47 @@ with everything comments already have.
   activation inside the add-on; Hide comments shows no counts or threads; teardown restores the page exactly
   (DOM snapshot before and after); light, dark and reduced motion.
 
+## As built
+
+- **Core** (`libs/ts/pipeup/src/ui/addons.ts`): two capabilities, `place` and `post`, on `Surface`.
+  - `host.place(el)` refuses (throws "not an element marked for add-ons") anything that isn't `[data-pipeup-ask]` or
+    `[data-pipeup-inline]` inside the comment root, or is already placed by another add-on; the same element gives the
+    same root. The one rule (`ASIDE`) goes in a constructed sheet on `document.adoptedStyleSheets`, so no element is
+    added (a `<style>` in `<head>` only where constructed sheets are missing), and goes when the last place does.
+  - A place's shadow root carries `:host{all:initial;…}` and Pipeup's public look: the core copies the layer's
+    `--pu-text`, `--pu-muted`, `--pu-faint`, `--pu-line`, `--pu-surface`, `--pu-soft`, `--pu-hover`, `--pu-shadow` and
+    `--pu-ease` onto the `<pipeup-place>` as it is made and whenever the look turns light or dark (checked each frame).
+    STYLES must stay one literal, so the tokens can't be shared as a constant.
+  - `host.post({ anchor, text, excerpt?, replyTo?, edit? })`. Accepted only when the reviewer's latest trusted press
+    or key (`pointerdown`, `pointerup`, `keydown` or `click`, seen on window in the capture phase) had one of this
+    add-on's places, or its panel or dialog (`data-addon`), in its composed path, and `navigator.userActivation` (where
+    the browser has it) is still active. A new thread is `describeElement(anchor)` with `excerpt` as its snapshot.
+  - `<pipeup-place>` is in `IGNORED`, so comment mode never picks it and its presses reach the add-on.
+  - Threads whose `anchor.id` is a placed block's leave the margin views (bubbles, column); the control's count and All
+    comments keep them.
+  - `labelOf` names an ask's block `Ask "<question>"`, so Copy for AI and the panel say what was asked.
+- **How an answer is recognised.** The add-on posts with `excerpt: "Asked: <question>"`. A thread on the ask's block is
+  an answer only when its snapshot starts with `Asked: ` and its first line reads as one for the ask's kind; a comment
+  made in comment mode on the block keeps the block's words as its snapshot, so it is shown but never counted. "Asked
+  as" compares the rest of the snapshot with the question now.
+- **The add-on** (`libs/ts/addons/inline/`): `asks.ts` (markup, answers, counting: pure) and `addon.ts` (drawing).
+  Choice options answer with one press; Agree, Needs change and Other open a box (Agree's words optional); Enter sends,
+  Shift+Enter starts a line. The controls redraw only when the reviewer's answer or mode changes, so words being written
+  are never redrawn away, and reply boxes are kept per thread while the list redraws.
+- **`pipeup read`** (`cli/asks.mjs`): reads the asks from the page's markup and every reviewer's latest answer, and
+  adds `## Asks` to the Markdown and `asks` to `--json`. The answer rules are repeated there in plain JavaScript (the
+  CLI is outside both budgets).
+- **Size**: core +1.0 KB gzip (61.7 → 62.7 KB), budget 62 → 63 KB, agreed with the maintainer; the add-on 4.4 KB gzip
+  of its 6 KB budget.
+- **Tests**: `addons/inline/test/asks.test.ts` (markup, each kind's words both ways, refused words, counting with merged
+  and repeated answers, deleted answers, "Asked as"); `pipeup/test/read-asks.test.ts`; `addons/e2e/inline.spec.ts`
+  (drawn in place with fallback hidden, an unnamed ask left alone, choice and Change as one edited answer, agree by
+  keyboard, an open ask by touch with 44 px targets, others' counts only after answering and none while hidden, threads
+  out of the margin, "Asked as", comments in place with a reply, comment mode leaving the controls to the add-on, `post`
+  and `place` refused, teardown's DOM snapshot, light, dark and reduced motion).
+- **Not built yet**: dictation and other add-ons' tools in an ask's box (the core would have to lend its composer tools
+  to an add-on's own box); asks added to the page after Pipeup starts (the add-on reads the page once, at setup).
+
 ## Decisions (the maintainer, 2026-10-31)
 
 - **Others' answers first: never.** No per-ask switch; counts and others' threads appear only once the reviewer has
@@ -94,3 +135,7 @@ with everything comments already have.
 
 - 2026-10-31 — Proposed, with §11b.
 - 2026-10-31 — The three open questions answered (see Decisions) and the AGENTS.md exception agreed.
+- 2026-10-31 — Built: the `place` and `post` slots, threads on placed blocks out of the margin and an ask's label in the
+  core (budget 62 → 63 KB, agreed); the `@pipeup/inline` add-on; `pipeup read`'s asks; tests, README, guide entry and
+  worked example (`libs/ts/addons/examples/inline/`). Answers are recognised by their `Asked: ` excerpt. Dictation in an
+  ask's box and asks added after start are not built yet.
