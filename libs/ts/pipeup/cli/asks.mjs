@@ -75,12 +75,20 @@ export function parseAnswer(ask, text) {
   return null;
 }
 
-/** Each ask with every reviewer's latest answer (and the question it answered, when the words have changed since). */
-export function asksWithAnswers(html, threads) {
+/** Pipeup's name for AI writers: "AI assistant", or that and more words. */
+const AI_NAME = "AI assistant";
+
+/**
+ * Each ask with every reviewer's latest answer (and the question it answered, when the words have changed since).
+ * Agents never answer asks: a thread there by an agent the page lists (`agents`), or under an AI name, isn't counted.
+ */
+export function asksWithAnswers(html, threads, agents = []) {
   return asksIn(html).map((ask) => {
     const latest = new Map();
     for (const t of [...threads].sort((a, b) => a.root.at - b.root.at)) {
       if (t.anchor.id !== ask.id || t.root.deleted || !t.anchor.snapshot?.startsWith(ASKED)) continue;
+      const name = t.root.name ?? "";
+      if (agents.includes(t.root.author) || name === AI_NAME || name.startsWith(`${AI_NAME} `)) continue;
       const answer = parseAnswer(ask, t.root.text);
       if (!answer) continue;
       const was = t.anchor.snapshot.slice(ASKED.length);

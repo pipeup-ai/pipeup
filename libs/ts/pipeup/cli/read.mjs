@@ -289,7 +289,11 @@ export async function read(o) {
   });
 
   // The asks the page puts in its content (§11b), each with every reviewer's latest answer, so an agent can work through them.
-  const asks = asksWithAnswers(html, threads);
+  const asks = asksWithAnswers(
+    html,
+    threads,
+    (attrOf(html, "data-pipeup-agents") ?? "").split(/[\s,]+/).filter(Boolean),
+  );
   if (asks.length) {
     out.asks = asks;
     out.markdown = `${out.markdown.trimEnd()}\n${asksMarkdown(asks, animalName)}`;

@@ -215,6 +215,33 @@ test("others' answers are counted only after the reviewer's own, and never while
   await expect(journeys).toContainText("Your answer: One");
 });
 
+test("a listed agent's thread on an ask is a comment there, never an answer or a count", async ({ page }) => {
+  await start(page);
+  await page.evaluate(async () => {
+    const P = (window as any).Pipeup;
+    const pu = (window as any).pu;
+    // An agent the page lists (core keeps AI names for agents' replies, so it can't open a document under one).
+    const identity = await P.createIdentity();
+    document.documentElement.setAttribute("data-pipeup-agents", identity.publicKey);
+    const bot = await P.PipeupDocument.open({
+      doc: pu.document.id,
+      store: new P.MemoryStore(),
+      identity,
+      name: "Build bot",
+    });
+    const anchor = P.describeElement(document.querySelector('[data-pipeup-id="q-journeys"]'), document.body);
+    anchor.snapshot = "Asked: Is “Go through every comment” one journey or two?";
+    await bot.comment(anchor, "One");
+    await pu.document.merge(bot.ops(), "file");
+  });
+  await adaAnswers(page, "q-journeys", "Is “Go through every comment” one journey or two?", "Two");
+  const journeys = ask(page, "q-journeys");
+  await journeys.getByRole("button", { name: "Two" }).click();
+  await expect(journeys).toContainText("2 people answered. Two: 2.");
+  await journeys.getByRole("button", { name: /3 comments/ }).click();
+  await expect(journeys).toContainText("Build bot: One");
+});
+
 test("an answer to earlier words of the question says what it answered", async ({ page }) => {
   await start(page);
   await adaAnswers(page, "q-name", "What do we call it?", "Asks");

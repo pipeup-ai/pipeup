@@ -1,4 +1,5 @@
 import type { AddonHost, Comment, PipeupAddon, Thread } from "pipeup";
+import { pageSetting } from "@pipeup/kit";
 import {
   AGREE,
   ASKED,
@@ -56,6 +57,8 @@ const nameOf = (c: Comment): string =>
   c.name ||
   (globalThis as { Pipeup?: { animalName?(k: string): string } }).Pipeup?.animalName?.(c.author) ||
   "Someone";
+/** The agents the page lists: their threads on an ask are comments, never answers. */
+const agents = (): string[] => (pageSetting("data-pipeup-agents") ?? "").split(/[\s,]+/).filter(Boolean);
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** Where one marked element draws: an ask, or a block that shows its comments in place. */
@@ -96,7 +99,7 @@ export function createAddon(): PipeupAddon {
         ".inl-asks{display:flex;flex-direction:column;gap:6px;padding:12px}.inl-asks button{padding:10px 12px;border:1px solid var(--pu-line);border-radius:8px;text-align:left;transition:background-color .2s var(--pu-ease)}.inl-asks button:hover{background:var(--pu-hover)}",
       );
       const unanswered = () =>
-        needed.filter((s) => !tally(s.ask!, host.document.threads(), host.document.me).mine);
+        needed.filter((s) => !tally(s.ask!, host.document.threads(), host.document.me, agents()).mine);
       const row = needed.length
         ? host.addMenuItem({
             id: "asks",
@@ -176,7 +179,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
 
   async function answer(choice: string, words: string): Promise<boolean> {
     const text = formatAnswer(ask!, { choice, words });
-    const mine = tally(ask!, host.document.threads(), me).mine;
+    const mine = tally(ask!, host.document.threads(), me, agents()).mine;
     err.hidden = true;
     try {
       if (mine) await host.post({ edit: mine.root.id, text });
@@ -214,7 +217,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     ready();
     const row = el("div", { class: "row" }, go);
     // Choices and agree have their Cancel in the button row above: one Cancel, never two.
-    if (ask!.kind === "open" && changing && tally(ask!, host.document.threads(), me).mine)
+    if (ask!.kind === "open" && changing && tally(ask!, host.document.threads(), me, agents()).mine)
       row.append(cancelButton());
     return el("div", {}, area, row);
   }
@@ -257,7 +260,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
       return b;
     });
     const row = el("div", { class: "row" }, ...buttons);
-    if (changing && tally(k, host.document.threads(), me).mine) row.append(cancelButton());
+    if (changing && tally(k, host.document.threads(), me, agents()).mine) row.append(cancelButton());
     controls.replaceChildren(row, words);
   }
 
@@ -272,7 +275,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     const remove = el("button", { type: "button", class: "link" }, "Remove");
     // The answer as it is now: replies may have come since it was drawn.
     remove.addEventListener("click", () =>
-      confirmRemove(tally(ask!, host.document.threads(), me).mine ?? mine),
+      confirmRemove(tally(ask!, host.document.threads(), me, agents()).mine ?? mine),
     );
     controls.replaceChildren(
       el("p", { class: "mine" }, "Your answer: ", el("b", {}, mine.root.text.split("\n")[0]!)),
@@ -376,7 +379,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
 
   function render(): void {
     const threads = host.document.threads();
-    const t = ask ? tally(ask, threads, me) : null;
+    const t = ask ? tally(ask, threads, me, agents()) : null;
     const mine = t?.mine ?? null;
     if (ask) {
       const mode = mine && !changing ? `answered:${mine.root.text}:${mine.root.edited}` : "answering";

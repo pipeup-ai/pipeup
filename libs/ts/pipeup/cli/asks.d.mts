@@ -25,6 +25,7 @@ export function parseAnswer(ask: PageAsk, text: string): { choice: string; words
 export function asksWithAnswers(
   html: string,
   threads: readonly Thread[],
+  agents?: readonly string[],
 ): (PageAsk & { answers: ReadAnswer[] })[];
 export function asksMarkdown(
   asks: (PageAsk & { answers: ReadAnswer[] })[],

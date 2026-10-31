@@ -80,4 +80,18 @@ describe("pipeup read's asks", () => {
     expect(md).toContain("- Name: `FR-012` · agree or needs change");
     expect(asksMarkdown([], () => "")).toBe("");
   });
+
+  it("leave out agents' threads: one the page lists, and one under an AI name", () => {
+    const q = "Asked: Agree with this requirement?";
+    const asks = asksWithAnswers(
+      PAGE,
+      [
+        thread("FR-012", comment("agent-key", "Build bot", "Agree", 1), q),
+        thread("FR-012", comment("k9", "AI assistant (Claude)", "Agree", 2), q),
+        thread("FR-012", comment("k2", "Sam", "Needs change: shorter", 3), q),
+      ],
+      ["agent-key"],
+    );
+    expect(asks[1]!.answers.map((a) => a.name)).toEqual(["Sam"]);
+  });
 });

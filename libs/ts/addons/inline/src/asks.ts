@@ -85,9 +85,25 @@ export function parseAnswer(ask: Ask, text: string): Answer | null {
   return null;
 }
 
-/** A thread is an answer to `ask`: on its block, kept with the question it answered, and its words read as one. */
-export function answerOf(ask: Ask, t: Thread): Answer | null {
-  if (t.anchor.id !== ask.id || !t.anchor.snapshot.startsWith(ASKED) || t.root.deleted) return null;
+/** Pipeup's name for AI writers (an agent's, or an on-device assistant's): "AI assistant", or that and more words. */
+const AI_NAME = "AI assistant";
+
+/** An agent wrote it: one the page lists (`data-pipeup-agents`), or a writer under an AI name. Agents never answer asks. */
+export const byAgent = (c: Comment, agents: readonly string[]): boolean =>
+  agents.includes(c.author) || c.name === AI_NAME || c.name.startsWith(`${AI_NAME} `);
+
+/**
+ * A thread is an answer to `ask`: on its block, kept with the question it answered, its words read as one, and
+ * written by a person (an agent's thread there stays a comment, never counted).
+ */
+export function answerOf(ask: Ask, t: Thread, agents: readonly string[] = []): Answer | null {
+  if (
+    t.anchor.id !== ask.id ||
+    !t.anchor.snapshot.startsWith(ASKED) ||
+    t.root.deleted ||
+    byAgent(t.root, agents)
+  )
+    return null;
   return parseAnswer(ask, t.root.text);
 }
 
@@ -108,12 +124,17 @@ export interface Tally {
   threads: Thread[];
 }
 
-/** The ask's answers: each person's latest counts once; replies under an answer are conversation, not answers. */
-export function tally(ask: Ask, threads: readonly Thread[], me: string): Tally {
+/** The ask's answers: each person's latest counts once; replies under an answer are conversation, not answers, and agents' threads are not answers. */
+export function tally(
+  ask: Ask,
+  threads: readonly Thread[],
+  me: string,
+  agents: readonly string[] = [],
+): Tally {
   const on = threads.filter((t) => t.anchor.id === ask.id).sort((a, b) => a.root.at - b.root.at);
   const latest = new Map<string, { thread: Thread; answer: Answer }>();
   for (const thread of on) {
-    const answer = answerOf(ask, thread);
+    const answer = answerOf(ask, thread, agents);
     if (answer) latest.set(thread.root.author, { thread, answer });
   }
   const counts = new Map<string, number>();

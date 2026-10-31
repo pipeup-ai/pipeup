@@ -136,6 +136,23 @@ describe("counting", () => {
     expect(tally(choice, threads, "nobody").mine).toBeNull();
   });
 
+  it("never counts an agent's thread as an answer: one the page lists, or one under an AI name", () => {
+    const threads = [
+      thread("q", comment("bot", "One", 1)),
+      thread("q", comment("k9", "One", 2, { name: "AI assistant" })),
+      thread("q", comment("k8", "One", 3, { name: "AI assistant (Claude)" })),
+      thread("q", comment("ada", "Two", 4)),
+    ];
+    const t = tally(choice, threads, "bot", ["bot"]);
+    expect(t.mine).toBeNull();
+    expect(t.answers.map((a) => a.thread.root.author)).toEqual(["ada"]);
+    expect(t.counts.get("One")).toBe(0);
+    // Still on the block, as comments.
+    expect(t.threads).toHaveLength(4);
+    // A key the page doesn't list, with a person's name, is a person.
+    expect(tally(choice, threads, "me").answers).toHaveLength(2);
+  });
+
   it("leaves out a deleted answer", () => {
     const t = tally(choice, [thread("q", comment("me", "One", 1, { deleted: true }))], "me");
     expect(t.mine).toBeNull();
