@@ -1150,7 +1150,8 @@ other comments are.
 - An author marks a place in the content as an **ask**, with a question, a name that stays the same when the question's
   words change, and a kind:
   - **open**: the reviewer answers in words;
-  - **agree**: Agree, or Needs change (which asks what, in words);
+  - **agree**: Agree, or Needs change (which asks what, in words). Either may carry the reviewer's words: an Agree
+    can confirm, or steer in a direction ("Agree, but keep it to one screen"); Needs change always asks for them;
   - **choice**: two to six options the author names, and optionally Other (which asks for words).
 - The ask is shown where the author put it, in the page's flow: the question, then a comment box or the buttons for its
   kind. It needs no comment mode and no shortcut. It is in the page's tab order, works by keyboard, touch and screen
@@ -1163,7 +1164,7 @@ other comments are.
 - **One answer per reviewer per ask.** Choosing again, or sending new words, changes the reviewer's answer (an edit,
   shown as edited), never a second answer. Replies under an answer are a conversation, not more answers.
 - **Seeing others' answers.** Until a reviewer answers, the ask shows only the question, so earlier answers don't steer
-  them. After answering, it shows their answer with Change, and, where others' comments are present (shared, live or
+  them. This holds for every ask: an author can't choose to show others' answers first. After answering, it shows their answer with Change, and, where others' comments are present (shared, live or
   added from files), how many answered and the count for each option, or for Agree and Needs change. Counts name no one;
   the threads under the ask show who said what, as any thread does.
 - **Asks the author needs.** An author can mark an ask as needed. The menu says "2 of 5 asks answered" and lists the
@@ -1195,6 +1196,8 @@ other comments are.
 - An add-on that needs either and finds a Pipeup without it stays off and says why (§11a).
 
 **Not part of this**
+- Asks in Pipeup itself: they stay in the inline add-on, even if another add-on comes to use them; Pipeup gives add-ons
+  only the two general abilities above.
 - One review across several pages of a site, and a step that finishes and sends a whole review: both are about where
   comments are kept and how they travel, not how a comment starts.
 - Anonymous answers, and answers that choose several options.
@@ -1755,9 +1758,6 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   before the sign-in the page supplies.
 - Agents add-on: whether the warning for a page that lists an agent without it should also appear in the menu for
   the author's own browser.
-- Inline comments (§11b, proposed): whether a reviewer should see others' answers before their own when the author
-  wants it; whether an agree ask needs a third answer (Not sure); whether asks belong in the core's size budget
-  once more than one add-on uses them.
 
 ---
 
@@ -1984,3 +1984,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
 - 2026-10-27 — Copy comments › As Markdown reads as a message to a person and still guides an AI (usability study, issue I7). It opens with the title, the open comments and who wrote them, when they were copied in words, and the address; each thread leads with where it is, the quoted words or pin in a sentence, and the comments; its state, its id and the element's identifier move to its last line; replies carry no ids; and the instruction for an AI moves after the threads (section 7a).
 - 2026-10-31 — Proposed (not built): inline comments, an add-on (§11b). An author puts asks in the content (open, agree, choice), answered in place without comment mode; each answer is an ordinary comment, one per reviewer per ask, with others' answers counted only after one's own; a block can show its comments in place. Needs two additions for any add-on: posting what the reviewer wrote and sent in the add-on's own box, and drawing inside an element the author marked for it (§11a amended to match). From Designup's review rounds, where reviewers are not told what is asked. Design note: docs/design/inline-comments.md.
+- 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.

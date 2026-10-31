@@ -53,7 +53,7 @@ with everything comments already have.
 - The comment is the reviewer's, signed with their identity, in the fixed signed form: **no format change**. What
   makes it an answer is where it is (the anchor's `data-pipeup-id` is the ask's name) and its first line:
   - choice: the option's words exactly (`One`), or `Other: <words>`;
-  - agree: `Agree`, or `Needs change: <words>`;
+  - agree: `Agree`, `Agree: <words>` (the words are optional), or `Needs change: <words>`;
   - open: the words.
   The quoted excerpt the anchor already saves keeps the question's words, so "Asked as: …" needs nothing new.
 - One answer per reviewer per ask: the add-on finds the reviewer's own earlier thread on that anchor
@@ -79,10 +79,18 @@ with everything comments already have.
   activation inside the add-on; Hide comments shows no counts or threads; teardown restores the page exactly
   (DOM snapshot before and after); light, dark and reduced motion.
 
-## Open questions
+## Decisions (the maintainer, 2026-10-31)
 
-See §19: seeing others' answers first, a third agree answer, and whether asks move into the core.
+- **Others' answers first: never.** No per-ask switch; counts and others' threads appear only once the reviewer has
+  their own answer on the anchor.
+- **No third agree answer.** Agree and Needs change stay; Agree may carry words too (`Agree: <words>`), because an
+  agreement can confirm or steer. Counting groups by the leading `Agree` or `Needs change`, not by the words.
+- **Asks stay in the add-on.** The core keeps only the general `place` and `post` slots; answer parsing and counting
+  never move into the core's budget, even when a second add-on uses asks.
+- **AGENTS.md exception agreed**: Pipeup may append one `<pipeup-place>`, set `data-pipeup-placed` and inject the one
+  rule, only inside elements the author marked, all removed on teardown.
 
 ## Change log
 
 - 2026-10-31 — Proposed, with §11b.
+- 2026-10-31 — The three open questions answered (see Decisions) and the AGENTS.md exception agreed.
