@@ -297,6 +297,8 @@ export interface AddonHost {
   addStyles(css: string): Off;
 
   // stage 3
+  /** A quiet mark on one comment, root or reply ("Only in this browser"), with its tooltip; null removes it. Capability `commentmark`. */
+  setCommentMark(comment: string, mark: { text: string; tip?: string } | null): void;
   /** One quiet line at the top of the menu; without any add-on's status it says comments stay in this browser. */
   setStatus(status: Status | null): void;
   /** A quiet line under the All comments header, with an optional text button; null removes it. Capability `listnote`. */
@@ -1794,3 +1796,4 @@ gets into the core").
 - 2026-10-13: `openDialog` (capability `dialog`) and `identity` (capability `identity`), additive, `ADDON_API` stays 1. `identity.use(key)` takes only an extractable Ed25519 private key; any add-on given the capability can read a portable identity's seed, as any script on the page could. First user: the identity add-on ([size-pass.md](size-pass.md)).
 - 2026-10-29: dictation's consent sentences name no maker, Safari's says Pipeup can't tell where the words are worked out, and a language with no way to dictate is said before starting; the sentences and failures are kept current in voice-safari-firefox.md.
 - 2026-10-29: the menu's status line reads "Only in this browser until you send them." while no add-on has a status, and the comment box carries a glyph named "Comments stay in this browser until you send them." while no add-on has a status or a composer note.
+- 2026-10-30: `setCommentMark` and the `commentmark` capability (additive, `ADDON_API` stays 1): a quiet mark on one comment, under its words in a thread and a glyph on a closed card; Share uses it for comments not in the shared copy.

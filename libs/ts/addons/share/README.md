@@ -16,7 +16,7 @@ commenting (a few minutes otherwise), keep working offline, and survive browsers
 - **Only your own comments.** A reviewer's browser sends only that reviewer's comments, plus ones it received
   from the shared copy. It never uploads comments someone else gave you by file or live review.
 - **Comments written before sharing began wait for you.** The first time a page is shared, your earlier comments
-  are held until you choose "Share my N earlier comments" or "Keep them on this machine".
+  are held until you choose "Share my N earlier comments" or "Keep them in this browser".
 - **You can stop sending.** "Send my comments" is a switch. While it is off, new comments (and edits and replies
   in those threads) stay on your machine, and you still see everyone else's.
 - People who already have your comments, by file or live, could pass them on. Deleting a comment hides it

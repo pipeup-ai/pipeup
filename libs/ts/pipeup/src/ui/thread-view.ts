@@ -5,7 +5,7 @@ import { avatar, easeIn, faceOf, retire } from "./animals";
 import { composer } from "./composer";
 import { clip, h, linkify, referenced } from "./dom";
 import { icon, type IconName } from "./icons";
-import { markAgain, threadMarks, threadNotes } from "./notes";
+import { commentMarks, markAgain, threadMarks, threadNotes } from "./notes";
 import { names, type Person } from "./mentions";
 import { reactionRow, type ReactionPicker } from "./reactions";
 
@@ -122,6 +122,9 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   let current = first;
   let faces = new Map<string, { key: string; el: HTMLElement }>();
   let nextFaces = new Map<string, { key: string; el: HTMLElement }>();
+  /** The comments' marks as last drawn, so a mark taken away eases out rather than vanishing. */
+  let shownMarks = new Map<string, { text: string; tip?: string }>();
+  let nextMarks = new Map<string, { text: string; tip?: string }>();
   const leaving = new Map<string, HTMLElement>();
   const face = (c: Comment): HTMLElement[] => {
     const key = faceOf(c.author, c.name);
@@ -390,6 +393,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         ...face(c),
         h("span", { class: "who" }, nameOf(c)),
         h("span", { class: "ago", title: new Date(c.at).toLocaleString() }, formatAgo(c.at, now)),
+        // A closed card has no room for the mark's line: its glyph sits after the time, its words its name.
+        card ? markOf(c, true) : null,
         h(
           "span",
           { class: "acts" },
@@ -406,6 +411,25 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     };
     /** The comment's words, or a box to change them while it is being edited. */
     const text = (c: Comment) => (editing?.id === c.id ? editing.el : words(c));
+    /**
+     * An add-on's mark on one comment ("Only in this browser"): a quiet line under its words, why in its tooltip. On a
+     * closed card, only its glyph after the time. A new mark eases in; one taken away eases out where it was.
+     */
+    const markOf = (c: Comment, glyph = false) => {
+      const now = commentMarks.get(c.id);
+      const was = shownMarks.get(c.id);
+      const m = now ?? was;
+      if (!m) return null;
+      if (now) nextMarks.set(c.id, now);
+      const cls = `cm${now ? (was ? "" : " new") : " out"}`;
+      return glyph
+        ? h(
+            "span",
+            { class: cls, role: "img", "aria-label": m.text, title: m.tip ?? m.text },
+            icon("browser", 13),
+          )
+        : h("div", { class: cls, title: m.tip }, icon("browser", 13), m.text);
+    };
     const quote = o.quote ? `“${clip(o.quote, 80)}”` : "";
     const about =
       o.note && !o.moved
@@ -417,6 +441,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
             : quote;
     const last = card ? o.rest : o.variant === "column" && restText;
     nextFaces = new Map();
+    nextMarks = new Map();
     // Each comment keeps room for its avatar at the top right, so the words never move or narrow for it.
     const nextRoot = h(
       "div",
@@ -426,6 +451,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       text(t.root),
       // In the column a long comment shows its first lines at rest, then "more" (the column measures it).
       o.variant === "column" && h("div", { class: "mr", "aria-hidden": "true" }, h("span", {}, "more")),
+      card ? null : markOf(t.root),
       reactions(t.root),
       last ? h("div", { class: "rest" }, last) : null,
     );
@@ -434,7 +460,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     element.className = t.resolved ? "thread resolved" : "thread";
     element.setAttribute("data-thread", t.id);
     // A closed card is only its first comment.
-    if (card) return void (faces = nextFaces);
+    if (card) return void ((faces = nextFaces), (shownMarks = nextMarks));
 
     // Swap the comment and replies around the reply line; never rebuild the line itself.
     list?.remove();
@@ -444,7 +470,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         ? h(
             "div",
             { class: "rps" },
-            ...live.map((c) => h("div", { class: "it" }, head(c, false), text(c), reactions(c))),
+            ...live.map((c) => h("div", { class: "it" }, head(c, false), text(c), markOf(c), reactions(c))),
             // A reply being written by an add-on (an AI's, streaming in): not a comment yet, so only shown.
             writing === undefined
               ? null
@@ -509,6 +535,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
     }
     if (seen) inner.insertBefore(seen, line.parentNode === inner ? line : null);
     faces = nextFaces;
+    shownMarks = nextMarks;
     // Words half-written in the reply line are never lost: a thread resolved meanwhile (by anyone) keeps its line
     // until they are sent or cleared, with a plain sentence saying so.
     const held = line.querySelector("textarea")!.value.trim() !== "";

@@ -33,7 +33,11 @@ menu instead, with an icon on the box.
   key was shortened and the string passed to `icon()` was not, so the box threw while opening. The key is `browser`.
   Icon names are plain-object keys and must stay off that list.
 
-## Proposed, not built: comments that stay while others are shared
+## Comments that stay while others are shared
+
+Built separately: see [only-in-this-browser.md](only-in-this-browser.md).
+
+## Proposed then (kept for the record)
 
 On a shared page a reviewer can have both: comments written before sharing (held until they choose) and, with Send my
 comments off, comments written since; everyone else's arrive meanwhile. Today those threads look like all the others.

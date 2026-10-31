@@ -5,7 +5,7 @@ import { ANIMAL_ICONS, avatar, initial } from "../../src/ui/animals";
 import { composer, setComposerSource, SOURCE_CHANGED } from "../../src/ui/composer";
 import { renderDraft } from "../../src/ui/draft-view";
 import { threadView, type ThreadActions } from "../../src/ui/thread-view";
-import { threadMarks, threadNotes } from "../../src/ui/notes";
+import { commentMarks, notesKey, threadMarks, threadNotes } from "../../src/ui/notes";
 import type { Comment, Thread } from "../../src/model/types";
 
 const NOW = 1_000_000_000_000;
@@ -471,6 +471,58 @@ describe("threadView avatars", () => {
     view.update(thread({ root: { ...anon, name: "Sam", text: "again" } }));
     expect([...view.element.querySelectorAll(".root > .hdr > .av")].at(-1)).toBe(named);
     expect(view.element.querySelector(".root .who")!.textContent).toBe("Sam");
+  });
+});
+
+describe("a comment's mark from an add-on", () => {
+  const MARK = { text: "Only in this browser", by: "share" };
+  it("is a quiet line under the comment's words, on a root or a reply alone, with why in its tooltip", () => {
+    const t = thread({
+      root: c("t1", "Sam", "Sure?", [c("r1", "Ada", "Yes."), c("r2", "Sam", "Moving it.")]),
+    });
+    commentMarks.set("r2", { ...MARK, tip: "Written while Send my comments was off." });
+    const view = threadView(t, actions(), { variant: "popover", now: () => NOW });
+    expect(view.element.querySelector(".root .cm")).toBeNull();
+    const marks = [...view.element.querySelectorAll(".rps .it .cm")] as HTMLElement[];
+    expect(marks).toHaveLength(1);
+    expect(marks[0]!.textContent).toBe("Only in this browser");
+    expect(marks[0]!.title).toBe("Written while Send my comments was off.");
+    expect(marks[0]!.querySelector("svg")).not.toBeNull();
+    expect(marks[0]!.classList.contains("new")).toBe(true);
+    expect(marks[0]!.closest(".it")!.querySelector(".tx")!.textContent).toBe("Moving it.");
+    commentMarks.set("t1", { ...MARK, tip: "Written before this page was shared." });
+    view.update(t);
+    expect(view.element.querySelector(".root .cm")!.textContent).toBe("Only in this browser");
+    // A mark already shown doesn't ease in again when the thread is redrawn.
+    expect(view.element.querySelector(".rps .cm")!.classList.contains("new")).toBe(false);
+    commentMarks.clear();
+    view.update(t);
+    // Taken away, each eases out where it was, then is gone at the next redraw.
+    expect([...view.element.querySelectorAll(".cm")].every((e) => e.classList.contains("out"))).toBe(true);
+    view.update(t);
+    expect(view.element.querySelector(".cm")).toBeNull();
+  });
+
+  it("is a glyph after the time on a closed card, named by its words", () => {
+    commentMarks.set("t1", { ...MARK, tip: "You chose to keep it here." });
+    const el = threadView(thread(), actions(), { variant: "card", now: () => NOW }).element;
+    const g = el.querySelector(".root .hdr .cm") as HTMLElement;
+    expect(g.getAttribute("role")).toBe("img");
+    expect(g.getAttribute("aria-label")).toBe("Only in this browser");
+    expect(g.title).toBe("You chose to keep it here.");
+    expect(g.previousElementSibling!.classList.contains("ago")).toBe(true);
+    expect(el.querySelectorAll(".cm")).toHaveLength(1);
+    commentMarks.clear();
+  });
+
+  it("changes a thread's redraw key only for marks on its own comments", () => {
+    const t = thread({ root: c("t1", "Sam", "Sure?", [c("r1", "Ada", "Yes.")]) });
+    const before = notesKey(t);
+    commentMarks.set("elsewhere", { ...MARK });
+    expect(notesKey(t)).toBe(before);
+    commentMarks.set("r1", { ...MARK });
+    expect(notesKey(t)).not.toBe(before);
+    commentMarks.clear();
   });
 });
 

@@ -317,16 +317,16 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       shownView = threadView(next, ctx.actions, o);
       pop.replaceChildren(shownView.element);
       shown = next;
-      shownNote = notesKey(next.id);
+      shownNote = notesKey(next);
       shownMoved = o.moved;
       place();
       pop.classList.add("show");
       pop.inert = false;
-    } else if (shown !== next || shownNote !== notesKey(next.id) || shownMoved !== o.moved) {
+    } else if (shown !== next || shownNote !== notesKey(next) || shownMoved !== o.moved) {
       // The same thread, refolded after some change: update in place so a reply being typed survives.
       shownView.update(next, o);
       shown = next;
-      shownNote = notesKey(next.id);
+      shownNote = notesKey(next);
       shownMoved = o.moved;
     }
   }
