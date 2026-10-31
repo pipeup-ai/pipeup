@@ -109,8 +109,11 @@ test("an open ask is answered by touch", async ({ browser }) => {
   await page.keyboard.type("Asks");
   await name.getByRole("button", { name: "Send" }).tap();
   await expect(name).toContainText("Your answer: Asks");
-  const size = await name.getByRole("button", { name: "Change" }).boundingBox();
-  expect(size!.height).toBeGreaterThanOrEqual(44);
+  // The controls can be redrawn once the answer is saved: measure the button that settles, not one being replaced.
+  const change = name.getByRole("button", { name: "Change" });
+  await expect(async () => {
+    expect((await change.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }).toPass();
   await context.close();
 });
 
