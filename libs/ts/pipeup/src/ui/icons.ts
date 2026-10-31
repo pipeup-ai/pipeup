@@ -38,6 +38,8 @@ const PATHS = {
   // The same bubble drawn wider, for a count of two or three characters ("10", "99+").
   wide: ["M23.2 11.2a10.8 8.2 0 0 1-14.85 7.6L2.6 21l.45-5.7A10.8 8.2 0 1 1 23.2 11.2z"],
   close: ["M6 6l12 12M18 6L6 18"],
+  // A browser window (a frame with its top bar): comments stay in this browser.
+  browser: ["M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z", "M4 9.5h16M7.5 6.8h.01"],
   // React: a face with round dot eyes (zero-length strokes blurred into specks) and a gentle smile.
   smile: [
     "M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18z",

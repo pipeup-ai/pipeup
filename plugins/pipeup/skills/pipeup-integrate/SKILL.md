@@ -86,7 +86,8 @@ Then choose the options (see "Options" below): usually just the defaults.
      disk, tell the user to save that same file next to the page as `pipeup.min.js` themselves,
      and use `<script src="pipeup.min.js"></script>` instead.
    - Add `data-pipeup-doc="<key>"` to `<html>`, with a key made in a browser by
-     `await Pipeup.newDocumentAttribute()` (the user's prompt may already include one).
+     `await Pipeup.newDocumentAttribute()` (the user's prompt may already include one). A key is for one
+     page only: give every page of a site its own, never a copy of another page's, or their comments mix.
 
    If the page already has `data-pipeup-doc`, **leave it exactly as it is** — changing it orphans every comment people
    have made.

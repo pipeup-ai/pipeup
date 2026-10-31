@@ -41,13 +41,13 @@ done
 
 rm -rf "$out"
 mkdir -p "$out/skills"
-cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/walk.css" "$site/walk.js" "$site/fonts" "$out/"
+cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/prompt.html" "$site/details.html" "$site/walk.css" "$site/pages.css" "$site/walk.js" "$site/prompts.js" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
 for id in voice live assist agents emoji github updates inbox identity; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
 cp "$addons/examples/send-to-git/dist/send-to-git.min.js" "$addons/examples/save-to-github/dist/save-to-github.min.js" "$out/addons/"
 [[ -f "$site/updates.json" ]] && cp "$site/updates.json" "$out/updates.json"
-cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/add-comments.html.md" "$site/create-html.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
+cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/add-comments.html.md" "$site/create-html.html.md" "$site/prompt.html.md" "$site/details.html.md" "$site/favicon.svg" "$site/og.png" "$out/"
 cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 python3 "$site/build-guide.py" "$out"
@@ -62,6 +62,7 @@ python3 "$site/inject-sri.py" "$out"
     cat "$f"
   done
 } > "$out/llms-full.txt"
+python3 "$site/inject-core.py" "$out"
 
 if [[ $channel == next ]]; then
   python3 "$site/channel.py" "$out" "$(node -p 'require(process.argv[1]).version' "$lib/package.json")"

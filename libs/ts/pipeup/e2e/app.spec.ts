@@ -49,6 +49,19 @@ test("pages with data-pipeup-doc mount themselves", async ({ page }) => {
   await expect(page.locator("pipeup-root")).toHaveCount(1);
 });
 
+test("the script line alone mounts Pipeup; the page is known by its address", async ({ page }) => {
+  await page.goto(fixture("auto-plain.html"));
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  const id = await page.evaluate(async () => (await (window as any).Pipeup.mount()).document.id);
+  expect(id).toMatch(/^page-/);
+});
+
+test('data-pipeup-auto="off" keeps Pipeup from starting until the page mounts it', async ({ page }) => {
+  await page.goto(fixture("doc.html"));
+  await page.waitForTimeout(300);
+  await expect(page.locator("pipeup-root")).toHaveCount(0);
+});
+
 test("a stale unmount does not break a newer mount", async ({ page }) => {
   await page.goto(fixture("doc.html"));
   const same = await page.evaluate(async () => {

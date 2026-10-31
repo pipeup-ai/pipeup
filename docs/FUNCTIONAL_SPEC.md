@@ -107,7 +107,9 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
   - for decks, which element is a **slide**;
   - an **edition**: a page that shows a new edition in the same shell (a daily briefing, say) can say which edition
     it is showing, and say so again when the next one is swapped in (§8).
-- Pages with none of this markup still work; Pipeup falls back to its own judgement.
+- Pages with none of this markup still work; Pipeup falls back to its own judgement. The script line alone starts
+  Pipeup; a page without a document identity is known by its address. A page that starts Pipeup from its own code
+  can turn the automatic start off.
 - Pipeup never requires the author to restructure or restyle their page, and never moves or
   restyles the page itself.
 - **Settings where the host allows them.** Every setting a page can put on `<html>` (its document identity, its
@@ -205,7 +207,13 @@ any of them off.
   Korean) only cancels the composition. On a deck, Tab or a click on nothing in particular leaves a waiting box
   where it is, on its own slide.
 - **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
-  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name").
+  their avatar and name show who they are and invite them to add a name ("You're Otter · add your name"). That
+  opens a name field in place: **Enter** or leaving the field saves the name, as the menu's name row does, so a name
+  typed before clicking into the comment box signs the comment; **Esc** cancels.
+- **The comment box shows where comments go.** With plain Pipeup, a small glyph at the foot of the box, left of
+  Cancel (a browser window), says, on hover and to screen readers, that comments stay in this browser until the
+  reviewer sends them; the menu's top line says the same in words. The glyph goes while an add-on reports in the
+  menu's top line or shows a line of its own in the box. The reply line under a thread carries neither.
 - Comments are **plain text** with line breaks and clickable links. No formatting, images or
   embedded content.
 - The writer of a comment can **edit** or **delete** it from the comment's **⋯** menu. Editing puts the
@@ -467,6 +475,9 @@ any of them off.
   focused control. All comments is in the menu. The menu rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
+  - **where comments go**, one quiet line (not an item: no tooltip, and the arrow keys pass over it): with plain
+    Pipeup, that they stay in this browser until the reviewer sends them; an add-on with something to report puts
+    its status there instead (Share's "Shared · up to date", Live's "Live · 2 here");
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
     **Add name** or an edit mark at the end; choosing it turns that row into a name field in place
     (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
@@ -878,12 +889,17 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - Before a reviewer writes their first comment on a shared page, Pipeup tells them that comments there
   are shared with everyone who has the page.
 - **Comments a reviewer wrote before the page was shared are not sent until they choose.** They can
-  share those earlier comments or keep them on their machine.
+  share those earlier comments or keep them in this browser.
 - Each reviewer chooses whether **to send their own comments** to the shared copy. They still see
   everyone else's.
-  - Comments written while they aren't sending stay on their machine, including later edits and replies
+  - Comments written while they aren't sending stay in this browser, including later edits and replies
     in those threads.
   - What was already sent stays in the shared copy.
+- **Each of the reviewer's own comments that isn't in the shared copy is marked "Only in this browser"**, in its
+  thread and in All comments, with a tooltip saying why (written before the page was shared, written while not
+  sending, kept by choice, or part of such a comment's thread). The mark eases away when the comment is shared. Other people's comments, the reviewer's
+  shared ones, and every comment on a page that isn't shared carry no mark. A reply is marked on its own, not its
+  thread.
 - Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
   someone else by file or live review. People who already received your comments could still pass them
   on themselves, and Pipeup says so where you choose whether to send.
@@ -990,6 +1006,14 @@ which Pipeup discards. It also can't tell when something is missing.
 - An add-on that can't work with the Pipeup version on the page stays off and says why. It never
   half-works.
 - Authors and agents can see which add-ons a page has, and whether each one is on.
+- **Dictation.** A browser without a speech engine draws no microphone; the reason is available to authors
+  and agents, and is written to the browser console once. After dictation stops for any reason, including a
+  refused permission or a browser error, the microphone can be pressed again at once. A notice about a failed
+  start names what the reviewer must change (the microphone, the browser's speech service, or a page reload),
+  passes on the browser's own reason when it gives one, and never blames the microphone for a speech-service
+  problem. Words the engine delivers more than once are written into the comment once. Where the engine has no
+  way to dictate in the chosen language on this device, Pipeup says so before anything starts and lets the
+  reviewer choose another language.
 - Add-ons appear in Pipeup's own menu and comment boxes. They look like Pipeup, follow its light and
   dark appearance and reduced motion, and keep every rule that words being written are never lost.
 - **While comments are closed (hidden with Hide comments, and nothing showing them), add-ons add nothing
@@ -1254,8 +1278,10 @@ other comments are.
 - **Pipeup itself makes no network requests** and has no analytics, tracking or telemetry.
 - Add-ons published by the Pipeup project send only what they declare, only to the services they name,
   and only encrypted so those services can't read it. **The one exception is dictation through a
-  browser maker's speech service** (Google in Chrome, Apple in Safari): that service hears the
-  reviewer's voice, and dictation uses it only after the reviewer agrees to a sentence saying so.
+  browser maker's speech service**: that service hears the reviewer's voice, and dictation uses it only
+  after the reviewer agrees to a sentence saying so. Before the first dictation the reviewer is told where
+  the words are worked out: on this device, after a one-time speech-pack download, or by the browser
+  maker's service. Where a browser can't say which, the sentence says so.
 - Dictation may make the browser download a speech pack from its maker once; Pipeup says so first.
 - With live review, the other people who are live see your network address. The services that help
   people find each other see it too.
@@ -1990,6 +2016,10 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
 - 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
 - 2026-10-27 — Copy comments › As Markdown reads as a message to a person and still guides an AI (usability study, issue I7). It opens with the title, the open comments and who wrote them, when they were copied in words, and the address; each thread leads with where it is, the quoted words or pin in a sentence, and the comments; its state, its id and the element's identifier move to its last line; replies carry no ids; and the instruction for an AI moves after the threads (section 7a).
+- 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).
+- 2026-10-29 — Dictation after a failure (§11a, §14): the microphone always works again, notices name what to change and pass on the browser's reason, repeated words are written once, a language the engine can't do is said before starting, and a browser with no engine says so in the console. The consent sentence no longer claims Safari always sends the voice to Apple. Design note: docs/design/voice-safari-firefox.md.
+- 2026-10-29 — Comments stay here (sections 5 and 7): the menu's top line says comments stay in this browser until sent, where Share and Live already report, and the comment box carries a small glyph saying the same on hover, after reviewers expected their comments to appear on other copies. Design note: docs/design/comments-stay-here.md.
+- 2026-10-30 — Only in this browser (section 11): on a shared page, each of the reviewer's comments that isn't in the shared copy is marked, with why in its tooltip, and keeping earlier comments reads "in this browser". Design note: docs/design/only-in-this-browser.md.
 - 2026-10-31 — Proposed (not built): inline comments, an add-on (§11b). An author puts asks in the content (open, agree, choice), answered in place without comment mode; each answer is an ordinary comment, one per reviewer per ask, with others' answers counted only after one's own; a block can show its comments in place. Needs two additions for any add-on: posting what the reviewer wrote and sent in the add-on's own box, and drawing inside an element the author marked for it (§11a amended to match). From Designup's review rounds, where reviewers are not told what is asked. Design note: docs/design/inline-comments.md.
 - 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.

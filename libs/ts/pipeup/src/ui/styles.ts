@@ -135,6 +135,8 @@ eases to nothing) and Done stays. */
 .refs .ref{position:relative}.ref .rc{position:absolute;left:0;top:calc(100% + 6px);z-index:3;width:max-content;max-width:min(240px,70vw);padding:6px 9px;border:1px solid var(--ln);border-radius:8px;background:var(--su);box-shadow:var(--sh);color:var(--k);font-size:12px;line-height:1.45;white-space:normal;text-align:left;overflow:visible;opacity:0;visibility:hidden;transform:translateY(-3px);pointer-events:none;transition:opacity .2s var(--eo),transform .2s var(--eo),visibility 0s .2s}.ref:hover .rc,.ref:focus-visible .rc,.ref.held .rc{opacity:1;visibility:visible;transform:none;transition-delay:0s}
 .ref .sl{width:10px;height:7px;border:1.3px solid currentColor;border-radius:2px;flex:none}
 .seen{display:flex;align-items:center;gap:6px;padding:6px 0 0 14px;font-size:12px;color:var(--fa)}
+.cm{display:flex;align-items:center;gap:6px;max-height:20px;padding-top:4px;overflow:hidden;font-size:12px;color:var(--fa)}.hdr .cm{display:inline-grid;padding:0;flex:none}.cm.new{animation:pu-in var(--mv) var(--eo) both}.cm.out{animation:cm-out var(--mv) var(--eo) forwards}
+@keyframes cm-out{to{opacity:0;max-height:0;padding-top:0}}
 .seen button{margin-left:auto;padding:0 6px;border:0;border-radius:6px;background:none;color:var(--fa);font:inherit;cursor:pointer;transition:color .2s var(--eo),background-color .2s var(--eo)}.seen button:hover,.seen button:focus-visible{color:var(--pu-accent);background:var(--as)}
 .seen i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--pu-accent);flex:none}
 .c0{--h:0}.c1{--h:25}.c2{--h:50}.c3{--h:130}.c4{--h:175}.c5{--h:215}.c6{--h:270}.c7{--h:330}.c8{--h:28;--s:35%}.c9{--h:220;--s:8%}
@@ -311,6 +313,7 @@ transition:transform var(--mv) var(--eio),opacity var(--mv) var(--eio)}
 .tools[hidden]{display:none}
 .tool[aria-pressed=true]{background:var(--as);color:var(--pu-accent)}
 .note{display:block;padding:0 0 4px;font-size:12px;color:var(--fa)}
+.bts .here{flex:none;display:grid;place-items:center;margin-right:auto;padding:0 2px;color:var(--fa);transition:opacity var(--in) var(--eo)}.here.off{opacity:0;pointer-events:none}
 .note[hidden]{display:none}
 .ov{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 /* An add-on's panel (.xp) is the same full-height panel as All comments (.all), with its own body. */
@@ -425,6 +428,7 @@ The control is 44 px, so the menu and messages sit further from it. Shortcuts ar
 @media (prefers-reduced-motion: reduce){
 .ln,.subs{transition-property:opacity}
 @keyframes pu-in{0%{opacity:0}100%{opacity:1}}
+@keyframes cm-out{99%{opacity:0;max-height:20px;padding-top:4px}100%{opacity:0;max-height:0;padding-top:0}}
 .bub,.bub.in,.bub.in:hover,.bub.on,.tip,.pop,.selbar,.menu,.all,.xp,.tt,.toast,.ref .rc,.rxp,.mnl{transform:none!important}
 .ttip{transition-property:opacity!important}
 .dlg{transform:translate(-50%,0)!important}

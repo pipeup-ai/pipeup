@@ -180,7 +180,7 @@ export function createColumn(ctx: Ctx): View {
 
   function fill(item: Item, t: Thread): void {
     item.thread = t;
-    item.note = notesKey(t.id);
+    item.note = notesKey(t);
     item.lost = isLost(t);
     item.moved = moved(ctx, t);
     item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null, moved: item.moved });
@@ -257,7 +257,7 @@ export function createColumn(ctx: Ctx): View {
         item.thread !== t ||
         item.lost !== isLost(t) ||
         item.moved !== moved(ctx, t) ||
-        item.note !== notesKey(t.id)
+        item.note !== notesKey(t)
       ) {
         fill(item, t);
       }

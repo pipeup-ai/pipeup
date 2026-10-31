@@ -1,0 +1,23 @@
+/* What your AI does (prompt.html) and The details (details.html): words on the left, top-aligned with a box to copy on
+   the right, on the home page's columns; at phone width the words come first, then the box. */
+.pg { display: grid; grid-template-columns: minmax(0, 11fr) minmax(440px, 13fr); gap: 48px; align-items: start; padding: 24px 0 44px; }
+.pg > * { min-width: 0; }
+.pg h1 { font-size: clamp(34px, 3.8vw, 46px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.04; color: var(--strong); margin: 0; text-wrap: balance; }
+.pg .sub { font-size: 18px; color: var(--muted); margin: 14px 0 0; max-width: 27em; }
+.pg b { font-weight: 600; color: var(--strong); }
+.pg code { font: 13.5px var(--mono); color: var(--ink); }
+.pg .items { margin: 22px 0 0; padding: 0 0 0 18px; display: grid; gap: 10px; font-size: 15.5px; color: var(--muted); max-width: 30em; }
+.pg .items li::marker { color: var(--violet); }
+.pg .paras { margin: 22px 0 0; display: grid; gap: 12px; }
+.pg .paras p { margin: 0; font-size: 15.5px; color: var(--muted); max-width: 30em; }
+.pg .quiet { margin: 18px 0 0; font-size: 14px; color: var(--faint); max-width: 34em; }
+.pg > .box { margin-top: 6px; }
+/* A labelled box of words to copy: its Copy sits above them, never over them. */
+.box { border: 1px solid var(--line); border-radius: 12px; background: #fbfbf9; overflow: hidden; }
+.items .box { margin: 10px 0 2px; }
+.box .bh { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.box pre { margin: 0; padding: 14px 16px 16px; font: 12.5px/1.65 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); }
+.box .prose { margin: 0; padding: 12px 16px 14px; font-size: 14px; line-height: 1.6; color: var(--ink); overflow-wrap: anywhere; }
+.btn.ghost { padding: 4px 10px; font-size: 13px; gap: 6px; border-radius: 7px; }
+@media (max-width: 900px) { .pg { grid-template-columns: 1fr; gap: 28px; } .pg > .box { margin-top: 0; } }
+@media (max-width: 680px) { main { padding: 0 20px; } .pg { padding-top: 12px; } }

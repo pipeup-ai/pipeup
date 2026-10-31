@@ -30,7 +30,7 @@ sed -i.bak -E "s/^export const BUILT = \"[0-9-]+\";/export const BUILT = \"$(dat
 
 pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
   apps/agent-skills/pipeup-integrate/SKILL.md apps/agent-skills/pipeup-add/SKILL.md apps/agent-skills/pipeup-apply/SKILL.md
-  apps/agent-skills/pipeup-summarise/SKILL.md apps/agent-skills/pipeup-send-to-git-setup/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.js apps/site/addons.html.md apps/site/walk.js apps/site/add-comments.html.md apps/site/create-html.html.md docs/ADDONS_GUIDE.md)
+  apps/agent-skills/pipeup-summarise/SKILL.md apps/agent-skills/pipeup-send-to-git-setup/SKILL.md apps/site/llms.txt apps/site/index.html apps/site/index.html.md apps/site/addons.js apps/site/addons.html.md apps/site/walk.js apps/site/prompts.js apps/site/add-comments.html.md apps/site/create-html.html.md apps/site/prompt.html.md apps/site/details.html.md docs/ADDONS_GUIDE.md)
 # Each add-on page's Markdown copy pins its add-on too.
 for f in "$root"/apps/site/addons/*.md; do pinned+=("${f#"$root"/}"); done
 for f in "${pinned[@]}"; do

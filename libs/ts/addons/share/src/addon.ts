@@ -15,14 +15,27 @@ export interface ShareOptions {
 const NOTE = "Comments here are shared with everyone who has this page.";
 const WEEK = 7 * 86_400_000;
 const UP = ["M12 16V4M7 9l5-5 5 5M5 20h14"];
-const LOCK = ["M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z"];
+/** A browser window: kept in this browser (never a lock, which reads as encrypted). */
+const HERE = [
+  "M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z",
+  "M4 9.5h16M7.5 6.8h.01",
+];
+/** The mark on each of the reviewer's comments that isn't in the shared copy, and why, in its tooltip. */
+const ONLY = "Only in this browser";
+const WHY = {
+  held: "Written before this page was shared. Share it or keep it from the menu.",
+  kept: "Written while Send my comments was off. It stays here.",
+  chosen: "You chose to keep it here.",
+  thread: "Part of a comment that stays in this browser.",
+  unknown: "It stays in this browser and isn't sent to the shared copy.",
+};
 
 export function createAddon(options: ShareOptions = {}): PipeupAddon {
   return {
     id: "share",
     api: 1,
     version: "0.4.1",
-    needs: ["sync", "menu", "notify", "note"],
+    needs: ["sync", "menu", "notify", "note", "commentmark"],
     network: {
       when: "page-configured",
       to: ["page"],
@@ -41,7 +54,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       policy.hold(doc.ops());
       let writing: Promise<void> = Promise.resolve();
       const save = () => {
-        writing = writing.then(() => store.set(`doc:${doc.id}`, { ...policy })).catch(() => {});
+        writing = writing.then(() => store.set(`doc:${doc.id}`, policy.saved())).catch(() => {});
       };
       save();
 
@@ -52,7 +65,23 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       };
       const told = new Set<string>();
       const tell = (key: string, text: string) => told.has(key) || (told.add(key), host.notify(text));
+      /** Marks each of this reviewer's comments that isn't in the shared copy; a comment once shared loses its mark. */
+      const marked = new Set<string>();
+      const mark = () => {
+        const now = new Set<string>();
+        for (const op of doc.ops()) {
+          if (op.body.kind !== "create" && op.body.kind !== "reply") continue;
+          const why = t.problem === "gone" ? null : policy.local(op);
+          if (!why) continue;
+          now.add(op.body.id);
+          host.setCommentMark(op.body.id, { text: ONLY, tip: WHY[why] });
+        }
+        for (const id of marked) if (!now.has(id)) host.setCommentMark(id, null);
+        marked.clear();
+        for (const id of now) marked.add(id);
+      };
       const refresh = () => {
+        mark();
         for (const r of rows) r.update();
         host.setStatus({ text: state() });
         host.setComposerNote(policy.send && !policy.noted && t.problem !== "gone" ? NOTE : null);
@@ -64,7 +93,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
         if (t.problem)
           tell(
             t.problem,
-            PROBLEMS[t.problem] + (t.problem === "gone" ? ". Your comments stay on this machine." : "."),
+            PROBLEMS[t.problem] + (t.problem === "gone" ? ". Your comments stay in this browser." : "."),
           );
       };
       const f: typeof fetch = (i, n) => fetch(i, n);
@@ -125,7 +154,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       const hint = (): string => {
         const end = backend.expires;
         return t.problem === "gone"
-          ? "Your comments stay on this machine. The author can start sharing again."
+          ? "Your comments stay in this browser. The author can start sharing again."
           : [
               `Your comments are encrypted and sent to ${where} so others with this page see them. The service can't read them. People who already have your comments, by file or live, could pass them on.`,
               host.ephemeral && "This browser can't keep comments; the shared copy keeps the ones you send.",
@@ -183,8 +212,8 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
         );
         row(
           "keep-earlier",
-          LOCK,
-          () => "Keep them on this machine",
+          HERE,
+          () => "Keep them in this browser",
           () => `Never send the comments you wrote before this page was shared.${more}`,
           choose(false),
         );
@@ -192,7 +221,14 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       refresh();
       void engine.start().then(refresh, (e) => globalThis.reportError?.(e));
       doc.onChange((_t, added, source) => {
-        if (source === "local" && added.length) t.bump();
+        if (source === "local" && added.length) {
+          // New ops are placed now (held, kept or sendable), so a comment written while not sending is marked at
+          // once rather than at the next send. Only new ops: one already sent is never placed again.
+          for (const op of added) policy.sendable(op);
+          t.bump();
+          mark();
+          save();
+        }
       });
       return () => {
         clearTimeout(prep);
