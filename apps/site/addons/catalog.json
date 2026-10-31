@@ -9,6 +9,7 @@
         { "id": "live", "anchor": "live", "title": "Live", "sentence": "See who else is on the page, and where.", "copy": [["live-prompt", "Copy prompt"], ["live-tag", "Copy script tag"]] },
         { "id": "assist", "anchor": "assist", "title": "Assist", "sentence": "An AI model on the reviewer's device points to related parts of the page.", "copy": [["assist-prompt", "Copy prompt"], ["assist-tag", "Copy script tag"]] },
         { "id": "agents", "anchor": "agents-addon", "title": "Agents", "sentence": "Lets an AI agent answer comments right in the page.", "copy": [["agents-prompt", "Copy prompt"], ["agents-tag", "Copy script tag"]] },
+        { "id": "inline", "anchor": "inline-addon", "title": "Inline", "sentence": "Ask reviewers questions right in the page, and see the answers counted.", "copy": [["inline-prompt", "Copy prompt"], ["inline-tag", "Copy script tag"]] },
         { "id": "emoji", "anchor": "emoji-addon", "title": "Emoji", "sentence": "Every emoji for reactions, with search and a skin tone.", "copy": [["emoji-prompt", "Copy prompt"], ["emoji-tag", "Copy script tag"]] },
         { "id": "inbox", "anchor": "inbox-addon", "title": "Inbox", "sentence": "Tells people they were mentioned, even on pages they haven't opened.", "copy": [["inbox-prompt", "Copy prompt"], ["inbox-tag", "Copy script tag"]] },
         { "id": "github", "anchor": "github-addon", "title": "GitHub", "sentence": "Offers to tell people on GitHub when a comment mentions them.", "copy": [["github-prompt", "Copy prompt"], ["github-tag", "Copy script tag"]] },
