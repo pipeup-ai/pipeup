@@ -7,6 +7,11 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
+  how it began, so holding Space during it handed the page a click meant for Pipeup.
+
 ## [0.9.1] - 2026-11-01
 
 Inline asks are compact and can match the page, and a page with its own Comment button can open Pipeup's menu itself.
