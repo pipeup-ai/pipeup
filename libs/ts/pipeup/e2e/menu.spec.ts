@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { MountOptions } from "../src/ui/mount";
 import {
+  commenting,
   copyAs,
   fixture,
   hideComments,
@@ -34,14 +35,15 @@ test("Copy comments: as Markdown copies Markdown with locations; as text copies 
   await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
   await menu(page);
   await copyAs(page, "As Markdown");
-  await expect.poll(() => lastCopy(page)).toContain("# Review comments: Q3 plan");
+  await expect.poll(() => lastCopy(page)).toContain("# Comments on Q3 plan");
   const md = await lastCopy(page);
-  expect(md).toContain("- **Thread:** ");
-  expect(md).toContain('- **Quoted text:** "20% lift"');
+  expect(md).toMatch(/\nOpen · thread `[\w-]{43}`/);
+  expect(md).toContain('On the words "20% lift".');
+  expect(md).toContain("\nFor an AI assistant: ");
   await menu(page);
   await copyAs(page, "As text");
   await expect.poll(() => lastCopy(page)).toMatch(/^Section "Q3 plan"/);
-  expect(await lastCopy(page)).not.toContain("**Thread:**");
+  expect(await lastCopy(page)).not.toContain("thread `");
 });
 
 test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ page }) => {
@@ -52,7 +54,7 @@ test("a thread's Copy thread, in its ⋯ menu, always gives Markdown", async ({ 
   await th.locator(".tx").first().hover();
   await th.locator(".root").getByRole("button", { name: "More" }).click();
   await th.getByRole("menuitem", { name: "Copy thread" }).click();
-  await expect.poll(() => lastCopy(page)).toContain("- **Thread:** ");
+  await expect.poll(() => lastCopy(page)).toMatch(/\nOpen · thread `[\w-]{43}`/);
 });
 
 test("the menu's top line says comments stay in this browser; the box's glyph says the same on hover", async ({
@@ -125,7 +127,7 @@ test("resolved threads hide; ✓ Resolved brings them back with Reopen", async (
   await expect(th.getByRole("button", { name: "Reopen" })).toBeVisible();
 });
 
-test("Hide comments hides threads and highlights and fades the column; outside comment mode selecting offers nothing", async ({
+test("Hide comments hides threads and highlights and fades the column; selecting words still offers a comment", async ({
   page,
 }) => {
   await open(page, "doc.html");
@@ -138,13 +140,10 @@ test("Hide comments hides threads and highlights and fades the column; outside c
   await hideComments(page);
   await expect(page.locator(".layer.hidden")).toHaveCount(1);
   await expect(page.locator(".th")).toHaveCount(0);
-  await selectWords(page, "#p2", "second designer");
-  await page.waitForTimeout(100); // Pipeup looks at the selection a tick after the mouse is released.
-  await expect(page.locator(".selbar.show")).toHaveCount(0);
-  await showComments(page);
-  await page.mouse.click(900, 700); // move focus out of Pipeup so the next selection takes
+  // Outside comment mode, with comments hidden, selecting words still offers a comment (§5).
   await selectWords(page, "#p2", "second designer");
   await expect(page.locator(".selbar.show")).toHaveCount(1);
+  await commenting(page, false);
 });
 
 test("Your name changes the name on new comments", async ({ page }) => {

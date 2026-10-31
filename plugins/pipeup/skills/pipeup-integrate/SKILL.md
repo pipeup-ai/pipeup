@@ -5,7 +5,7 @@ description: Use when creating or editing an HTML document, slide deck, report, 
 
 # Add Pipeup to a page: the full reference
 
-Written for Pipeup 0.8.2 For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.9.0 For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place: select text, click any element (including
 buttons and charts) or drop a pin on a slide. Your job is to make the page *reviewable* while it
@@ -75,7 +75,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -160,7 +160,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -175,10 +175,17 @@ page opened from disk and in any script order, and they are released with Pipeup
 | `@pipeup/share` | comments to reach everyone who has the page, without copying and pasting | sealed comments to the sharing service the page names |
 | `@pipeup/voice` | dictating comments | nothing itself; the reviewer's browser may use its maker's speech service, after they agree |
 | `@pipeup/live` | live comments, who is here, live cursors | the reviewer's network address to the others who are live and to the meeting-point relays |
+| `@pipeup/agents` | an AI agent to answer comments in the page | nothing until the author switches on Share with my agent; then comments go only to the program on their own computer |
+| `@pipeup/inline` | to ask reviewers questions right in the content (agree, a choice, or their own words) | nothing: answers are ordinary comments |
 
+- **Agents and Inline are the two authors most often want.** Add them, like any add-on, only when the author asks; if
+  they asked for neither, say in one line when you're done that both exist. For Inline, mark each question's element
+  with `data-pipeup-id`, `data-pipeup-ask="<question>"` and `data-pipeup-ask-kind` (`agree`, `choice` with
+  `data-pipeup-ask-options="One|Two"`, or none for words), and keep the question in the element's own words for anyone
+  without the add-on (https://pipeup-ai.github.io/pipeup/addons/inline.html.md). Never answer a question yourself.
 - **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
   pick a sharing service yourself: the author chooses one.
-- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.8.2/dist/share.min.js`
+- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.9.0/dist/share.min.js`
   with its `integrity` from the release notes), or use the combined file `pipeup+share.min.js` instead of Pipeup's.
 - Sharing is set up by the author with the command line (`npx @pipeup/share create page.html --server …`), which writes
   `data-pipeup-share` into the file and prints a stop key once. **Never write `data-pipeup-share` yourself and never
@@ -186,6 +193,29 @@ page opened from disk and in any script order, and they are released with Pipeup
 - **When you rewrite or regenerate a page, keep `data-pipeup-doc` and `data-pipeup-share` exactly as they are.** A
   new document made from an existing page or template gets a new `data-pipeup-doc` and no `data-pipeup-share`, so
   comments of different documents never mix.
+- **A page that shows a new edition in a fixed shell** (a daily briefing, say, whose shell stays the same while each
+  day's content is loaded as data) is one document to Pipeup, so yesterday's comments would land on today's matching
+  content, marked Moved. When each edition is meant to be reviewed on its own, **name the edition on `<html>`** and
+  set it again when the next one is swapped in; Pipeup follows without a reload:
+
+  ```html
+  <html data-pipeup-doc="<id>:<key>" data-pipeup-edition="2026-10-21">
+  ```
+  ```js
+  // when the shell swaps in the next edition
+  document.documentElement.dataset.pipeupEdition = edition.date;
+  ```
+
+  The value is shown as written ("the 2026-10-21 edition"), so a readable name works too; it must be the same every
+  time that edition is shown. Comments then stay with their edition: the control counts this edition's, earlier
+  editions' wait folded under **Earlier editions** in All comments, and Copy for my agent carries this edition's. It
+  stays one document, with one identity and one shared copy, and needs no script before Pipeup. Keep
+  `data-pipeup-doc` unchanged. Only for a page that wants editions kept wholly apart (separate shared copies), or one
+  that runs a Pipeup older than the edition attribute, give each edition its own `data-pipeup-doc` instead: keep the
+  key (after the colon) and make a new 16-character id from the page's id and the edition (Pipeup refuses any other
+  form, so never just append a date), set before Pipeup starts (`data-pipeup-auto="off"` on `<html>`, then
+  `Pipeup.mount()` once the edition is known), for example the first 16 base64url characters of
+  SHA-256(`<id>:<edition>`). Ask the author first on a page with `data-pipeup-share`.
 - **Keep add-ons intentional (best effort).** When you add an add-on: pin its script with its `integrity` hash; add its id to
   `data-pipeup-addons` on `<html>` (append to an existing list and keep every entry it has, never remove one), so only the
   add-ons the author chose run on the page; and tell the author, in your reply, about a Content-Security-Policy that
@@ -229,6 +259,7 @@ Markup on the page:
 | `data-pipeup-addons` | `<html>` | Which add-ons may run, by id (`share,voice`; `none` for none). Without it every add-on runs. Keep every entry; add yours. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
+| `data-pipeup-edition` | `<html>` | The edition the page shows (a daily briefing in one shell); set it again when the next is swapped in. Comments stay with their edition. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |
 | `data-pipeup-label` | charts, images, icons | The name reviewers and AI tools see (Step 4). |
 | `data-pipeup-slide` | each slide | Slide number, 1-based (Step 5). |

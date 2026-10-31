@@ -1,6 +1,6 @@
-export const VERSION = "0.8.2";
+export const VERSION = "0.9.0";
 /** The day this version was made (set with the version): Pipeup says so, once, in the console when it is over a year old. */
-export const BUILT = "2026-10-19";
+export const BUILT = "2026-10-31";
 
 export { PipeupDocument, UnsavedChangeError, type Listener, type OpenOptions } from "./document";
 export {
@@ -12,7 +12,7 @@ export {
 } from "./storage/store";
 export { IndexedDbStore } from "./storage/indexeddb";
 export { createIdentity, type Identity } from "./crypto/identity";
-export { signOp } from "./model/ops";
+export { checkOp, signOp } from "./model/ops";
 export { computeOpId } from "./model/opid";
 export { newDocumentAttribute, parseDocumentAttribute, type DocumentKey } from "./crypto/seal";
 export { describeElement, describeRange } from "./anchor/describe";
@@ -28,5 +28,15 @@ export {
 } from "./export/format";
 export { readFeedbackFile } from "./storage/feedback-file";
 export { agentComments, type AgentComments, type AgentThread } from "./export/agent";
-export { AI_NAME, ANIMALS, COLOURS, animalName, isAiName, nameOf, type Animal } from "./model/animals";
+export {
+  AI_NAME,
+  ANIMALS,
+  COLOURS,
+  agentName,
+  animalName,
+  isAiName,
+  isPasted,
+  nameOf,
+  type Animal,
+} from "./model/animals";
 export type { Anchor, Comment, OpBody, SignedOp, Thread } from "./model/types";

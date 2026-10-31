@@ -33,10 +33,10 @@ const ROLES = (
   .split(" ")
   .map((r) => `[role=${r}]`);
 /**
- * What comment mode leaves to the page: areas the author marked to ignore, and a deck framework's own controls
+ * What comment mode leaves to the page: areas the author marked to ignore, where an add-on draws in the page (§11b), and a deck framework's own controls
  * (reveal.js's arrows, progress bar and slide number), which keep working without being marked.
  */
-export const IGNORED = "[data-pipeup-ignore],.reveal>:is(.controls,.progress,.slide-number)";
+export const IGNORED = "[data-pipeup-ignore],pipeup-place,.reveal>:is(.controls,.progress,.slide-number)";
 /** Things that are obviously "a thing" to comment on. */
 const OBVIOUS = [
   "button,a,input,select,textarea,label,summary,details,img,svg,canvas,video,picture,figure,figcaption,table,th,td",

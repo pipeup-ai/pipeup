@@ -60,7 +60,7 @@ test("choosing from All comments focuses the reply line; arrowing through rows d
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
   await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
   await page.locator(".launch .mode").focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("Enter");

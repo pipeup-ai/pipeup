@@ -31,12 +31,20 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // keyboard, an input method's Esc, the block cursor in a dialog, and dialogs that are moved, closed or re-rendered
 // (+0.7 KB; docs/design/words-and-focus.md, page-dialogs.md); then 60 KB for iPhones: taps on the page reaching
 // Pipeup, the menu closing after Start commenting by touch, boxes above the on-screen keyboard, the layer following a
-// panned page, and the selection's icon beside the phone's own menu, and a touch hint that stands out and folds to Done (+0.9 KB; docs/design/iphone-taps-keyboard.md);
-// then 60.5 KB for saying where comments are: the menu's "Only in this browser" line and the box's glyph, and a mark
-// on each comment a sharing add-on hasn't sent (+0.3 KB; docs/design/comments-stay-here.md, only-in-this-browser.md).
+// panned page, and the selection's icon beside the phone's own menu, and a touch hint that stands out and folds to Done (+0.9 KB; docs/design/iphone-taps-keyboard.md); then 60.5 KB
+// for an agent's replies a reviewer pastes: written under the agent's name and signed by the reviewer, and "pasted
+// by you" on a reply an agent the page lists didn't sign (+0.3 KB; docs/design/agent-paste.md); then 61 KB for
+// editions: comments kept with the edition the page names, and earlier editions folded in All comments (+0.6 KB;
+// docs/design/editions.md) and then 62 KB for one
+// click on the control to start commenting with the menu behind ⋯ (or a held press), a comment on selected words outside
+// comment mode, the page API (comment mode, the name, change events, why it didn't start) and settings on the script
+// line (+0.9 KB; docs/design/one-tap-page-api.md); then 63 KB for the place and post slots add-ons draw and post
+// with inside elements the author marked (+1.0 KB; docs/design/inline-comments.md); then 63.5 KB for saying where comments are: the menu's "Only in this
+// browser" line and the box's glyph, and a mark on each comment a sharing add-on hasn't sent (+0.3 KB;
+// docs/design/comments-stay-here.md, only-in-this-browser.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 60.5 * 1024,
-  "dist/pipeup.esm.js": 60.5 * 1024,
+  "dist/pipeup.min.js": 63.5 * 1024,
+  "dist/pipeup.esm.js": 63.5 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

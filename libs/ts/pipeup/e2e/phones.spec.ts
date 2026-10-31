@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { control, focusInPipeup, open, seedElement, seedText } from "./helpers";
+import { control, focusInPipeup, open, openAll, openMenu, seedElement, seedText } from "./helpers";
 
 /** Phones held both ways, by touch: what Pipeup shows fits the screen, keeps clear of the control and suits a finger. */
 
@@ -72,7 +72,7 @@ const tapAt = (page: Page, x: number, y: number) => page.touchscreen.tap(x, y);
 
 /** Comment mode on from the menu by touch; a tap outside closes the menu (and in comment mode does only that). */
 async function commentMode(page: Page): Promise<void> {
-  await control(page).tap();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
   await tapAt(page, 2, 2);
   await expect(page.locator(".menu.show")).toHaveCount(0);
@@ -229,7 +229,7 @@ test.describe("a phone (375 × 812)", () => {
     page,
   }) => {
     await open(page, "phone.html");
-    await control(page).tap();
+    await openMenu(page);
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
     // Nothing of Pipeup's covers it: it waits while the menu is open.
     await page.waitForTimeout(300);
@@ -262,7 +262,7 @@ test.describe("a phone (375 × 812)", () => {
     page,
   }) => {
     await open(page, "phone.html");
-    await control(page).tap();
+    await openMenu(page);
     const start = page.getByRole("menuitemcheckbox", { name: "Start commenting" });
     await expect(start).toBeVisible();
     expect(await start.innerText()).not.toMatch(/⇧⌥C|Shift\+Alt\+C/);
@@ -309,7 +309,7 @@ test.describe("a phone (375 × 812)", () => {
     await pop.getByRole("button", { name: "More" }).first().tap();
     await fingerSized(pop.locator(".pm button"), 1);
     // All comments: its filters, Close, and the footer's switch and ⋯.
-    await control(page).tap();
+    await openAll(page);
     const all = page.locator(".all.show");
     await expect(all).toBeVisible();
     await fingerSized(all.locator(".hd button"), 3);
@@ -330,7 +330,7 @@ test.describe("a phone (375 × 812)", () => {
     expect((await focusInPipeup(page)).tag).toBe("TEXTAREA");
     // In All comments too: the thread moves in open, and opens again from its card, with no keyboard either time.
     await page.locator(".pop.show textarea").blur();
-    await control(page).tap();
+    await openMenu(page);
     await page.getByRole("menuitem", { name: /All comments/ }).tap();
     const opened = page.locator(".all.show .cd.open");
     await expect(opened).toContainText("Is this the plan?");
@@ -407,7 +407,7 @@ test.describe("a phone (375 × 812)", () => {
   }) => {
     await open(page, "phone-site.html");
     await seedElement(page, "[data-pipeup-id=feature-listen]", "Which voices?");
-    await control(page).tap();
+    await openMenu(page);
     await page.getByRole("menuitem", { name: /All comments/ }).tap();
     const card = page.locator(".all.show .cd").first();
     await expect(card.locator(".ctx")).toContainText("Listen");
@@ -422,7 +422,7 @@ test.describe("a phone (375 × 812)", () => {
     await commentMode(page);
     await page.locator("#readers").tap();
     await page.locator(".pop.show textarea").fill("Is 63% right?");
-    await control(page).tap();
+    await openAll(page);
     const moved = page.locator(".all.show .cd.new");
     await expect(moved.locator("textarea")).toHaveValue("Is 63% right?");
     await expect(moved.locator(".ctx")).toBeVisible();
@@ -477,7 +477,7 @@ test.describe("a phone on its side (568 × 320)", () => {
 
   test("the menu fits the window, and scrolls when Copy comments opens", async ({ page }) => {
     await open(page, "phone.html");
-    await control(page).tap();
+    await openMenu(page);
     const menu = page.locator(".menu.show");
     const m = await boxOf(menu);
     inWindow(m, page);
@@ -583,7 +583,7 @@ test.describe("a page zoomed far in (320 × 256)", () => {
 
   test("the menu fits the window and scrolls", async ({ page }) => {
     await open(page, "phone.html");
-    await control(page).click();
+    await openMenu(page);
     const menu = page.locator(".menu.show");
     inWindow(await boxOf(menu), page);
     const start = page.getByRole("menuitemcheckbox", { name: "Start commenting" });
@@ -613,7 +613,7 @@ test.describe("an iPhone's taps and keyboard", () => {
   }) => {
     await open(page, "phone.html");
     const rest = await bodyClicks(page);
-    await control(page).tap();
+    await openMenu(page);
     await expect.poll(() => bodyClicks(page)).toBe(rest + 1);
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
     await expect(page.locator(".menu.show")).toHaveCount(0, { timeout: 2000 });
@@ -660,7 +660,7 @@ test.describe("an iPhone's taps and keyboard", () => {
     page,
   }) => {
     await open(page, "phone.html");
-    await control(page).tap();
+    await openMenu(page);
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).tap();
     await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveAttribute(
       "aria-checked",

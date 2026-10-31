@@ -97,10 +97,13 @@ export function wordsOf(el: Element): string {
   );
 }
 
-/** "Paragraph · We will launch…": its kind and its own words, or the author's own name for it. */
+/** "Paragraph · We will launch…": its kind and its own words, the author's own name for it, or an ask's question. */
 export function labelOf(el: Element): string {
   const own = el.getAttribute("data-pipeup-label");
   if (own) return own;
+  // An ask the author put in the content (§11b): its comments answer the question.
+  const ask = el.getAttribute("data-pipeup-ask");
+  if (ask) return `Ask "${ask}"`;
   const text = wordsOf(el);
   return text ? `${kindOf(el)} · ${text}` : kindOf(el);
 }
@@ -147,13 +150,16 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
   };
 }
 
-/** A view's readable name: its label, else its values joined with " · " (the slide left out); "" for none. */
+/** Where a comment keeps the edition it was made on, in its view (Pipeup's own key: a page can't report it). */
+export const EDITION = "pipeup-edition";
+
+/** A view's readable name: its label, else its values joined with " · " (the slide and edition left out); "" for none. */
 export function viewName(view: Record<string, string> | undefined): string {
   if (!view) return "";
   return (
     view.label ||
     Object.entries(view)
-      .filter(([k, v]) => v && k !== "slide")
+      .filter(([k, v]) => v && k !== "slide" && k !== EDITION)
       .map(([, v]) => v)
       .join(" · ")
   );

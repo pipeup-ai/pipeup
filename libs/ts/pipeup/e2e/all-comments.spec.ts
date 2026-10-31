@@ -7,6 +7,7 @@ import {
   leaveReply,
   open,
   openAll,
+  openMenu,
   quoteSpot,
   seedElement,
   seedText,
@@ -137,7 +138,7 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
   await expect(count(page).locator(".n.on")).toHaveText("2");
   await control(page).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
@@ -153,7 +154,7 @@ test("All comments works from the keyboard: arrows move, Enter opens, Escape clo
   await expect(list(page)).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mode");
 
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("ArrowUp");
   await page.keyboard.press("Enter");
@@ -214,7 +215,7 @@ test.describe("on a touch screen with no hover", () => {
     const cdp = await page.context().newCDPSession(page);
     await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "hover", value: "none" }] });
     await seedText(page, "h1", "in minutes not meetings", "Love this line.");
-    await control(page).tap();
+    await openMenu(page);
     await page.getByRole("menuitem", { name: /All comments/ }).tap();
     await expect(list(page)).toBeVisible();
     await settled(list(page));

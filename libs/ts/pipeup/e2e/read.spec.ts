@@ -85,11 +85,11 @@ test("a folder of feedback files is read, the ones that aren't for this page are
   expect(r.err).toContain(
     "Skipped 2 files: lee.json (another document's), notes.json (not a feedback file).",
   );
-  expect(r.out).toContain("# Review comments: Q3 plan");
+  expect(r.out).toContain("# Comments on Q3 plan");
   expect(r.out).toContain("Is this the plan for Q3?");
   expect(r.out).toContain("Label the axis, please");
   expect(r.out).not.toContain("Q4 looks low"); // resolved
-  expect(r.out).toContain("(1 resolved, not included)");
+  expect(r.out).toContain(" UTC. 1 resolved comment is left out.");
   // Page order: the paragraph's thread, then the chart's.
   expect(r.out.indexOf("Is this the plan")).toBeLessThan(r.out.indexOf("Label the axis"));
   // --deep also reads the folder inside, and the same comments from two files are shown once.
@@ -140,7 +140,8 @@ test("--out writes one merged feedback file, sealed, that reads back the same", 
   const file = JSON.parse(await readFile(merged, "utf8"));
   expect(file).toMatchObject({ pipeup: 1, sealed: true });
   const back = await run(["read", fixture("doc.html"), "--from", merged]);
-  expect(back.out.replace(/Exported:.*\n/, "")).toBe(r.out.replace(/Exported:.*\n/, ""));
+  const when = /copied [^.]* UTC/;
+  expect(back.out.replace(when, "")).toBe(r.out.replace(when, ""));
 });
 
 test("an agent's replies are read from the replies file, only from agents the page lists", async ({

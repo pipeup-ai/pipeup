@@ -28,7 +28,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 | Item | Meaning | Status |
 |---|---|---|
 | `<html data-pipeup-doc="<id>:<key>">` | Document identity and key. Generated once, never changed. | Format exists (core `newDocumentAttribute`); auto-detection — **done in 0.3.0** |
-| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 36 KB gzip; on npm from 0.3.0 |
+| `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous">` | Loading Pipeup; pinned version + SRI (the `integrity` value is in each version's release notes) | One file, at most 36 KB gzip; on npm from 0.3.0 |
 | Auto-mount when `data-pipeup-doc` is present | No inline script needed, so strict CSP pages work | **Done in 0.3.0** |
 | `Pipeup.mount(options)` | Manual mount; options below | **Done in 0.3.0** (`root`, `name`, `store`) |
 | `data-pipeup-id="kebab-name"` | Stable identity for a block (≤ 200 chars, unique in the page) | Used by core anchors |
@@ -67,7 +67,7 @@ Every item is something an agent will rely on. Status says where it comes from.
 ### Gaps found while drafting (to fix by 0.6)
 
 1. **Thread ids are missing from Copy-for-AI output.** *(Closed in 0.3.0: thread and comment ids are in the output.)* `pipeup-apply` must reply to a specific
-   thread, so each `## Thread N` block needs `- **Thread:** <id>` (and comment ids for replies).
+   thread, so each thread carries its id (now on its last line; replies carry none, as nothing answers a reply by id).
 2. **Agents need their own identity.** *(Closed: `pipeup agent` and `pipeup reply`; the page lists the keys it trusts.)* `pipeup reply` signs as an "Agent" profile kept by the command line,
    named after the tool (for example "Claude"), so people can see which comments an agent wrote.
 3. **Ids must survive edits.** The apply skill tells agents never to rename or remove a

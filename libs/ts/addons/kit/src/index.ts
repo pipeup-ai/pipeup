@@ -1,4 +1,5 @@
 export { register } from "./register";
+export { pageSetting } from "./page";
 export { pageSecret } from "./secret";
 export { derivedRoom, ladder, type Ladder, type Purpose } from "./derive";
 export { asBatch, open, openJson, seal, sealJson, fromText, toText, type Opened } from "./envelope";

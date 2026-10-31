@@ -364,7 +364,7 @@ test("the line to a new comment in All comments goes when the panel closes", asy
   await open(page, "doc.html");
   await toggleCommenting(page);
   await page.locator("#p2").click();
-  await control(page).click();
+  await openAll(page);
   await expect(page.locator(".all.show .draft")).toHaveCount(1);
   await expect(page.locator(".cx.show")).toHaveCount(1);
   await page.locator(".all.show").getByRole("button", { name: "Close" }).click();
@@ -414,8 +414,11 @@ test("keys used in the menu never reach the page; ← and → on the comment con
   await control(page).focus();
   await page.keyboard.press("ArrowRight");
   expect(await heard(page)).toEqual(["keydown:ArrowRight", "keyup:ArrowRight"]);
-  await page.keyboard.press("Enter");
+  // ↑ on the control opens its menu, and is Pipeup's.
+  await page.evaluate(() => ((window as any).heard = []));
+  await page.keyboard.press("ArrowUp");
   await expect(page.locator(".menu.show")).toHaveCount(1);
+  expect(await heard(page)).toEqual([]);
   await page.evaluate(() => ((window as any).heard = []));
   await page.keyboard.press("ArrowUp");
   await page.getByRole("menuitem", { name: "Copy comments" }).focus();
@@ -614,8 +617,7 @@ test("opening All comments while writing a comment keeps the caret in it", async
   await page.locator("#p1").click();
   await expect(draftLine(page)).toBeFocused();
   await page.keyboard.type("We should name the flow");
-  await control(page).click();
-  await expect(page.locator(".all.show")).toHaveCount(1);
+  await openAll(page);
   await page.keyboard.type(" so readers know which one");
   await expect(draftLine(page)).toHaveValue("We should name the flow so readers know which one");
   await expect(page.locator(".all .rbox textarea")).toHaveCount(0);

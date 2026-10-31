@@ -1,4 +1,5 @@
 import type { SignedOp } from "pipeup";
+import { pageSetting } from "@pipeup/kit";
 
 /** What share remembers about one document: only op ids and choices, never a secret. */
 export interface Saved {
@@ -14,8 +15,16 @@ export interface Saved {
   gen: string | null;
 }
 
+/** What an agent may write: its replies, addressed notes and reactions. */
+const AGENT_KINDS = new Set(["reply", "addressed", "react", "unreact"]);
+
+/** The agents the page lists: `<html data-pipeup-agents="<key> <key>">`. */
+export const listedAgents = (): string[] =>
+  (pageSetting("data-pipeup-agents") ?? "").split(/[\s,]+/).filter(Boolean);
+
 /**
- * Whose comments are sent (add-ons design §7.3): this reviewer's own, plus ops received from the shared copy.
+ * Whose comments are sent (add-ons design §7.3): this reviewer's own, plus ops received from the shared copy, plus
+ * the replies of an agent the page lists, which the agent signed (spec §11).
  * Comments written before sharing began are held until the reviewer chooses; comments written while "Send my
  * comments" is off are kept; an edit, reply or delete follows the comment it changes.
  */
@@ -37,6 +46,7 @@ export class Policy {
   constructor(
     private readonly me: string,
     s?: Partial<Saved>,
+    private readonly agents: () => readonly string[] = () => [],
   ) {
     this.held = new Set(s?.held);
     this.kept = new Set(s?.kept);
@@ -50,6 +60,12 @@ export class Policy {
     this.init = s?.init ?? false;
   }
 
+  /** What is kept between visits: plain data only, so the store can clone it. */
+  saved(): Saved {
+    const { init, held, kept, recv, chosen, follow, legacy, send, noted, gen } = this;
+    return { init, held, kept, recv, chosen, follow, legacy, send, noted, gen };
+  }
+
   /** First setup for a document: this reviewer's earlier ops are held. */
   hold(ops: readonly SignedOp[]): void {
     if (this.init) return;
@@ -61,6 +77,9 @@ export class Policy {
   sendable(op: SignedOp): boolean {
     const b = op.body;
     if (this.recv.has(b.id)) return true;
+    // A listed agent's answer goes while this reviewer is sending, and waits with a comment they haven't shared.
+    if (AGENT_KINDS.has(b.kind) && this.agents().includes(b.author))
+      return this.send && ![b.target, b.thread].some((x) => x && (this.held.has(x) || this.kept.has(x)));
     if (b.author !== this.me || this.held.has(b.id) || this.kept.has(b.id)) return false;
     const parent = [b.target, b.thread].find((x) => x && (this.held.has(x) || this.kept.has(x)));
     if (parent) {

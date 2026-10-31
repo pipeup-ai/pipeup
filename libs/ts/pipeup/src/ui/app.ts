@@ -2,8 +2,8 @@ import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
-import { animalName, nameOf } from "../model/animals";
-import type { Mention, Thread } from "../model/types";
+import { animalName, isAiName, isPasted, nameOf } from "../model/animals";
+import type { Comment, Mention, Thread } from "../model/types";
 import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
@@ -25,8 +25,9 @@ import { createHost } from "./host";
 import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
-import { myRefs, names, peopleFor, unseenMentions } from "./mentions";
+import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
+import { hasSetting } from "./settings";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
 const RESOLVE_BUDGET_MS = 40;
@@ -45,6 +46,8 @@ export interface AppOptions {
   doc: PipeupDocument;
   root: Element;
   onName(name: string): Promise<void>;
+  /** Called on every render: the page's code hears comment mode and the name changing (§4a). */
+  onRender?(): void;
   /** Pipeup's stylesheet (passed in so the bundles can carry it last, where it compresses best). */
   styles: string;
 }
@@ -109,7 +112,7 @@ export function startApp(o: AppOptions): App {
   const sheet = installPageSheet(document);
   sheet.fade(0);
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
-  const reserve = document.documentElement.hasAttribute("data-pipeup-reserve");
+  const reserve = hasSetting("data-pipeup-reserve");
   const resolved = new Map<string, Resolved>();
   const pendingFuzzy = new Set<string>();
   const claimed = new WeakSet<Event>();
@@ -160,9 +163,17 @@ export function startApp(o: AppOptions): App {
   let sorted = "";
   /** Replies half-typed in threads that went elsewhere, put back when the thread reopens. */
   const unsent = new Map<string, string>();
+  /** The edition comments were last found for: a new one finds them again (§8). */
+  let edition: string | null = null;
   const here = createHere(o.root, () => {
-    if (!destroyed && classify()) render();
+    if (destroyed) return;
+    if (here.edition() !== edition) {
+      edition = here.edition();
+      resolveAll();
+    }
+    if (classify()) render();
   });
+  edition = here.edition();
 
   /** Comment mode's hint is showing: it goes as soon as a block is clicked, or after HINT_MS (by touch it stays). */
   let hint = false;
@@ -176,12 +187,33 @@ export function startApp(o: AppOptions): App {
   const tapping = () => state.commenting && !state.listing && touch();
   /** A tap has opened a comment box on this page: the hint's words have done their job, and only Done stays. */
   let taught = false;
+  /** Comment mode's touch hint has said, once, that pressing and holding the control opens the menu. */
+  const HELD_KEY = "pipeup:held";
+  let heldSaid = false;
   function tapHint(): void {
     if (!tapping() || state.menu) return;
-    toast("Tap what you want to comment on", 0, true, false, {
-      label: "Done",
-      run: () => setCommenting(false),
-    });
+    // The first time by touch, it also says where the menu went: pressing and holding the control.
+    let first = false;
+    try {
+      first = localStorage.getItem(HELD_KEY) === null;
+      if (first) localStorage.setItem(HELD_KEY, "1");
+    } catch {
+      /* no storage: said once per visit */
+      first = !heldSaid;
+    }
+    heldSaid = true;
+    toast(
+      first
+        ? "Tap what you want to comment on · Press and hold this button for more"
+        : "Tap what you want to comment on",
+      0,
+      true,
+      false,
+      {
+        label: "Done",
+        run: () => setCommenting(false),
+      },
+    );
     toastEl.classList.add("tap");
     learnt();
   }
@@ -435,6 +467,18 @@ export function startApp(o: AppOptions): App {
       }
       focusReply(id);
     },
+    pasted: (c) => {
+      if (!isPasted(c, listedAgents())) return "";
+      if (c.author === o.doc.me) return "pasted by you";
+      // The name they comment under, or their animal.
+      let name = "";
+      const walk = (x: Comment) => {
+        if (x.author === c.author && x.name && !isAiName(x.name)) name = x.name;
+        x.replies.forEach(walk);
+      };
+      o.doc.threads().forEach((t) => walk(t.root));
+      return `pasted by ${name || animalName(c.author)}`;
+    },
     drop: (id, words) =>
       offer("Reply discarded", () => {
         unsent.set(id, words);
@@ -540,6 +584,7 @@ export function startApp(o: AppOptions): App {
     menu,
     here,
     elsewhere: (t) => elsewhere.has(t.id),
+    earlier: (t) => here.earlier(t.anchor.view),
     recheck: () => {
       if (classify()) render();
     },
@@ -609,6 +654,12 @@ export function startApp(o: AppOptions): App {
     const threads = o.doc.threads();
     for (const t of threads) {
       if (only && !only.has(t.id)) continue;
+      // Another edition's comment is never looked for in this edition's content.
+      if (here.earlier(t.anchor.view)) {
+        resolved.set(t.id, { state: "orphaned", element: null, range: null });
+        pendingFuzzy.delete(t.id);
+        continue;
+      }
       const fuzzy = performance.now() - start < RESOLVE_BUDGET_MS;
       const r = resolveAnchor(t.anchor, o.root, { fuzzy });
       resolved.set(t.id, r);
@@ -646,7 +697,7 @@ export function startApp(o: AppOptions): App {
       // comments whatever else the page reports (another revision, say).
       const found = r?.state === "attached" || r?.state === "moved";
       if (
-        deck
+        here.earlier(t.anchor.view) || deck
           ? !here.holds(t.anchor.view)
           : el?.checkVisibility?.({ visibilityProperty: true }) === false ||
             (!here.holds(t.anchor.view) && !(found && !el?.closest("[role=tabpanel]")))
@@ -748,6 +799,7 @@ export function startApp(o: AppOptions): App {
 
   function render(): void {
     if (destroyed) return;
+    o.onRender?.();
     const threads = threadsNow();
     classify();
     // A thread open on a slide or view that is no longer here closes; a reply half-typed in it waits for it.
@@ -801,7 +853,10 @@ export function startApp(o: AppOptions): App {
     paint(threads);
     marked = !state.hidden && threads.some((t) => !!t.anchor.quote && !t.resolved && !elsewhere.has(t.id));
     listenForTaps();
-    for (const v of views) v.render(threads);
+    // Threads on a block an add-on draws in show there (§11b), not in the margin; the control and All comments have all.
+    const inPlace = addons.inPlace();
+    const margin = inPlace.size ? threads.filter((t) => !inPlace.has(t.anchor.id ?? "")) : threads;
+    for (const v of views) v.render(v === views.at(-1) ? threads : margin);
     modeView?.render(threads);
     if (!state.hidden) addons.flush();
   }
@@ -983,7 +1038,7 @@ export function startApp(o: AppOptions): App {
         ? tapHint
         : () =>
             toast(
-              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · ${SHORTCUT_LABEL} or Esc to finish`,
+              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · This button, ${SHORTCUT_LABEL} or Esc to finish`,
               HINT_MS,
               true,
             );

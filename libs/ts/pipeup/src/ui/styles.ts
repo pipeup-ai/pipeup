@@ -264,12 +264,22 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .ttip small,.mi .kc{color:var(--fa)}
 .launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
-.launch .mode[aria-expanded=true]+.ttip{grid-template-columns:minmax(0,0fr);opacity:0}
-@media (hover:none){.ttip,.tt,.cd>.thread .acts{display:none}}
+.launch:has(.mm[aria-expanded=true]) .ttip{grid-template-columns:minmax(0,0fr);opacity:0}
+/* ⋯ at the end of the reach opens the menu: it folds with the reach, and opens with it on hover or keyboard focus. */
+.launch .mm{display:grid;place-items:center;width:0;height:24px;margin-left:0;border-radius:6px;overflow:hidden;opacity:0;color:inherit;transition:width var(--out) var(--ei),margin var(--out) var(--ei),opacity var(--out) var(--ei),background-color .2s var(--eo)}
+.launch:is(:hover,:has(.mm:focus-visible)) .mm{width:26px;margin-left:4px;opacity:1;transition:width var(--mv) var(--eo) .4s,margin var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s,background-color .2s var(--eo)}
+.launch:has(.mm:focus-visible) .mm{transition-delay:0s}
+.launch .mm:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
+.launch .mm:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
+.launch:has(.mm[aria-expanded=true]) .mm{width:0;margin-left:0;opacity:0}
+.launch .mode{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.launch:has(.mm:focus-visible) .ttip{grid-template-columns:minmax(0,1fr);opacity:1}
+@media (hover:none){.ttip,.tt,.cd>.thread .acts,.launch .mm{display:none}}
 .menu{--b:calc(40px + var(--pu-lift));position:fixed;right:8px;bottom:var(--b);width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
-.menu.show{opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
+.menu.show{z-index:2;opacity:1;transform:none;pointer-events:auto;transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo)}
 @media (max-height:600px){.menu{max-height:calc(100% - var(--b) - 8px);overflow-y:auto;overscroll-behavior:contain}}
+/* The open menu was asked for: it sits over a chosen block's naming bar and an open comment box (a phone has little room). */
 /* Menu rows: one line each; the explanation is a tooltip beside the menu that eases in after a moment. */
 .mi{position:relative;display:flex;gap:10px;align-items:center;width:100%;min-height:34px;text-align:left;padding:6px 10px;border-radius:8px;transition:background-color .2s var(--eo)}
 .mi:hover,.mi:focus-visible{background:var(--so)}
@@ -353,6 +363,10 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .cx circle{fill:var(--pu-accent)}
 .layer.listing .col{opacity:0;transition:opacity var(--out) var(--ei)}
 .sec{padding:8px 10px 2px;font-size:12px;color:var(--fa)}
+.fold{display:flex;align-items:center;gap:4px;width:100%;margin-top:6px;border-radius:6px;text-align:left;cursor:pointer}
+.fold:hover,.fold:focus-visible{color:var(--mu);outline:none}
+.fold svg{transition:transform var(--mv) var(--eio)}
+.fold[aria-expanded=true] svg{transform:rotate(90deg)}
 .ag{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12px;color:var(--fa);border-bottom:1px solid var(--ln)}
 .ag[hidden]{display:none}
 .lns{display:flex;flex-direction:column}

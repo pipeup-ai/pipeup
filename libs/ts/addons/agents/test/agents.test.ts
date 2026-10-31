@@ -9,19 +9,42 @@ const A = "A".repeat(43);
 const B = "B".repeat(43);
 const id = (n: string) => n.padEnd(43, "_");
 
-describe("the prompt for an agent", () => {
+describe("Copy for my agent", () => {
   const meta = {
-    title: "Brief",
+    title: "Daily briefing",
     url: "file:///a/brief.html",
+    doc: "doc-id-123",
+    comments: "1. [t-4f2a] On Markets: Put the rates chart first. (Sam)",
+    open: 1,
+    resolved: 2,
     replies: "file:///a/brief.replies.js",
     listed: true,
   };
 
-  it("says where to read, where to answer and what never to do", () => {
+  it("carries the open comments, says where they live, and how to answer in a replies block", () => {
     const p = agentPrompt(meta);
-    expect(p).toContain("Pipeup.comments()");
-    expect(p).toContain("brief.replies.js");
+    expect(p).toContain("They are not in the page's file");
+    expect(p).toContain("## 1 open comment");
+    expect(p).toContain("Put the rates chart first");
+    expect(p).toContain("(2 resolved comments left out.)");
+    expect(p).toContain("```pipeup-replies");
     expect(p).toContain("Never resolve, reopen, edit or delete");
+  });
+
+  it("on a page that names its edition, carries that edition's comments and counts the earlier ones left out", () => {
+    const p = agentPrompt({ ...meta, edition: "2026-10-21", earlier: 2 });
+    expect(p).toContain("## 1 open comment on the 2026-10-21 edition");
+    expect(p).toContain("(2 resolved comments and 2 open comments on earlier editions left out.)");
+    expect(agentPrompt({ ...meta, resolved: 0, earlier: 1 })).toContain(
+      "(1 open comment on earlier editions left out.)",
+    );
+  });
+
+  it("says how to sign with the page's document id, and carries no key", () => {
+    const p = agentPrompt(meta);
+    expect(p).toContain("reply --print --doc doc-id-123");
+    expect(p).toContain("This page lists an agent's key");
+    expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
   });
 
   it("tells an agent whose key isn't listed to ask, then list itself on the page in one command, and carries no key", () => {
@@ -30,6 +53,12 @@ describe("the prompt for an agent", () => {
       "Ask me first; after my yes, run `npx --yes pipeup@0 agent --name <your name> --page /a/brief.html --yes`",
     );
     expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
+  });
+
+  it("asks an agent to be listed only if it can keep a key", () => {
+    const p = agentPrompt({ ...meta, listed: false });
+    expect(p).toContain("If you keep a Pipeup key between sessions");
+    expect(p).toContain("don't ask to be listed");
   });
 
   it("points an agent at the link's commands when a link is running", () => {
@@ -63,7 +92,7 @@ describe("the prompt for an agent", () => {
     expect(viewer).toContain("reply --page /Users/sam/My wiki/viewer.html --thread");
     expect(viewer).toContain("not a file it shows");
     expect(viewer).toContain(
-      "It writes /Users/sam/My wiki/viewer.replies.js, which the page reads by itself.",
+      "writes /Users/sam/My wiki/viewer.replies.js, and your replies appear by themselves",
     );
     expect(viewer).not.toContain("q3.md --thread");
     // A folder's page is its index.html; Windows paths lose the leading slash.
@@ -78,7 +107,7 @@ describe("the prompt for an agent", () => {
       replies: "https://docs.example.test/wiki/viewer.replies.js",
     });
     expect(site).toContain("--page <the HTML file your site serves at /wiki/viewer.html>");
-    expect(site).toContain("It writes https://docs.example.test/wiki/viewer.replies.js");
+    expect(site).toContain("writes https://docs.example.test/wiki/viewer.replies.js");
   });
 });
 

@@ -89,6 +89,8 @@ export interface Ctx {
   readonly addons: Surface;
   /** The thread lives on another slide or view, or the page hides its content: nothing of it shows. */
   elsewhere(t: Thread): boolean;
+  /** The thread is from another edition than the page shows (§8): it waits under Earlier editions. */
+  earlier(t: Thread): boolean;
   /** Sorts threads into here and elsewhere again now, re-rendering if that changed anything. */
   recheck(): void;
   visible(t: Thread): boolean;

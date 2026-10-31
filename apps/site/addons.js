@@ -1,8 +1,8 @@
 // The Add-ons page and each add-on's own page: Copy buttons and menus, and the looping demos. Spec: docs/WEBSITE_SPEC.md.
 const CDN = "https://cdn.jsdelivr.net/npm/";
-const ADDONS_VERSION = "0.8.2"; // tools/set-version.sh keeps this in step with the release
+const ADDONS_VERSION = "0.9.0"; // tools/set-version.sh keeps this in step with the release
 // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
-const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}", identity: "{{SRI:identity}}" };
+const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}", identity: "{{SRI:identity}}", inline: "{{SRI:inline}}" };
 const tag = (pkg, file) => {
   const sri = SRI[pkg.split("/")[1]];
   return `<script src="${CDN}${pkg}@${ADDONS_VERSION}/dist/${file}"${sri.startsWith("sha384-") ? ` integrity="${sri}" crossorigin="anonymous"` : ""}><\/script>`;
@@ -116,6 +116,19 @@ const prompts = {
     ...SAFE("identity", "to nowhere new (it sends nothing)"),
     "",
     "Nothing is sent anywhere. Leave everything else on the page as it is.",
+  ].join("\n"),
+  inline: () => [
+    "My HTML page already uses Pipeup for comments. Please add the Pipeup Inline add-on, so I can ask reviewers questions right in the content (agree, a choice, or their own words) and they answer where the question is.",
+    "",
+    OPEN,
+    "",
+    `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/inline", "inline.min.js")}`,
+    "",
+    "Only where I ask a question: on its element, add data-pipeup-id with a short stable name, data-pipeup-ask with the question, and data-pipeup-ask-kind (agree, choice with data-pipeup-ask-options=\"One|Two\", or leave it out for an answer in words). Keep the question in the element's own words too, so someone without the add-on still sees it.",
+    "",
+    ...SAFE("inline", "to nowhere new (answers are ordinary comments)"),
+    "",
+    "Nothing is sent anywhere: answers are comments, kept and sent the way the page's other comments are. Leave everything else on the page as it is.",
   ].join("\n"),
   github: () => [
     "My HTML page already uses Pipeup for comments. Please add the Pipeup GitHub add-on, so that when a comment mentions someone on GitHub, I can open a new issue with their @name filled in.",

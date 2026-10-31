@@ -15,9 +15,15 @@ const API_TYPES = [
   "PanelHandle",
   "Status",
   "UiSnapshot",
+  "PostOptions",
   "ComposerTool",
   "ComposerHandle",
   "Dictation",
+  // The page API (§4a): a page's own code calls these on the built bundle.
+  "PipeupInstance",
+  "PipeupState",
+  "MountOptions",
+  "MountError",
 ];
 
 function apiNames(): Set<string> {

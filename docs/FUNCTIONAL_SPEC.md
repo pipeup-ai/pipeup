@@ -104,12 +104,34 @@ Images and PDFs as standalone review targets are **out of scope** for the first 
   - a **preferred side** for the comment gutter;
   - a **reserved comment gutter**: a page can lay itself out around the space comments need (see
     §9), so its content stays centred in what remains;
-  - for decks, which element is a **slide**.
+  - for decks, which element is a **slide**;
+  - an **edition**: a page that shows a new edition in the same shell (a daily briefing, say) can say which edition
+    it is showing, and say so again when the next one is swapped in (§8).
 - Pages with none of this markup still work; Pipeup falls back to its own judgement. The script line alone starts
   Pipeup; a page without a document identity is known by its address. A page that starts Pipeup from its own code
   can turn the automatic start off.
 - Pipeup never requires the author to restructure or restyle their page, and never moves or
   restyles the page itself.
+- **Settings where the host allows them.** Every setting a page can put on `<html>` (its document identity, its
+  layout, its look, its add-ons and theirs) can instead go on the line that loads Pipeup or an add-on, so a page on a
+  host that writes its own `<html>` (such as claude.ai Artifacts) needs no extra code. A page that starts Pipeup itself
+  can also give its document identity, layout, look and selection setting (§5) when it does. A setting given in more
+  than one place takes the value given when the page starts Pipeup, then the one on a loading line, then the one on
+  `<html>`; the check names settings that disagree.
+
+## 4a. Working with the page's own code
+
+Some pages have controls of their own for reviewing (a Comment button in their header, a name field). They work with
+Pipeup without reaching inside it.
+
+- A page's own code can turn comment mode on and off, and is told once the change has happened.
+- It can ask whether comment mode is on, and is told each time it changes, however it changed: the comment control,
+  the shortcut, Esc, or the page itself.
+- It can set the reviewer's name at any time. Pipeup keeps it as if the reviewer had typed it, and the page is told
+  each time the reviewer changes it in Pipeup.
+- When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
+  copy of Pipeup already owns the page), as well as in the browser's console.
+- None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
 
@@ -118,17 +140,19 @@ any of them off.
 
 | Way | Gesture | Best for |
 |---|---|---|
-| **Text** | In comment mode, select words. A small comment control eases in beside them. | Wording, specific claims |
+| **Text** | Select words, in comment mode or out of it. A small comment control eases in beside them. | Wording, specific claims |
 | **Block** | In comment mode, hover: an outline glides to the most obvious thing under the pointer — a paragraph, card, image, table, chart or a single button. Click it and the comment box opens straight away. | Whole elements, including controls |
 | **Pin** | In comment mode, Option-click an exact spot, or choose a block and press **Pin** on its naming bar. | Slides, charts, canvases, designs |
 | **General** | Comment on the page or slide as a whole. | Overall reactions |
 
-- **Selecting text offers commenting only in comment mode.** Outside it, selecting text offers
-  nothing and the page behaves as normal. The control is a single comment icon, just past the end of
+- **Selecting words offers commenting, in comment mode and out of it.** Starting a comment from it outside comment
+  mode doesn't turn comment mode on: links still open and the page keeps working as normal. An author can turn this
+  off, so that outside comment mode selecting words offers nothing. A link's words can be selected and commented on
+  like any others; commenting on a link as a whole is done in comment mode. The control is a single comment icon, just past the end of
   the paragraph's text, level with the selection's last line. It never covers the selection or the words
   around it, such as a headline's line above; where there's no room beside the text it sits above the
   selection (below it at the top of the window).
-- **Comment mode** is switched on and off from the comment control or with **⇧⌥C** on a Mac
+- **Comment mode** is switched on and off with one click or tap on the comment control, or with **⇧⌥C** on a Mac
   (**Shift+Alt+C** elsewhere) — a shortcut chosen not to clash with common browser and page
   shortcuts. **Esc** steps back out of it. Outside comment mode the page behaves exactly as normal.
 - In comment mode the pointer becomes a **picking cursor** (an arrow over a dashed box, like a
@@ -432,8 +456,9 @@ any of them off.
   - In comment mode the glass turns the accent colour.
   - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
     add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
-    leaves, and while the menu is open. The control itself never moves. Its name, state and shortcut are read
-    out by screen readers, and the menu shows the shortcut beside Start commenting.
+    leaves, and while the menu is open. The reach ends with **⋯**, which opens the menu. The control itself never
+    moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
+    commenting.
 - **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
   the footer back into the control. Both shapes ease into each other.
@@ -443,9 +468,11 @@ any of them off.
   cover them, on a phone either. While All comments is open they sit inside the panel, above its footer, so
   they never cover the page beside it (nor a deck's own slide controls there). Nothing of Pipeup's covers a message: comment mode's hint waits
   until the menu has closed, then shows for its usual time.
-- **In comment mode, clicking it opens All comments**, where the panel's footer holds comment mode's switch and
-  **⋯** for the rest of the menu.
-- **Otherwise, clicking it opens its menu**, which rises above the control. Each item is **one line**; what it
+- **Clicking or tapping it turns comment mode on**, and doing it again turns it off. Comment mode's hint says how
+  to stop.
+- **Its menu** opens from the **⋯** at the end of its reach; by touch, from pressing and holding the control (the
+  first time comment mode starts by touch, its hint says so); and from the keyboard, with ↑ or the menu key on the
+  focused control. All comments is in the menu. The menu rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
   never moves anything, and is read out by screen readers. From the top:
   - **where comments go**, one quiet line (not an item: no tooltip, and the arrow keys pass over it): with plain
@@ -457,8 +484,8 @@ any of them off.
     and leaves the menu open; the row then shows the name and avatar again. The menu never closes
     while the name is being edited;
   - **Copy comments**, one row that opens to its two choices beneath it (a second click, or → from the
-    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown for
-    AI, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
+    keyboard; ←, Esc or a second click folds them away). **As Markdown** copies every open thread as Markdown a
+    person can read and an AI can act on, in order, with where each one is (§7a); **As text** copies the same threads as plain text: where it is,
     then just the names and words (§7a). Each has a one-line tooltip, and the choices are folded each time the
     menu opens. There is no copy-format setting;
   - **Theme**, showing Automatic, Light or Dark; each press moves on to the next, and the menu stays open so
@@ -533,13 +560,23 @@ any of them off.
 
 ## 7a. Copying comments for AI
 
-- Copying a thread or copying all produces text an AI assistant can act on directly.
-- **Copy comments › As Markdown** and a thread's own copy button give **Markdown for AI** — a heading per thread and,
-  for each one: where it is (slide or section, then the element), the element's stable identifier,
-  the exact quoted text or pin position, who started it and when, then the comment and its replies
-  as a list. Copying all comments as Markdown adds the page title and address, the export time, the number of open threads
-  (noting resolved ones are left out) and a one-line instruction to work through them and say what
-  changed.
+- Copying a thread or copying all produces text a person can read in an email or chat reply, and an AI assistant
+  can act on directly. Reviewers send it back to the author (§11); authors paste it into an AI.
+- **Copy comments › As Markdown** and a thread's own copy button give **Markdown**:
+  - Copying all opens with what a person needs, and nothing aimed at an AI: the page's title ("Comments on …"); how
+    many open comments there are and who wrote them; when they were copied, as a date and a time with its time zone;
+    how many resolved ones are left out; and the page's address.
+  - Then, for each thread, a numbered heading saying where it is (slide or section, then the element); the words it
+    quotes, or where it is pinned, in a sentence; the comment and its replies as a list, each with who and how long
+    before copying; and, when an agent marked it addressed, who did and their note.
+  - Each thread ends with one line for an AI: whether it is open, addressed or resolved; the thread's id, which an
+    agent needs to answer it; and the element's stable identifier, saying whether the comment is on that element or
+    inside it. These are the only ids in the text.
+  - After the threads, one paragraph, marked as being for an AI assistant, says to work through the open comments in
+    order, say what changed or why not, answer each in its thread with Pipeup (naming the skill that says how) and
+    mark it addressed, and never resolve it: the author does.
+  - A thread's own copy has its heading (without a number), the page's address and the same lines, without the
+    opening or the closing paragraph.
 - **Copy comments › As text** gives **plain text** — where it is, then just the names and words.
 - Where a thread is and the words it quotes are copied the same whether or not its slide or view is showing.
 - There is no copy-format setting.
@@ -609,6 +646,16 @@ any of them off.
   the page reports (for example, a chosen filter).
 - When the author publishes a new version of the file, comments on text that changed are marked
   **Moved** rather than silently re-attached.
+- **Editions.** On a page that names its edition (§4), every new comment remembers the edition it was made on.
+  Comments from another edition never show on the page, are never matched to the content of the edition showing, and
+  are never marked Moved for it. When the page names a new edition while it is open, Pipeup follows without a reload.
+  On such a page, a comment made before the page named an edition counts as an earlier edition's.
+- The comment control counts the open comments on the edition showing; earlier editions' comments don't add to its
+  number or its sign that comments are elsewhere. All comments lists this edition's threads first, then, folded under
+  **Earlier editions** with how many open threads they hold, the threads of other editions, each saying which edition
+  it is from (as written by the page, for example "the 2026-10-20 edition").
+- An earlier edition's thread opens on its own with a snapshot of what it was about, and can be replied to, reacted
+  to and resolved. It goes to that edition only when the page tells Pipeup how (as for any view).
 
 ## 9. Fitting the page naturally
 
@@ -856,6 +903,10 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 - Pipeup only ever sends a reviewer's own comments to the shared copy, never comments it received from
   someone else by file or live review. People who already received your comments could still pass them
   on themselves, and Pipeup says so where you choose whether to send.
+- The one exception is an agent the page lists (§15b). While a reviewer is sending, their Pipeup also passes on that
+  agent's replies, addressed notes and reactions that it holds (from the replies file, the live link, or a signed paste),
+  because the agent signed them and anyone can check that, and so everyone who has the page sees the agent's answers.
+  An agent's answer to a comment the reviewer hasn't shared stays with that comment and isn't sent.
 - Pipeup says in words whether the shared copy is:
   - up to date;
   - waiting to send changes;
@@ -946,7 +997,7 @@ which Pipeup discards. It also can't tell when something is missing.
 - **Add-ons published by the Pipeup project:**
   - send only to the services they name;
   - send nothing before the reviewer agrees, where they need agreement (going live, dictating);
-  - never change the page's own content;
+  - never change the page's own content, except inside an element the author marked for that add-on (§11b);
   - never post, edit or resolve anything on a reviewer's behalf; they may only fill in words that the
     reviewer then sends;
   - never send one reviewer's comments to a sharing service on another reviewer's behalf.
@@ -976,7 +1027,8 @@ permission, a registration, or a place in its npm scope.
 
 - **A guide, in plain words, on one page.** It explains, in this order: what an add-on is and what a page's author
   does to include one; what an add-on can do (add a row to the menu, open a panel, show a note on a thread, show a
-  status, read the comments, and bring in other people's comments, which Pipeup checks as strictly as any); what it
+  status, read the comments, bring in other people's comments, which Pipeup checks as strictly as any, draw inside an
+  element the author marked for it, and post what the reviewer sent from its own box); what it
   can't do (make Pipeup accept a comment that is forged, altered or for another document); the one plain sentence
   every add-on gives about what it sends and to whom, and that reviewers are shown it before anything is sent; how a
   page includes the add-on; how to try it and test it; and what the Pipeup project does and doesn't stand behind (it
@@ -1109,6 +1161,77 @@ permission, a registration, or a place in its npm scope.
   token to be pasted anywhere.
 - **Not part of this change:** a list of other people's add-ons, and a mark in the menu telling reviewers an add-on is
   not from Pipeup (both are for later, and the second changes the core).
+
+## 11b. Inline comments (inline add-on)
+
+*Built (inline add-on).* Today every comment starts with the reviewer: comment mode, pick a block, write. An author
+often knows what they want to ask, and where. The **inline** add-on lets the author put those asks in the content
+itself, and show a block's comments in the flow of the page. Everything after the entry point is an ordinary comment.
+
+**What it sends.** Nothing: the inline add-on uses no network. Answers are comments, kept and sent the way the page's
+other comments are.
+
+**Asks**
+- An author marks a place in the content as an **ask**, with a question, a name that stays the same when the question's
+  words change, and a kind:
+  - **open**: the reviewer answers in words;
+  - **agree**: Agree, or Needs change (which asks what, in words). Either may carry the reviewer's words: an Agree
+    can confirm, or steer in a direction ("Agree, but keep it to one screen"); Needs change always asks for them;
+  - **choice**: two to six options the author names, and optionally Other (which asks for words).
+- The ask is shown where the author put it, in the page's flow: the question, then a comment box or the buttons for its
+  kind. It needs no comment mode and no shortcut. It is in the page's tab order, works by keyboard, touch and screen
+  reader (a group named by its question), and follows Pipeup's light and dark looks and reduced motion.
+- Dictation and the other tools add-ons put in comment boxes work in an ask's box too. Every rule that words being
+  written are never lost applies.
+- **An answer is an ordinary comment** on the block the ask marks: it shows in the panel, takes replies and reactions,
+  is copied for AI, read by agents, shared, live and sent by file like any other. Copy for AI says it answers an ask
+  and quotes the question.
+- **One answer per reviewer per ask.** Choosing again, or sending new words, changes the reviewer's answer (an edit,
+  shown as edited), never a second answer. Replies under an answer are a conversation, not more answers.
+- **Changing or removing an answer.** After answering, the ask reads "Your answer: …" with **Change** and **Remove**.
+  While changing, one **Cancel** leaves the answer as it was. Remove asks once more ("Remove your answer?", or "Remove
+  your answer and its 2 replies?" when it has replies), with **Remove** and **Keep**; that second question can't be
+  answered by the same double-click or double tap that asked it. Removing deletes the answer as Delete does any comment,
+  replies and all; the ask goes back to only its question, others' answers and counts hide again, and a needed ask
+  counts as unanswered. Focus goes to the ask's first control. It works from the keyboard and by touch.
+- **Seeing others' answers.** Until a reviewer answers, the ask shows only the question, so earlier answers don't steer
+  them. This holds for every ask: an author can't choose to show others' answers first. After answering, it shows their answer with Change, and, where others' comments are present (shared, live or
+  added from files), how many answered and the count for each option, or for Agree and Needs change. Counts name no one;
+  the threads under the ask show who said what, as any thread does.
+- **Asks the author needs.** An author can mark an ask as needed. The menu says "2 of 5 asks answered" and lists the
+  unanswered ones, each going to its ask.
+- **When the question changes.** An answer given to earlier words of the same ask is marked with the words it answered
+  ("Asked as: …"). An ask removed from the page leaves its answers as orphaned comments (§8), with their question kept.
+- **Without the add-on**, or with a Pipeup that can't run it, the author's own content inside the ask shows instead
+  (for example, the question and "Comment on this"), and the block is commented on as any other.
+- A comment someone starts on an ask's block in comment mode is an ordinary comment on it, shown with the ask's
+  threads but not counted as an answer.
+- Agents may reply to an answer, as to any comment; an agent never answers an ask. `pipeup read` lists each ask with
+  its question, kind and answers, so an agent can work through them.
+
+**Comments in the flow**
+- An author can mark a block to show its comments **in place**: under the block, one quiet line ("3 comments · latest
+  from Ada") that opens the threads in place, to read and reply. Everything else on a thread (resolve, reactions,
+  copy, filters) is in the panel, as for any comment.
+- An ask always shows its threads in place.
+- Blocks the author didn't mark keep their comments in the margin and the panel. Nothing moves or reflows the page
+  except inside the places the author marked.
+- **While comments are closed** (Hide comments), an ask shows its question and its box or buttons, since they are the
+  author's content, but no counts and no threads; marked blocks show nothing extra.
+
+**What this asks of Pipeup** (for any add-on, the Pipeup project's and others')
+- An add-on may **post a comment the reviewer wrote or chose, and sent themselves** from the add-on's own box or
+  buttons, on a block of the page. It still never posts, edits or resolves anything on a reviewer's behalf.
+- An add-on may **draw inside an element the author marked for it**, and nowhere else in the page's content. It changes
+  nothing outside that element, and removes all it drew when it is turned off.
+- An add-on that needs either and finds a Pipeup without it stays off and says why (§11a).
+
+**Not part of this**
+- Asks in Pipeup itself: they stay in the inline add-on, even if another add-on comes to use them; Pipeup gives add-ons
+  only the two general abilities above.
+- One review across several pages of a site, and a step that finishes and sends a whole review: both are about where
+  comments are kept and how they travel, not how a comment starts.
+- Anonymous answers, and answers that choose several options.
 
 ## 12. Presence (live review)
 
@@ -1254,6 +1377,12 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
 - When an agent rewrites or regenerates a page, it keeps the page's document identity and sharing line
   unchanged. A new document made from an existing page or template gets a new identity and no sharing
   line, so comments of different documents never mix. Agents never put a stop key in a page.
+- A page that keeps one shell and shows a new edition in it (a daily briefing, say) is one document to Pipeup, so
+  earlier comments land on matching content in the new edition, marked Moved (§8). When each edition is meant to be
+  reviewed on its own, the page names the edition it shows (§4, §8), and agents that publish such pages do so. A page
+  that wants editions kept wholly apart, or that runs a Pipeup without editions, gives each edition its own document
+  identity instead, made from the page's identity and the edition (for example its date), set before Pipeup starts.
+  The integrate skill and `llms.txt` say how.
 
 ### 15a. Installing the skills
 
@@ -1302,6 +1431,10 @@ an agent on the same computer is a later step and is not part of this one.)
   **addressed**, with a short note of what was done and where (for example "addressed in revision 41").
 - A reply is signed by the agent's own identity, made once and kept on the agent's computer, never in the
   page or its folder. The identity has a name that shows it is an agent (§10, §15).
+- For an agent that can't reach the page's folder, the reply command can print a **signed replies block** instead of
+  writing the file. The block carries the same replies, each signed by the agent's own identity. A signature covers the
+  reply's words, its addressed note, its thread and the page, so a changed reply, or one pasted into another page, no
+  longer counts as signed.
 - The page shows the replies it finds in the file, inside the thread, under the agent's name and with
   the same marking as other AI replies. A reply can't be edited or removed by a later one, only
   followed by another.
@@ -1324,17 +1457,42 @@ an agent on the same computer is a later step and is not part of this one.)
 - With the agents add-on, a page whose author has listed an agent says so in plain words in the comment control's menu, in one
   line that names the agent (for example "Claude can answer comments here"). A page with no agent listed
   shows nothing, so nothing is added for readers who don't need it.
-- With the agents add-on, the menu's copy-for-AI row has a second choice, **Copy a prompt for my agent**, shown whether or not an agent is listed, which copies a short
-  instruction that tells an agent where this page's comments are, how to read them and how to answer,
-  and that it may mark a thread addressed but never resolve it. It carries no comments and no keys. Its commands
+- With the agents add-on, the menu has **Copy for my agent**, shown whether or not an agent is listed. It copies the
+  page's open comments (each with its id, where it is, its words and any replies) together with how to answer them,
+  so an agent that can't open the page or its folder has everything it needs in one paste. Its hint says how many
+  comments it copies. It says how many resolved comments it left out, and carries no keys. On a page that names its
+  edition (§8), it carries the open comments on the edition showing, and says how many open comments on earlier
+  editions it left out.
+- The copied text says that the comments were left in the reviewer's browser and are not in the page's file. It tells
+  the agent how to answer in a **replies block** the page can read, and that it may mark a thread addressed but never
+  resolve it. It names the faster routes (the live link, §15c, and the reply command) for an agent that can use them,
+  and works without them. It tells the agent how to sign its replies block when it keeps a key, and says whether the
+  page lists it. Its commands
   run anywhere an agent does: they never stop to ask (an agent can't answer), and they ask npm for any release that
   answers them, not only the page's exact one, because some computers accept only packages a few days old. A
   pre-release page's commands name its pre-release and say to use any release if npm refuses that one, and its
-  prompt points at the pre-release guide.
-- The prompt names the page to answer on: the HTML file that runs Pipeup (its full path, for a page opened from this
-  computer, or its address on the site), never a file the page shows (a viewer at `viewer.html?file=notes.md` is
-  `viewer.html`). It says where the replies will be written and that the page reads them from there. When the page
-  doesn't list an agent, it tells the agent to ask the author first and, after a yes, list itself with one command.
+  text points at the pre-release guide.
+- For an agent that can write next to the page, the copied text names the page to answer on: the HTML file that runs
+  Pipeup (its full path, for a page opened from this computer, or its address on the site), never a file the page
+  shows (a viewer at `viewer.html?file=notes.md` is `viewer.html`). It says where the replies will be written and that
+  the page reads them from there. When the page doesn't list an agent, it tells the agent to ask the author first and,
+  after a yes, list itself with one command.
+- With the agents add-on, the menu has **Paste my agent's replies**. The person pastes the agent's answer, whole; the
+  page finds the replies block in it and says in words what it found (how many replies, from which agent, how many are
+  signed by an agent the page lists, how many say addressed, and how many it will leave out and why, for example a
+  reply to a comment that's no longer on the page). For a reply it can't count as signed, it says why: not signed,
+  signed with a key the page doesn't list, or changed after it was signed.
+  Nothing is added until the person agrees. If it finds no replies it can read, it says so and offers to copy a request
+  asking the agent to answer in the replies block.
+- A pasted reply signed by an agent the page lists shows exactly as a reply read from the replies file: under the
+  agent's name, with the AI marking (§10), and nothing more.
+- Any other pasted reply shows under the agent's name, with the AI marking and the words "pasted by you"; to other
+  people in a shared copy, it says who pasted it ("pasted by Sam"). So when comments are shared, everyone can tell that
+  the person who pasted didn't write the agent's words, and which agent replies came to the page unchanged.
+- Pasted replies are accepted whether or not the page lists that agent, because pasting is the person's own act. They
+  follow every rule for agent replies: they never resolve, reopen, edit or delete, and can't change a person's comment.
+  They are kept with the comments in this browser, and travel with them when the page has a sharing add-on: a reply
+  pasted by this reviewer as their own, and a reply signed by an agent the page lists as that agent's (§11).
 - With the agents add-on, All comments says in a sentence how the agent has answered ("Claude has answered 3 of 5 open
   comments; 2 are marked addressed") and the panel has a quiet **Check for replies** button.
 - In a thread, an agent's reply keeps the AI marking (§10). A thread marked addressed shows the note and
@@ -1345,7 +1503,7 @@ an agent on the same computer is a later step and is not part of this one.)
 **What agents are told**
 - Every agent-facing surface says the same things about comments, in the same words: the skills (apply,
   summarise, integrate and the install skill of §15a), `llms.txt` and `llms-full.txt`, the Markdown copy
-  of each page, the prompts the site offers, and the prompt the menu copies.
+  of each page, the prompts the site offers, and the text Copy for my agent copies.
 - An agent that is given a page's comments: reads every open thread in order; for each one makes the
   change the author approved, or says why it did not; replies in the thread with what changed and where;
   marks it addressed; and leaves closing to the author. It asks the author before changing anything
@@ -1354,11 +1512,13 @@ an agent on the same computer is a later step and is not part of this one.)
   in the page or the folder, never answers as a person, and never resolves, reopens, edits or deletes.
 - When a thread is reopened with "Still not right", the agent treats the person's new words as the
   request, and replies again in the same thread.
-- An agent that can't write the replies file (for example a chat with no files) says what it would have
-  replied, in a form the author can paste, and does not pretend the page was updated.
+- An agent that can't write the replies file (for example one in the cloud, or a chat with no files) answers in one
+  replies block the person can paste into the page, signed when it keeps a key between sessions, says what it changed
+  and where, and does not say the page was updated.
+- An agent never looks for comments in the page's file, and asks to be listed only when it can sign its replies.
 - An agent that adds Pipeup to a page lists itself as an agent only when the author asks for replies,
   and says in words what that lets it do.
-- An agent passes the page named in the prompt and, when it can't tell which file runs Pipeup, asks instead of
+- An agent passes the page named in the copied text and, when it can't tell which file runs Pipeup, asks instead of
   guessing a file the page shows. It lists itself on a page only after the author's yes.
 - The skills, `llms.txt`, the Markdown copies and the site give the same commands as the prompt, in the same form.
 
@@ -1423,8 +1583,8 @@ The page's side of the link is part of the agents add-on (§15d); `pipeup watch`
   can be turned on again.
 
 **Skills and prompts**
-- When a link is running, the prompt Copy a prompt for my agent tells the agent to read and answer with the link's
-  commands instead of driving the browser. Without a link, section 15b's way still works and the prompt says so.
+- When a link is running, the text Copy for my agent copies tells the agent to read and answer with the link's
+  commands. Without a link, the comments it carries and the replies block (§15b) still work, and the text says so.
 - The apply and integrate skills, `llms.txt` and the site's Markdown copies describe both ways, preferring the link
   when the author is on their own computer.
 
@@ -1443,10 +1603,11 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 
 **What the add-on does**
 - Reads the replies file (§15b), keeps only replies from the agents the author listed, and says how many it ignored.
-- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy a
-  prompt for my agent** to the menu (§15b).
+- Adds the line about the agent to the menu, the sentence and **Check for replies** to All comments, and **Copy for
+  my agent** and **Paste my agent's replies** to the menu (§15b).
+- Reads replies the person pastes from an agent (§15b). Pasting sends nothing anywhere.
 - Is the page's side of the live link: the **Share with my agent** switch, off on every load (§15c).
-- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page. When the page is shown
+- Says in one sentence what it sends and to whom (§11a): "Reads a replies file next to this page, and replies you paste from your agent. When the page is shown
   through `pipeup watch`, and only after you switch it on, it sends this page's comments to the program running on
   this computer. Nothing leaves this computer."
 - Follows the rules for every add-on (§11a): nothing is added to the page while comments are closed except words in the
@@ -1846,9 +2007,20 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — A closed card's actions take a press only once they have eased in, so a click as the pointer arrives, or a tap on a touch tablet's column card, no longer resolves, reacts or opens ⋯; after Resolve in the column, a second click with the pointer still opens the next card instead of resolving it. On a deck, the comment control and its messages (comment mode's touch hint among them) sit above the deck's own controls anywhere along the bottom where they would be, not only in the bottom-right corner, so on a phone the hint never covers a bottom-centre slide bar (sections 5, 6 and 7).
 - 2026-10-18 — iPhones (0.8.1): one tap answers on the page (Safari sends no click for a tap on words or pictures unless something listens for one); by touch the menu closes after Start commenting; the on-screen keyboard never covers a comment box, and Pipeup's drawings stay on what they are about when the phone moves the page; the selection's icon sits at the right edge beside the phone's own menu; no AutoFill in a comment box (sections 5, 7).
 - 2026-10-18 — By touch, comment mode's hint is filled with the accent colour, and once a tap has opened a comment box its words fold away, leaving Done (section 5).
+- 2026-10-18 — Copy a prompt for my agent becomes **Copy for my agent** and carries the open comments, and says they live in the reviewer's browser, not the page's file; a new **Paste my agent's replies** adds an agent's answers given in a chat, shown as pasted by you, so an agent that can't reach the page or its folder can still read and answer (sections 15b, 15c and 15d).
+- 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
+- 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
 - 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
+- 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
+- 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
+- 2026-10-27 — Copy comments › As Markdown reads as a message to a person and still guides an AI (usability study, issue I7). It opens with the title, the open comments and who wrote them, when they were copied in words, and the address; each thread leads with where it is, the quoted words or pin in a sentence, and the comments; its state, its id and the element's identifier move to its last line; replies carry no ids; and the instruction for an AI moves after the threads (section 7a).
 - 2026-10-27 — Fixes from the website usability study: the script line alone starts Pipeup (a page without a document identity is known by its address), and a name typed in the comment box's name field is saved on leaving the field, not only on Enter (sections 4 and 5).
 - 2026-10-29 — Dictation after a failure (§11a, §14): the microphone always works again, notices name what to change and pass on the browser's reason, repeated words are written once, a language the engine can't do is said before starting, and a browser with no engine says so in the console. The consent sentence no longer claims Safari always sends the voice to Apple. Design note: docs/design/voice-safari-firefox.md.
 - 2026-10-29 — Comments stay here (sections 5 and 7): the menu's top line says comments stay in this browser until sent, where Share and Live already report, and the comment box carries a small glyph saying the same on hover, after reviewers expected their comments to appear on other copies. Design note: docs/design/comments-stay-here.md.
 - 2026-10-30 — Only in this browser (section 11): on a shared page, each of the reviewer's comments that isn't in the shared copy is marked, with why in its tooltip, and keeping earlier comments reads "in this browser". Design note: docs/design/only-in-this-browser.md.
+- 2026-10-31 — Proposed (not built): inline comments, an add-on (§11b). An author puts asks in the content (open, agree, choice), answered in place without comment mode; each answer is an ordinary comment, one per reviewer per ask, with others' answers counted only after one's own; a block can show its comments in place. Needs two additions for any add-on: posting what the reviewer wrote and sent in the add-on's own box, and drawing inside an element the author marked for it (§11a amended to match). From Designup's review rounds, where reviewers are not told what is asked. Design note: docs/design/inline-comments.md.
+- 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.
+- 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
+- 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.

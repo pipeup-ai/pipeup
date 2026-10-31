@@ -32,6 +32,8 @@ export interface ThreadActions {
   drop(threadId: string, words: string): void;
   /** Esc in an empty reply line: closes the thread. */
   close(): void;
+  /** Who put an agent's reply here when the agent didn't sign it ("pasted by you"); "" otherwise. */
+  pasted?(c: { author: string; name: string }): string;
 }
 
 export interface ThreadViewOptions {
@@ -392,6 +394,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         { class: "hdr" },
         ...face(c),
         h("span", { class: "who" }, nameOf(c)),
+        actions.pasted?.(c) ? h("span", { class: "ago pst" }, actions.pasted(c)) : null,
         h("span", { class: "ago", title: new Date(c.at).toLocaleString() }, formatAgo(c.at, now)),
         // A closed card has no room for the mark's line: its glyph sits after the time, its words its name.
         card ? markOf(c, true) : null,
@@ -508,7 +511,13 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
         addressed = h(
           "div",
           { class: "adr" },
-          h("small", {}, `Addressed · ${nameOf(open)} · ${formatAgo(open.at, now)}`),
+          h(
+            "small",
+            {},
+            ["Addressed", nameOf(open), actions.pasted?.(open), formatAgo(open.at, now)]
+              .filter(Boolean)
+              .join(" · "),
+          ),
           open.text,
           h(
             "div",

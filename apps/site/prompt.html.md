@@ -16,10 +16,11 @@ Each person sends you their own comments. To gather everyone's in one place, see
 
 The page shows it in full, with the key its copy carries; the home page's **Copy prompt** copies the same words. In short, it asks the AI to:
 
-1. Add `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>` just before `</body>`, editing only the HTML file.
+1. Add `<script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>` just before `</body>`, editing only the HTML file.
 2. Add `data-pipeup-doc="<key>"` to `<html>` (a key made with `await Pipeup.newDocumentAttribute()`) and keep it exactly as it is from then on. The key is for this one page: every other page needs a key of its own, or their comments mix.
 3. Mark stable blocks with `data-pipeup-id`, label charts and images with `data-pipeup-label`, mark navigation with `data-pipeup-ignore`, and not change the page's layout.
-4. When it's done: if it can't change the file on your computer, give you the whole new file to download and remind you to share that one, not the one you had; tell you to open it in your web browser and check for the comment button in the bottom-right corner; and give you the note for reviewers, word for word.
-5. Later, apply each comment you paste, say what it changed, and give you the whole file again.
+4. Add the [agents add-on](https://pipeup-ai.github.io/pipeup/addons/agents.html.md) (an AI agent answering comments in the page) or the [inline add-on](https://pipeup-ai.github.io/pipeup/addons/inline.html.md) (questions asked right in the content) only if you ask; if you asked for neither, say in one line that both exist.
+5. When it's done: if it can't change the file on your computer, give you the whole new file to download and remind you to share that one, not the one you had; tell you to open it in your web browser and check for the comment button in the bottom-right corner; and give you the note for reviewers, word for word.
+6. Later, apply each comment you paste, say what it changed, and give you the whole file again.
 
 [Back to the home page](https://pipeup-ai.github.io/pipeup/index.html.md)

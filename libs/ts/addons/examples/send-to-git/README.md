@@ -77,7 +77,7 @@ The address must be `https:` (or `http:` on this computer, for trying it). `demo
   "url": "https://pages.example.com/plans/launch-plan.html",
   "exportedAt": "2026-10-10T09:30:00.000Z",
   "openThreads": 2,
-  "markdown": "# Review comments: Q3 launch plan\n..."
+  "markdown": "# Comments on Q3 launch plan\n..."
 }
 ```
 

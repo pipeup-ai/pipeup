@@ -85,10 +85,8 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       expect(await texts(b.page)).not.toContain("Written early");
       await m.getByText("Share my 1 earlier comment").click();
       await converge(b.page, ["Written after", "Written early"]);
-      await a.page
-        .locator(".launch .mode")
-        .click()
-        .catch(() => {});
+      // The choice is made: the menu, open again, no longer offers it.
+      if ((await a.page.locator(".menu.show").count()) === 0) await menu(a.page);
       await expect(a.page.getByText("Keep them in this browser")).toHaveCount(0);
       await a.context.close();
       await b.context.close();
@@ -191,6 +189,53 @@ for (const kind of ["mailbox", "privatebin"] as const) {
       await a.page.waitForTimeout(2500);
       expect(await texts(c.page)).toEqual(["Sam's own"]);
       for (const x of [a, b, c]) await x.context.close();
+    });
+
+    test("a listed agent's signed reply is passed on; an unlisted writer's is not", async ({ browser }) => {
+      const a = await reviewer(browser);
+      const c = await reviewer(browser);
+      await open(a.page, svc.address);
+      const root = await comment(a.page, "Put the rates chart first");
+      // Two replies arrive in Sam's browser: one signed by the agent the page lists, one by a key it doesn't list.
+      await a.page.evaluate(async (thread) => {
+        const P = (window as any).Pipeup;
+        const sign = async (name: string, text: string) => {
+          const who = await P.createIdentity();
+          const body: any = {
+            v: 1,
+            id: "",
+            kind: "reply",
+            doc: (window as any).pu.document.id,
+            thread,
+            target: thread,
+          };
+          Object.assign(body, { text, author: who.publicKey, name, clock: 2 ** 30, at: Date.now() });
+          body.id = await P.computeOpId(body);
+          return { op: await P.signOp(body, who), key: who.publicKey };
+        };
+        const muse = await sign("AI assistant · Muse", "Moved it to the top.");
+        const other = await sign("AI assistant · Sneaky", "Not from a listed agent.");
+        document.documentElement.setAttribute("data-pipeup-agents", muse.key);
+        await (window as any).pu.document.merge([muse.op, other.op], "agents");
+      }, root);
+      await open(c.page, svc.address);
+      const replies = () =>
+        c.page.evaluate(() =>
+          (window as any).pu.document.threads().flatMap((t: any) => t.root.replies.map((r: any) => r.text)),
+        );
+      await expect
+        .poll(
+          async () => {
+            await poke(c.page);
+            return replies();
+          },
+          { timeout: 25_000, intervals: [500] },
+        )
+        .toEqual(["Moved it to the top."]);
+      await a.page.waitForTimeout(2500);
+      await poke(c.page);
+      expect(await replies()).toEqual(["Moved it to the top."]);
+      for (const x of [a, c]) await x.context.close();
     });
 
     test("offline: the reviewer keeps working, and the comment is sent when the connection returns", async ({

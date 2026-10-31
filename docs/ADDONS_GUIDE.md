@@ -15,7 +15,7 @@ git clone --depth 1 https://github.com/pipeup-ai/pipeup pipeup-src && cp -R pipe
 A page's author includes Pipeup, then your script, with one script tag each:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js"></script>
 <script src="https://example.org/my-addon.min.js"></script>
 ```
 
@@ -59,19 +59,21 @@ A classic script registers by joining Pipeup's queue (`(globalThis.pipeupAddons 
 
 `needs` lists the slots you use. If the page's Pipeup lacks one, your add-on stays off and says why. It never half-works.
 
-| Slot       | What it lets you do                                                                                            |
-| ---------- | -------------------------------------------------------------------------------------------------------------- |
-| `menu`     | Add rows (an action, or a switch) to Pipeup's menu, with a short count at the end.                             |
-| `panel`    | Open a panel with your own content (built from nodes, never HTML text).                                        |
-| `notify`   | Show a short message once, when the reviewer next opens Pipeup.                                                |
-| `note`     | Show a note under the new-comment box, a streaming line at the end of a thread, or a quiet line with a button. |
-| `composer` | Add a tool to the comment box (dictation, for example) that puts words in the reviewer's hands to send.        |
-| `styles`   | Add CSS for your own elements.                                                                                 |
-| `status`   | Show a status line and, if you like, the people who are here.                                                  |
-| `overlay`  | Draw on a layer above the page that never changes the page's own content.                                      |
-| `here`     | Ask where the reviewer is (the slide, the page's own state) and go somewhere else.                             |
-| `sign`     | Sign something with the reviewer's identity, for a purpose that starts with your id.                           |
-| `sync`     | Read the comments (`host.document`) and bring in other people's through `host.merge`.                          |
+| Slot       | What it lets you do                                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `menu`     | Add rows (an action, or a switch) to Pipeup's menu, with a short count at the end.                                                |
+| `panel`    | Open a panel with your own content (built from nodes, never HTML text).                                                           |
+| `notify`   | Show a short message once, when the reviewer next opens Pipeup.                                                                   |
+| `note`     | Show a note under the new-comment box, a streaming line at the end of a thread, or a quiet line with a button.                    |
+| `composer` | Add a tool to the comment box (dictation, for example) that puts words in the reviewer's hands to send.                           |
+| `styles`   | Add CSS for your own elements.                                                                                                    |
+| `status`   | Show a status line and, if you like, the people who are here.                                                                     |
+| `overlay`  | Draw on a layer above the page that never changes the page's own content.                                                         |
+| `here`     | Ask where the reviewer is (the slide, the page's own state) and go somewhere else.                                                |
+| `sign`     | Sign something with the reviewer's identity, for a purpose that starts with your id.                                              |
+| `sync`     | Read the comments (`host.document`) and bring in other people's through `host.merge`.                                             |
+| `place`    | Draw inside an element the author marked for add-ons (`data-pipeup-ask` or `data-pipeup-inline`), in its own shadow root.         |
+| `post`     | Post what the reviewer wrote or chose and sent themselves from your place or panel: a comment, a reply, or a change to their own. |
 
 Everything on `host` is documented in the types (`AddonHost` in the `pipeup` package). A few rules:
 
@@ -79,7 +81,8 @@ Everything on `host` is documented in the types (`AddonHost` in the `pipeup` pac
 - **Look like Pipeup.** Use its colours (`var(--pu-accent)`, `var(--pu-line)`) and ease what moves. The look is light mode only.
 - **Tidy up.** Return a function from `setup` that removes everything you added, and pass `host.signal` to anything that can be cancelled (`fetch`, timers).
 - **Never lose words.** Don't take over a box someone is typing in.
-- **Don't post for people.** Add-ons may fill in words that the reviewer then sends; they don't post, edit or resolve anything on someone's behalf.
+- **Don't post for people.** Add-ons may fill in words that the reviewer then sends; they don't post, edit or resolve anything on someone's behalf. `host.post` is for what the reviewer sent themselves from your own box or buttons: Pipeup refuses it unless a press or key in your place or panel started it.
+- **Draw only where the author asked.** `host.place(element)` works only on an element the author marked (`data-pipeup-ask` or `data-pipeup-inline`) and gives you a shadow root at its end; it follows Pipeup's light and dark looks (`var(--pu-text)`, `var(--pu-surface)`…), comment mode leaves it to you, and it is removed, with the page as it was, when your add-on is turned off. Add your CSS to that shadow root yourself (a constructed stylesheet). The [inline add-on](https://github.com/pipeup-ai/pipeup/tree/main/libs/ts/addons/inline) is the example.
 
 ## What an add-on can't do
 
@@ -106,7 +109,7 @@ Encryption matters only when comments leave for a store you don't control. Then 
 
 ## Names
 
-An add-on's `id` is its own: letters, digits and dashes, 2 to 24 characters, starting with a letter. Put your name or project in front to keep it distinct (`myteam-translate`). The ids `share`, `voice`, `live` and `assist` belong to the Pipeup project's own add-ons; please don't use them. If two add-ons on a page share an id, the first is used and the second is ignored, with a message in the console.
+An add-on's `id` is its own: letters, digits and dashes, 2 to 24 characters, starting with a letter. Put your name or project in front to keep it distinct (`myteam-translate`). The ids `share`, `voice`, `live`, `assist` and `inline` belong to the Pipeup project's own add-ons; please don't use them. If two add-ons on a page share an id, the first is used and the second is ignored, with a message in the console.
 
 ## Try it and test it
 
@@ -152,7 +155,7 @@ For your own add-on, the script is one file your company hosts, in any of these 
 | GitHub's prefilled "new issue" page                                          | No              | The reviewer                                                | Reviews as issues that an agent or workflow picks up |
 | Save into a local clone (the browser's file saving, Chrome and Edge)         | No              | The reviewer, or a hook                                     | A developer on their own machine                     |
 | Download the file and commit it                                              | No              | The reviewer, by hand                                       | Zero setup, rarely done consistently                 |
-| **Copy comments › As Markdown**, pasted to an agent or an issue                      | No              | The agent or the reviewer                                   | What works today                                     |
+| **Copy comments › As Markdown**, pasted to an agent or an issue              | No              | The agent or the reviewer                                   | What works today                                     |
 
 The two examples show the first and fourth. Start with Save to GitHub if you want to see it work in minutes; use Send to Git when reviews are long or you need sign-in and a record.
 

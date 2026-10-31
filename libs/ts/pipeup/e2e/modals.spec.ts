@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { control, fixture, openAll, seedText } from "./helpers";
+import { control, fixture, openAll, openMenu, seedText } from "./helpers";
 
 // A page's own dialog never takes Pipeup's focus or closes for what happens in Pipeup (spec §9), and while All
 // comments is open, messages sit inside the panel (spec §7).
@@ -15,7 +15,7 @@ const draftLine = (page: Page) => page.locator(".draft").getByRole("textbox", { 
 
 /** Comment mode from the comment control's menu (the shortcut is the page's while a field has focus). */
 async function startCommenting(page: Page): Promise<void> {
-  await control(page).click();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: /Start commenting/ }).click();
   await expect(control(page)).toHaveClass(/\bon\b/);
   await page.keyboard.press("Escape");
@@ -108,7 +108,7 @@ test("a native dialog closed by Esc or its own button gives Pipeup back to the p
   await expect.poll(() => home(page)).toBe("native");
   await page.click("#native-cancel");
   await expect.poll(() => home(page)).toBe("HTML");
-  await control(page).click();
+  await openMenu(page);
   await expect(page.locator(".menu.show")).toHaveCount(1);
 });
 
@@ -132,7 +132,7 @@ test("a native modal removed while open gives Pipeup back to the page, still wor
   await expect.poll(() => home(page)).toBe("native");
   await page.evaluate(() => document.getElementById("native")!.remove());
   await expect.poll(() => home(page)).toBe("HTML");
-  await control(page).click();
+  await openMenu(page);
   await expect(page.locator(".menu.show")).toHaveCount(1);
 });
 
@@ -290,7 +290,7 @@ test("the Esc that closes the menu doesn't also leave comment mode, with focus o
   page,
 }) => {
   await open(page, "doc.html");
-  await control(page).click();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: /Start commenting/ }).click();
   await page.evaluate(() => (document.querySelector("article a") as HTMLElement).focus());
   await page.keyboard.press("Escape");

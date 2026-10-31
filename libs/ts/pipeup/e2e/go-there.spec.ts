@@ -123,7 +123,7 @@ test("on a tabbed page, other views are grouped by name and choosing one reveals
   await expect(list(page).locator(".sec")).toHaveText(["Plans tab"]);
 });
 
-test("Copy comments as Markdown names a non-slide view in the Where line", async ({ page }) => {
+test("Copy comments as Markdown names a non-slide view in the thread's heading", async ({ page }) => {
   await stubClipboard(page);
   await open(page, "tabs.html");
   await seedView(page, "#refunds", "Say it up top", { tab: "faq", label: "FAQ tab" });
@@ -131,7 +131,7 @@ test("Copy comments as Markdown names a non-slide view in the Where line", async
   await copyAs(page, "As Markdown");
   await expect
     .poll(() => page.evaluate(() => (window as any).__copied.at(-1) as string))
-    .toContain('- **Where:** FAQ tab › Section "FAQ" › Paragraph · Refunds within 30 days.');
+    .toContain('\n## 1. FAQ tab › Section "FAQ" › Paragraph · Refunds within 30 days.\n');
 });
 
 test("choosing a thread elsewhere leaves a draft with words where it is, as opening does", async ({

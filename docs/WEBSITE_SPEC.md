@@ -86,6 +86,9 @@ visitor how to add it. Functional requirements only.
    - when it can't change the author's file, to hand back the whole new file and say to share that one, not the old one;
    - to tell the author to open it in a web browser and check for the comment button;
    - to give the note for reviewers word for word;
+   - to add the agents add-on (an AI agent answering comments in the page) or the inline add-on (questions asked
+     right in the content) only when the author asks, and if they asked for neither, to say in one line when it is
+     done that both exist;
    - later, to apply each pasted comment, say what it changed, and give the whole file again.
 2a. **The details**, a page of its own (`details.html`), opened from the first screen's quiet line, with the site's
    header and footer and its own Markdown copy; it fits one screen. One sentence (for adding Pipeup yourself, and what
@@ -168,15 +171,15 @@ site's light look), a title and a description. The pre-release copy's previews u
 
 ### Add-ons page
 
-Optional add-ons have a page of their own, reached from a quiet "Add-ons" link in the footer. Nothing else on the
-site changes: the first screen and its Copy prompt are about the core, which is what most people
-use. The page:
+Optional add-ons have a page of their own, reached from a quiet "Add-ons" link in the footer. The first screen is
+about the core, which is what most people use; the one exception is the prompt (What your AI does), which names
+Agents and Inline for an agent to add when the author asks. The page:
 
 - Says first that the core needs none of them and sends nothing anywhere, and that an add-on is an extra step the page's
   author chooses, never something a reviewer is moved into.
 - **Is a page of small cards, not one long scroll.** Each add-on is a card with its **title**, **one sentence** on what it
   does, and a **picture** of it at work, in the site's look. The cards sit in a grid in three groups: **From Pipeup** (Share,
-  Voice, Live, Assist, Agents, Emoji, Inbox, GitHub, Identity, Updates), **Run your own** (Your own mailbox, Make your own)
+  Voice, Live, Assist, Agents, Inline, Emoji, Inbox, GitHub, Identity, Updates), **Run your own** (Your own mailbox, Make your own)
   and **Examples from another company** (Save to GitHub, Send to Git, each labelled "Example: not from Pipeup").
 - **Each card has a Copy button.** With one thing to copy it copies it straight away (Copy prompt, Copy command); with more,
   it opens a small menu to choose from: **Copy prompt**, **Copy script tag**, and for Share **Copy command to try it here**.
@@ -193,6 +196,9 @@ use. The page:
   PrivateBin or their own mailbox) and that it never picks one for them; Live says it is peer to peer and asks each
   reviewer before connecting; Voice says speech is handled by the browser's own engine, which may send audio to its
   maker; Assist says nothing is sent (the model runs on the reviewer's device, and the browser may download it once) and that each reviewer is asked first.
+  Inline says nothing is sent (answers are ordinary comments, kept and sent like the page's others), that nothing is
+  asked of the reviewer first, that the author writes each question into the page with a fallback for anyone without the
+  add-on, and that each reviewer sees others' answers counted only after answering.
   - **Your own mailbox** (no demo), for the small server that Share can use instead of a public service: what it sends (sealed comments, to a server the author runs), what it needs (Node 22 or newer, an HTTPS proxy), a Copy command button and a link to its guide. It says it is not a page script and that Pipeup runs no mailbox for anyone. Share's page links to it.
 - Shows the add-ons that have one with a short looping animated demo on their page, in the same style as the home page's showcase (a cursor that moves only to act, comments typed out, gentle easing): Share (two browsers, a comment sealed and passed across), Voice (a comment dictated and checked), Live (two named cursors and the people present), Assist (a comment, then inside its card, under the comment as Pipeup shows replies: the assistant's quiet reading line, then its reply, only a short line and a slide pill whose card shows the related sentence). Each has a "Copy prompt" button that copies a ready-to-paste prompt for an AI agent to add that add-on by editing only the HTML file (nothing to download or run; the sharing address is asked of the person, never invented). With reduced motion each demo shows its finished moment.
 - Says, in one line near the top, that people can make and publish their own add-ons, and links the guide (docs/ADDONS_GUIDE.md); Pipeup's own list is unchanged.
@@ -221,6 +227,8 @@ use. The page:
   the same.
 - Is described in llms.txt: add an add-on only when the author asks, tell them in plain words what it sends, and never
   choose a sharing service for them. llms.txt names each add-on's own Markdown copy, so an agent reads only the one it needs.
+- llms.txt and the integrate skill name Agents and Inline as the two add-ons authors most often want (an AI agent answering
+  comments; questions asked right in the content), still added only when the author asks.
 
 ### Add-on try pages
 
@@ -392,3 +400,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-27 — Each Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only ("one copy per page"): reusing one prompt for several pages gave them all one key, so one page's comments showed on another (usability study, 27 October).
 - 2026-10-27 — One front door again (usability study, 27 October; visual spec docs/design/one-front-door-mockups.html). The first screen's two buttons become four numbered steps with one Copy prompt, covering the whole trip from the author's file to reviewers and back, and the sentence under the headline says each person's comments stay in their own browser until they send them. Quick start becomes What your AI does, with a note for reviewers that has its own Copy, and the prompt asks the AI for the new file, a reminder to open it in a browser, and that note. A new The details section gives the two lines to add by hand, what Pipeup sends and does to a page, the skills, and the licence, version and size, which always match the copy the site carries. add-comments.html becomes the reviewer help page, linked from the steps and the note; create-html.html is retired and its address opens the home page's steps. The showcase reads one sentence per scene to screen readers, holds still under focus, the pointer or while the visitor comments, and draws a fingertip on touch screens.
 - 2026-10-27 — The home page fits one screen (visual spec docs/design/one-screen-home-mockups.html): What your AI does and The details become pages of their own (prompt.html, details.html), opened from the first screen's quiet links, and the first screen and The details say the same in fewer words. If copying the prompt isn't allowed, What your AI does opens with its words selected.
+- 2026-10-31 — The home page's prompt (What your AI does), llms.txt and the integrate skill name Agents and Inline as the add-ons authors most often want, added only when the author asks; if they asked for neither, the agent says in one line that both exist. This ends "the Copy prompt stays core only" (2026-10-08) for that one prompt: answering comments with an agent and asking questions in the content are what most authors who make a page want next. The Add-ons page gains an Inline card and page (sends nothing, asks nothing first). Live with the release that ships Inline.

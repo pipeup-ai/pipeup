@@ -2,7 +2,7 @@
 // the home page, What your AI does, The details and the reviewer help page. A box marked data-sprompt shows a text's
 // words exactly as copied.
 (() => {
-const SRC = "https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js";
+const SRC = "https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js";
 const SRI = "{{SRI:pipeup}}"; // The core's integrity hash for that version, put in when the site is built (inject-core.py).
 const PIN = SRI.startsWith("sha") ? ` integrity="${SRI}" crossorigin="anonymous"` : ""; // Unbuilt, or the hash unknown: none.
 const TAG = `<script src="${SRC}"${PIN}><\/script>`;
@@ -43,6 +43,7 @@ const texts = {
     `2. Add data-pipeup-doc="${key()}" to the <html> element, and keep it exactly as it is from then on. This key is for this one page: every other page needs a key of its own (make one with Pipeup.newDocumentAttribute(), or ask me), never a copy of this one, or their comments mix.`,
     "3. Mark stable blocks (sections, figures, cards) with short data-pipeup-id names, label charts and images with data-pipeup-label, and mark navigation with data-pipeup-ignore.",
     "4. Don't change the page's layout to make room for Pipeup.",
+    "5. Add-ons, only if I ask: if I want an AI agent to answer comments in the page, add the agents add-on; if I want to ask reviewers questions right in the content (agree, a choice, or their own words), add the inline add-on. Pin each with its integrity hash and add its id to data-pipeup-addons. If I asked for neither, tell me in one line when you're done that both exist.",
     "",
     "When you're done:",
     "- If you can't change the file on my computer, give me the whole new file to download, and remind me to share that file, not the one I had before.",

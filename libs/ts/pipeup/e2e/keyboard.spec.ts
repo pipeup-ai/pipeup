@@ -6,6 +6,7 @@ import {
   focusInPipeup,
   leaveReply,
   open,
+  openMenu,
   seedElement,
   seedText,
   settled,
@@ -86,7 +87,7 @@ test("Start commenting chosen from the keyboard closes the menu and puts the cur
 }) => {
   await open(page, "doc.html");
   await control(page).focus();
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowUp");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toBeFocused();
   await page.keyboard.press("Enter");
   await commenting(page);
@@ -98,7 +99,7 @@ test("Start commenting chosen from the keyboard closes the menu and puts the cur
 
 test("Start commenting chosen with the mouse leaves the menu open and starts no cursor", async ({ page }) => {
   await open(page, "doc.html");
-  await control(page).click();
+  await openMenu(page);
   await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
   await commenting(page);
   await expect(page.locator(".menu.show")).toHaveCount(1);
@@ -1158,7 +1159,7 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     page,
   }) => {
     await open(page, "doc.html");
-    await control(page).click();
+    await openMenu(page);
     await page.getByRole("menuitemcheckbox", { name: "Start commenting" }).click();
     await commenting(page);
     await expect(page.locator(".menu.show")).toHaveCount(1);

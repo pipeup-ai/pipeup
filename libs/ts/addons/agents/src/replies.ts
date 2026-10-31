@@ -1,4 +1,5 @@
 import type { AddonHost, SignedOp, Thread } from "pipeup";
+import { pageSetting } from "@pipeup/kit";
 
 const KEY = /^[A-Za-z0-9_-]{43}$/;
 /** Where a page-loaded replies file leaves what it carries until the add-on takes it. */
@@ -9,8 +10,8 @@ const EVERY_MS = 4000;
 const AI = /^AI assistant\s*·?\s*/;
 
 /** The agents the author lists: `<html data-pipeup-agents="<key> <key>">`, public keys only. */
-export function listedAgents(html: Element = document.documentElement): string[] {
-  const list = html.getAttribute("data-pipeup-agents") ?? "";
+export function listedAgents(html?: Element): string[] {
+  const list = pageSetting("data-pipeup-agents", html) ?? "";
   return [...new Set(list.split(/[\s,]+/).filter((k) => KEY.test(k)))];
 }
 
@@ -18,11 +19,8 @@ export function listedAgents(html: Element = document.documentElement): string[]
  * The replies file next to the page (`report.html` → `report.replies.js`), or the page's own choice. Only
  * a file on the same computer or the same site is ever read.
  */
-export function repliesUrl(
-  here: Location = location,
-  html: Element = document.documentElement,
-): string | null {
-  const given = html.getAttribute("data-pipeup-replies");
+export function repliesUrl(here: Location = location, html?: Element): string | null {
+  const given = pageSetting("data-pipeup-replies", html);
   try {
     const page = here.href.split(/[?#]/)[0]!;
     const url = new URL(
@@ -137,7 +135,9 @@ export function startReplies(host: AddonHost): Replies {
     check,
     tally: (threads) => {
       const open = threads.filter((t) => !t.resolved);
-      const said = (t: Thread) => t.root.replies.some((r) => agents.includes(r.author));
+      // A listed agent's own replies, and the ones a reviewer pasted for an agent.
+      const said = (t: Thread) =>
+        t.root.replies.some((r) => agents.includes(r.author) || r.name.startsWith("AI assistant · "));
       const here = new Set(threads.map((t) => t.id));
       const stray = new Set(
         host.document

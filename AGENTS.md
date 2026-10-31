@@ -7,9 +7,13 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
 
 ## Rules
 
-- Never mutate the host page's DOM or layout; all UI lives in Pipeup's shadow root. The one exception: while a page's
+- Never mutate the host page's DOM or layout; all UI lives in Pipeup's shadow root. Two exceptions: while a page's
   modal `<dialog>` (or an element shown fullscreen) is open, Pipeup's own `<pipeup-root>` moves inside it (otherwise the
-  browser makes Pipeup inert, or doesn't show it), and moves back when it closes.
+  browser makes Pipeup inert, or doesn't show it), and moves back when it closes; and inside an element the author
+  marked for an add-on (`data-pipeup-ask` or `data-pipeup-inline`, spec §11b), Pipeup may append one `<pipeup-place>`
+  child (whose content lives in its own shadow root), set `data-pipeup-placed` on the marked element, and inject the one
+  rule that hides the author's fallback there. All of it is removed when the add-on is turned off. Nothing else in
+  the page changes.
 - Comment content is untrusted: render it as text only, never as HTML.
 - No runtime dependencies in `libs/ts/pipeup` or in any add-on (`@pipeup/*`): no third-party code is
   bundled in or loaded at run time. Tools for building and testing are fine as dev dependencies. No

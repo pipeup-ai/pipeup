@@ -512,8 +512,10 @@ copies the whole thread, as Markdown. Markdown output for one thread:
 - **Amy** (10m ago): Already is — maybe darken the label?
 ```
 
-Copy as Markdown (`copyAll('ai')`) prefixes `# Review comments: <title>`, page URL, export time, open count (resolved
-excluded) and a one-line instruction, then `## Thread N` blocks in page/slide order.
+Copy as Markdown (`copyAll('ai')`) reads as a message to a person first (spec §7a): `# Comments on <title>`, a line
+with the open count, who wrote them and the copy time in words (`27 Oct 2026, 09:40 UTC`), and the page's address;
+then `## N. <where>` blocks in page/slide order, each ending with one line for an agent (state, thread id,
+`data-pipeup-id`); then, after a rule, the instruction for an AI assistant. Replies carry no ids.
 
 ### Plan 2B (built)
 
