@@ -35,7 +35,7 @@ fi
 
 [[ -f "$addons/examples/save-to-github/dist/save-to-github.min.js" ]] || { echo "missing the Save to GitHub example build: build the add-ons first" >&2; exit 1; }
 [[ -f "$addons/examples/send-to-git/dist/send-to-git.min.js" ]] || { echo "missing the Send to Git example build: build the add-ons first" >&2; exit 1; }
-for id in voice live assist agents emoji github updates inbox identity; do
+for id in voice live assist agents emoji github updates inbox identity inline; do
   [[ -f "$addons/$id/dist/$id.min.js" ]] || { echo "missing $addons/$id/dist/$id.min.js: build the add-ons first" >&2; exit 1; }
 done
 
@@ -44,7 +44,7 @@ mkdir -p "$out/skills"
 cp -R "$site/index.html" "$site/addons.html" "$site/addons.css" "$site/addons.js" "$site/add-comments.html" "$site/create-html.html" "$site/prompt.html" "$site/details.html" "$site/walk.css" "$site/pages.css" "$site/walk.js" "$site/prompts.js" "$site/fonts" "$out/"
 cp "$lib/dist/pipeup.min.js" "$out/"
 mkdir -p "$out/addons"
-for id in voice live assist agents emoji github updates inbox identity; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
+for id in voice live assist agents emoji github updates inbox identity inline; do cp "$addons/$id/dist/$id.min.js" "$out/addons/"; done
 cp "$addons/examples/send-to-git/dist/send-to-git.min.js" "$addons/examples/save-to-github/dist/save-to-github.min.js" "$out/addons/"
 [[ -f "$site/updates.json" ]] && cp "$site/updates.json" "$out/updates.json"
 cp "$site/llms.txt" "$site/robots.txt" "$site/index.html.md" "$site/addons.html.md" "$site/add-comments.html.md" "$site/create-html.html.md" "$site/prompt.html.md" "$site/details.html.md" "$site/favicon.svg" "$site/og.png" "$out/"

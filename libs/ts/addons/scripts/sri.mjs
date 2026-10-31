@@ -14,6 +14,7 @@ for (const id of [
   "updates",
   "inbox",
   "identity",
+  "inline",
 ]) {
   for (const f of [`${id}.min.js`, `pipeup+${id}.min.js`]) {
     const path = `${here}${id}/dist/${f}`;

@@ -175,7 +175,14 @@ page opened from disk and in any script order, and they are released with Pipeup
 | `@pipeup/share` | comments to reach everyone who has the page, without copying and pasting | sealed comments to the sharing service the page names |
 | `@pipeup/voice` | dictating comments | nothing itself; the reviewer's browser may use its maker's speech service, after they agree |
 | `@pipeup/live` | live comments, who is here, live cursors | the reviewer's network address to the others who are live and to the meeting-point relays |
+| `@pipeup/agents` | an AI agent to answer comments in the page | nothing until the author switches on Share with my agent; then comments go only to the program on their own computer |
+| `@pipeup/inline` | to ask reviewers questions right in the content (agree, a choice, or their own words) | nothing: answers are ordinary comments |
 
+- **Agents and Inline are the two authors most often want.** Add them, like any add-on, only when the author asks; if
+  they asked for neither, say in one line when you're done that both exist. For Inline, mark each question's element
+  with `data-pipeup-id`, `data-pipeup-ask="<question>"` and `data-pipeup-ask-kind` (`agree`, `choice` with
+  `data-pipeup-ask-options="One|Two"`, or none for words), and keep the question in the element's own words for anyone
+  without the add-on (https://pipeup-ai.github.io/pipeup/addons/inline.html.md). Never answer a question yourself.
 - **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
   pick a sharing service yourself: the author chooses one.
 - Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.8.2/dist/share.min.js`
