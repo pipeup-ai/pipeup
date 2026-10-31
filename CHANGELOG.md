@@ -38,6 +38,8 @@ change the API and the stored comment format.
 - Website: one front door again, and the home page fits one screen. Its two buttons become four short steps, from your HTML file to your reviewers and back, with one Copy prompt; the prompt now asks your AI for the whole new file, a reminder to open it in a browser, and a note for reviewers. Two new pages, one click from the steps: What your AI does (the prompt and the note, each with its own Copy) and The details (the two lines to add by hand with the integrity hash, what Pipeup sends, and its licence, version and size, taken from the copy the site carries). The reviewer page becomes help for people who were sent a page; the "Create comment-enabled HTML" page now opens the home page's steps. The showcase holds still while you point at it, focus it or comment, reads one sentence per scene to screen readers, and shows a fingertip on touch screens.
 
 ### Fixed
+- **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
+  how it began, so holding Space during it handed the page a click meant for Pipeup.
 - **Dictation in Safari.** A refused prompt (the microphone, speech recognition, or macOS's one-time Speech
   Recognition alert) left the microphone pressed and dead for the rest of the page; it now works again at once.
   Notices name what to change: a refusal needs a reload, and "Safari isn't allowed to use Apple's speech
