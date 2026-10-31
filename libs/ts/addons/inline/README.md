@@ -24,7 +24,7 @@ use(inline());
 mount();
 ```
 
-It needs a Pipeup with the `place` and `post` slots (the first release after 0.8.2); with an older one it stays off
+It needs a Pipeup with the `place` and `post` slots (0.9.0 or newer); with an older one it stays off
 and says why.
 
 ## What it sends, and to whom

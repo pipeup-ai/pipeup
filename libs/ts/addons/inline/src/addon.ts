@@ -73,7 +73,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "inline",
     api: 1,
-    version: "0.8.2",
+    version: "0.9.0",
     needs: ["place", "post", "menu", "panel", "styles"],
     network: {
       when: "never",

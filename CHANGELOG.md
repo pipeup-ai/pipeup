@@ -7,10 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-31
+
+This release is about asking reviewers and answering them. Authors can put questions right in the content with the new Inline add-on; one click on the comment control starts commenting, and selecting words offers a comment outside comment mode; agents' answers can be copied and pasted from a chat and travel with shared copies; a page names its edition; the script line alone starts Pipeup; and the menu says where comments are. Pipeup is 63.3 KB gzip.
+
 ### Added
 
-- **Inline comments** (`@pipeup/inline`, a new add-on). Put asks in the content (open, agree, or a choice with Other) that reviewers answer in place, without comment mode; each answer is an ordinary comment, one per reviewer per ask, which they can change or remove, with others' answers counted only after one's own, needed asks counted in the menu, and `pipeup read` listing each ask with its answers. A block marked `data-pipeup-inline` shows its comments in place. Pipeup gains two add-on slots for it, `place` (draw inside an element the author marked) and `post` (post what the reviewer sent from the add-on's own box), and its size budget rises from 62 to 63 KB gzip.
-- **Editions.** A page that shows a new edition in the same shell (a daily briefing) can name the edition it shows with `data-pipeup-edition`, and set it again when the next one is swapped in. Comments stay with their edition: they never land on another edition's content, the comment control counts this edition's, earlier editions' threads wait folded under **Earlier editions** in All comments (and still open, with what they were about), and Copy for my agent carries this edition's and says how many earlier ones it left out. `Pipeup.comments({ edition: true })` reads this edition's. Pipeup's budget rises from 60.5 to 61 KB gzip.
+- **Inline comments** (`@pipeup/inline`, a new add-on). Put asks in the content (open, agree, or a choice with Other) that reviewers answer in place, without comment mode; each answer is an ordinary comment, one per reviewer per ask, which they can change or remove, with others' answers counted only after one's own, needed asks counted in the menu, and `pipeup read` listing each ask with its answers. A block marked `data-pipeup-inline` shows its comments in place. Pipeup gains two add-on slots for it, `place` (draw inside an element the author marked) and `post` (post what the reviewer sent from the add-on's own box).
+- **Editions.** A page that shows a new edition in the same shell (a daily briefing) can name the edition it shows with `data-pipeup-edition`, and set it again when the next one is swapped in. Comments stay with their edition: they never land on another edition's content, the comment control counts this edition's, earlier editions' threads wait folded under **Earlier editions** in All comments (and still open, with what they were about), and Copy for my agent carries this edition's and says how many earlier ones it left out. `Pipeup.comments({ edition: true })` reads this edition's.
 - **Copy for my agent** (agents add-on) replaces Copy a prompt for my agent. It copies the page's open comments together with how to answer them, says the comments live in your browser and not in the page's file, and gives the page's document id so an agent can sign its answer.
 - **Paste my agent's replies** (agents add-on): paste an agent's answer from a chat, see what it found (how many replies, from which agent, signed or not and why, which say addressed, which it will leave out), then add them. Replies an agent the page lists has signed show as that agent's; others show as "pasted by you", and "pasted by" your name to other people.
 - `pipeup reply --print --doc <document id>` prints a signed replies block to paste, for an agent that can't write next to the page.
@@ -33,7 +37,7 @@ change the API and the stored comment format.
 - **Shared copies carry a listed agent's answers.** While you're sending, the share add-on also passes on the replies, addressed notes and reactions of an agent the page lists (from the replies file, the live link or a signed paste), so everyone who has the page sees them as the agent's. An answer to a comment you haven't shared waits with it.
 - A reply named for an agent but not written by a key the page lists shows who pasted it. Before, anyone could post under an agent's name in a shared copy.
 - **Copy comments › As Markdown reads as a message to a person**, for a reviewer pasting it into a reply. It opens with "Comments on" the page's title, how many open comments there are, who wrote them and when they were copied, in words, then the page's address. Each thread's heading says where it is, then come the quoted words or pin and the comments. Its state, its id and the element's `data-pipeup-id` move to its last line, replies carry no ids, and the instruction for an AI assistant moves after the threads. `pipeup read`, `pipeup comments`, `Pipeup.comments()` and Copy for my agent carry the same text; their data is unchanged.
-- Pipeup's size budget rises from 60 to 62 KB gzip for these changes (it is 61.7 KB), and the agents add-on's from 5 to 7.5 KB.
+- Pipeup's size budget rises from 60 to 63.5 KB gzip for these changes (it is 63.3 KB), the agents add-on's from 5 to 7.5 KB and the share add-on's from 8.5 to 9 KB.
 - Website: the home page has a Quick start under the first screen: three steps and the prompt shown in full, with one Copy prompt button for your AI agent. The "Create comment-enabled HTML" prompt now fits a page you already have, and Copy prompt buttons ease back from "Copied".
 - Website: one front door again, and the home page fits one screen. Its two buttons become four short steps, from your HTML file to your reviewers and back, with one Copy prompt; the prompt now asks your AI for the whole new file, a reminder to open it in a browser, and a note for reviewers. Two new pages, one click from the steps: What your AI does (the prompt and the note, each with its own Copy) and The details (the two lines to add by hand with the integrity hash, what Pipeup sends, and its licence, version and size, taken from the copy the site carries). The reviewer page becomes help for people who were sent a page; the "Create comment-enabled HTML" page now opens the home page's steps. The showcase holds still while you point at it, focus it or comment, reads one sentence per scene to screen readers, and shows a fingertip on touch screens.
 
@@ -53,6 +57,7 @@ change the API and the stored comment format.
 
 ### Documentation
 
+- The home page's prompt, `llms.txt` and the integrate skill name the agents and inline add-ons, added only when the author asks; the Add-ons page has an Inline card and page.
 - The integrate skill and `llms.txt` say how a page that shows a new edition in a fixed shell (a daily briefing) names its edition, and, for a page that wants editions wholly apart or an older Pipeup, how to give each edition its own identity instead.
 
 ## [0.8.2] - 2026-10-19
@@ -469,7 +474,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/pipeup-ai/pipeup/compare/v0.7.0...v0.8.0

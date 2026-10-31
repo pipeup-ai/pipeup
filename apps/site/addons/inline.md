@@ -5,7 +5,7 @@ Lets the author ask reviewers questions right in the content: agree, a choice of
 - **Sends**: nothing. Answers are comments, kept and sent the way the page's other comments are.
 - **Asks first**: nothing; there is nothing to allow.
 - **Others' answers**: each reviewer sees how others answered only after answering.
-- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/inline@0.8.2/dist/inline.min.js" integrity="{{SRI:inline}}" crossorigin="anonymous"></script>`.
+- **Add it**: after the Pipeup script tag, add `<script src="https://cdn.jsdelivr.net/npm/@pipeup/inline@0.9.0/dist/inline.min.js" integrity="{{SRI:inline}}" crossorigin="anonymous"></script>`.
 - **Ask a question**: on the question's element, add `data-pipeup-id` (a short stable name, kept when the words change), `data-pipeup-ask` (the question) and `data-pipeup-ask-kind`: `agree`, `choice` (with `data-pipeup-ask-options="One|Two"`, two to six options; `data-pipeup-ask-other` adds Other), or leave it out for an answer in words. `data-pipeup-ask-needed` counts the question in Pipeup's menu. Keep the question in the element's own words too, so someone without the add-on still sees it. `data-pipeup-inline` on a block shows its comments under it instead of in the margin.
 - **Agents**: `npx --yes pipeup@0 read page.html` lists each question with every reviewer's latest answer. An agent may reply to an answer, as to any comment, but never answers a question itself.
 

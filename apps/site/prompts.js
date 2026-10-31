@@ -2,7 +2,7 @@
 // the home page, What your AI does, The details and the reviewer help page. A box marked data-sprompt shows a text's
 // words exactly as copied.
 (() => {
-const SRC = "https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js";
+const SRC = "https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js";
 const SRI = "{{SRI:pipeup}}"; // The core's integrity hash for that version, put in when the site is built (inject-core.py).
 const PIN = SRI.startsWith("sha") ? ` integrity="${SRI}" crossorigin="anonymous"` : ""; // Unbuilt, or the hash unknown: none.
 const TAG = `<script src="${SRC}"${PIN}><\/script>`;
