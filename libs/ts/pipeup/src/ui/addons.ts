@@ -192,6 +192,8 @@ export interface PostOptions {
   replyTo?: string;
   /** The reviewer's own comment, changed to `text`. */
   edit?: string;
+  /** The reviewer's own comment, deleted as Delete does (a thread's first comment takes its replies); `text` is unused. */
+  remove?: string;
 }
 
 export interface AddonHost {
@@ -257,7 +259,8 @@ export interface AddonHost {
   place(element: Element): ShadowRoot;
   /**
    * Posts what the reviewer wrote or chose and sent themselves, from this add-on's own place or panel: it is refused
-   * (rejects) unless a press or key there started it. Resolves to the new comment's id (or, for `edit`, the one changed).
+   * (rejects) unless a press or key there started it. Resolves to the new comment's id (or, for `edit` and `remove`,
+   * the one changed or deleted).
    */
   post(o: PostOptions): Promise<string>;
 }
@@ -630,6 +633,10 @@ export class Surface {
   async post(id: string, o: PostOptions): Promise<string> {
     if (!this.sentFrom(id)) throw new Error("pipeup: not sent by the reviewer here");
     const { doc, root, here } = this.ctx;
+    if (o.remove) {
+      await doc.remove(o.remove);
+      return o.remove;
+    }
     const text = String(o.text ?? "");
     if (o.edit) {
       await doc.edit(o.edit, text);

@@ -1164,6 +1164,12 @@ other comments are.
   and quotes the question.
 - **One answer per reviewer per ask.** Choosing again, or sending new words, changes the reviewer's answer (an edit,
   shown as edited), never a second answer. Replies under an answer are a conversation, not more answers.
+- **Changing or removing an answer.** After answering, the ask reads "Your answer: …" with **Change** and **Remove**.
+  While changing, one **Cancel** leaves the answer as it was. Remove asks once more ("Remove your answer?", or "Remove
+  your answer and its 2 replies?" when it has replies), with **Remove** and **Keep**; that second question can't be
+  answered by the same double-click or double tap that asked it. Removing deletes the answer as Delete does any comment,
+  replies and all; the ask goes back to only its question, others' answers and counts hide again, and a needed ask
+  counts as unanswered. Focus goes to the ask's first control. It works from the keyboard and by touch.
 - **Seeing others' answers.** Until a reviewer answers, the ask shows only the question, so earlier answers don't steer
   them. This holds for every ask: an author can't choose to show others' answers first. After answering, it shows their answer with Change, and, where others' comments are present (shared, live or
   added from files), how many answered and the count for each option, or for Agree and Needs change. Counts name no one;
@@ -1987,3 +1993,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Proposed (not built): inline comments, an add-on (§11b). An author puts asks in the content (open, agree, choice), answered in place without comment mode; each answer is an ordinary comment, one per reviewer per ask, with others' answers counted only after one's own; a block can show its comments in place. Needs two additions for any add-on: posting what the reviewer wrote and sent in the add-on's own box, and drawing inside an element the author marked for it (§11a amended to match). From Designup's review rounds, where reviewers are not told what is asked. Design note: docs/design/inline-comments.md.
 - 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
+- 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.

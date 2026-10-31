@@ -83,6 +83,76 @@ test("a choice is answered with one click, and changing it edits the one answer"
   await expect(page.locator(".menu.show")).toContainText("1 of 2 asks answered");
 });
 
+test("changing an answer has one Cancel, which keeps the answer as it was", async ({ page }) => {
+  await start(page);
+  const journeys = ask(page, "q-journeys");
+  await journeys.getByRole("button", { name: "Two" }).click();
+  await journeys.getByRole("button", { name: "Change" }).click();
+  await journeys.getByRole("button", { name: "Other" }).click();
+  await expect(journeys.getByRole("button", { name: "Cancel" })).toHaveCount(1);
+  await journeys.getByRole("button", { name: "Cancel" }).click();
+  await expect(journeys).toContainText("Your answer: Two");
+  const name = ask(page, "q-name");
+  await name.getByRole("textbox", { name: "Your answer" }).fill("Asks");
+  await name.getByRole("button", { name: "Send" }).click();
+  await name.getByRole("button", { name: "Change" }).click();
+  await expect(name.getByRole("button", { name: "Cancel" })).toHaveCount(1);
+  const agree = ask(page, "FR-012");
+  await agree.getByRole("button", { name: "Agree", exact: true }).click();
+  await agree.getByRole("button", { name: "Send" }).click();
+  await agree.getByRole("button", { name: "Change" }).click();
+  await agree.getByRole("button", { name: "Needs change" }).click();
+  await expect(agree.getByRole("button", { name: "Cancel" })).toHaveCount(1);
+});
+
+test("Remove asks once more, ignores a double-click, and puts the question back", async ({ page }) => {
+  await start(page);
+  await adaAnswers(page, "q-journeys", "Is “Go through every comment” one journey or two?", "Two");
+  const journeys = ask(page, "q-journeys");
+  await journeys.getByRole("button", { name: "One" }).click();
+  await expect(journeys).toContainText("2 people answered");
+  // Keep, and Escape, leave the answer.
+  await journeys.getByRole("button", { name: "Remove" }).click();
+  await expect(journeys).toContainText("Remove your answer?");
+  await expect(journeys.getByRole("button", { name: "Keep" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(journeys).toContainText("Your answer: One");
+  // The double-click that asks can't also answer.
+  await journeys.getByRole("button", { name: "Remove" }).dblclick();
+  await expect(journeys).toContainText("Remove your answer?");
+  await page.waitForTimeout(550);
+  await journeys.getByRole("button", { name: "Remove", exact: true }).click();
+  await expect(journeys.getByRole("button", { name: "One" })).toBeFocused();
+  await expect(journeys).not.toContainText("Your answer");
+  await expect(journeys).not.toContainText("answered");
+  await expect(journeys).not.toContainText("latest from");
+  expect((await words(page, "q-journeys")).filter((w: { text: string }) => w.text === "One")).toEqual([]);
+  await openMenu(page);
+  await expect(page.locator(".menu.show")).toContainText("0 of 2 asks answered");
+});
+
+test("removing an answer with replies says so, and takes them too", async ({ browser }) => {
+  const context = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 800 } });
+  const page = await context.newPage();
+  await start(page);
+  const name = ask(page, "q-name");
+  await name.getByRole("textbox", { name: "Your answer" }).tap();
+  await page.keyboard.type("Asks");
+  await name.getByRole("button", { name: "Send" }).tap();
+  await name.getByRole("button", { name: /1 comment/ }).tap();
+  await name.getByRole("textbox", { name: /Reply to/ }).tap();
+  await page.keyboard.type("Or Questions");
+  await page.keyboard.press("Enter");
+  await expect(name).toContainText("You: Or Questions");
+  await name.getByRole("button", { name: "Remove" }).tap();
+  await expect(name).toContainText("Remove your answer and its 1 reply?");
+  await page.waitForTimeout(550);
+  await name.getByRole("button", { name: "Remove", exact: true }).tap();
+  await expect(name.getByRole("textbox", { name: "Your answer" })).toBeVisible();
+  await expect(name).not.toContainText("Or Questions");
+  await context.close();
+});
+
 test("agree takes words by keyboard, and Needs change waits for them", async ({ page }) => {
   await start(page);
   const fr = ask(page, "FR-012");

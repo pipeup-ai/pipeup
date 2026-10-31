@@ -49,6 +49,8 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return e;
 }
 
+const countReplies = (c: Comment): number =>
+  c.replies.reduce((n, r) => n + (r.deleted ? 0 : 1) + countReplies(r), 0);
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const nameOf = (c: Comment): string =>
   c.name ||
@@ -190,7 +192,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     }
   }
 
-  /** A box for words, with Send (and Cancel while changing an answer); Enter sends, Shift+Enter starts a line. */
+  /** A box for words, with Send (and, for an open ask being changed, Cancel); Enter sends, Shift+Enter starts a line. */
   function wordsBox(label: string, need: boolean, send: (words: string) => Promise<boolean>): HTMLElement {
     const area = el("textarea", { "aria-label": label, placeholder: label });
     const go = el("button", { type: "button", class: "go" }, "Send");
@@ -211,7 +213,9 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     go.addEventListener("click", () => void submit());
     ready();
     const row = el("div", { class: "row" }, go);
-    if (changing && tally(ask!, host.document.threads(), me).mine) row.append(cancelButton());
+    // Choices and agree have their Cancel in the button row above: one Cancel, never two.
+    if (ask!.kind === "open" && changing && tally(ask!, host.document.threads(), me).mine)
+      row.append(cancelButton());
     return el("div", {}, area, row);
   }
 
@@ -253,8 +257,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
       return b;
     });
     const row = el("div", { class: "row" }, ...buttons);
-    if (k.kind === "choice" && changing && tally(k, host.document.threads(), me).mine)
-      row.append(cancelButton());
+    if (changing && tally(k, host.document.threads(), me).mine) row.append(cancelButton());
     controls.replaceChildren(row, words);
   }
 
@@ -266,10 +269,71 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
       render();
       (controls.querySelector("button, textarea") as HTMLElement | null)?.focus();
     });
+    const remove = el("button", { type: "button", class: "link" }, "Remove");
+    // The answer as it is now: replies may have come since it was drawn.
+    remove.addEventListener("click", () =>
+      confirmRemove(tally(ask!, host.document.threads(), me).mine ?? mine),
+    );
     controls.replaceChildren(
       el("p", { class: "mine" }, "Your answer: ", el("b", {}, mine.root.text.split("\n")[0]!)),
-      el("div", { class: "row" }, change),
+      el("div", { class: "row" }, change, remove),
     );
+  }
+
+  /** Asks once more before removing the reviewer's answer; a press as quick as a double-click's second is ignored. */
+  function confirmRemove(mine: Thread): void {
+    const n = countReplies(mine.root);
+    const asked = performance.now();
+    const quick = () => performance.now() - asked < 500;
+    const yes = el("button", { type: "button", class: "go" }, "Remove");
+    const keep = el("button", { type: "button" }, "Keep");
+    const row = el(
+      "div",
+      { class: "row confirm", role: "group", "aria-label": "Remove your answer" },
+      yes,
+      keep,
+    );
+    const back = () => {
+      drawn = "";
+      render();
+      (controls.querySelector("button") as HTMLElement | null)?.focus();
+    };
+    yes.addEventListener("click", () => {
+      if (quick()) return;
+      err.hidden = true;
+      yes.disabled = keep.disabled = true;
+      host.post({ remove: mine.root.id, text: "" }).then(
+        () => {
+          host.announce("Answer removed");
+          changing = false;
+          drawn = "";
+          render();
+          (controls.querySelector("button, textarea") as HTMLElement | null)?.focus();
+        },
+        (e: unknown) => {
+          yes.disabled = keep.disabled = false;
+          fail(e);
+        },
+      );
+    });
+    keep.addEventListener("click", () => {
+      if (!quick()) back();
+    });
+    row.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        back();
+      }
+    });
+    controls.replaceChildren(
+      el(
+        "p",
+        { class: "mine" },
+        n ? `Remove your answer and its ${plural(n, "reply", "replies")}?` : "Remove your answer?",
+      ),
+      row,
+    );
+    keep.focus();
   }
 
   function threadView(t: Thread): HTMLElement {
@@ -324,7 +388,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     }
     const on = (
       t?.threads ?? threads.filter((x) => x.anchor.id === at.getAttribute("data-pipeup-id"))
-    ).filter((x) => !x.root.deleted || x.root.replies.length);
+    ).filter((x) => !x.root.deleted); // A deleted first comment takes its thread, as in the panel.
     // Others' answers and the threads show only once the reviewer has answered, and only while comments are open.
     const see = shown() && (!ask || !!mine);
     const others = t ? t.answers.length - 1 : 0;
