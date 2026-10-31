@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" data-pipeup-doc="aaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb">
+  <head>
+    <meta charset="utf-8" />
+    <title>Asks fixture</title>
+    <style>
+      body {
+        font:
+          16px/1.5 Georgia,
+          serif;
+        max-width: 620px;
+        margin: 40px auto;
+        padding: 0 16px;
+        background: #fff;
+        color: #222;
+      }
+    </style>
+  </head>
+  <body>
+    <main data-pipeup-id="main">
+      <h1 data-pipeup-id="title">Review journeys</h1>
+      <div
+        data-pipeup-id="q-journeys"
+        data-pipeup-ask="Is “Go through every comment” one journey or two?"
+        data-pipeup-ask-kind="choice"
+        data-pipeup-ask-options="One|Two"
+        data-pipeup-ask-other
+        data-pipeup-ask-needed
+      >
+        <p>Is “Go through every comment” one journey or two? Comment on this with ⇧⌥C.</p>
+      </div>
+      <section
+        data-pipeup-id="FR-012"
+        data-pipeup-ask="Agree with this requirement?"
+        data-pipeup-ask-kind="agree"
+        data-pipeup-ask-needed
+      >
+        <p>FR-012: Reviewers can answer an ask without comment mode.</p>
+      </section>
+      <div data-pipeup-id="q-name" data-pipeup-ask="What should we call this feature?">
+        <p>What should we call this feature?</p>
+      </div>
+      <figure data-pipeup-id="home-hero" data-pipeup-inline>
+        <p>The home page's hero, with one call to action.</p>
+      </figure>
+      <p data-pipeup-id="p1">The second chart needs a clearer label.</p>
+      <div data-pipeup-ask="No name, so nothing is drawn"><p>Unnamed ask.</p></div>
+    </main>
+  </body>
+</html>

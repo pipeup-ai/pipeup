@@ -853,7 +853,10 @@ export function startApp(o: AppOptions): App {
     paint(threads);
     marked = !state.hidden && threads.some((t) => !!t.anchor.quote && !t.resolved && !elsewhere.has(t.id));
     listenForTaps();
-    for (const v of views) v.render(threads);
+    // Threads on a block an add-on draws in show there (§11b), not in the margin; the control and All comments have all.
+    const inPlace = addons.inPlace();
+    const margin = inPlace.size ? threads.filter((t) => !inPlace.has(t.anchor.id ?? "")) : threads;
+    for (const v of views) v.render(v === views.at(-1) ? threads : margin);
     modeView?.render(threads);
     if (!state.hidden) addons.flush();
   }

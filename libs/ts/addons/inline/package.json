@@ -1,0 +1,47 @@
+{
+  "name": "@pipeup/inline",
+  "version": "0.8.2",
+  "description": "Asks in the content of a Pipeup page (open, agree, choice), answered in place as ordinary comments, and blocks that show their comments in place.",
+  "license": "MIT",
+  "author": "Pipeup contributors",
+  "homepage": "https://pipeup-ai.github.io/pipeup/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeup-ai/pipeup.git",
+    "directory": "libs/ts/addons/inline"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/inline.esm.js",
+  "module": "./dist/inline.esm.js",
+  "types": "./dist/types/index.d.ts",
+  "jsdelivr": "dist/inline.min.js",
+  "unpkg": "dist/inline.min.js",
+  "files": [
+    "dist/*.js",
+    "dist/types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "pipeup": "0.8.2"
+  },
+  "pipeup": {
+    "network": {
+      "when": "never",
+      "to": [],
+      "says": "Sends nothing: answers to asks are ordinary comments, kept and sent the way the page's other comments are."
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/inline.esm.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

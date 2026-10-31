@@ -31,6 +31,7 @@ export {
   type PanelHandle,
   type PanelOptions,
   type PipeupAddon,
+  type PostOptions,
   type Status,
   type Teardown,
   type UiSnapshot,

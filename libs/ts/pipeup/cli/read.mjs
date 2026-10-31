@@ -3,6 +3,7 @@
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { asksMarkdown, asksWithAnswers } from "./asks.mjs";
 
 const core = () => import("../dist/pipeup.core.js");
 const MAX_MERGE = 5000;
@@ -118,6 +119,7 @@ export async function read(o) {
     parseDocumentAttribute,
     readFeedbackFile,
     agentComments,
+    animalName,
   } = await core();
   let id;
   let key;
@@ -286,6 +288,16 @@ export async function read(o) {
     all: o.all,
   });
 
+  // The asks the page puts in its content (§11b), each with every reviewer's latest answer, so an agent can work through them.
+  const asks = asksWithAnswers(
+    html,
+    threads,
+    (attrOf(html, "data-pipeup-agents") ?? "").split(/[\s,]+/).filter(Boolean),
+  );
+  if (asks.length) {
+    out.asks = asks;
+    out.markdown = `${out.markdown.trimEnd()}\n${asksMarkdown(asks, animalName)}`;
+  }
   if (o.out) {
     try {
       await writeFile(o.out, await doc.exportFile());

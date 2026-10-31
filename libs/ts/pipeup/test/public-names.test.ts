@@ -15,6 +15,7 @@ const API_TYPES = [
   "PanelHandle",
   "Status",
   "UiSnapshot",
+  "PostOptions",
   "ComposerTool",
   "ComposerHandle",
   "Dictation",

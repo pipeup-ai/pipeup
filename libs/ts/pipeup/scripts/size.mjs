@@ -38,10 +38,11 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // docs/design/editions.md) and then 62 KB for one
 // click on the control to start commenting with the menu behind ⋯ (or a held press), a comment on selected words outside
 // comment mode, the page API (comment mode, the name, change events, why it didn't start) and settings on the script
-// line (+0.9 KB; docs/design/one-tap-page-api.md).
+// line (+0.9 KB; docs/design/one-tap-page-api.md); then 63 KB for the place and post slots add-ons draw and post
+// with inside elements the author marked (+1.0 KB; docs/design/inline-comments.md).
 const BUDGETS = {
-  "dist/pipeup.min.js": 62 * 1024,
-  "dist/pipeup.esm.js": 62 * 1024,
+  "dist/pipeup.min.js": 63 * 1024,
+  "dist/pipeup.esm.js": 63 * 1024,
   "dist/pipeup.core.js": 12 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

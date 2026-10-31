@@ -16,6 +16,7 @@
     "identity",
     "updates",
     "inbox",
+    "inline",
     "test"
   ],
   "engines": {
