@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-01
+
+Inline asks are compact and can match the page, and a page with its own Comment button can open Pipeup's menu itself.
+
 ### Changed
 
 - Inline asks are compact: a question and its buttons share one line where they fit, words go in a one-line field that grows as you write (no resize handle, Send inside it), and an answered ask is one line: "You said Yes · Change · Remove". The question takes the page's font.
@@ -489,7 +493,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/pipeup-ai/pipeup/compare/v0.8.0...v0.8.1
