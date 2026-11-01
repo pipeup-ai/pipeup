@@ -126,6 +126,8 @@ const prompts = {
     "",
     "Only where I ask a question: on its element, add data-pipeup-id with a short stable name, data-pipeup-ask with the question, and data-pipeup-ask-kind (agree, choice with data-pipeup-ask-options=\"One|Two\", or leave it out for an answer in words). Keep the question in the element's own words too, so someone without the add-on still sees it.",
     "",
+    "Asks are compact and take the page's font. To match my page's look, set --pipeup-ask-accent, --pipeup-ask-font and --pipeup-ask-radius in its CSS. Don't hide or rebuild the asks' own controls, and keep Pipeup's mark and tint, so reviewers can see where to answer.",
+    "",
     ...SAFE("inline", "to nowhere new (answers are ordinary comments)"),
     "",
     "Nothing is sent anywhere: answers are comments, kept and sent the way the page's other comments are. Leave everything else on the page as it is.",

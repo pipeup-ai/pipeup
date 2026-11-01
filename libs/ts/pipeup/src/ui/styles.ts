@@ -238,6 +238,7 @@ transition:opacity var(--in) var(--eo),transform var(--mv) var(--eo),background-
 .launch:has(.mode.on){background:color-mix(in srgb,var(--pu-accent) 90%,transparent);color:var(--pu-on,#fff)}
 /* While All comments is open, the control is the panel's footer: it draws in, and the footer takes its place. */
 .layer.listing .launch{opacity:0;transform:scale(.6);pointer-events:none}
+.launch.off{display:none}
 .menu.inp{--b:60px;right:8px;z-index:1}
 .menu.inp :is([data-item=comment],[data-item=all]){display:none}
 .launch .mode{position:relative;display:grid;place-items:center;width:32px;height:32px;border-radius:10px 0 0}

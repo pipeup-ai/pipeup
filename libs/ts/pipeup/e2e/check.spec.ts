@@ -76,3 +76,15 @@ test("a page with no viewport setting is told phones will show it zoomed out", a
   const fine = await check("check-phone.html");
   expect(fine.results.find((x) => x.what === "The page suits phones")?.status).toBe("pass");
 });
+
+test("a page that hides Pipeup's control needs its own way to the menu: a warning without one", async () => {
+  const own = await check("check-own-control.html");
+  expect(own.results.find((x) => x.what === "Reviewers can reach Pipeup's menu")).toMatchObject({
+    status: "pass",
+  });
+  expect(own.results.find((x) => /button can be reached/.test(x.what))).toBeUndefined();
+  const none = await check("check-no-menu.html");
+  const w = none.results.find((x) => x.what === "Reviewers can reach Pipeup's menu")!;
+  expect(w.status).toBe("warn");
+  expect(w.detail).toContain("openMenu()");
+});

@@ -14,29 +14,44 @@ import {
 } from "./asks";
 
 const CSS = `*{box-sizing:border-box}
-.box{margin:14px 0 4px;padding:14px 16px;border:1px solid var(--pu-line);border-radius:12px;background:var(--pu-surface);animation:in .26s var(--pu-ease)}
+[hidden]{display:none!important}
+:host{--ac:var(--pipeup-ask-accent,var(--pu-accent,#534AB7));--cf:var(--pipeup-ask-font,var(--pu-font,system-ui,sans-serif))}
+.box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:10px 0;padding:8px 12px;border-radius:var(--pipeup-ask-radius,8px);background:color-mix(in srgb,var(--ac) 7%,var(--pu-surface,#fff));font:13.5px/1.4 var(--cf);animation:in .26s var(--pu-ease)}
 .inl{margin:6px 0 0}
-.q{margin:0 0 10px;font-weight:600;font-size:15px}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-button{appearance:none;font:inherit;color:inherit;min-height:36px;padding:6px 14px;border:1px solid var(--pu-line);border-radius:999px;background:var(--pu-soft);cursor:pointer;transition:background-color .2s var(--pu-ease),border-color .2s var(--pu-ease),color .2s var(--pu-ease)}
+.q{display:flex;align-items:center;gap:8px;margin:0;min-width:0;font:600 var(--inl-size,15px)/1.35 var(--pipeup-ask-font,var(--inl-font,var(--cf)));color:var(--pu-text)}
+.q svg{flex:none;width:18px;height:18px;color:var(--ac)}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;flex:1 1 auto;min-width:0}
+.ctl.open{flex-basis:240px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.words{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+button{appearance:none;font:inherit;color:inherit;min-height:28px;padding:2px 12px;border:1px solid color-mix(in srgb,var(--ac) 28%,var(--pu-line));border-radius:var(--pipeup-ask-radius,999px);background:var(--pu-surface,#fff);cursor:pointer;transition:background-color .2s var(--pu-ease),border-color .2s var(--pu-ease),color .2s var(--pu-ease),opacity .2s var(--pu-ease)}
 button:hover{background:var(--pu-hover)}
-button[aria-pressed=true],button.go{background:var(--pu-accent,#534AB7);border-color:var(--pu-accent,#534AB7);color:#fff}
-button:disabled{opacity:.5;cursor:default}
-button.link{min-height:0;padding:2px 0;border:0;background:none;color:var(--pu-muted);text-decoration:underline;text-underline-offset:3px}
-button:focus-visible,textarea:focus-visible{outline:2px solid var(--pu-accent,#534AB7);outline-offset:2px}
-textarea{display:block;width:100%;min-height:64px;margin:10px 0 8px;padding:8px 10px;border:1px solid var(--pu-line);border-radius:8px;background:var(--pu-soft);color:inherit;font:inherit;resize:vertical}
-.mine{margin:0 0 6px}
-.note,.err{margin:6px 0 0;color:var(--pu-muted)}
-.err{color:#B3261E}
-.th{margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--pu-line);animation:in .26s var(--pu-ease)}
+button[aria-pressed=true],button.go{background:var(--ac);border-color:var(--ac);color:#fff}
+button:disabled{opacity:.45;cursor:default}
+button.link{min-height:0;padding:2px 0;border:0;border-radius:0;background:none;color:var(--ac)}
+button.link:hover{text-decoration:underline;text-underline-offset:3px}
+button:focus-visible,.fld:focus-within{outline:2px solid var(--ac);outline-offset:2px}
+.fld{flex:1 1 220px;display:flex;align-items:center;gap:8px;min-width:0;padding:3px 3px 3px 10px;border:1px solid color-mix(in srgb,var(--ac) 22%,var(--pu-line));border-radius:var(--pipeup-ask-radius,6px);background:var(--pu-surface,#fff);box-shadow:inset 0 1px 2px rgb(0 0 0/.05);transition:border-color .2s var(--pu-ease)}
+.fld:hover,.fld:focus-within{border-color:var(--ac)}
+textarea{flex:1;display:block;min-width:0;height:24px;max-height:120px;margin:0;padding:3px 0;border:0;outline:0;background:none;color:inherit;font:inherit;line-height:18px;resize:none;overflow-y:hidden}
+.fld button.go{flex:none;align-self:flex-end;min-height:24px;padding:0 10px;border-radius:var(--pipeup-ask-radius,4px);font-weight:600}
+.mine{margin:0;color:var(--pu-muted)}
+.mine b{color:var(--pu-text);font-weight:600}
+.more{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 10px;padding-left:26px;color:var(--pu-muted);font-size:13px}
+.inl .more{padding-left:0}
+.note,.err{margin:0;color:var(--pu-muted)}
+.err{flex-basis:100%;color:#B3261E}
+.list{flex-basis:100%}
+.list:empty{display:none}
+.th{margin:6px 0 0;padding:8px 0 0;border-top:1px solid var(--pu-line);animation:in .26s var(--pu-ease)}
 .c{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
 .c b{font-weight:600}
 .c i{color:var(--pu-muted);font-style:normal}
 .re{margin-left:16px}
-.th textarea{min-height:40px;margin-top:4px}
+.th .fld{margin-top:4px}
 @keyframes in{from{opacity:0;transform:translateY(3px)}}
-@media (pointer:coarse){button{min-height:44px}button.link{min-height:44px}}
-@media (prefers-reduced-motion:reduce){.box,.th{animation:none}button{transition:none}}`;
+@media (pointer:coarse){button,.fld button.go{min-height:44px}button.link{min-height:44px}.fld{min-height:44px}}
+@media (prefers-reduced-motion:reduce){.box,.th{animation:none}button,.fld{transition:none}}`;
 
 /** A small element with text only: comment words never become markup. */
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -48,6 +63,39 @@ function el<K extends keyof HTMLElementTagNameMap>(
   for (const [k, v] of Object.entries(props)) e.setAttribute(k, v);
   e.append(...kids);
   return e;
+}
+
+const SVG = "http://www.w3.org/2000/svg";
+/** Pipeup's comment mark, before every question: whatever the page's look, an ask reads as something to answer. */
+function mark(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 20 20");
+  svg.setAttribute("aria-hidden", "true");
+  const bubble = "M4 3.5h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z";
+  for (const [d, attrs] of [
+    [bubble, { fill: "currentColor", opacity: ".16" }],
+    [bubble, { fill: "none", stroke: "currentColor", "stroke-width": "1.5", "stroke-linejoin": "round" }],
+    ["M6.5 9h7", { stroke: "currentColor", "stroke-width": "1.5", "stroke-linecap": "round" }],
+  ] as const) {
+    const path = document.createElementNS(SVG, "path");
+    path.setAttribute("d", d);
+    for (const [k, v] of Object.entries(attrs)) path.setAttribute(k, v);
+    svg.append(path);
+  }
+  return svg;
+}
+
+/** A field for words: one line to start, growing with what is written (up to five lines, then it scrolls). */
+function field(label: string, ...after: HTMLElement[]): { fld: HTMLElement; area: HTMLTextAreaElement } {
+  const area = el("textarea", { "aria-label": label, placeholder: label, rows: "1" });
+  const grow = () => {
+    area.style.height = "auto";
+    const h = Math.min(area.scrollHeight, 120);
+    area.style.height = `${Math.max(h, 24)}px`;
+    area.style.overflowY = area.scrollHeight > 120 ? "auto" : "hidden";
+  };
+  area.addEventListener("input", grow);
+  return { fld: el("div", { class: "fld" }, area, ...after), area };
 }
 
 const countReplies = (c: Comment): number =>
@@ -154,14 +202,19 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
   } else root.append(el("style", {}, CSS));
   const me = host.document.me;
+  // The question takes the page's own type; the author can still choose another with --pipeup-ask-font.
+  const type = getComputedStyle(at);
+  (root.host as HTMLElement).style.setProperty("--inl-font", type.fontFamily);
+  (root.host as HTMLElement).style.setProperty("--inl-size", type.fontSize);
   const box = el("div", ask ? { class: "box", role: "group", "aria-label": ask.question } : { class: "inl" });
-  const controls = el("div");
-  const summary = el("p", { class: "note" });
+  const controls = el("div", { class: "ctl" });
+  const summary = el("span", { class: "note" });
   const toggle = el("button", { type: "button", class: "link", "aria-expanded": "false" });
-  const list = el("div");
+  const more = el("div", { class: "more" }, summary, toggle);
+  const list = el("div", { class: "list" });
   const err = el("p", { class: "err", role: "alert", hidden: "" });
-  if (ask) box.append(el("p", { class: "q" }, ask.question), controls, summary);
-  box.append(toggle, list, err);
+  if (ask) box.append(el("p", { class: "q" }, mark(), el("span", {}, ask.question)), controls);
+  box.append(more, list, err);
   root.append(box);
 
   let open = false;
@@ -195,15 +248,18 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     }
   }
 
-  /** A box for words, with Send (and, for an open ask being changed, Cancel); Enter sends, Shift+Enter starts a line. */
-  function wordsBox(label: string, need: boolean, send: (words: string) => Promise<boolean>): HTMLElement {
-    const area = el("textarea", { "aria-label": label, placeholder: label });
+  /** A field for words, with Send inside it (and, for an open ask being changed, Cancel); Enter sends, Shift+Enter starts a line. */
+  function wordsBox(label: string, need: boolean, send: (words: string) => Promise<boolean>): HTMLElement[] {
     const go = el("button", { type: "button", class: "go" }, "Send");
+    const { fld, area } = field(label, go);
     const ready = () => (go.disabled = need && !area.value.trim());
     const submit = async () => {
       if (go.disabled) return;
       go.disabled = true;
-      if (await send(area.value)) area.value = "";
+      if (await send(area.value)) {
+        area.value = "";
+        area.dispatchEvent(new Event("input"));
+      }
       ready();
     };
     area.addEventListener("input", ready);
@@ -215,11 +271,10 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     });
     go.addEventListener("click", () => void submit());
     ready();
-    const row = el("div", { class: "row" }, go);
-    // Choices and agree have their Cancel in the button row above: one Cancel, never two.
+    // Choices and agree have their Cancel in the button row: one Cancel, never two.
     if (ask!.kind === "open" && changing && tally(ask!, host.document.threads(), me, agents()).mine)
-      row.append(cancelButton());
-    return el("div", {}, area, row);
+      return [fld, cancelButton()];
+    return [fld];
   }
 
   function cancelButton(): HTMLButtonElement {
@@ -236,9 +291,10 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
   /** The question's buttons or box, for an ask the reviewer is answering. */
   function drawAnswering(): void {
     const k = ask!;
-    const words = el("div");
+    const words = el("div", { class: "words" });
+    controls.className = k.kind === "open" ? "ctl open" : "ctl";
     if (k.kind === "open") {
-      controls.replaceChildren(wordsBox("Your answer", true, (w) => answer("", w)));
+      controls.replaceChildren(...wordsBox("Type your answer", true, (w) => answer("", w)));
       return;
     }
     const choices = [...k.options, ...(k.other ? [OTHER] : [])];
@@ -253,8 +309,8 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
             ? "Anything to add? (optional)"
             : c === CHANGE
               ? "What needs to change?"
-              : "Your answer";
-        words.replaceChildren(wordsBox(label, c !== AGREE, (w) => answer(c, w)));
+              : "Type your answer";
+        words.replaceChildren(...wordsBox(label, c !== AGREE, (w) => answer(c, w)));
         words.querySelector("textarea")!.focus();
       });
       return b;
@@ -277,9 +333,11 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     remove.addEventListener("click", () =>
       confirmRemove(tally(ask!, host.document.threads(), me, agents()).mine ?? mine),
     );
+    controls.className = "ctl";
     controls.replaceChildren(
-      el("p", { class: "mine" }, "Your answer: ", el("b", {}, mine.root.text.split("\n")[0]!)),
-      el("div", { class: "row" }, change, remove),
+      el("p", { class: "mine" }, "You said ", el("b", {}, mine.root.text.split("\n")[0]!)),
+      change,
+      remove,
     );
   }
 
@@ -328,6 +386,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
         back();
       }
     });
+    controls.className = "ctl";
     controls.replaceChildren(
       el(
         "p",
@@ -360,7 +419,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
     t.root.replies.forEach(walk);
     let area = replies.get(t.id);
     if (!area) {
-      area = el("textarea", { "aria-label": `Reply to ${nameOf(t.root)}`, placeholder: "Reply" });
+      area = field(`Reply to ${nameOf(t.root)}`).area;
       const a = area;
       a.addEventListener("keydown", (e) => {
         if (e.key !== "Enter" || e.shiftKey || e.isComposing || !a.value.trim()) return;
@@ -373,7 +432,7 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
       });
       replies.set(t.id, area);
     }
-    item.append(area);
+    item.append(area.parentElement ?? area);
     return item;
   }
 
@@ -401,12 +460,15 @@ function spot(host: AddonHost, at: Element, ask: Ask | null, shown: () => boolea
       const parts = [...t.counts].filter(([, n]) => n > 0).map(([c, n]) => `${c}: ${n}`);
       summary.textContent = `${plural(t.answers.length, "person", "people")} answered${parts.length ? `. ${parts.join(", ")}` : ""}.`;
     }
-    toggle.hidden = !see || !on.length;
+    // Your own answer alone, with no replies, has nothing more to open.
+    const onlyMine = !!mine && on.length === 1 && on[0]!.id === mine.id && countReplies(mine.root) === 0;
+    toggle.hidden = !see || !on.length || onlyMine;
     toggle.textContent = "";
     if (!toggle.hidden) {
       const latest = on.map(latestIn).sort((a, b) => b.at - a.at)[0]!;
       toggle.textContent = `${plural(on.length, "comment")} · latest from ${latest.author === me ? "you" : nameOf(latest)}`;
     }
+    more.hidden = summary.hidden && toggle.hidden;
     const opened = open && !toggle.hidden;
     toggle.setAttribute("aria-expanded", String(opened));
     const focused = root.activeElement;

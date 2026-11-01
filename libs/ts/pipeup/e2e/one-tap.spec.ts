@@ -156,3 +156,33 @@ test.describe("by touch", () => {
     await expect(page.locator(".toast.show")).toContainText("Press and hold this button for more");
   });
 });
+
+test("a page with its own Comment button can hide Pipeup's control and open its menu and All comments", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { control: "off" });
+  await expect(control(page)).toBeHidden();
+  // The page's own button, which opens Pipeup's menu.
+  await page.evaluate(() => {
+    const b = document.createElement("button");
+    b.id = "own";
+    b.textContent = "Comments";
+    b.addEventListener("click", () => (window as any).pu.openMenu());
+    document.body.prepend(b);
+  });
+  await page.locator("#own").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".menu.show")).toHaveCount(1);
+  await expect(page.getByRole("menuitem", { name: /Copy comments/ })).toBeVisible();
+  // Escape closes it, and focus goes back to the page's own button.
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".menu.show")).toHaveCount(0);
+  await expect(page.locator("#own")).toBeFocused();
+  // Comment mode from the page's code and the shortcut still work.
+  await page.evaluate(() => (window as any).pu.setCommentMode(true));
+  await commenting(page);
+  await page.keyboard.press("Escape");
+  await commenting(page, false);
+  await page.evaluate(() => (window as any).pu.openAllComments());
+  await expect(page.locator(".all.show")).toHaveCount(1);
+});

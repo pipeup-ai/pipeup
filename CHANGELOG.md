@@ -7,6 +7,16 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Changed
+
+- Inline asks are compact: a question and its buttons share one line where they fit, words go in a one-line field that grows as you write (no resize handle, Send inside it), and an answered ask is one line: "You said Yes · Change · Remove". The question takes the page's font.
+
+### Added
+
+- Authors can match inline asks to their page with `--pipeup-ask-accent`, `--pipeup-ask-font` and `--pipeup-ask-radius`; Pipeup's mark and a light tint always stay, so reviewers can see where to answer.
+- A page with its own Comment button can hide Pipeup's control (`data-pipeup-control="off"`) and open Pipeup's menu and All comments from its code (`openMenu()`, `openAllComments()`). `pipeup check` warns when the control is hidden and nothing opens the menu.
+- The integrate skill, llms.txt and the prompts tell agents how to give a page its own Comment button and how to match asks to the page.
+
 ### Fixed
 
 - The signed update list gives 0.9.0's real integrity hash, the one in the release notes and on the CDN.
