@@ -70,7 +70,8 @@ format may still change; the README says the project is in alpha until 1.0.
    the check fails, nothing is published. When it succeeds, the Pages workflow deploys the site, so the
    site never points at a version npm doesn't have yet.
    - **Publish the update list** (the `updates` add-on and `pipeup check` read it): keep `docs/advisories.json` current
-     (a `security` advisory names the affected versions and the fix), then `node tools/make-updates.mjs`,
+     (a `security` advisory names the affected versions and the fix), then, last of all, build the release commit
+     (`npm run build` in `libs/ts/pipeup`) so the hash is the published file's, `node tools/make-updates.mjs`,
      `node tools/sign-updates.mjs sign` (your Keychain asks for your password or Touch ID) and
      `node tools/sign-updates.mjs verify`, and commit `apps/site/updates.json` in the release pull request. The list
      expires after 90 days, so re-sign it before then even without a release. The key is made once with
@@ -166,3 +167,4 @@ tests and docs are fictional; there are no personal names or addresses.
 - 2026-10-07 — Website-only updates: the sync script's `--site` mode commits to `main` without a tag; the Pages workflow is run by hand.
 - 2026-10-07 — GitHub is the project's only home: development, pull requests and releases happen here; the private repository and its sync script are retired. Stable work and website changes go into `main`, milestone work and pre-releases into `next`; releases are tagged on the merged commit.
 - 2026-10-12 — Roadmap renumbered: 0.6 shipped agents (reading and answering comments, the live link, the skills installer) and the first commands of the command line; touch and the drawer move to 0.7, `init`, `check` and `read` to 0.8.
+- 2026-11-01 — The update list is made last, from a fresh build of the release commit, and the smoke check confirms the live list gives the notes' hash.

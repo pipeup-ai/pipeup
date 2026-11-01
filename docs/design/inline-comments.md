@@ -16,8 +16,9 @@ with everything comments already have.
   <p>Is “Go through every comment” one journey or two? Comment on this with ⇧⌥C.</p>
 </div>
 
-<!-- agree, on a requirement block -->
-<section data-pipeup-id="FR-012" data-pipeup-ask="Agree with this requirement?" data-pipeup-ask-kind="agree">…</section>
+<!-- agree, next to a requirement (the ask replaces its own content, so the requirement stays outside it) -->
+<p>FR-012: …</p>
+<div data-pipeup-id="FR-012-agree" data-pipeup-ask="Agree with FR-012?" data-pipeup-ask-kind="agree">…</div>
 
 <!-- a block whose comments show in place -->
 <figure data-pipeup-id="home-hero" data-pipeup-inline>…</figure>
@@ -141,3 +142,4 @@ with everything comments already have.
   ask's box and asks added after start are not built yet.
 - 2026-10-31 — Remove an answer: `post` takes `remove` (the reviewer's own comment, deleted as Delete does, replies and all), refused unless a press in the add-on's place started it. The add-on asks once more inside the ask (Remove / Keep, ignoring a press within 500 ms of the one that asked), and changing an answer shows one Cancel, in the button row for choices and agree, under the box for open asks.
 - 2026-10-31 — Agents never answer an ask, enforced: the add-on and `pipeup read` skip a thread on an ask whose first comment is by an agent the page lists (`data-pipeup-agents`) or under an AI name. It stays on the block as a comment, never counted. Agents' own routes (replies file, link, paste, Share) already carry only replies, addressed notes and reactions.
+- 2026-11-01 — The agree example puts the requirement next to the ask, not inside it: the add-on draws the ask in place of its own content.

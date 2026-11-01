@@ -7,6 +7,11 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+
+- The signed update list gives 0.9.0's real integrity hash, the one in the release notes and on the CDN.
+- The inline add-on's README example keeps a requirement outside its agree ask, so the add-on doesn't hide it.
+
 ## [0.9.0] - 2026-10-31
 
 This release is about asking reviewers and answering them. Authors can put questions right in the content with the new Inline add-on; one click on the comment control starts commenting, and selecting words offers a comment outside comment mode; agents' answers can be copied and pasted from a chat and travel with shared copies; a page names its edition; the script line alone starts Pipeup; and the menu says where comments are. Pipeup is 63.3 KB gzip.

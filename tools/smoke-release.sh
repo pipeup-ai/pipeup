@@ -71,6 +71,7 @@ if [[ $channel == next ]]; then
 else
   check "stable home page is not marked pre-release" bash -c "! curl -fsSL '${site}?s=$RANDOM' | grep -qF 'Pre-release'"
   check "/next/ answers" fetch "${stable_site}next/"
+  check "update list gives the notes' hash" bash -c "curl -fsSL '${site}updates.json?s=$RANDOM' | jq -e --arg v '$version' --arg h '$sri' '.latest == \$v and .versions[\$v].integrity == \$h'"
 fi
 
 echo
