@@ -1,0 +1,211 @@
+<title>Compact inline asks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column of spec, with mock pages; light only, like the Pipeup site. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--old:#fbeeee;--oldline:#b3261e;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:900px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:48px 0 8px;text-wrap:balance}
+h3{font-size:15px;color:var(--strong);margin:24px 0 8px}
+p{max-width:68ch;margin:0 0 12px} .lede{color:var(--muted)}
+ul{padding-left:20px;max-width:68ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pair>div{min-width:0}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+@media (max-width:720px){.pair{grid-template-columns:1fr}}
+
+/* A mock page: the author's own document, in its own font. */
+.page{border:1px solid var(--line);border-radius:10px;background:#fff;padding:18px 20px;font:15px/1.55 var(--serif);color:#222}
+.page p{margin:0 0 10px}
+.page.green{font-family:var(--sans)}
+
+/* Today's ask, as built (sizes from the add-on's CSS). */
+.t-box{margin:12px 0 4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;font:14px/1.45 var(--sans)}
+.t-q{margin:0 0 10px;font-weight:600;font-size:15px;color:#111}
+.t-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.t-btn{min-height:36px;display:inline-flex;align-items:center;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:#fbfaf7}
+.t-ta{height:64px;margin:0 0 8px;border:1px solid var(--line);border-radius:8px;background:#fbfaf7;padding:8px 10px;color:var(--faint)}
+.t-send{display:inline-flex;min-height:36px;align-items:center;padding:6px 14px;border-radius:999px;background:#b9b4e3;color:#fff}
+.t-link{color:var(--muted);text-decoration:underline;text-underline-offset:3px;margin-right:10px}
+.t-p{margin:0 0 6px}
+
+/* Proposed ask: the page's font, a tint and Pipeup's mark, one line where it fits. */
+.ask{--a:var(--violet);--at:var(--tint);margin:10px 0;padding:8px 12px;border-radius:8px;background:var(--at);display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font:inherit}
+.ask .q{display:flex;align-items:center;gap:8px;font-weight:600;color:#111;min-width:0}
+.ask .mark{flex:none;width:18px;height:18px;color:var(--a)}
+.ask .opts{display:flex;flex-wrap:wrap;gap:6px}
+.ask .b{display:inline-flex;align-items:center;min-height:28px;padding:2px 12px;border:1px solid color-mix(in srgb,var(--a) 28%,#fff);border-radius:999px;background:#fff;font:13.5px/1 var(--sans);color:#2f3437}
+.ask .b.on{background:var(--a);border-color:var(--a);color:#fff}
+.ask .field{flex:1 1 220px;display:flex;align-items:center;gap:8px;min-height:32px;border:1px solid color-mix(in srgb,var(--a) 22%,#c9c7c0);border-radius:6px;background:#fff;padding:3px 3px 3px 10px;font:13.5px/1.4 var(--sans);color:var(--faint);box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.ask .field>span:first-child{flex:1;min-width:0}
+.ask .send{flex:none;display:inline-flex;align-items:center;min-height:24px;padding:0 10px;border-radius:4px;background:color-mix(in srgb,var(--a) 35%,#fff);color:#fff;font-size:12.5px;font-weight:600}
+.ask .ans{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font:13.5px/1.4 var(--sans);color:var(--muted)}
+.ask .ans b{color:#111;font-weight:600}
+.ask .ans a{color:var(--a);text-decoration:none}
+.ask .more{flex-basis:100%;font:13px/1.4 var(--sans);color:var(--muted);padding-left:26px}
+.ask .more a{color:var(--a);text-decoration:none}
+.ask.green{--a:#1f7a4d;--at:#eef6f0;border-radius:2px}
+
+/* Prompt diff */
+.prompt{border:1px solid var(--line);border-radius:10px;background:var(--bone);font:13px/1.65 var(--mono);padding:14px 0;overflow-x:auto}
+.prompt div{padding:0 16px;white-space:pre-wrap} .prompt .add{background:var(--new);border-left:3px solid var(--newline);padding-left:13px}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:10px 14px;border-radius:0 8px 8px 0;max-width:72ch}
+.spec p{margin:0 0 8px} .spec p:last-child{margin:0}
+.phone{max-width:360px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+.tw{overflow-x:auto}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="mark" viewBox="0 0 20 20"><path d="M4 3.5h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" fill="currentColor" opacity=".16"/><path d="M4 3.5h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6.5 9h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol></svg>
+<main>
+<h1>Compact inline asks</h1>
+<p class="lede">The inline add-on's asks are too big for the content they sit in, and after answering they take four rows. This proposal makes compact the default, makes it obvious where to type, and gives agents what they need to match the page, including their own Commenting toggle and Pipeup's menus. Pipeup's mark and a light tint always stay, so a reviewer can still see where to answer.</p>
+<p class="cap">Version 3: the menu opens in its usual place; Version 2: input fields have no resize handle and say what to type; customising is written for agents; new section 6 on a page's own Commenting toggle and menus.</p>
+
+<h2>1. Before and after</h2>
+<p>The same launch plan with the same three asks. Today each ask is a card in Pipeup's own font with large buttons. The proposal fits a choice and its buttons on one line, and an open question becomes a single line with Send inside it.</p>
+<div class="pair">
+<div><div class="label">Today</div>
+<div class="page">
+<p>We plan to launch the new editor to every team in March, after two weeks with the design team.</p>
+<div class="t-box"><p class="t-q">Should we launch in March?</p><div class="t-row"><span class="t-btn">Yes</span><span class="t-btn">No</span><span class="t-btn">Not sure</span></div></div>
+<p>FR-012: Reviewers can answer an ask without comment mode.</p>
+<div class="t-box"><p class="t-q">Agree with FR-012?</p><div class="t-row"><span class="t-btn">Agree</span><span class="t-btn">Needs change</span></div></div>
+<div class="t-box"><p class="t-q">What should we call this feature?</p><div class="t-ta">Your answer</div><span class="t-send">Send</span></div>
+</div></div>
+<div><div class="label">Proposed</div>
+<div class="page">
+<p>We plan to launch the new editor to every team in March, after two weeks with the design team.</p>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Should we launch in March?</span><span class="opts"><span class="b">Yes</span><span class="b">No</span><span class="b">Not sure</span></span></div>
+<p>FR-012: Reviewers can answer an ask without comment mode.</p>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Agree with FR-012?</span><span class="opts"><span class="b">Agree</span><span class="b">Needs change</span></span></div>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>What should we call this feature?</span><span class="field"><span>Your answer</span><span class="send">Send</span></span></div>
+</div></div>
+</div>
+<p class="cap">The question is in the page's font (Georgia here), not Pipeup's. The buttons stay in Pipeup's small sans so they still read as controls.</p>
+
+<h2>2. After sending: one line</h2>
+<p>Today, after answering, an ask shows four rows: the question, "Your answer: Yes", Change and Remove, and "1 comment · latest from you". The proposal puts the question, the answer, Change and Remove on one line. A second, quiet line appears only when there is something new: others' answers, or replies.</p>
+<div class="pair">
+<div><div class="label">Today</div>
+<div class="page">
+<div class="t-box"><p class="t-q">Should we launch in March?</p><p class="t-p">Your answer: <b>Yes</b></p><p class="t-p"><span class="t-link">Change</span><span class="t-link">Remove</span></p><p class="t-p" style="margin:0"><span class="t-link">1 comment · latest from you</span></p></div>
+</div></div>
+<div><div class="label">Proposed</div>
+<div class="page">
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Should we launch in March?</span><span class="ans"><span>You said <b>Yes</b></span><a>Change</a><a>Remove</a></span></div>
+<p class="cap" style="font-family:var(--sans)">Only your own answer so far: one line.</p>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Should we launch in March?</span><span class="ans"><span>You said <b>Yes</b></span><a>Change</a><a>Remove</a></span><span class="more">5 answered: 3 Yes, 1 No, 1 Not sure · <a>2 replies</a></span></div>
+<p class="cap" style="font-family:var(--sans)">With others' answers (shared, live or from files) and replies: one more line.</p>
+</div></div>
+</div>
+<ul>
+<li>"1 comment · latest from you" goes. When the only comment on an ask is your own answer with no replies, there is nothing more to open.</li>
+<li>Choosing <b>Remove</b> asks again on the same line: "Remove your answer?", then <b>Remove</b> and <b>Keep</b>.</li>
+<li>Choosing <b>Change</b> brings back the buttons or the field on the same line, with <b>Cancel</b>.</li>
+<li>Agree with words reads "You said <b>Agree</b>: keep it to one screen", cut to one line; the full words are in the thread.</li>
+</ul>
+
+<h2>3. Writing words: clearly a field, no resize handle</h2>
+<p>An open question, Needs change, Agree's optional words and Other all use the same field. It has to look like somewhere to type, at a glance:</p>
+<ul>
+<li>A white field with a visible edge on the tint, and words inside it that say what to type: "Type your answer", "What needs to change?", "Anything to add? (optional)".</li>
+<li>No resize handle. The field starts as one line and grows on its own as the reviewer writes, up to about five lines, then scrolls.</li>
+<li>Send sits inside the field, faded until there are words, then in the accent. Return sends; Shift + Return starts a new line.</li>
+<li>Pointing at the field or focusing it darkens its edge, so it answers before anything is typed.</li>
+</ul>
+<div class="pair">
+<div><div class="label">Empty</div>
+<div class="page">
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>What should we call this feature?</span><span class="field" style="flex-basis:100%"><span>Type your answer</span><span class="send">Send</span></span></div>
+</div></div>
+<div><div class="label">Writing</div>
+<div class="page">
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Agree with FR-012?</span><span class="opts"><span class="b">Agree</span><span class="b on">Needs change</span></span><span class="field" style="flex-basis:100%;border-color:var(--violet)"><span style="color:#2f3437">It should work by keyboard too, not only by click</span><span class="send" style="background:var(--violet)">Send</span></span></div>
+</div></div>
+</div>
+<p class="cap">Today the box is three rows tall from the start, shows the browser's resize handle in its corner, and has Send on its own row underneath.</p>
+
+<h2>4. On a phone</h2>
+<p>When the question and its buttons don't fit on one line, the buttons move under the question. On touch screens they keep their 44 px height so a finger can hit them; only the visible pill is smaller.</p>
+<div class="page phone">
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Should we launch in March?</span><span class="opts"><span class="b" style="min-height:34px">Yes</span><span class="b" style="min-height:34px">No</span><span class="b" style="min-height:34px">Not sure</span></span></div>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Should we launch in March?</span><span class="ans"><span>You said <b>Yes</b></span><a>Change</a><a>Remove</a></span></div>
+</div>
+
+<h2>5. For agents: matching the page, staying obvious</h2>
+<p>The defaults above are what every page gets. We've seen agents restyle asks to match the page they're building, which is fine; the add-on's documentation and prompt tell them how, with one rule: <b>an ask always looks like something to answer</b>. An agent can set the ask's accent colour, its font and how rounded its corners are, from the page's own stylesheet. Pipeup's mark before the question and a light tint of the accent behind the ask always stay.</p>
+<div class="pair">
+<div><div class="label">Pipeup's look (the default)</div>
+<div class="page">
+<p>FR-012: Reviewers can answer an ask without comment mode.</p>
+<div class="ask"><span class="q"><svg class="mark"><use href="#mark"/></svg>Agree with FR-012?</span><span class="opts"><span class="b">Agree</span><span class="b">Needs change</span></span></div>
+</div></div>
+<div><div class="label">Matched to a green, square-cornered page</div>
+<div class="page green">
+<p>FR-012: Reviewers can answer an ask without comment mode.</p>
+<div class="ask green"><span class="q"><svg class="mark"><use href="#mark"/></svg>Agree with FR-012?</span><span class="opts"><span class="b" style="border-radius:2px">Agree</span><span class="b" style="border-radius:2px">Needs change</span></span></div>
+</div></div>
+</div>
+<div class="tw"><table>
+<tr><th>The author or their agent can change</th><th>Always stays</th></tr>
+<tr><td>The accent colour (the mark, the chosen button, Send, links)</td><td>Pipeup's mark before the question</td></tr>
+<tr><td>The font of the question and of the controls</td><td>A light tint of the accent behind the whole ask, so it stands apart from the text around it</td></tr>
+<tr><td>Corner rounding</td><td>The controls, their words and how they work, by keyboard, touch and screen reader</td></tr>
+<tr><td></td><td>Pipeup's dark look, which follows the page as everything else in Pipeup does</td></tr>
+</table></div>
+<p class="cap">The ask lives in Pipeup's own part of the page, so a page's styles can't reach it by accident. The changes above are made deliberately, with settings the add-on documents.</p>
+
+<h2>6. For agents: their own Commenting toggle and Pipeup's menus</h2>
+<p>Some pages want reviewing to feel like part of the page: a Comment button in their own header instead of Pipeup's control in the corner.</p>
+<h3>Already possible: their own Commenting toggle</h3>
+<p>A page's own code can turn comment mode on and off, ask whether it's on, hear each time it changes (however it changed), and set the reviewer's name (spec §4a). Agents aren't told today. The prompt and the skill will say so, with a short example: a Comment button in the page's header that turns comment mode on and off and shows when it's on.</p>
+<div class="page green" style="font-size:14px">
+<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px"><b>Launch plan</b><span style="display:flex;gap:8px"><span class="b" style="border:1px solid #1f7a4d;color:#1f7a4d;background:#fff;display:inline-flex;align-items:center;min-height:28px;padding:2px 12px;border-radius:2px;font-size:13px">Comment</span><span style="display:inline-flex;align-items:center;min-height:28px;padding:2px 10px;border:1px solid var(--line);border-radius:2px;font-size:13px">⋯</span></span></div>
+<p style="margin:0">The page's own Comment button turns comment mode on and off. Its own ⋯ opens Pipeup's menu.</p>
+</div>
+<h3>New: hiding Pipeup's control, opening its menu from the page</h3>
+<p>Today Pipeup's comment control always shows in the corner, and its menu (All comments, Copy comments, Hide comments, the add-ons' rows) opens only from it. Proposed:</p>
+<ul>
+<li>A page with its own toggle can <b>hide Pipeup's comment control</b>. The shortcut keeps working, and so does everything else.</li>
+<li>The page's own code can <b>open Pipeup's menu</b> (in its usual place) and <b>open All comments</b>.</li>
+<li>A page that hides the control takes on giving reviewers a way to its menu: without the menu, a reviewer can't copy or send their comments. The skill says so, and <code>pipeup check</code> warns when the control is hidden and nothing on the page opens the menu.</li>
+<li>Which rows the menu has stays Pipeup's and the add-ons': a page can't remove Copy comments or Hide comments.</li>
+</ul>
+
+<h2>7. The prompt and the skill</h2>
+<p>The inline add-on's Copy prompt on the Add-ons page, its Markdown copy, llms.txt and the integrate skill gain one step (shaded).</p>
+<div class="prompt">
+<div>1. Add this script tag just after the Pipeup script tag, before &lt;/body&gt;: …/@pipeup/inline@…/dist/inline.min.js</div>
+<div>2. Mark each question with data-pipeup-id, data-pipeup-ask and data-pipeup-ask-kind; inside, write the question for anyone without the add-on.</div>
+<div class="add">3. Asks take the page's font. To match the page's look, set the ask's accent colour, font and corner rounding with the settings the add-on documents. Don't hide or rebuild the ask's own controls, and keep Pipeup's mark and tint, so reviewers can see where to answer.</div>
+<div>…</div>
+</div>
+<p>The integrate skill, llms.txt and the Create prompt's guide also gain a short section for any page, with or without add-ons:</p>
+<div class="prompt">
+<div class="add">If the page should have its own Commenting button, use Pipeup's page API: turn comment mode on and off from your button, show when it's on, and listen for changes. You can hide Pipeup's comment control, but then give reviewers your own way to open Pipeup's menu (Copy comments lives there), and open All comments from your page if you like.</div>
+</div>
+
+<h2>8. The spec change</h2>
+<p>These replace or add to bullets in §11b of the functional spec, under <b>Asks</b>, and add to §4a.</p>
+<div class="spec">
+<p><b>Compact.</b> An ask takes as little room as its question needs. The question and its buttons share one line when they fit, and wrap under the question when they don't. Touch screens keep finger-sized targets.</p>
+<p><b>Where to type is obvious.</b> Where words are asked for, the ask has one field that looks like a field at a glance and says what to type. It starts as a single line and grows on its own as the reviewer writes; it has no handle for resizing. Its Send is inside it and works once there are words.</p>
+<p><b>After answering</b>, the ask is one line: the question, the reviewer's answer ("You said Yes"), Change and Remove. A second line appears only when there is more to see: how many answered and the count for each option, and any replies. When the only comment is the reviewer's own answer, nothing more is shown. Remove's second question and Change's Cancel stay on the ask's line.</p>
+<p><b>The page's look.</b> An ask's question takes the page's font. The author can set the ask's accent colour, font and corner rounding from the page's own styles. Whatever they set, an ask always shows Pipeup's mark and a light tint of its accent, so reviewers can tell it is something to answer, and its controls keep working the same way.</p>
+<p><b>§4a, added.</b> A page with its own way to start commenting can hide Pipeup's comment control; the shortcut and everything else keep working. Its code can open Pipeup's menu and All comments. What the menu holds stays Pipeup's and its add-ons'. Pipeup's checks warn when the control is hidden and nothing on the page opens the menu.</p>
+</div>
+
+<h2>What changes, in one place</h2>
+<ul>
+<li>Asks are compact: one line for a question and its buttons where it fits, a single-line field with Send inside it.</li>
+<li>After sending, one line ("You said Yes · Change · Remove"), plus one quiet line only for others' answers and replies.</li>
+<li>The question takes the page's font; the author can match the accent colour, font and rounding; the mark and tint always stay.</li>
+<li>Fields look like fields, say what to type, grow on their own and have no resize handle.</li>
+<li>The inline prompt, llms.txt and the integrate skill tell agents how to match the page without hiding what's askable.</li>
+<li>Agents are told they can give the page its own Commenting toggle (possible today); new: a page can hide Pipeup's control and open its menu and All comments from its own buttons.</li>
+<li>Touch sizes, keyboard and screen-reader behaviour, the dark look and "nobody is steered" are unchanged.</li>
+</ul>
+</main>

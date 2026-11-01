@@ -78,6 +78,23 @@ anything reviewers should still read (a requirement, a design) outside the ask, 
 - A comment someone makes in comment mode on an ask's block is an ordinary comment, shown with the ask's threads but
   not counted.
 
+## Matching the page
+
+Asks are compact: a question and its buttons share one line where they fit, words go in a one-line field that grows
+as the reviewer writes, and an answered ask is one line ("You said Yes · Change · Remove"). The question takes the
+page's font. To match the page's look, set these in the page's CSS, on `:root` for every ask or on one ask's element:
+
+```css
+:root {
+  --pipeup-ask-accent: #1f7a4d; /* the mark, the chosen button, Send, links, and the tint behind the ask */
+  --pipeup-ask-font: "Inter", sans-serif; /* the question and the controls */
+  --pipeup-ask-radius: 2px; /* corners of the ask, its buttons and its field */
+}
+```
+
+Pipeup's mark before the question and a light tint of the accent always stay, so reviewers can tell an ask is
+something to answer; the controls and how they work by keyboard, touch and screen reader stay the same.
+
 An ask without a `data-pipeup-id`, or a choice with fewer than two or more than six options, is left as you wrote it,
 with one line in the console naming it.
 

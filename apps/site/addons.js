@@ -1,6 +1,6 @@
 // The Add-ons page and each add-on's own page: Copy buttons and menus, and the looping demos. Spec: docs/WEBSITE_SPEC.md.
 const CDN = "https://cdn.jsdelivr.net/npm/";
-const ADDONS_VERSION = "0.9.0"; // tools/set-version.sh keeps this in step with the release
+const ADDONS_VERSION = "0.9.1"; // tools/set-version.sh keeps this in step with the release
 // The integrity hashes of the published files, put here when the site is built (from the files on the CDN).
 const SRI = { share: "{{SRI:share}}", voice: "{{SRI:voice}}", live: "{{SRI:live}}", assist: "{{SRI:assist}}", agents: "{{SRI:agents}}", emoji: "{{SRI:emoji}}", github: "{{SRI:github}}", updates: "{{SRI:updates}}", inbox: "{{SRI:inbox}}", identity: "{{SRI:identity}}", inline: "{{SRI:inline}}" };
 const tag = (pkg, file) => {
@@ -125,6 +125,8 @@ const prompts = {
     `Add this script tag just after the Pipeup script tag, before </body>: ${tag("@pipeup/inline", "inline.min.js")}`,
     "",
     "Only where I ask a question: on its element, add data-pipeup-id with a short stable name, data-pipeup-ask with the question, and data-pipeup-ask-kind (agree, choice with data-pipeup-ask-options=\"One|Two\", or leave it out for an answer in words). Keep the question in the element's own words too, so someone without the add-on still sees it.",
+    "",
+    "Asks are compact and take the page's font. To match my page's look, set --pipeup-ask-accent, --pipeup-ask-font and --pipeup-ask-radius in its CSS. Don't hide or rebuild the asks' own controls, and keep Pipeup's mark and tint, so reviewers can see where to answer.",
     "",
     ...SAFE("inline", "to nowhere new (answers are ordinary comments)"),
     "",

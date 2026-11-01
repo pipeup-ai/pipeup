@@ -129,6 +129,11 @@ Pipeup without reaching inside it.
   the shortcut, Esc, or the page itself.
 - It can set the reviewer's name at any time. Pipeup keeps it as if the reviewer had typed it, and the page is told
   each time the reviewer changes it in Pipeup.
+- A page with its own way to start commenting can **hide Pipeup's comment control**. The shortcut, the selection's
+  offer and everything else keep working.
+- Its code can **open Pipeup's menu** and **open All comments**. What the menu holds stays Pipeup's and its add-ons':
+  a page can't remove a row. A page that hides the control takes on giving reviewers a way to the menu, since copying
+  and sending comments live there; `pipeup check` warns when the control is hidden and the page never opens the menu.
 - When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
   copy of Pipeup already owns the page), as well as in the browser's console.
 - None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
@@ -1179,7 +1184,15 @@ other comments are.
     can confirm, or steer in a direction ("Agree, but keep it to one screen"); Needs change always asks for them;
   - **choice**: two to six options the author names, and optionally Other (which asks for words).
 - The ask is shown where the author put it, in the page's flow: the question, then a comment box or the buttons for its
-  kind. It needs no comment mode and no shortcut. It is in the page's tab order, works by keyboard, touch and screen
+  kind. It needs no comment mode and no shortcut.
+- **Compact.** An ask takes as little room as its question needs. The question and its buttons share one line when
+  they fit, and the buttons wrap under the question when they don't. Touch screens keep finger-sized targets.
+- **Where to type is obvious.** Where words are asked for, the ask has one field that looks like a field at a glance
+  and says what to type. It starts as a single line and grows on its own as the reviewer writes, with no handle for
+  resizing; its Send sits inside it and works once there are words.
+- **The page's look.** An ask's question takes the page's font. The author can set the ask's accent colour, font and
+  corner rounding from the page's own styles. Whatever they set, an ask always shows Pipeup's comment mark and a light
+  tint of its accent, so reviewers can tell it is something to answer, and its controls work the same way. It is in the page's tab order, works by keyboard, touch and screen
   reader (a group named by its question), and follows Pipeup's light and dark looks and reduced motion.
 - Dictation and the other tools add-ons put in comment boxes work in an ask's box too. Every rule that words being
   written are never lost applies.
@@ -1188,7 +1201,9 @@ other comments are.
   and quotes the question.
 - **One answer per reviewer per ask.** Choosing again, or sending new words, changes the reviewer's answer (an edit,
   shown as edited), never a second answer. Replies under an answer are a conversation, not more answers.
-- **Changing or removing an answer.** After answering, the ask reads "Your answer: …" with **Change** and **Remove**.
+- **Changing or removing an answer.** After answering, the ask is one line: the question, "You said …", **Change**
+  and **Remove**. A second, quiet line appears only when there is more to see (others' answers and counts, replies, or
+  comments other than the reviewer's own answer).
   While changing, one **Cancel** leaves the answer as it was. Remove asks once more ("Remove your answer?", or "Remove
   your answer and its 2 replies?" when it has replies), with **Remove** and **Keep**; that second question can't be
   answered by the same double-click or double tap that asked it. Removing deletes the answer as Delete does any comment,
@@ -2024,3 +2039,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Inline comments (§11b), the maintainer's answers to its three open questions (§19): a reviewer never sees others' answers before giving their own, on any ask; an agree ask keeps two answers, and Agree may carry words too (to confirm or steer), not only Needs change; asks stay in the inline add-on, not Pipeup's size budget, even when another add-on uses them.
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
 - 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.
+- 2026-11-01 — Asks are compact (one line for a question and its buttons where it fits, one line after answering); their field looks like a field, grows on its own and has no resize handle; an ask takes the page's font, and the author can set its accent, font and rounding while Pipeup's mark and tint stay (§11b). A page with its own way to start commenting can hide Pipeup's comment control and open Pipeup's menu and All comments from its code (§4a). Visual spec: docs/design/compact-asks.html.

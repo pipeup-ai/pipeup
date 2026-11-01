@@ -7,6 +7,7 @@ import { lost as lostIn, moved as movedIn } from "./column";
 import type { Ctx, Draft, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
+import { setting } from "./settings";
 import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
 import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
@@ -65,6 +66,16 @@ export function createLauncher(ctx: Ctx): View {
     icon("more", 15, 3),
   );
   const launch = h("div", { class: "launch" }, btn, tip, dots);
+  // The page has its own way to start commenting (§4a): Pipeup's control steps aside; its menu and panel stay.
+  const pageOwned = setting("data-pipeup-control") === "off";
+  if (pageOwned) launch.classList.add("off");
+  /** Where focus goes back to when the page's own control opened the menu or the panel. */
+  let returnTo: HTMLElement | null = null;
+  const focusBack = () => {
+    if (!pageOwned) return btn.focus({ preventScroll: true });
+    returnTo?.focus({ preventScroll: true });
+    returnTo = null;
+  };
   const menu = h("div", { class: "menu", role: "menu", "aria-label": "Comments" });
   // Screen readers hear All comments as a list of comments under a heading; the arrow keys still move through it.
   const list = h("div", { class: "list", role: "list", "aria-label": "Comments" });
@@ -250,7 +261,7 @@ export function createLauncher(ctx: Ctx): View {
     // A comment being written moves into the panel, and the caret stays in it.
     else if (on && ctx.state.draft) ctx.focusDraft();
     else if (on) (items(list)[0] ?? close).focus({ preventScroll: true });
-    else if (back) btn.focus({ preventScroll: true });
+    else if (back) focusBack();
   };
 
   // Rows the panel's footer leaves out of the menu (Comment and All comments) aren't stops for the arrow keys.
@@ -260,7 +271,7 @@ export function createLauncher(ctx: Ctx): View {
   /** Closing from inside the menu (an item, Escape) gives focus back to the button. */
   const closeToControl = () => {
     setMenu(false);
-    btn.focus({ preventScroll: true });
+    focusBack();
   };
   // Arrow keys, Home and End move between items, as in any menu.
   const nav = (e: KeyboardEvent) => {
@@ -1102,6 +1113,24 @@ export function createLauncher(ctx: Ctx): View {
     setMenu(true);
     if (keys) items().at(-1)?.focus({ preventScroll: true });
   };
+  // The page's own code opens the menu or All comments; focus moves in, and comes back to the page's control.
+  const opener = () => {
+    const at = document.activeElement;
+    return at instanceof HTMLElement && at !== document.body ? at : null;
+  };
+  ctx.pageControls = {
+    menu: () => {
+      if (menuOpen) return;
+      returnTo = opener();
+      openMenu(true);
+    },
+    list: () => {
+      if (ctx.state.listing) return;
+      returnTo = opener();
+      if (menuOpen) setMenu(false);
+      setList(true);
+    },
+  };
   /** A press held on the control (by touch or pen) opened the menu: the click that ends it does nothing more. */
   let held = false;
   let holding = 0;
@@ -1307,6 +1336,7 @@ export function createLauncher(ctx: Ctx): View {
       window.clearTimeout(holding);
       window.removeEventListener("keydown", onEscape, true);
       ctx.registerList(null);
+      ctx.pageControls = null;
       menu.remove();
       all.remove();
       wire.remove();

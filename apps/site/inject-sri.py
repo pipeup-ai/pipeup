@@ -4,7 +4,7 @@ Run by `apps/site/build.sh`. The hash is of the file the CDN serves for the pinn
 read when the site is built; offline, or if the CDN can't be reached, it falls back to the file built here (the same
 bytes, for a released version). If neither is known the hash is left out and the tag has no integrity attribute.
 """
-import base64, hashlib, json, pathlib, re, sys, urllib.request
+import base64, hashlib, json, pathlib, re, subprocess, sys, urllib.request
 
 root = pathlib.Path(__file__).resolve().parents[2]
 out = pathlib.Path(sys.argv[1])
@@ -16,7 +16,8 @@ def sri(data: bytes) -> str:
     return "sha384-" + base64.b64encode(hashlib.sha384(data).digest()).decode()
 
 values = {}
-for id_ in ("share", "voice", "live", "assist", "agents", "emoji", "github", "updates", "inbox", "identity", "inline"):
+addons = subprocess.run(["node", str(root / "tools/addons.mjs")], check=True, capture_output=True, text=True).stdout.split()
+for id_ in addons:
     value = ""
     try:
         with urllib.request.urlopen(f"https://cdn.jsdelivr.net/npm/@pipeup/{id_}@{version}/dist/{id_}.min.js", timeout=10) as r:

@@ -637,6 +637,7 @@ export function startApp(o: AppOptions): App {
     registerList: (fn) => {
       list = fn;
     },
+    pageControls: null,
     toast,
     say,
     hideHint,
