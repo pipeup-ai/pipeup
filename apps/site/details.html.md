@@ -7,7 +7,7 @@ The two lines for your page:
 ```html
 <html data-pipeup-doc="<key>">
 
-<script src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js" integrity="{{SRI:pipeup}}" crossorigin="anonymous"></script>
 ```
 
 The key goes on the `<html>` element (make one with `await Pipeup.newDocumentAttribute()`; the page's Copy makes a fresh one each time), and the script line just before `</body>`.

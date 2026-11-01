@@ -1,6 +1,6 @@
-export const VERSION = "0.8.2";
+export const VERSION = "0.9.0";
 /** The day this version was made (set with the version): Pipeup says so, once, in the console when it is over a year old. */
-export const BUILT = "2026-10-19";
+export const BUILT = "2026-10-31";
 
 export { PipeupDocument, UnsavedChangeError, type Listener, type OpenOptions } from "./document";
 export {

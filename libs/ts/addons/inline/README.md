@@ -24,7 +24,7 @@ use(inline());
 mount();
 ```
 
-It needs a Pipeup with the `place` and `post` slots (the first release after 0.8.2); with an older one it stays off
+It needs a Pipeup with the `place` and `post` slots (0.9.0 or newer); with an older one it stays off
 and says why.
 
 ## What it sends, and to whom
@@ -35,7 +35,8 @@ Nothing: the inline add-on uses no network. Answers are comments, kept and sent 
 
 Mark the block with a name (`data-pipeup-id`, which stays the same when you change the question's words), the
 question, and a kind. What you put inside is the **fallback**: it shows to anyone without the add-on, so write the
-question there too, with a way to comment.
+question there too, with a way to comment. With the add-on, the ask is drawn in place of that fallback, so keep
+anything reviewers should still read (a requirement, a design) outside the ask, next to it.
 
 ```html
 <!-- choice: two to six options, separated by |; data-pipeup-ask-other adds Other, which asks for words -->
@@ -50,10 +51,12 @@ question there too, with a way to comment.
   <p>Is “Go through every comment” one journey or two? Comment on this with ⇧⌥C.</p>
 </div>
 
-<!-- agree: Agree (words optional, to confirm or steer) or Needs change (asks what) -->
-<section data-pipeup-id="FR-012" data-pipeup-ask="Agree with this requirement?" data-pipeup-ask-kind="agree">
-  <p>FR-012: Reviewers can answer an ask without comment mode.</p>
-</section>
+<!-- agree: Agree (words optional, to confirm or steer) or Needs change (asks what).
+     Keep the requirement outside the ask: the add-on hides everything inside it. -->
+<p>FR-012: Reviewers can answer an ask without comment mode.</p>
+<div data-pipeup-id="FR-012-agree" data-pipeup-ask="Agree with FR-012?" data-pipeup-ask-kind="agree">
+  <p>Agree with FR-012? Comment on this with ⇧⌥C.</p>
+</div>
 
 <!-- open (the default): the reviewer answers in words -->
 <div data-pipeup-id="q-name" data-pipeup-ask="What should we call this feature?">
