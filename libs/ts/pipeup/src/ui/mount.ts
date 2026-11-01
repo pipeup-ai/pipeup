@@ -30,6 +30,8 @@ export interface MountOptions {
   theme?: string;
   /** "comment-mode": selecting words offers a comment only in comment mode, as `data-pipeup-select`. */
   select?: string;
+  /** "off": the page has its own way to start commenting, so Pipeup's control is hidden, as `data-pipeup-control`. */
+  control?: string;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -63,6 +65,10 @@ export interface PipeupInstance {
   readonly name: string;
   /** Sets the reviewer's name, kept as if they had typed it. */
   setName(name: string): Promise<void>;
+  /** Opens Pipeup's menu (for a page with its own control: copying and sending comments live there). */
+  openMenu(): Promise<void>;
+  /** Opens All comments. */
+  openAllComments(): Promise<void>;
   /** Calls `fn` whenever comment mode or the name changes, however it changed; returns a function that stops it. */
   on(event: "change", fn: (state: PipeupState) => void): () => void;
 }
@@ -103,6 +109,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     "data-pipeup-layout": o.layout,
     "data-pipeup-theme": o.theme,
     "data-pipeup-select": o.select,
+    "data-pipeup-control": o.control,
   });
   const attr = setting("data-pipeup-doc");
   const { id, key } = attr
@@ -238,6 +245,12 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     },
     setCommentMode: async (on: boolean) => {
       if (!unmounted) started.ctx.setCommenting(Boolean(on));
+    },
+    openMenu: async () => {
+      if (!unmounted) started.ctx.pageControls?.menu();
+    },
+    openAllComments: async () => {
+      if (!unmounted) started.ctx.pageControls?.list();
     },
     get name() {
       return doc.name;

@@ -63,15 +63,15 @@ test("a choice is answered with one click, and changing it edits the one answer"
   await start(page);
   const journeys = ask(page, "q-journeys");
   await journeys.getByRole("button", { name: "One" }).click();
-  await expect(journeys).toContainText("Your answer: One");
+  await expect(journeys).toContainText("You said One");
   expect(await words(page, "q-journeys")).toEqual([
     { text: "One", edited: false, snapshot: "Asked: Is “Go through every comment” one journey or two?" },
   ]);
   await journeys.getByRole("button", { name: "Change" }).click();
   await journeys.getByRole("button", { name: "Other" }).click();
-  await journeys.getByRole("textbox", { name: "Your answer" }).fill("Two, if replies count");
+  await journeys.getByRole("textbox", { name: "Type your answer" }).fill("Two, if replies count");
   await journeys.getByRole("button", { name: "Send" }).click();
-  await expect(journeys).toContainText("Your answer: Other: Two, if replies count");
+  await expect(journeys).toContainText("You said Other: Two, if replies count");
   expect(await words(page, "q-journeys")).toEqual([
     {
       text: "Other: Two, if replies count",
@@ -91,9 +91,9 @@ test("changing an answer has one Cancel, which keeps the answer as it was", asyn
   await journeys.getByRole("button", { name: "Other" }).click();
   await expect(journeys.getByRole("button", { name: "Cancel" })).toHaveCount(1);
   await journeys.getByRole("button", { name: "Cancel" }).click();
-  await expect(journeys).toContainText("Your answer: Two");
+  await expect(journeys).toContainText("You said Two");
   const name = ask(page, "q-name");
-  await name.getByRole("textbox", { name: "Your answer" }).fill("Asks");
+  await name.getByRole("textbox", { name: "Type your answer" }).fill("Asks");
   await name.getByRole("button", { name: "Send" }).click();
   await name.getByRole("button", { name: "Change" }).click();
   await expect(name.getByRole("button", { name: "Cancel" })).toHaveCount(1);
@@ -116,14 +116,14 @@ test("Remove asks once more, ignores a double-click, and puts the question back"
   await expect(journeys).toContainText("Remove your answer?");
   await expect(journeys.getByRole("button", { name: "Keep" })).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(journeys).toContainText("Your answer: One");
+  await expect(journeys).toContainText("You said One");
   // The double-click that asks can't also answer.
   await journeys.getByRole("button", { name: "Remove" }).dblclick();
   await expect(journeys).toContainText("Remove your answer?");
   await page.waitForTimeout(550);
   await journeys.getByRole("button", { name: "Remove", exact: true }).click();
   await expect(journeys.getByRole("button", { name: "One" })).toBeFocused();
-  await expect(journeys).not.toContainText("Your answer");
+  await expect(journeys).not.toContainText("You said");
   await expect(journeys).not.toContainText("answered");
   await expect(journeys).not.toContainText("latest from");
   expect((await words(page, "q-journeys")).filter((w: { text: string }) => w.text === "One")).toEqual([]);
@@ -136,19 +136,25 @@ test("removing an answer with replies says so, and takes them too", async ({ bro
   const page = await context.newPage();
   await start(page);
   const name = ask(page, "q-name");
-  await name.getByRole("textbox", { name: "Your answer" }).tap();
+  await name.getByRole("textbox", { name: "Type your answer" }).tap();
   await page.keyboard.type("Asks");
   await name.getByRole("button", { name: "Send" }).tap();
+  // Your own answer alone, with no replies, is one line: nothing more to open.
+  await expect(name).toContainText("You said Asks");
+  await expect(name.getByRole("button", { name: /1 comment/ })).toHaveCount(0);
+  // A reply (here from the panel) brings the thread's line back.
+  await page.evaluate(() => {
+    const pu = (window as any).pu;
+    const t = pu.document.threads().find((x: any) => x.anchor.id === "q-name");
+    return pu.document.reply(t.root.id, "Or Questions");
+  });
   await name.getByRole("button", { name: /1 comment/ }).tap();
-  await name.getByRole("textbox", { name: /Reply to/ }).tap();
-  await page.keyboard.type("Or Questions");
-  await page.keyboard.press("Enter");
   await expect(name).toContainText("You: Or Questions");
   await name.getByRole("button", { name: "Remove" }).tap();
   await expect(name).toContainText("Remove your answer and its 1 reply?");
   await page.waitForTimeout(550);
   await name.getByRole("button", { name: "Remove", exact: true }).tap();
-  await expect(name.getByRole("textbox", { name: "Your answer" })).toBeVisible();
+  await expect(name.getByRole("textbox", { name: "Type your answer" })).toBeVisible();
   await expect(name).not.toContainText("Or Questions");
   await context.close();
 });
@@ -166,7 +172,7 @@ test("agree takes words by keyboard, and Needs change waits for them", async ({ 
   await expect(fr.getByRole("textbox", { name: "Anything to add? (optional)" })).toBeFocused();
   await page.keyboard.type("Agree, but keep it to one screen");
   await page.keyboard.press("Enter");
-  await expect(fr).toContainText("Your answer: Agree: Agree, but keep it to one screen");
+  await expect(fr).toContainText("You said Agree: Agree, but keep it to one screen");
   expect((await words(page, "FR-012"))[0]!.text).toBe("Agree: Agree, but keep it to one screen");
 });
 
@@ -175,10 +181,10 @@ test("an open ask is answered by touch", async ({ browser }) => {
   const page = await context.newPage();
   await start(page);
   const name = ask(page, "q-name");
-  await name.getByRole("textbox", { name: "Your answer" }).tap();
+  await name.getByRole("textbox", { name: "Type your answer" }).tap();
   await page.keyboard.type("Asks");
   await name.getByRole("button", { name: "Send" }).tap();
-  await expect(name).toContainText("Your answer: Asks");
+  await expect(name).toContainText("You said Asks");
   // The controls can be redrawn once the answer is saved: measure the button that settles, not one being replaced.
   const change = name.getByRole("button", { name: "Change" });
   await expect(async () => {
@@ -212,7 +218,7 @@ test("others' answers are counted only after the reviewer's own, and never while
   await hideComments(page);
   await expect(journeys).not.toContainText("answered.");
   await expect(journeys).not.toContainText("Ada");
-  await expect(journeys).toContainText("Your answer: One");
+  await expect(journeys).toContainText("You said One");
 });
 
 test("a listed agent's thread on an ask is a comment there, never an answer or a count", async ({ page }) => {
@@ -246,7 +252,7 @@ test("an answer to earlier words of the question says what it answered", async (
   await start(page);
   await adaAnswers(page, "q-name", "What do we call it?", "Asks");
   const name = ask(page, "q-name");
-  await name.getByRole("textbox", { name: "Your answer" }).fill("Questions");
+  await name.getByRole("textbox", { name: "Type your answer" }).fill("Questions");
   await name.getByRole("button", { name: "Send" }).click();
   await name.getByRole("button", { name: /comments · latest/ }).click();
   await expect(name).toContainText("Asked as: What do we call it?");
@@ -280,7 +286,7 @@ test("comment mode leaves an ask's controls to the add-on", async ({ page }) => 
   await page.keyboard.press("Shift+Alt+KeyC");
   await expect(page.locator(".launch .mode")).toHaveClass(/\bon\b/);
   await ask(page, "q-journeys").getByRole("button", { name: "Two" }).click();
-  await expect(ask(page, "q-journeys")).toContainText("Your answer: Two");
+  await expect(ask(page, "q-journeys")).toContainText("You said Two");
   await expect(page.locator(".draft")).toHaveCount(0);
 });
 
@@ -351,11 +357,62 @@ test("asks follow the light and dark looks, and reduced motion", async ({ page }
         bg: getComputedStyle(b).backgroundColor,
         animation: getComputedStyle(b).animationName,
       }));
-  expect(await look()).toEqual({ bg: "rgb(255, 255, 255)", animation: "none" });
+  // A light tint of the accent behind the ask, in each look.
+  expect(await look()).toEqual({ bg: "color(srgb 0.952784 0.950314 0.980235)", animation: "none" });
   await page.screenshot({ path: "test-results/inline-light.png" });
   await page.evaluate(() => (window as any).pu.unmount());
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await mount(page, { theme: "dark" });
-  await expect.poll(look).toEqual({ bg: "rgb(27, 27, 25)", animation: "in" });
+  await expect.poll(look).toEqual({ bg: "color(srgb 0.121255 0.118784 0.141412)", animation: "in" });
   await page.screenshot({ path: "test-results/inline-dark.png", animations: "disabled" });
+});
+
+test("an ask is compact: one line, a field that grows with no resize handle, and the page's type", async ({
+  page,
+}) => {
+  await start(page);
+  const name = ask(page, "q-name");
+  const field = name.getByRole("textbox", { name: "Type your answer" });
+  const q = name.locator(".q");
+  // The question and its field share one line where they fit.
+  const [qBox, fBox] = [await q.boundingBox(), await field.boundingBox()];
+  expect(Math.abs(qBox!.y + qBox!.height / 2 - (fBox!.y + fBox!.height / 2))).toBeLessThan(12);
+  expect(await field.evaluate((t) => getComputedStyle(t).resize)).toBe("none");
+  const one = (await field.boundingBox())!.height;
+  await field.fill("A name that runs on.\nAnd a second line.\nAnd a third.");
+  await expect.poll(async () => (await field.boundingBox())!.height).toBeGreaterThan(one * 2);
+  // The question takes the page's font (the fixture's Georgia), Send sits inside the field.
+  expect(await q.evaluate((e) => getComputedStyle(e).fontFamily)).toContain("Georgia");
+  await expect(name.locator(".fld").getByRole("button", { name: "Send" })).toBeVisible();
+  // After answering: one line, your answer with Change and Remove.
+  await name.getByRole("button", { name: "Send" }).click();
+  await expect(name).toContainText("You said A name that runs on.");
+  const said = (await name.locator(".mine").boundingBox())!;
+  const change = (await name.getByRole("button", { name: "Change" }).boundingBox())!;
+  expect(Math.abs(said.y + said.height / 2 - (change.y + change.height / 2))).toBeLessThan(6);
+  expect((await name.locator(".box").boundingBox())!.height).toBeLessThan(80);
+});
+
+test("the author can set an ask's accent, font and rounding; the mark and tint stay", async ({ page }) => {
+  await start(page);
+  await page.addStyleTag({
+    content:
+      '[data-pipeup-id="FR-012"]{--pipeup-ask-accent:rgb(31,122,77);--pipeup-ask-font:Courier;--pipeup-ask-radius:2px}',
+  });
+  const fr = ask(page, "FR-012");
+  const box = fr.locator(".box");
+  await expect
+    .poll(() =>
+      box.evaluate((b) => {
+        const s = getComputedStyle(b);
+        const mark = getComputedStyle(b.querySelector(".q svg")!);
+        return {
+          radius: s.borderRadius,
+          font: s.fontFamily,
+          mark: mark.color,
+          tinted: s.backgroundColor !== "rgb(255, 255, 255)",
+        };
+      }),
+    )
+    .toEqual({ radius: "2px", font: "Courier", mark: "rgb(31, 122, 77)", tinted: true });
 });

@@ -143,6 +143,8 @@ export interface Ctx {
   registerDraft(box: DraftBox | null): void;
   /** All comments opens thread `id` in its panel (while the panel is open, opening a thread goes there). */
   registerList(open: ((id: string) => void) | null): void;
+  /** What the page's own code can open (§4a): Pipeup's menu and All comments. Set by the control. */
+  pageControls: { menu(): void; list(): void } | null;
   toast(message: string): void;
   /** Tells screen readers (a polite live region), once. */
   say(text: string): void;
