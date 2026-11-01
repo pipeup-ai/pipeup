@@ -50,6 +50,8 @@ const inspect = async () => {
     addons: [],
     appearance: null,
     tabbable: false,
+    pageOwned: false,
+    opensMenu: false,
     agents: document.documentElement.getAttribute("data-pipeup-agents") || "",
     viewport: Boolean(document.querySelector('meta[name="viewport"]')),
   };
@@ -76,6 +78,9 @@ const inspect = async () => {
   }
   const control = document.querySelector("pipeup-root")?.shadowRoot?.querySelector(".launch .mode");
   out.tabbable = Boolean(control) && control.tabIndex >= 0;
+  // The page has its own way to start commenting and hides Pipeup's control: something must open Pipeup's menu.
+  out.pageOwned = Boolean(document.querySelector("pipeup-root")?.shadowRoot?.querySelector(".launch.off"));
+  out.opensMenu = [...document.scripts].some((s) => /\.openMenu\s*\(/.test(s.textContent || ""));
   return out;
 };
 
@@ -219,7 +224,15 @@ export async function check({ page, widths = WIDTHS, log = () => {} }) {
             ? `${o.blocks} without data-pipeup-id: comments on them may lose their place when the page changes`
             : "",
         );
-        add(o.tabbable ? "pass" : "fail", "Pipeup's button can be reached with the keyboard");
+        if (o.pageOwned)
+          add(
+            o.opensMenu ? "pass" : "warn",
+            "Reviewers can reach Pipeup's menu",
+            o.opensMenu
+              ? ""
+              : 'Pipeup\'s control is hidden (data-pipeup-control="off") and no script on the page calls openMenu(): reviewers copy and send their comments from that menu',
+          );
+        else add(o.tabbable ? "pass" : "fail", "Pipeup's button can be reached with the keyboard");
         add(
           o.viewport ? "pass" : "warn",
           "The page suits phones",

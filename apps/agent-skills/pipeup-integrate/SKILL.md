@@ -5,7 +5,7 @@ description: Use when creating or editing an HTML document, slide deck, report, 
 
 # Add Pipeup to a page: the full reference
 
-Written for Pipeup 0.9.0 For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
+Written for Pipeup 0.9.1 For a quick "add comments to this page", [pipeup-add](https://pipeup-ai.github.io/pipeup/skills/pipeup-add/SKILL.md) is the short version; this is the full reference. This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md. Its companions: [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md), [apply](https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md).
 
 Pipeup lets people comment on an HTML page in place: select text, click any element (including
 buttons and charts) or drop a pin on a slide. Your job is to make the page *reviewable* while it
@@ -75,7 +75,7 @@ Then choose the options (see "Options" below): usually just the defaults.
    - Just before `</body>`, add the script pinned to an exact version:
 
      ```html
-     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js"
+     <script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.1/dist/pipeup.min.js"
              integrity="sha384-…" crossorigin="anonymous"></script>
      ```
 
@@ -160,7 +160,7 @@ Then choose the options (see "Options" below): usually just the defaults.
 - Don't wrap content in new elements or add classes for Pipeup.
 - Don't add inline styles, z-index changes or padding "for the comment column".
 - Don't load the script from anywhere but the pinned CDN URL
-  (`https://cdn.jsdelivr.net/npm/pipeup@0.9.0/dist/pipeup.min.js`, with the `integrity` value from
+  (`https://cdn.jsdelivr.net/npm/pipeup@0.9.1/dist/pipeup.min.js`, with the `integrity` value from
   the release notes) or a copy of that same file next to the page. Never use an unpinned URL.
 - Don't put secrets in `data-pipeup-doc`; it *is* the document's key — anyone with the file can
   read its feedback, which is the intended audience.
@@ -183,9 +183,12 @@ page opened from disk and in any script order, and they are released with Pipeup
   with `data-pipeup-id`, `data-pipeup-ask="<question>"` and `data-pipeup-ask-kind` (`agree`, `choice` with
   `data-pipeup-ask-options="One|Two"`, or none for words), and keep the question in the element's own words for anyone
   without the add-on (https://pipeup-ai.github.io/pipeup/addons/inline.html.md). Never answer a question yourself.
+  Asks are compact and take the page's font. To match the page's look, set `--pipeup-ask-accent`, `--pipeup-ask-font`
+  and `--pipeup-ask-radius` in the page's CSS (on `:root` or one ask's element); don't hide or rebuild the ask's
+  controls. Pipeup's mark and a light tint of the accent always stay, so reviewers can see where to answer.
 - **Ask first, and say in plain words what it sends and to whom** (the line above, and the add-on's README). Never
   pick a sharing service yourself: the author chooses one.
-- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.9.0/dist/share.min.js`
+- Add it as one more `<script>` after Pipeup's, pinned the same way (`https://cdn.jsdelivr.net/npm/@pipeup/share@0.9.1/dist/share.min.js`
   with its `integrity` from the release notes), or use the combined file `pipeup+share.min.js` instead of Pipeup's.
 - Sharing is set up by the author with the command line (`npx @pipeup/share create page.html --server …`), which writes
   `data-pipeup-share` into the file and prints a stop key once. **Never write `data-pipeup-share` yourself and never
@@ -247,6 +250,34 @@ page opened from disk and in any script order, and they are released with Pipeup
 - `data-pipeup-live="auto"` makes "Go live" the default, but nobody connects before they have seen the sentence
   about their network address. `data-pipeup-live-relays="wss://…,wss://…"` replaces the default meeting-point relays.
 
+## A page with its own Comment button
+
+A page can make reviewing part of its own design: a Comment button in its header instead of Pipeup's control in the
+corner. Use Pipeup's page API (the instance `Pipeup.mount()` resolves to; it returns the running one if Pipeup started
+on its own):
+
+```html
+<button id="comment" aria-pressed="false">Comment</button>
+<button id="comments">Comments</button>
+<script>
+  Pipeup.mount().then((pu) => {
+    const comment = document.getElementById("comment");
+    comment.addEventListener("click", () => pu.setCommentMode(!pu.commentMode));
+    // Heard however comment mode changed: this button, the shortcut, Esc or Pipeup's own control.
+    pu.on("change", (s) => comment.setAttribute("aria-pressed", String(s.commentMode)));
+    document.getElementById("comments").addEventListener("click", () => pu.openMenu());
+  });
+</script>
+```
+
+- `pu.setCommentMode(on)`, `pu.commentMode` and `pu.on("change", fn)` start and stop comment mode and follow it.
+- `pu.openMenu()` opens Pipeup's menu (All comments, Copy comments, Hide comments, the add-ons' rows) and
+  `pu.openAllComments()` opens All comments. What the menu holds is Pipeup's: a page can't remove a row.
+- `data-pipeup-control="off"` on `<html>` hides Pipeup's control. Only do this when the page gives reviewers its own
+  way to the menu, because copying and sending comments live there; `pipeup check` warns if nothing calls
+  `openMenu()`. The shortcut keeps working.
+- Change the reviewer's note to match: name your button instead of "the comment button in the bottom-right corner".
+
 ## Options
 
 Markup on the page:
@@ -259,6 +290,7 @@ Markup on the page:
 | `data-pipeup-addons` | `<html>` | Which add-ons may run, by id (`share,voice`; `none` for none). Without it every add-on runs. Keep every entry; add yours. |
 | `data-pipeup-layout="column"` / `"bubbles"` | `<html>` | Force where comments show (column or bubbles). Pipeup reads it and never sets it. |
 | `data-pipeup-auto="off"` | `<html>` | Don't start automatically; the page calls `Pipeup.mount()` itself. |
+| `data-pipeup-control="off"` | `<html>` | Hide Pipeup's control, for a page with its own Comment button that opens Pipeup's menu (see "A page with its own Comment button"). |
 | `data-pipeup-edition` | `<html>` | The edition the page shows (a daily briefing in one shell); set it again when the next is swapped in. Comments stay with their edition. |
 | `data-pipeup-id` | any block | Stable identity so comments stay attached (Step 3). |
 | `data-pipeup-label` | charts, images, icons | The name reviewers and AI tools see (Step 4). |

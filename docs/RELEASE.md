@@ -67,7 +67,9 @@ format may still change; the README says the project is in alpha until 1.0.
 3. **Tag the merge commit** on `main` and push the tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. The
    Release workflow re-runs the full check, publishes to npm through trusted publishing (with
    provenance), and creates the GitHub Release with the CHANGELOG notes, install lines and SRI hash. If
-   the check fails, nothing is published. When it succeeds, the Pages workflow deploys the site, so the
+   the check fails, nothing is published. Two more checks run before anything is published: every package must
+   already exist on npm (see *A new add-on* below), and for a stable release `apps/site/updates.json` must give
+   the hash of the file the workflow just built. When it succeeds, the Pages workflow deploys the site, so the
    site never points at a version npm doesn't have yet.
    - **Publish the update list** (the `updates` add-on and `pipeup check` read it): keep `docs/advisories.json` current
      (a `security` advisory names the affected versions and the fix), then, last of all, build the release commit
@@ -110,6 +112,14 @@ The stable site, `npm i pipeup` and the stable CDN address are untouched
 **A stable fix during a pre-release cycle:** branch from `main`, release `X.Y.(Z+1)` as a normal stable
 version, then merge `main` into `next`.
 
+## A new add-on
+
+Add its folder to the workspaces in `libs/ts/addons/package.json`: the release, `tools/set-version.sh`, the SRI
+lines and the site build read the list of add-ons from there (`node tools/addons.mjs`). `node tools/addons.mjs
+--check`, part of the add-ons' `npm run check`, fails until the site's SRI map (`apps/site/addons.js`) and the Add-ons
+page's cards (`apps/site/addons/catalog.json`) name it too. Then, well before the release, put its name on npm with
+`tools/first-publish.sh <add-on>` and add the trusted publisher it names: the release checks for both.
+
 ## Website-only updates
 
 Site and doc changes for the current stable version ship without a new library version:
@@ -135,6 +145,8 @@ and the site to catch up, and exits non-zero on any failure. By hand:
 
 | Symptom | Cause and fix |
 |---|---|
+| Release fails at *Check every package can be published* | A package has never been published, and npm doesn't let trusted publishing create one. Run `tools/first-publish.sh <add-on>` (it publishes an empty 0.0.0 placeholder that nobody installs), add the trusted publisher it names, then `gh workflow run release.yml -f tag=vX.Y.Z`. Nothing was published, so nothing is half done. |
+| Release fails at *Check the update list gives this build's hash* | `apps/site/updates.json` was made from a different build. Build the release commit, remake and sign the list, merge that into `main`, move the tag to the new merge commit (nothing was published yet) and push it again. |
 | Release fails at *Publish to npm* or *Publish the add-ons* with `EOTP`, `ENEEDAUTH` or a `404` on the `PUT` | The trusted publisher on npm doesn't match (org, repo, workflow file name) or doesn't allow `npm publish`. Fix it on npm, then finish the release without a new tag: `gh workflow run release.yml -f tag=vX.Y.Z` (packages already on npm and an existing GitHub Release are skipped; "Re-run failed jobs" can't be used when the first package was already published). |
 | Release fails at the tag check | The tag doesn't match `package.json`. Delete the tag on GitHub and locally, fix the version in a pull request, tag again. |
 | Release fails at *Release notes* | No CHANGELOG section for the version. |
@@ -168,3 +180,4 @@ tests and docs are fictional; there are no personal names or addresses.
 - 2026-10-07 — GitHub is the project's only home: development, pull requests and releases happen here; the private repository and its sync script are retired. Stable work and website changes go into `main`, milestone work and pre-releases into `next`; releases are tagged on the merged commit.
 - 2026-10-12 — Roadmap renumbered: 0.6 shipped agents (reading and answering comments, the live link, the skills installer) and the first commands of the command line; touch and the drawer move to 0.7, `init`, `check` and `read` to 0.8.
 - 2026-11-01 — The update list is made last, from a fresh build of the release commit, and the smoke check confirms the live list gives the notes' hash.
+- 2026-11-01 — Release safeguards: one list of add-ons (`tools/addons.mjs`), `tools/first-publish.sh` for a new package's name, and the release checks every package exists and the update list's hash before publishing anything.
