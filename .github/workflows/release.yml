@@ -55,11 +55,14 @@ jobs:
       # The add-ons and the mailbox server are released with the core, at the same version, from the same tag.
       - name: Check and build the add-ons
         run: |
-          for pkg in ../addons ../addons/kit ../addons/share ../addons/voice ../addons/live ../addons/assist ../addons/agents ../addons/emoji ../addons/github ../addons/updates ../addons/inbox ../addons/identity ../addons/inline ../../../services/mailbox; do
+          # The one list of published add-ons (tools/addons.mjs), for this step and the ones after it.
+          ids="$(node ../../../tools/addons.mjs)"
+          echo "ADDONS=$ids" >> "$GITHUB_ENV"
+          for pkg in ../addons ../addons/kit $(for id in $ids; do echo "../addons/$id"; done) ../../../services/mailbox; do
             v="$(node -p "require('$pkg/package.json').version")"
             if [ "$v" != "$VERSION" ]; then echo "::error::$pkg is at $v, not $VERSION"; exit 1; fi
           done
-          for id in share voice live assist agents emoji github updates inbox identity inline; do
+          for id in $ids; do
             p="$(node -p "require('../addons/$id/package.json').peerDependencies.pipeup")"
             if [ "$p" != "$VERSION" ]; then echo "::error::@pipeup/$id needs pipeup $p, not $VERSION"; exit 1; fi
           done
@@ -67,6 +70,33 @@ jobs:
           (cd ../../../services/mailbox && npm test)
           node ../addons/scripts/sri.mjs > "$RUNNER_TEMP/addons-sri.txt"
           cat "$RUNNER_TEMP/addons-sri.txt"
+
+      # Checked before anything is published, so a release can't stop part way through.
+      - name: Check every package can be published
+        run: |
+          missing=0
+          for dir in . $(for id in $ADDONS; do echo "../addons/$id"; done) ../../../services/mailbox; do
+            name="$(node -p "require('$dir/package.json').name")"
+            if ! npm view "$name" name >/dev/null 2>&1; then
+              echo "::error::$name has never been published. npm only lets this workflow publish a package that exists: publish it once by hand (tools/first-publish.sh), add this workflow as its trusted publisher, then tag again."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Check the update list gives this build's hash
+        run: |
+          case "$VERSION" in *-*) echo "A pre-release doesn't change the update list"; exit 0 ;; esac
+          built="sha384-$(openssl dgst -sha384 -binary dist/pipeup.min.js | base64 -w0)"
+          node -e '
+            const [v, built] = process.argv.slice(1);
+            const list = require("../../../apps/site/updates.json");
+            const listed = list.versions?.[v]?.integrity;
+            if (list.latest !== v || listed !== built) {
+              console.log(`::error::apps/site/updates.json gives ${list.latest} with ${listed}; this build of ${v} is ${built}. Build the release commit, then remake and sign the list (docs/RELEASE.md).`);
+              process.exit(1);
+            }
+          ' "$VERSION" "$built"
 
       - name: Release notes (CHANGELOG section and SRI)
         run: |
@@ -98,7 +128,7 @@ jobs:
             echo "## Add-ons"
             echo
             echo '```sh'
-            echo "npm i @pipeup/share@$VERSION @pipeup/voice@$VERSION @pipeup/live@$VERSION @pipeup/assist@$VERSION @pipeup/agents@$VERSION @pipeup/emoji@$VERSION @pipeup/github@$VERSION @pipeup/updates@$VERSION @pipeup/inbox@$VERSION @pipeup/identity@$VERSION @pipeup/inline@$VERSION"
+            echo "npm i$(for id in $ADDONS; do printf ' @pipeup/%s@%s' "$id" "$VERSION"; done)"
             echo '```'
             echo
             cat "$RUNNER_TEMP/addons-sri.txt"
@@ -122,7 +152,7 @@ jobs:
         run: |
           tag=latest
           case "$VERSION" in *-*) tag=next ;; esac
-          for dir in ../addons/share ../addons/voice ../addons/live ../addons/assist ../addons/agents ../addons/emoji ../addons/github ../addons/updates ../addons/inbox ../addons/identity ../addons/inline ../../../services/mailbox; do
+          for dir in $(for id in $ADDONS; do echo "../addons/$id"; done) ../../../services/mailbox; do
             (
               cd "$dir"
               name="$(node -p 'require("./package.json").name')"

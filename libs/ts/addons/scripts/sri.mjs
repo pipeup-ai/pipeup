@@ -1,21 +1,10 @@
 // Prints one SRI line per built classic file (the add-ons and their combined files), for the release notes.
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
+import { addons } from "../../../../tools/addons.mjs";
 
 const here = new URL("../", import.meta.url).pathname;
-for (const id of [
-  "share",
-  "voice",
-  "live",
-  "assist",
-  "agents",
-  "emoji",
-  "github",
-  "updates",
-  "inbox",
-  "identity",
-  "inline",
-]) {
+for (const id of addons()) {
   for (const f of [`${id}.min.js`, `pipeup+${id}.min.js`]) {
     const path = `${here}${id}/dist/${f}`;
     if (!existsSync(path)) continue;
