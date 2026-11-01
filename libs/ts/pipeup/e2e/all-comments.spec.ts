@@ -20,21 +20,42 @@ import {
 const count = (page: Page) => page.locator(".launch .mode .cnt");
 const list = (page: Page) => page.locator(".all.show");
 
-/** The count's opacity every frame for `ms`: easing shows values between 0 and 1, a snap shows none. */
-async function sampleOpacity(page: Page, start: () => Promise<unknown>, ms = 600): Promise<number[]> {
+/**
+ * The count's opacity a quarter, half and three quarters of the way through the transition `start` sets off, read
+ * by seeking it there (then back), so a slow or busy machine can't miss it between frames: easing shows values
+ * between 0 and 1, a snap (no transition) shows none. Resolves once the transition has ended.
+ */
+async function sampleOpacity(page: Page, start: () => Promise<unknown>): Promise<number[]> {
   await page.evaluate(() => {
     const w = window as any;
     const el = document.querySelector("pipeup-root")!.shadowRoot!.querySelector(".launch .mode .cnt")!;
     w.__op = [];
-    const t0 = performance.now();
-    const tick = () => {
-      w.__op.push(Number(getComputedStyle(el).opacity));
-      if (performance.now() - t0 < 900) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
+    w.__opDone = false;
+    el.addEventListener("transitionrun", function run(e) {
+      if (e.target !== el || (e as TransitionEvent).propertyName !== "opacity") return;
+      el.removeEventListener("transitionrun", run);
+      const a = el
+        .getAnimations()
+        .find((a) => a instanceof CSSTransition && a.transitionProperty === "opacity");
+      if (!a) return void (w.__opDone = true);
+      const d = Number(a.effect!.getComputedTiming().duration);
+      const was = a.currentTime;
+      for (const f of [0.25, 0.5, 0.75]) {
+        a.currentTime = d * f;
+        w.__op.push(Number(getComputedStyle(el).opacity));
+      }
+      a.currentTime = was ?? 0;
+      a.finished.then(
+        () => (w.__opDone = true),
+        () => (w.__opDone = true),
+      );
+    });
   });
   await start();
-  await page.waitForTimeout(ms);
+  // No transition at all (a snap) never ends one: the empty sample then fails the test.
+  await page
+    .waitForFunction(() => (window as any).__opDone === true, null, { timeout: 5000 })
+    .catch(() => {});
   return page.evaluate(() => (window as any).__op as number[]);
 }
 
