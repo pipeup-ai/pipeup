@@ -98,6 +98,18 @@ export async function settled(locator: Locator): Promise<void> {
     .toBe(0);
 }
 
+/**
+ * A locator's box, once it has one. Views rebuild their buttons when they render, so the element found can be
+ * replaced before it is measured (a detached element has no box): measure again until one is in the page.
+ */
+export async function boxOf(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  let box: Awaited<ReturnType<Locator["boundingBox"]>> = null;
+  await expect.poll(async () => (box = await locator.boundingBox())).not.toBeNull();
+  return box!;
+}
+
 /** What has keyboard focus inside Pipeup's shadow root (empty strings when nothing does). */
 export async function focusInPipeup(
   page: Page,
