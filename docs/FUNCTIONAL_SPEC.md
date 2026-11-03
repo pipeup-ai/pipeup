@@ -461,8 +461,9 @@ any of them off.
   - In comment mode the glass turns the accent colour.
   - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
     add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
-    leaves, and while the menu is open. The reach ends with **⋯**, which opens the menu. The control itself never
-    moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
+    leaves, and while the menu is open. **⋯**, which opens the menu, eases in **right beside the comment bubble**, between
+    it and the words, so however far the reach goes it always appears in the same place and a click aimed at it never
+    misses. The control itself never moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
     commenting.
 - **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
@@ -475,7 +476,7 @@ any of them off.
   until the menu has closed, then shows for its usual time.
 - **Clicking or tapping it turns comment mode on**, and doing it again turns it off. Comment mode's hint says how
   to stop.
-- **Its menu** opens from the **⋯** at the end of its reach; by touch, from pressing and holding the control (the
+- **Its menu** opens from the **⋯** beside the bubble; by touch, from pressing and holding the control (the
   first time comment mode starts by touch, its hint says so); and from the keyboard, with ↑ or the menu key on the
   focused control. All comments is in the menu. The menu rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
@@ -2040,3 +2041,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
 - 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.
 - 2026-11-01 — Asks are compact (one line for a question and its buttons where it fits, one line after answering); their field looks like a field, grows on its own and has no resize handle; an ask takes the page's font, and the author can set its accent, font and rounding while Pipeup's mark and tint stay (§11b). A page with its own way to start commenting can hide Pipeup's comment control and open Pipeup's menu and All comments from its code (§4a). Visual spec: docs/design/compact-asks.html.
+- 2026-11-03 — When the comment control is pointed at, its ⋯ eases in right beside the comment bubble instead of at the far end of the reach, where longer words could push it away from a click (section 5).

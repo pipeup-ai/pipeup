@@ -12,7 +12,7 @@ test("one click on the control starts comment mode, and another stops it", async
   await commenting(page, false);
 });
 
-test("⋯ at the end of the control's reach opens the menu", async ({ page }) => {
+test("⋯ beside the bubble opens the menu", async ({ page }) => {
   await open(page, "doc.html");
   await control(page).hover();
   await moreButton(page).click();

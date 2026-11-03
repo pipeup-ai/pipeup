@@ -59,13 +59,13 @@ export function createLauncher(ctx: Ctx): View {
     { class: "ttip", "aria-hidden": "true" },
     h("span", {}, tipWords, h("small", {}, SHORTCUT_LABEL)),
   );
-  // One click on the control starts or stops comment mode; ⋯ at the end of its reach opens the menu.
+  // One click on the control starts or stops comment mode; ⋯ just left of it, shown when pointed at, opens the menu.
   const dots = h(
     "button",
     { class: "mm", type: "button", "aria-label": "More", "aria-haspopup": "menu", "aria-expanded": "false" },
     icon("more", 15, 3),
   );
-  const launch = h("div", { class: "launch" }, btn, tip, dots);
+  const launch = h("div", { class: "launch" }, btn, dots, tip);
   // The page has its own way to start commenting (§4a): Pipeup's control steps aside; its menu and panel stay.
   const pageOwned = setting("data-pipeup-control") === "off";
   if (pageOwned) launch.classList.add("off");
