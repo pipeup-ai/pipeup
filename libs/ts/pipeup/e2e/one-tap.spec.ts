@@ -12,9 +12,9 @@ test("one click on the control starts comment mode, and another stops it", async
   await commenting(page, false);
 });
 
-test("⋯ to the right of the control opens the menu", async ({ page }) => {
+test("⋯ beside the bubble opens the menu", async ({ page }) => {
   await open(page, "doc.html");
-  // It is there before the control is pointed at, so a click straight at it opens the menu.
+  await control(page).hover();
   await moreButton(page).click();
   await expect(page.locator(".menu.show")).toHaveCount(1);
   await expect(page.getByRole("menuitem", { name: /All comments/ })).toBeVisible();

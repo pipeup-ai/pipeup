@@ -229,8 +229,8 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .namebar .nb.on{background:var(--as);color:var(--pu-accent)}
 .namebar .nb[hidden]{display:none}
 
-/* The comment control: a small square of frosted glass tucked into the page's corner (bottom, its top left rounded),
-with the open count inside a comment bubble and ⋯ to its right, flush with the window's edge. Pointed at, it reaches left just far enough to show
+/* The comment control: a small square of frosted glass tucked into the page's corner (flush right and bottom, its
+top left rounded), with the open count inside a comment bubble. Pointed at, it reaches left just far enough to show
 its shortcut (and anything add-ons say). Its layers and numbers cross-fade in place. */
 .launch{position:fixed;right:0;bottom:var(--pu-lift);display:flex;flex-direction:row-reverse;align-items:center;border-top-left-radius:10px;pointer-events:auto;transform-origin:100% 100%;
 background:color-mix(in srgb,var(--su) 62%,transparent);-webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5);
@@ -266,11 +266,16 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
 .launch:has(.mm[aria-expanded=true]) .ttip{grid-template-columns:minmax(0,0fr);opacity:0}
-/* ⋯ opens the menu: always shown, right of the bubble, so nothing moves under the pointer and a click finds it. */
-.launch .mm{display:grid;place-items:center;align-self:stretch;width:18px;border-radius:0;color:inherit;opacity:.7;transition:opacity .2s var(--eo),background-color .2s var(--eo)}
-.launch .mm:hover,.launch .mm[aria-expanded=true]{opacity:1;background:color-mix(in srgb,currentColor 12%,transparent)}
+/* ⋯ opens the menu: just left of the bubble, so however far the reach goes it eases in at the same place, beside the
+bubble, which never moves. It folds with the reach, and opens with it on hover or keyboard focus. */
+.launch .mm{display:grid;place-items:center;width:0;height:24px;margin-left:0;border-radius:6px;overflow:hidden;opacity:0;color:inherit;transition:width var(--out) var(--ei),margin var(--out) var(--ei),opacity var(--out) var(--ei),background-color .2s var(--eo)}
+.launch:is(:hover,:has(.mm:focus-visible)) .mm{width:26px;margin-left:4px;opacity:1;transition:width var(--mv) var(--eo) .4s,margin var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s,background-color .2s var(--eo)}
+.launch:has(.mm:focus-visible) .mm{transition-delay:0s}
+.launch .mm:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
 .launch .mm:focus-visible{outline:2px solid var(--pu-accent);outline-offset:-2px}
+.launch:has(.mm[aria-expanded=true]) .mm{width:0;margin-left:0;opacity:0}
 .launch .mode{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.launch:has(.mm:focus-visible) .ttip{grid-template-columns:minmax(0,1fr);opacity:1}
 @media (hover:none){.ttip,.tt,.cd>.thread .acts,.launch .mm{display:none}}
 .menu{--b:calc(40px + var(--pu-lift));position:fixed;right:8px;bottom:var(--b);width:290px;border-radius:12px;padding:4px;pointer-events:none;opacity:0;transform:translateY(6px);
 transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
@@ -379,7 +384,7 @@ transition:transform var(--out) var(--ei),opacity var(--out) var(--ei)}
 .sec b{margin-left:6px;font-weight:500;color:var(--pu-accent)}
 /* Messages sit beside the comment control, never over the page's own bottom bar; beside the panel while it is open,
 and above its footer when it fills the screen. */
-.toast{--r:58px;position:fixed;right:var(--r);bottom:calc(4px + var(--pu-lift));max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
+.toast{--r:40px;position:fixed;right:var(--r);bottom:calc(4px + var(--pu-lift));max-width:min(320px,calc(100vw - var(--r) - 16px));border-radius:10px;padding:8px 14px;font-size:13px;opacity:0;transform:translateY(6px);transition:.3s var(--eo)}
 .toast.show{opacity:1;transform:none}
 /* While All comments is open, messages sit inside the panel above its footer, on top of it: never over the page,
 nor a deck's own controls in the space beside it. */

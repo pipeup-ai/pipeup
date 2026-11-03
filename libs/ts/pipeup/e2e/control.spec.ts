@@ -14,23 +14,21 @@ import {
 
 const panel = (page: Page) => page.locator(".all.show");
 
-test("the control is one small square tucked into the corner, ⋯ to its right at the window's edge, the number inside it", async ({
+test("the control is one small square tucked into the corner, flush with the window's edges, the number inside it", async ({
   page,
 }) => {
   await open(page, "site.html");
   await expect(page.locator(".launch .opts, .launch .count, .launch .lbl")).toHaveCount(0);
-  // The control, and ⋯ for the menu, always shown to its right so a click never misses it.
+  // The control, and ⋯ for the menu, folded away until the control is pointed at.
   await expect(page.locator(".launch button")).toHaveCount(2);
+  await expect(page.locator(".launch .mm")).toHaveCSS("opacity", "0");
   await settled(page.locator(".launch"));
   const empty = (await control(page).boundingBox())!;
   expect(empty.width).toBe(32);
   expect(Math.abs(empty.width - empty.height)).toBeLessThan(1);
-  const dots = (await page.locator(".launch .mm").boundingBox())!;
-  expect(dots.x).toBe(empty.x + empty.width);
-  expect(dots.height).toBe(empty.height);
   // Flush right and bottom, with no border; frosted glass behind it.
   const vp = page.viewportSize()!;
-  expect(dots.x + dots.width).toBe(vp.width);
+  expect(empty.x + empty.width).toBe(vp.width);
   expect(empty.y + empty.height).toBe(vp.height);
   const look = await page.locator(".launch").evaluate((e) => ({
     border: getComputedStyle(e).borderTopWidth,
@@ -83,25 +81,30 @@ test("the number cross-fades when it changes, and shows 9+ above 9, with the exa
   await expect(page.locator(".launch .ttip")).toContainText("10 open");
 });
 
-test("pointed at, the control reaches left just far enough to show its shortcut, after a short delay, and nothing moves", async ({
+test("pointed at, the control reaches left just far enough to show ⋯ beside the bubble and its shortcut, after a short delay, and stays put", async ({
   page,
 }) => {
   await open(page, "site.html");
   const tip = page.locator(".launch .ttip");
   await expect(tip).toHaveCSS("opacity", "0");
   const before = (await control(page).boundingBox())!;
-  const dotsBefore = (await page.locator(".launch .mm").boundingBox())!;
-  const tabBefore = (await page.locator(".launch").boundingBox())!;
   await control(page).hover();
   await expect(tip).toHaveCSS("opacity", "1");
   await expect(tip).toHaveText(/^(⇧⌥C|Shift\+Alt\+C)$/);
   await settled(page.locator(".launch .ttip"));
-  // It grows to the left only, and only by the keys (their width, whatever the platform calls them).
+  await expect(page.locator(".launch .mm")).toHaveCSS("opacity", "1");
+  await settled(page.locator(".launch .mm"));
+  // It grows to the left only, and only by the keys (their width, whatever the platform calls them) and ⋯.
   const tab = (await page.locator(".launch").boundingBox())!;
-  expect(tab.x + tab.width).toBe(tabBefore.x + tabBefore.width);
+  expect(tab.x + tab.width).toBe(before.x + before.width);
   const words = await tip.locator("> span").evaluate((e) => e.scrollWidth);
-  expect(Math.abs(tab.width - tabBefore.width - words)).toBeLessThan(1.5);
-  expect((await page.locator(".launch .mm").boundingBox())!).toEqual(dotsBefore);
+  const more = await page
+    .locator(".launch .mm")
+    .evaluate((e) => (e as HTMLElement).offsetWidth + parseFloat(getComputedStyle(e).marginLeft));
+  expect(Math.abs(tab.width - before.width - words - more)).toBeLessThan(1.5);
+  // ⋯ sits right beside the bubble, so the words, however long, never push it away from a click.
+  const dots = (await page.locator(".launch .mm").boundingBox())!;
+  expect(dots.x + dots.width).toBe(before.x);
   expect(await tip.evaluate((e) => parseFloat(getComputedStyle(e).transitionDelay))).toBeGreaterThan(0);
   await settled(page.locator(".launch"));
   expect((await control(page).boundingBox())!).toEqual(before);

@@ -138,11 +138,11 @@ export const control = (page: Page): Locator => page.locator(".launch .mode");
 /** Comment mode is on: the control shows it. */
 const isCommenting = (page: Page) => control(page).evaluate((b) => b.classList.contains("on"));
 
-/** The ⋯ to the right of the control, which opens its menu. */
+/** The ⋯ just left of the control, shown when it is pointed at, which opens its menu. */
 export const moreButton = (page: Page): Locator => page.locator(".launch .mm");
 
 /**
- * Opens the comment control's menu: ⋯ to the right of the control, or the panel footer's ⋯ while
+ * Opens the comment control's menu: ⋯ just left of the control (pointed at), or the panel footer's ⋯ while
  * All comments is open.
  */
 export async function openMenu(page: Page): Promise<void> {

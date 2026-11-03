@@ -241,8 +241,8 @@ test("a dialog centred with a transform never holds Pipeup inside its own box: P
   await expect(page.locator("#moved")).toBeVisible();
   await page.waitForTimeout(300);
   expect(await home(page)).toBe("HTML");
-  // The comment control (with ⋯ at its right) is still in the window's corner, not the dialog's.
-  const c = (await page.locator(".launch").boundingBox())!;
+  // The comment control is still in the window's corner, not the dialog's.
+  const c = (await control(page).boundingBox())!;
   const vp = page.viewportSize()!;
   expect(c.x + c.width).toBeGreaterThan(vp.width - 2);
   expect(c.y + c.height).toBeGreaterThan(vp.height - 2);

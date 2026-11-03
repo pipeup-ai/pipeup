@@ -11,9 +11,8 @@ change the API and the stored comment format.
 
 - **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
   how it began, so holding Space during it handed the page a click meant for Pipeup.
-- **⋯ stays where a click finds it.** The comment control's ⋯ is always shown, right of the comment bubble, instead
-  of appearing at the far end of the control's reach, where longer words (such as an add-on's status) pushed it
-  away as the pointer arrived.
+- **⋯ stays where a click finds it.** Pointed at, the comment control shows its ⋯ right beside the comment bubble
+  instead of at the far end of its reach, where longer words (such as an add-on's status) pushed it away.
 
 ## [0.9.1] - 2026-11-01
 
