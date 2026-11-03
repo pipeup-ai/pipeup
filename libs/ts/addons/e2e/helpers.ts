@@ -25,7 +25,7 @@ export async function mount(page: Page, options: Record<string, unknown> = {}): 
 }
 
 export async function openMenu(page: Page): Promise<void> {
-  // A click on the control starts or stops comment mode; the menu is ⋯ at the end of its reach, or the footer's ⋯
+  // A click on the control starts or stops comment mode; the menu is ⋯ to the right of it, or the footer's ⋯
   // while All comments is open.
   if ((await page.locator(".all.show").count()) > 0)
     await page.locator(".all.show .pf").getByRole("button", { name: "More" }).click();
