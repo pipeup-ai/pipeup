@@ -39,6 +39,10 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - In the browser, **by the extension**, by page address. The site can't read or remove them, and the extension writes
   nothing into the site's own storage.
 - **Comments you've made** lists every page the reviewer has commented on, newest first, and opens any of them.
+- When a comment is made, the extension keeps a **small picture of where it was**, in that browser only. A Lost comment
+  (functional spec §8) shows it to the reviewer who made it, marked "only in this browser". The picture is never sent
+  with the comment, shared or copied for AI. Pictures are on by default; the reviewer can turn them off, which also
+  removes the ones kept.
 - A page's scripts can't reach the extension's Pipeup. Agents get comments as they do today: Copy for AI, Share, or the
   agents' mailbox.
 
@@ -59,3 +63,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — First version. Agreed with the maintainer: comments are kept by the extension, by page address; a
   page's scripts can't reach the extension's Pipeup; Chrome, Edge and Firefox first, Safari after; stable releases only
   in stores at first.
+- 2026-11-09 — A small picture of where each comment was made, in that browser only, shown on a Lost comment to the reviewer who made it (§5; visual spec docs/design/refind-comments.html). On by default.
