@@ -173,10 +173,31 @@ function editBox(c) {
   );
 }
 
+const KIND_WORDS = {
+  h: "a heading",
+  p: "a paragraph",
+  img: "a picture",
+  button: "a button",
+  link: "a link",
+  field: "a field",
+  media: "a video",
+  box: "a box",
+};
+
+/** What a thread is on, in words: its words where it has some, else what the thing is and what it's called. */
+function placeOf(t, lost) {
+  const a = t.anchor;
+  const words = (a.quote?.exact || a.snapshot || "").trim();
+  const thing = [KIND_WORDS[a.kind] ?? "", a.name ?? ""].filter(Boolean).join(" · ");
+  const said = words
+    ? `“${clip(words, lost ? 70 : 80)}”`
+    : thing || (t.where ?? "").split(" › ").pop() || "this page";
+  return lost ? `No longer on the page · ${said}` : `On ${said}`;
+}
+
 /** A thread: its place, its first comment, and, open, its replies, a reply box and Resolve. */
 function thread(t, now) {
   const open = t.id === openId;
-  const place = t.anchor.quote?.exact || t.anchor.snapshot || "";
   const lost = (t.where ?? "").startsWith("No longer on the page");
   const card = el("li", {
     className: `card${open ? " open" : ""}${t.resolved ? " resolved" : ""}`,
@@ -185,15 +206,21 @@ function thread(t, now) {
   const headline = el(
     "button",
     { type: "button", className: "head", ariaExpanded: String(open) },
-    el("span", {
-      className: "on",
-      textContent: lost ? `No longer on the page · “${clip(place, 70)}”` : `On “${clip(place, 80)}”`,
-    }),
+    el("span", { className: "on", textContent: placeOf(t, lost) }),
   );
-  headline.addEventListener("click", () => {
+  const toggle = () => {
     openId = open ? null : t.id;
     draw();
     if (!open && !lost) void ask("go", { id: t.id }).catch(() => {});
+  };
+  headline.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggle();
+  });
+  // The whole card opens it, except its own buttons, fields and selected words.
+  card.addEventListener("click", (e) => {
+    if (e.target.closest("button,textarea,input,a") || getSelection()?.toString()) return;
+    toggle();
   });
   card.append(headline, comment(t.root, now));
   const replies = t.root.replies.filter((r) => !r.deleted);

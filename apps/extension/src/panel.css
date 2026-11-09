@@ -82,6 +82,12 @@ body {
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
+.card:not(.open) {
+  cursor: pointer;
+}
+.card:not(.open):hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
 .card.open {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent);

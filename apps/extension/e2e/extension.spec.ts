@@ -5,14 +5,14 @@ import type { Page } from "@playwright/test";
  * Comment mode, a click on the paragraph, the words and Comment: as a reviewer writes one with the extension. The box
  * opens on the page, beside the paragraph, with the cursor in it.
  */
-async function writeComment(page: Page, text: string): Promise<void> {
+async function writeComment(page: Page, text: string, on = "#p1"): Promise<void> {
   await page.bringToFront();
   // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
   await expect(page.locator(".launch")).toBeAttached();
   if ((await page.locator(".launch .mode.on").count()) === 0) await page.keyboard.press("Shift+Alt+KeyC");
   await expect(page.locator(".launch .mode.on")).toBeAttached();
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
-  const at = (await page.locator("#p1").boundingBox())!;
+  const at = (await page.locator(on).boundingBox())!;
   await page.mouse.click(at.x + 20, at.y + at.height / 2);
   const box = page.locator(".draft textarea");
   await expect(box).toBeFocused();
@@ -309,4 +309,26 @@ test("after the extension is reloaded or updated, the old Pipeup takes itself of
   await expect(page.locator("pipeup-root")).toHaveCount(1);
   await worker.evaluate(() => chrome.runtime.reload()).catch(() => {});
   await expect(page.locator("pipeup-root")).toHaveCount(0, { timeout: 5000 });
+});
+
+test("in the side panel, a whole card opens its thread, and a comment on a picture says what it's on", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await (
+    await panel(context, worker, id, page)
+  )
+    .getByRole("button", { name: "Comment on this page" })
+    .click();
+  await writeComment(page, "Make the logo bigger?", "#logo");
+  const side = await sidePanel(context, worker, id, page);
+  const card = side.locator(".card", { hasText: "Make the logo bigger?" });
+  await expect(card).toContainText("On a picture · Lumen logo");
+  // A click on the card's words, not only its first line, opens it.
+  await card.getByText("Make the logo bigger?").click();
+  await expect(side.locator(".card.open")).toContainText("Make the logo bigger?");
+  await expect(side.locator(".card.open").getByRole("textbox", { name: "Reply" })).toBeVisible();
 });

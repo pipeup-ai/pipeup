@@ -35,8 +35,10 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
     width. **Comments** in the toolbar panel opens the side panel with every comment.
   - **Pinned**: the side panel stays beside the page. A thread opened on the page, or just written, shows there.
   - The side panel lists every comment with **@ For you** and **✓ Resolved**; each thread has its replies, **Reply**,
-    **✓ Resolve** (or **Reopen**), and **Edit** and **Delete** on your own comments. Opening a thread there goes to its
-    place on the page (unpinned, its popover opens there too).
+    **✓ Resolve** (or **Reopen**), and **Edit** and **Delete** on your own comments. Each says what it's on: its words,
+    or, for something without words, what it is and what it's called ("On a picture · Lumen logo"). A click anywhere on
+    a thread opens it and goes to its place on the page, which is marked (unpinned, its popover opens there too). The
+    line Pipeup draws from a comment to its place can't cross from the side panel into the page.
   - The pin is in the side panel's header and in the toolbar panel (**Keep comments beside the page**); the choice is
     kept for every site. Unpinning closes the side panel, and closing it unpins.
 - When the extension adds Pipeup, **Pipeup's corner button is hidden**. A setting, **Show Pipeup's button on pages** (off
@@ -88,3 +90,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — Pipeup in the browser, not on the page (visual spec docs/design/extension-native-ui.html): the toolbar panel is Pipeup's whole menu, and the comments (the list, threads, replies and the new-comment box) are in the browser's side panel; the page keeps only highlights, pins and comment mode's outline. Reactions, mentions and add-ons' rows aren't in the extension's panels yet.
 - 2026-11-09 — Write where you point; pin the comments (visual spec docs/design/extension-pin.html): a new comment's box opens on the page with the cursor in it; comments are pinned in the side panel or, by default, open as popovers on the page.
 - 2026-11-09 — After the extension is reloaded or updated, Pipeup on open pages takes itself off them.
+- 2026-11-09 — Side panel: a click anywhere on a thread opens it; a thread on something without words says what it is and its name.
