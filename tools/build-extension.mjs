@@ -21,7 +21,8 @@ if (!existsSync(pipeup)) {
 }
 const { version } = JSON.parse(readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"));
 // Stores take only numbers: a pre-release (0.10.0-beta.1) can't be packed for them.
-if (!/^\d+\.\d+\.\d+$/.test(version)) console.warn(`build-extension: ${version} is a pre-release; the stores won't take it`);
+if (!/^\d+\.\d+\.\d+$/.test(version))
+  console.warn(`build-extension: ${version} is a pre-release; the stores won't take it`);
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(`${out}/pipeup`, { recursive: true });
@@ -37,7 +38,8 @@ for (const size of [16, 32, 48, 128]) writeFileSync(`${out}/icons/${size}.png`, 
 // The file inside is the release's file, byte for byte: the same hash as on npm.
 const sri = (b) => `sha384-${createHash("sha384").update(b).digest("base64")}`;
 const inside = sri(readFileSync(`${out}/pipeup/pipeup.esm.js`));
-if (inside !== sri(readFileSync(pipeup))) throw new Error("build-extension: Pipeup's file changed while packing");
+if (inside !== sri(readFileSync(pipeup)))
+  throw new Error("build-extension: Pipeup's file changed while packing");
 const zip = `${root}apps/extension/dist/pipeup-extension-${version}-chromium.zip`;
 rmSync(zip, { force: true });
 execFileSync("zip", ["-qr", zip, "."], { cwd: out });
