@@ -32,6 +32,10 @@ cpSync(pipeup, `${out}/pipeup/pipeup.esm.js`);
 const manifest = JSON.parse(readFileSync(`${src}/manifest.json`, "utf8"));
 manifest.version = version.replace(/-.*/, "");
 manifest.version_name = version;
+// The source manifest serves every browser; Chrome and Edge warn about Firefox's own keys, so their build leaves them out.
+delete manifest.sidebar_action;
+delete manifest.browser_specific_settings;
+manifest.background = { service_worker: manifest.background.service_worker, type: manifest.background.type };
 writeFileSync(`${out}/manifest.json`, JSON.stringify(manifest, null, 2) + "\n");
 for (const size of [16, 32, 48, 128]) writeFileSync(`${out}/icons/${size}.png`, icon(size));
 
