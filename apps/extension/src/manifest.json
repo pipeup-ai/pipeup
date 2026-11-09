@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Pipeup",
+  "description": "Comment on any web page with Pipeup. Your comments stay in this browser until you send them.",
+  "version": "0.0.0",
+  "minimum_chrome_version": "121",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "action": {
+    "default_title": "Pipeup",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/16.png", "32": "icons/32.png" }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "permissions": ["activeTab", "scripting", "storage", "unlimitedStorage"],
+  "optional_host_permissions": ["<all_urls>"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+P" },
+      "description": "Open Pipeup for this page"
+    }
+  },
+  "web_accessible_resources": [{ "resources": ["pipeup/*"], "matches": ["<all_urls>"] }],
+  "browser_specific_settings": {
+    "gecko": { "id": "extension@pipeup.ai", "strict_min_version": "121.0" }
+  }
+}

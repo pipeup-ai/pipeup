@@ -1,6 +1,6 @@
 # Pipeup for browsers (extension)
 
-Status: **agreed, not built**. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
+Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons and pictures to come. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
 [EXTENSION_SPEC.md](../EXTENSION_SPEC.md). Targets `next`.
 
 ## Shape
@@ -68,7 +68,27 @@ Status: **agreed, not built**. Visual spec: [browser-extension.html](browser-ext
 - Chrome, Edge and Firefox first; Safari after an Apple Developer account and the Mac release step exist.
 - Stable releases only in stores at first.
 
+## As built (2026-11-09)
+
+- `apps/extension/src` is plain JavaScript (no build step of its own); `tools/build-extension.mjs` copies it with
+  `pipeup.esm.js` unchanged and draws the icons. `pipeup.min.js` mounts itself on load, so the extension imports the ESM
+  file from `start.js` instead (listed in `web_accessible_resources`, so a page could tell the extension is installed).
+- **Identity:** Pipeup's own identity is a non-extractable key that only IndexedDB can keep, and `chrome.storage` holds
+  only JSON. So the extension's store keeps a 32-byte seed and makes the Ed25519 key from it, as the identity add-on
+  does. The seed is readable only by the extension, never by the page. One identity on every site.
+- **Comments:** `chrome.storage.local`, one key per document (`doc:<id>`, the ops) and one per page (`page:<id>`: its
+  address, title and last change, for Comments you've made). Writes in a tab are queued and merge into what is stored,
+  so a second tab's ops aren't lost; two tabs writing at the same instant can still race (to fix with per-op keys).
+- **Choices:** a new `prefs` option on `mount` (a `getItem`/`setItem`/`removeItem` object, read as Pipeup starts), so
+  look, Hide comments and the first-hold hint go to `prefs:<origin>` in the extension, not the site's localStorage.
+- **Built in:** a `<pipeup-root>` the extension didn't add, or a script whose address contains "pipeup", means the page
+  has its own.
+- **Tests:** Playwright loads `dist/chromium-test` (the build plus `host_permissions` for the test server, made with
+  `--test`) in Chromium. Always on isn't tested: it needs the browser's permission prompt.
+- **Not yet:** add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
+
 ## Change log
 
 - 2026-11-09 — Proposed.
 - 2026-11-09 — The maintainer agreed the four recommendations; spec written (EXTENSION_SPEC.md).
+- 2026-11-09 — Built for local testing in Chrome; see As built.

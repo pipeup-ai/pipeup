@@ -4,7 +4,7 @@ import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
 import { addons, attachAddons, drainQueue, firstCore } from "./addons";
-import { startApp } from "./app";
+import { startApp, type Prefs } from "./app";
 import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
@@ -32,6 +32,8 @@ export interface MountOptions {
   select?: string;
   /** "off": the page has its own way to start commenting, so Pipeup's control is hidden, as `data-pipeup-control`. */
   control?: string;
+  /** Where the reviewer's choices (look, Hide comments) are kept, read as Pipeup starts. Default: localStorage. */
+  prefs?: Prefs;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -187,6 +189,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       root: o.root ?? document.body,
       onName: saveName,
       onRender: tell,
+      ...(o.prefs ? { prefs: o.prefs } : {}),
     });
   } catch (e) {
     setSlideHook(null);

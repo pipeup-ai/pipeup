@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Comments you've made · Pipeup</title>
+    <link rel="stylesheet" href="popup.css" />
+    <style>
+      body {
+        width: auto;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 16px 80px;
+      }
+      h1 {
+        font-size: 24px;
+        color: var(--strong);
+        margin: 0 0 6px;
+      }
+      .lede {
+        color: var(--muted);
+        margin: 0 0 24px;
+      }
+      ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid var(--line);
+      }
+      li {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      li div {
+        min-width: 0;
+      }
+      li a {
+        color: var(--strong);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      li a:hover {
+        color: var(--accent);
+      }
+      li small {
+        display: block;
+        color: var(--faint);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      li span {
+        flex: none;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Comments you've made</h1>
+    <p class="lede">
+      Every page you've commented on with the extension, newest first. They're kept in this browser.
+    </p>
+    <ol id="pages"></ol>
+    <p id="none" hidden>No comments yet. Open a page, press Pipeup in the toolbar, and comment.</p>
+    <script type="module" src="comments.js"></script>
+  </body>
+</html>

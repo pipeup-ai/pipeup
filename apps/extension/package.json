@@ -1,0 +1,15 @@
+{
+  "name": "@pipeup/extension",
+  "private": true,
+  "version": "0.9.1",
+  "description": "Pipeup for browsers: comment on any web page. Built from the release's own Pipeup file.",
+  "type": "module",
+  "scripts": {
+    "build": "node ../../tools/build-extension.mjs",
+    "e2e": "playwright test",
+    "check": "node ../../tools/build-extension.mjs --test && npm run e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

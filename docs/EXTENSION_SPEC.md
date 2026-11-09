@@ -64,3 +64,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   page's scripts can't reach the extension's Pipeup; Chrome, Edge and Firefox first, Safari after; stable releases only
   in stores at first.
 - 2026-11-09 — A small picture of where each comment was made, in that browser only, shown on a Lost comment to the reviewer who made it (§5; visual spec docs/design/refind-comments.html). On by default.
+- 2026-11-09 — Built for local testing in Chrome (load unpacked; apps/extension/README.md). Not in any store yet.

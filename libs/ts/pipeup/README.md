@@ -45,7 +45,7 @@ Install with `npm i pipeup`. From a bundler (no side effects; call `mount` yours
 
 ```js
 import { mount } from "pipeup";
-const pipeup = await mount({ name: "Sam" }); // options: root, name, store, slides, doc, layout, theme, select
+const pipeup = await mount({ name: "Sam" }); // options: root, name, store, prefs, slides, doc, layout, theme, select, control
 await pipeup.flush(); // write any unsaved changes now (this also happens when the page is hidden)
 pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 ```

@@ -53,7 +53,12 @@ export interface AppOptions {
   onRender?(): void;
   /** Pipeup's stylesheet (passed in so the bundles can carry it last, where it compresses best). */
   styles: string;
+  /** Where the reviewer's choices for this page are kept (look, Hide comments). Default: the page's localStorage. */
+  prefs?: Prefs;
 }
+
+/** A place for the reviewer's small choices, read as Pipeup starts: localStorage, or the host's own. */
+export type Prefs = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export interface App {
   readonly ctx: Ctx;
@@ -82,12 +87,13 @@ const message = (e: unknown) =>
   e instanceof Error ? e.message.replace(/^pipeup: /, "") : "Something went wrong";
 
 export function startApp(o: AppOptions): App {
+  const prefs = o.prefs ?? localStorage;
   // One place decides light or dark: the author's data-pipeup-theme, else what the page shows behind Pipeup.
   // The reviewer's own choice beats the author's, which beats what the page shows.
   const LOOK_KEY = "pipeup:look";
   let choice: LookChoice = "auto";
   try {
-    const kept = localStorage.getItem(LOOK_KEY);
+    const kept = prefs.getItem(LOOK_KEY);
     if (kept === "light" || kept === "dark") choice = kept;
   } catch {
     /* no storage: Automatic */
@@ -123,7 +129,7 @@ export function startApp(o: AppOptions): App {
   const HIDE_KEY = `pipeup:hide:${o.doc.id}`;
   let hide = false;
   try {
-    hide = localStorage.getItem(HIDE_KEY) === "1";
+    hide = prefs.getItem(HIDE_KEY) === "1";
   } catch {
     /* no storage: comments show */
   }
@@ -199,8 +205,8 @@ export function startApp(o: AppOptions): App {
     // The first time by touch, it also says where the menu went: pressing and holding the control.
     let first = false;
     try {
-      first = localStorage.getItem(HELD_KEY) === null;
-      if (first) localStorage.setItem(HELD_KEY, "1");
+      first = prefs.getItem(HELD_KEY) === null;
+      if (first) prefs.setItem(HELD_KEY, "1");
     } catch {
       /* no storage: said once per visit */
       first = !heldSaid;
@@ -537,8 +543,8 @@ export function startApp(o: AppOptions): App {
     setLook(next) {
       choice = next;
       try {
-        if (next === "auto") localStorage.removeItem(LOOK_KEY);
-        else localStorage.setItem(LOOK_KEY, next);
+        if (next === "auto") prefs.removeItem(LOOK_KEY);
+        else prefs.setItem(LOOK_KEY, next);
       } catch {
         /* kept for this page only */
       }
@@ -570,8 +576,8 @@ export function startApp(o: AppOptions): App {
     setHide: (on) => {
       state.hide = on;
       try {
-        if (on) localStorage.setItem(HIDE_KEY, "1");
-        else localStorage.removeItem(HIDE_KEY);
+        if (on) prefs.setItem(HIDE_KEY, "1");
+        else prefs.removeItem(HIDE_KEY);
       } catch {
         /* for this visit only */
       }

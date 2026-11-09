@@ -136,6 +136,8 @@ Pipeup without reaching inside it.
   and sending comments live there; `pipeup check` warns when the control is hidden and the page never opens the menu.
 - When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
   copy of Pipeup already owns the page), as well as in the browser's console.
+- Whatever adds Pipeup to a page (such as the browser extension) can keep the reviewer's choices for it (look, Hide
+  comments) in its own storage, as it can keep the comments, instead of the page's.
 - None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
@@ -2056,3 +2058,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   choice after Not here. It adds 2.0 KB to Pipeup (65.5 KB gzip), 1.5 KB of it in the core that add-ons and the command
   line use (12.2 KB), so the budgets rise to 66 KB and 12.5 KB (section 16a).
 - 2026-11-09 — Re-finding comments (§8; visual spec docs/design/refind-comments.html): a comment remembers what kind of thing it was on, its name, the headings it sat under and roughly where it was, so it follows that thing when a site adds or reorders content instead of landing on a neighbour; a look-alike match asks "Is this the right place?" (Yes, or Not here to show the right place or say it's gone), answered once by anyone for everyone; Orphaned is now called Lost, and says the kind of thing, its headings and its words; anyone can show where a Lost comment belongs; Copy for AI describes Moved and Lost comments the same way.
+- 2026-11-09 — A host that adds Pipeup (such as the browser extension) can keep the reviewer's choices for the page (look, Hide comments) in its own storage instead of the page's (section 4a).

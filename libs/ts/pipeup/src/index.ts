@@ -10,6 +10,7 @@ export {
 } from "./ui/mount";
 export { setting } from "./ui/settings";
 export type { Appearance } from "./ui/legible";
+export type { Prefs } from "./ui/app";
 export { setPeople, type Person } from "./ui/mentions";
 export {
   ADDON_API,
