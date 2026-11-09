@@ -314,6 +314,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       ctx.report(err);
       return;
     }
+    // Choosing where a comment belongs: the pick is its new place, not a new comment.
+    if (ctx.state.picking) return ctx.repoint(anchor);
     const next: Draft = {
       anchor,
       label: point ? `Pin on ${labelOf(el).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase())}` : labelOf(el),

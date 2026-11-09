@@ -1,6 +1,6 @@
 # Re-finding comments
 
-Status: **agreed, not built** (2026-11-09). Functional requirements: [FUNCTIONAL_SPEC §8](../FUNCTIONAL_SPEC.md) and
+Status: **built** (2026-11-09). Functional requirements: [FUNCTIONAL_SPEC §8](../FUNCTIONAL_SPEC.md) and
 [EXTENSION_SPEC §5](../EXTENSION_SPEC.md). Visual spec: [refind-comments.html](refind-comments.html), published at
 https://claude.ai/artifact/NUNJSUpotojJEHaDk63bZX. Targets `next`.
 
@@ -51,8 +51,9 @@ For an element anchor:
    a changed fingerprint: **moved** (as today). Any other winner: **moved, look-alike**, which asks.
 4. Otherwise **lost**.
 
-Text anchors keep today's order; when both exact and approximate matching fail, a quote with `heads` falls back to the
-block under the same headings whose text best matches `snapshot` with the same thresholds (moved, look-alike).
+Text anchors keep today's matching (exact with context, then approximate); they gain `kind` (their block's) and
+`heads`, used for the Lost record. A heading-based fallback for quotes was left out: approximate matching already
+covers reworded text, and it would cost size for little.
 
 Old anchors (no new fields) score on words and the path's place only, so behaviour on them is today's, except that an
 element whose path now holds clearly different words is no longer called moved when a better match exists.
@@ -61,9 +62,10 @@ The candidate search runs in the existing deferred pass (`pendingFuzzy` in `src/
 
 ## Confirming and re-pointing: a new op, `place`
 
-- `place` (thread, `anchor`): the thread's place is now this anchor. Sent by **Yes** (the current element, described
-  again, so the clues follow the page), by **Not here** → pick (the picked element or selection), and by **It's gone**
-  (an anchor with `lost: true`, so the comment is Lost on purpose and never asks again).
+- `place` (thread, `anchor`, `text` = `confirmed` | `moved` | `gone`): the thread's place is now this anchor. Sent by
+  **Yes** (the current element, described again, so the clues follow the page), by **Not here** → pick (the clicked
+  element), and by **It's gone** (the anchor with `lost: true`, so the comment is Lost on purpose and never asks
+  again).
 - Anyone may send it. The thread's place is the latest `place` by the usual op order, else the create's anchor.
 - The thread shows a quiet line for each: "Ada confirmed the place", "Ada moved this comment", "Ada marked the place as
   gone".
@@ -72,17 +74,20 @@ The candidate search runs in the existing deferred pass (`pendingFuzzy` in `src/
 
 ## UI
 
-- `src/ui/thread-view.ts`: a moved, look-alike thread gets the `.check` row (Is this the right place? Yes · Not here)
-  under its words. A lost thread's context becomes the "was" box: "No longer on the page · it was a {kind} under
-  {heads}" and the quoted words, plus "Show where it belongs".
-- Picking: the comment-mode outline and click, with a bar at the top ("Click where this comment belongs · It's gone ·
-  Cancel"), Esc to cancel. Reuses comment mode's hover and selection code; ends by sending `place`.
+- `src/ui/thread-view.ts`: an open look-alike thread gets a row in the style of an agent's Addressed note: "Is this the
+  right place?" with Yes · Not here · It's gone. A lost thread's line reads "No longer on the page · it was {kind}
+  under {heads} — it read “…”", and its open thread has "Show where it belongs". After an answer, a quiet line names
+  who placed it.
+- Picking: Not here sets `state.picking` and turns comment mode on with the hint "Click where this comment belongs ·
+  Esc to cancel". Comment mode's next chosen block (`commentOn`) calls `ctx.repoint` instead of opening a draft; turning
+  comment mode off cancels.
 - All comments' "No longer on the page" group keeps its name.
 
 ## Copy for AI
 
-`src/export`: Moved and Lost threads say "Moved: was a {kind} under {heads}, “{snapshot}”" or "No longer on the page:
-was a {kind} under {heads}, “{snapshot}”", so an agent can search the page's source.
+`src/anchor/locate.ts` (used by Copy for AI and `pu.comments()`): a look-alike thread's place ends "Moved, not yet
+confirmed (it was {kind} under {heads}, it read: "…")"; a Lost one reads "No longer on the page (it was {kind} under
+{heads}, it read: "…")".
 
 ## Pictures (extension only)
 
@@ -95,9 +100,9 @@ was a {kind} under {heads}, “{snapshot}”", so an agent can search the page's
 
 ## Size
 
-Expected about 1.5 KB gzip in Pipeup (scoring, the new fields, the `place` op, the check row and picking bar). Pipeup is
-at 63.4 KB against a 63.5 KB budget, so the budget needs to rise to 65 KB (`scripts/size.mjs`), or the picking bar
-moves into an add-on. Maintainer's call.
+It added 2.0 KB gzip to Pipeup (63.5 → 65.5 KB) and 1.5 KB to the core (10.7 → 12.2 KB), more than the 1.5 KB
+estimated. Budgets raised with the maintainer's agreement: Pipeup 66 KB, the core 12.5 KB (`scripts/size.mjs`, and the
+combined add-on files in `libs/ts/addons/scripts/build-all.mjs`).
 
 ## Tests
 
@@ -110,3 +115,5 @@ moves into an add-on. Maintainer's call.
 ## Change log
 
 - 2026-11-09 — Agreed with the maintainer; written.
+- 2026-11-09 — Built. Kind words are a Map, since the build shortens the property name `box`. Text similarity is
+  squared, so siblings that share words (prices, "a month") fall well behind the real match.

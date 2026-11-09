@@ -637,10 +637,11 @@ any of them off.
   picture's description or file name, a link's address), the headings it sits under, and roughly where it was.
 - A comment never stays on something that no longer matches it when something else on the page clearly does. When two
   things match about equally, it is Lost rather than guessed.
-- A comment found by looking alike, rather than by its words or its place, is Moved and asks **Is this the right
-  place?** with **Yes** and **Not here**. Anyone reading can answer; the answer is kept for everyone and shown in the
-  thread ("Ada confirmed the place"), so it is asked once. Yes keeps it there. Not here lets them click the right place,
-  or say **It's gone**, which makes it Lost without asking again; Esc cancels.
+- A comment found by looking alike, rather than by its words or its place, is Moved and asks, in its open thread, **Is
+  this the right place?** with **Yes**, **Not here** and **It's gone**. Anyone reading can answer; the answer is kept for
+  everyone and shown in the thread ("Ada confirmed the place"), so it is asked once. Yes keeps it there. Not here starts
+  comment mode with "Click where this comment belongs", and the next click moves it there (Esc cancels). It's gone
+  makes it Lost without asking again.
 - A Lost comment says what it was: the kind of thing, the headings it sat under and its words. Anyone reading can
   **show where it belongs** now, the same way. Copy for AI describes Moved and Lost comments the same way, so an agent
   can find their place in the page's source.
@@ -2051,4 +2052,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
 - 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.
 - 2026-11-01 — Asks are compact (one line for a question and its buttons where it fits, one line after answering); their field looks like a field, grows on its own and has no resize handle; an ask takes the page's font, and the author can set its accent, font and rounding while Pipeup's mark and tint stay (§11b). A page with its own way to start commenting can hide Pipeup's comment control and open Pipeup's menu and All comments from its code (§4a). Visual spec: docs/design/compact-asks.html.
+- 2026-11-09 — Built: re-finding comments (§8). It's gone is a third answer beside Yes and Not here, rather than a
+  choice after Not here. It adds 2.0 KB to Pipeup (65.5 KB gzip), 1.5 KB of it in the core that add-ons and the command
+  line use (12.2 KB), so the budgets rise to 66 KB and 12.5 KB (section 16a).
 - 2026-11-09 — Re-finding comments (§8; visual spec docs/design/refind-comments.html): a comment remembers what kind of thing it was on, its name, the headings it sat under and roughly where it was, so it follows that thing when a site adds or reorders content instead of landing on a neighbour; a look-alike match asks "Is this the right place?" (Yes, or Not here to show the right place or say it's gone), answered once by anyone for everyone; Orphaned is now called Lost, and says the kind of thing, its headings and its words; anyone can show where a Lost comment belongs; Copy for AI describes Moved and Lost comments the same way.

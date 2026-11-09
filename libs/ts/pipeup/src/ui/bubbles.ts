@@ -8,7 +8,7 @@ import { bubblePoint, INTERACTIVE, popoverAnchor } from "./geometry";
 import { placeDraft, placePopover, popover, room, touch, type AnchorPoint, type Viewport } from "./layout";
 import { notesKey } from "./notes";
 import { byPage } from "./order";
-import { columnSpot, moved } from "./column";
+import { alike, columnSpot, moved } from "./column";
 import { replies, threadView, type ThreadView } from "./thread-view";
 
 /** How far apart bubbles' points must be (a bubble is 20 px): closer, the later one steps aside. */
@@ -312,6 +312,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
       variant: "popover" as const,
       quote: next.anchor.quote?.exact ?? null,
       moved: moved(ctx, next),
+      alike: alike(ctx, next),
     };
     if (!shown || !shownView || shown.id !== next.id) {
       shownView = threadView(next, ctx.actions, o);

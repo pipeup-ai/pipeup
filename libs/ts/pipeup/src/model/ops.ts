@@ -21,7 +21,12 @@ export const LIMITS = {
   viewKey: 64,
   viewValue: 200,
   mentions: 20,
+  name: 200,
+  head: 120,
+  heads: 3,
 } as const;
+const KINDS_OF_THING = new Set<unknown>(["h", "p", "img", "button", "link", "field", "media", "box"]);
+const PLACE_HOW = new Set<unknown>(["confirmed", "moved", "gone"]);
 const FINGERPRINT = /^[0-9a-f]{8}$/;
 const ID = /^[A-Za-z0-9_-]{43}$/;
 /** Who a mention names: a writer's key, or a person the page or an add-on supplied (`host:<id>`, `gh:<name>`). */
@@ -42,6 +47,7 @@ const KINDS = new Set<unknown>([
   "seen",
   "contact",
   "uncontact",
+  "place",
 ]);
 /** One emoji: a flag, a keycap, or a pictograph with its modifiers, optionally joined with others (a family, a person with a job). */
 const EMOJI =
@@ -62,7 +68,7 @@ const isUnit = (v: unknown): boolean => typeof v === "number" && Number.isFinite
 
 export function isAnchor(a: unknown): boolean {
   if (!isObj(a)) return false;
-  const { id, path, fingerprint, snapshot, quote, point, view } = a;
+  const { id, path, fingerprint, snapshot, quote, point, view, kind, name, heads, y, lost } = a;
   if (!isStr(path, LIMITS.path) || !isStr(snapshot, LIMITS.snapshot)) return false;
   if (typeof fingerprint !== "string" || !FINGERPRINT.test(fingerprint)) return false;
   if (id !== undefined && (!isStr(id, LIMITS.anchorId) || id === "")) return false;
@@ -80,6 +86,15 @@ export function isAnchor(a: unknown): boolean {
     if (entries.length > LIMITS.viewEntries) return false;
     if (!entries.every(([k, v]) => k.length <= LIMITS.viewKey && isStr(v, LIMITS.viewValue))) return false;
   }
+  // The clues for finding a look-alike: each optional, each small.
+  if (kind !== undefined && !KINDS_OF_THING.has(kind)) return false;
+  if (name !== undefined && !isStr(name, LIMITS.name)) return false;
+  if (heads !== undefined) {
+    if (!Array.isArray(heads) || heads.length > LIMITS.heads) return false;
+    if (!heads.every((x) => isStr(x, LIMITS.head))) return false;
+  }
+  if (y !== undefined && !isUnit(y)) return false;
+  if (lost !== undefined && lost !== true) return false;
   return true;
 }
 
@@ -126,6 +141,8 @@ export function isWellFormed(op: unknown): op is SignedOp {
   if (b.kind === "create") {
     if (b.id !== b.thread || !isAnchor(b.anchor)) return false;
   }
+  // A thread's new place: the anchor, and whether it was kept, moved or is gone.
+  if (b.kind === "place" && (!isAnchor(b.anchor) || !PLACE_HOW.has(b.text))) return false;
   return true;
 }
 

@@ -1,3 +1,4 @@
+import { describeElement } from "../anchor/describe";
 import { locate } from "../anchor/locate";
 import { resolveAnchor, type Resolved } from "../anchor/resolve";
 import { UnsavedChangeError, type PipeupDocument } from "../document";
@@ -35,6 +36,8 @@ const DEFERRED_RESOLVE_MS = 250;
 const MUTATION_DEBOUNCE_MS = 120;
 const TOAST_MS = 2400;
 const HINT_MS = 4000;
+/** Shown while choosing where a comment belongs. */
+const PICK_HINT = "Click where this comment belongs · Esc to cancel";
 /** How long words thrown away by Cancel or Esc can be brought back. */
 const UNDO_MS = 6000;
 /** Keys that move through Pipeup's menus and lists. */
@@ -140,6 +143,7 @@ export function startApp(o: AppOptions): App {
     reading: false,
     menu: false,
     pinning: false,
+    picking: null,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   /** What the message's Undo does while it shows, also on ⌘Z or Ctrl+Z (the block cursor has no Tab stop for it). */
@@ -492,6 +496,27 @@ export function startApp(o: AppOptions): App {
       else modeView?.refocus();
       back = "";
     },
+    place: (id, how) => {
+      const t = o.doc.threads().find((x) => x.id === id);
+      if (!t) return;
+      if (how === "pick") {
+        open(null);
+        state.picking = id;
+        if (state.commenting) toast(PICK_HINT, HINT_MS, true);
+        else setCommenting(true);
+        return;
+      }
+      // Yes describes the thing again, so its clues follow the page from now on.
+      const el = resolved.get(id)?.element;
+      let anchor = t.anchor;
+      if (how === "confirmed" && el)
+        try {
+          anchor = describeElement(el, o.root, undefined, here.view(el));
+        } catch {
+          // Kept as it was: it still says where the comment belongs.
+        }
+      placed(o.doc.place(id, anchor, how), how === "gone" ? "Marked as gone" : "Place confirmed");
+    },
     copy: (id) => {
       try {
         const t = o.doc.threads().find((x) => x.id === id);
@@ -609,6 +634,12 @@ export function startApp(o: AppOptions): App {
     hot,
     startDraft,
     moveDraft,
+    repoint: (anchor) => {
+      const id = state.picking;
+      if (!id) return;
+      setCommenting(false);
+      placed(o.doc.place(id, anchor, "moved"), "Comment moved");
+    },
     draftEmpty: () => !openBox || openBox.isEmpty(),
     keepCaret: (fn) => {
       const restore = openBox?.caret();
@@ -1014,9 +1045,18 @@ export function startApp(o: AppOptions): App {
       });
   }
 
+  /** Saves a thread's new place, and says so. */
+  function placed(saving: Promise<void>, done: string): void {
+    saving.then(
+      () => say(done),
+      (e: unknown) => (e instanceof UnsavedChangeError ? toast(UNSAVED_NOTE) : fail(e)),
+    );
+  }
+
   function setCommenting(on: boolean, keys = false): void {
     if (state.commenting === on) return;
     state.commenting = on;
+    if (!on) state.picking = null;
     state.paused = false;
     hintLater = null;
     if (on) {
@@ -1034,7 +1074,8 @@ export function startApp(o: AppOptions): App {
     // From the keyboard the block cursor starts once the comments show (its name counts them).
     if (keys) modeView.resume();
     // The hint waits for the menu to close (frame); by touch it says how to use comment mode by touch.
-    if (!keys)
+    if (state.picking) hintLater = () => toast(PICK_HINT, HINT_MS, true);
+    else if (!keys)
       hintLater = touch()
         ? tapHint
         : () =>
