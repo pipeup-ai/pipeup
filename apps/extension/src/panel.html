@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pipeup comments</title>
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <header class="ph">
+      <h1>Comments</h1>
+      <button id="for-you" class="pill" type="button" aria-pressed="false">@ For you</button>
+      <button id="resolved" class="pill" type="button" aria-pressed="false">✓ Resolved</button>
+    </header>
+    <p id="away" class="away" hidden>
+      Pipeup isn't on this page. Press Pipeup in the toolbar and choose Comment on this page.
+    </p>
+    <section id="draft" class="card draft" hidden aria-label="New comment">
+      <p class="on" id="draft-on"></p>
+      <label class="sr" for="draft-words">Your comment</label>
+      <textarea id="draft-words" rows="3" placeholder="Comment"></textarea>
+      <div class="btns">
+        <button id="draft-cancel" class="btn" type="button">Cancel</button>
+        <button id="draft-send" class="btn primary" type="button">Comment</button>
+      </div>
+    </section>
+    <ol id="list" class="list" aria-label="Comments"></ol>
+    <p id="empty" class="empty" hidden></p>
+    <script type="module" src="panel.js"></script>
+  </body>
+</html>

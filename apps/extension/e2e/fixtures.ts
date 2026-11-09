@@ -49,3 +49,16 @@ export async function panel(context: BrowserContext, worker: Worker, id: string,
   await p.goto(`chrome-extension://${id}/popup.html?tab=${tab}`);
   return p;
 }
+
+/** The side panel for `page`, opened in a tab of its own (the tests can't open the browser's side panel). */
+export async function sidePanel(
+  context: BrowserContext,
+  worker: Worker,
+  id: string,
+  page: Page,
+): Promise<Page> {
+  const tab = await tabOf(worker, page);
+  const p = await context.newPage();
+  await p.goto(`chrome-extension://${id}/panel.html?tab=${tab}`);
+  return p;
+}

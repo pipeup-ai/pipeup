@@ -90,7 +90,15 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
   `executeScript` with a fixed list of actions (Manifest V3 allows no eval in content scripts); `pu.on("change")` and
   the document's changes send `{ n, commenting }` to the worker, which sets the badge (green, "on" when 0, while
   commenting). The setting lives on the extension's page (`comments.html`, also its options page).
-- **Not yet:** add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
+- **Pipeup in the browser** (docs/design/extension-native-ui.html): `start.js` mounts with `ui: "host"`. Pipeup then
+  draws only highlights, pins and comment mode (`viewsFor` keeps the bubbles without popovers), and `open`/`pick` go to
+  the host instead of opening a thread or a draft. `start.js` relays them, and a snapshot of the threads on every
+  change, with `runtime.sendMessage`; the side panel (`panel.*`) answers with `tabs.sendMessage` asks (`comment`,
+  `reply`, `edit`, `remove`, `resolve`, `reopen`, `react`, `go`), done through `pu.document`. Chrome opens the side panel
+  only in answer to a press in the extension, so the toolbar panel opens it with Comment on this page, Start commenting
+  and Comments; a pick while it's closed is kept in `storage.session` for when it opens. The toolbar panel draws the
+  menu from the instance (`name`, `look`, `hidden`, `commentMode`) and `commentsAs()` for Copy comments.
+- **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
 
 ## Change log
 
@@ -98,3 +106,4 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
 - 2026-11-09 — The maintainer agreed the four recommendations; spec written (EXTENSION_SPEC.md).
 - 2026-11-09 — Built for local testing in Chrome; see As built.
 - 2026-11-09 — The toolbar is the way in: the corner button hidden by default, the panel's new rows, comment mode on the badge.
+- 2026-11-09 — Pipeup in the browser: the menu in the toolbar panel, the comments in the side panel, `ui: "host"` in Pipeup.

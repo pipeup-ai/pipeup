@@ -27,9 +27,11 @@ After a rebuild, press the reload arrow on Pipeup's card in `chrome://extensions
 
 - `src/manifest.json`: the extension's name and what it may do. It asks for no access to sites when installed: a press
   on the toolbar button reaches that one tab, and **Always on for this site** asks the browser for that site only.
-- `src/popup.*`: the toolbar panel. Off: Comment on this page (which also starts comment mode). On: Start commenting,
-  All comments, Pipeup's menu, Always on for this site, Turn off on this page. Pipeup's own corner button stays off the
-  page unless **Show Pipeup's button on pages** is on (on the extension's page).
+- `src/popup.*`: the toolbar panel, which is Pipeup's menu: who you are, Copy comments, Theme, Comments, Hide comments,
+  Start commenting, Always on for this site, Turn off on this page. Off, it offers Comment on this page.
+- `src/panel.*`: the browser's side panel, with the comments: the list, threads, replies, Resolve, and the box for a new
+  comment. The page shows only highlights and comment mode's outline (Pipeup runs with `ui: "host"`), unless **Show
+  Pipeup's button on pages** is on (on the extension's page), which brings back Pipeup's own button, menu and panel.
 - `src/start.js`: adds Pipeup to the tab, in the extension's own world, with the extension's storage.
 - `src/background.js`: the toolbar button's count of open comments.
 - `src/comments.*`: **Comments you've made**, every page with comments, newest first, and the extension's one setting

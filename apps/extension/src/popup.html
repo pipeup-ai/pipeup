@@ -18,16 +18,35 @@
         <button id="start" class="main" type="button">Comment on this page</button>
       </section>
       <section id="on" class="rows" hidden>
+        <p id="status" class="status">Comments stay in this browser until you send them</p>
+        <button id="who" class="item" type="button">
+          <span id="who-name">Add your name</span><small id="who-hint">Add name</small>
+        </button>
+        <form id="name-form" class="item name" hidden>
+          <label class="sr" for="name">Your name</label>
+          <input id="name" type="text" maxlength="80" autocomplete="name" placeholder="Your name" />
+        </form>
+        <button id="copy" class="item" type="button" aria-expanded="false">
+          <span>Copy comments</span><small id="copied">›</small>
+        </button>
+        <div id="copy-as" class="sub" hidden>
+          <button id="copy-md" class="item" type="button">As Markdown<small>for an AI</small></button>
+          <button id="copy-text" class="item" type="button">As text</button>
+        </div>
+        <button id="theme" class="item" type="button">
+          <span>Theme</span><small id="theme-now">Automatic</small>
+        </button>
+        <button id="all" class="item" type="button">
+          <span>Comments</span><span id="count" class="n">0</span>
+        </button>
+        <label class="item" for="hide">
+          <span>Hide comments</span>
+          <input id="hide" type="checkbox" role="switch" />
+        </label>
         <label class="item first" for="commenting">
           <span>Start commenting</span>
           <span class="end"><kbd>⇧⌥C</kbd><input id="commenting" type="checkbox" role="switch" /></span>
         </label>
-        <button id="all" class="item" type="button">
-          <span>All comments</span><span id="count" class="n">0</span>
-        </button>
-        <button id="menu" class="item" type="button">
-          <span>Pipeup's menu</span><small>name, copy, theme</small>
-        </button>
         <hr />
       </section>
       <section id="always-row" class="row item-row" hidden>

@@ -138,6 +138,10 @@ Pipeup without reaching inside it.
   copy of Pipeup already owns the page), as well as in the browser's console.
 - Whatever adds Pipeup to a page (such as the browser extension) can keep the reviewer's choices for it (look, Hide
   comments) in its own storage, as it can keep the comments, instead of the page's.
+- It can also **draw Pipeup's threads, comment box and menu itself**, in its own interface. Pipeup then draws only on the
+  page (highlights, pins, comment mode's outline and hint) and says when a thread's place is clicked or a place is picked
+  to comment on. It can copy the comments as Copy comments does, set the reviewer's look and Hide comments, and go to a
+  thread's place.
 - None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
@@ -2059,3 +2063,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
   line use (12.2 KB), so the budgets rise to 66 KB and 12.5 KB (section 16a).
 - 2026-11-09 — Re-finding comments (§8; visual spec docs/design/refind-comments.html): a comment remembers what kind of thing it was on, its name, the headings it sat under and roughly where it was, so it follows that thing when a site adds or reorders content instead of landing on a neighbour; a look-alike match asks "Is this the right place?" (Yes, or Not here to show the right place or say it's gone), answered once by anyone for everyone; Orphaned is now called Lost, and says the kind of thing, its headings and its words; anyone can show where a Lost comment belongs; Copy for AI describes Moved and Lost comments the same way.
 - 2026-11-09 — A host that adds Pipeup (such as the browser extension) can keep the reviewer's choices for the page (look, Hide comments) in its own storage instead of the page's (section 4a).
+- 2026-11-09 — A host (such as the browser extension) can draw Pipeup's threads, comment box and menu in its own interface, while Pipeup draws only on the page; it can copy the comments, set the look and Hide comments, and go to a thread (section 4a).

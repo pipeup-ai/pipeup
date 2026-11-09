@@ -6,6 +6,7 @@ export {
   type MountErrorCode,
   type MountOptions,
   type PipeupInstance,
+  type PipeupPick,
   type PipeupState,
 } from "./ui/mount";
 export { setting } from "./ui/settings";

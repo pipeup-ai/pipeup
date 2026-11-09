@@ -9,3 +9,11 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   void chrome.action.setBadgeBackgroundColor({ tabId, color: commenting ? "#2f7d4a" : "#534ab7" });
   void chrome.action.setBadgeTextColor?.({ tabId, color: "#ffffff" });
 });
+
+// A place picked on the page: the comment is written in the side panel. Chrome opens it only in answer to a press in
+// the extension, so this may be refused; the panel then shows the pick when it is next opened.
+chrome.runtime.onMessage.addListener((message, sender) => {
+  if (message?.type !== "pick" || sender.tab?.id === undefined) return;
+  void chrome.storage.session?.set({ [`pick:${sender.tab.id}`]: message }).catch(() => {});
+  void chrome.sidePanel?.open({ tabId: sender.tab.id }).catch(() => {});
+});

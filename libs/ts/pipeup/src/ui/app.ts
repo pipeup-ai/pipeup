@@ -55,6 +55,19 @@ export interface AppOptions {
   styles: string;
   /** Where the reviewer's choices for this page are kept (look, Hide comments). Default: the page's localStorage. */
   prefs?: Prefs;
+  /**
+   * A host draws Pipeup's threads, comment box and menu itself (the browser extension's side panel): Pipeup draws only
+   * on the page (highlights, pins, comment mode) and tells the host when a thread is opened or a place is picked.
+   */
+  host?: Host;
+}
+
+/** What Pipeup tells a host that draws its threads and comment box. */
+export interface Host {
+  /** A thread was opened on the page (its highlight clicked), or closed (null). */
+  open(id: string | null): void;
+  /** A place was picked to comment on, with words naming it. */
+  pick(place: { anchor: Draft["anchor"]; label: string }): void;
 }
 
 /** A place for the reviewer's small choices, read as Pipeup starts: localStorage, or the host's own. */
@@ -62,6 +75,8 @@ export type Prefs = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export interface App {
   readonly ctx: Ctx;
+  /** Goes to a thread's place: scrolls it into view and marks it, as choosing it in All comments does. */
+  goTo(id: string): void;
   /** How Pipeup looks and why: its look, who chose it, and what the page's styles do to it. */
   appearance(): Appearance;
   destroy(): void;
@@ -72,9 +87,11 @@ export function chooseMode(root: Element, showing = false): UiState["mode"] {
   return columnSpot(root, showing) ? "column" : "bubbles";
 }
 
-export function viewsFor(ctx: Ctx): View[] {
-  const comments =
-    ctx.state.mode === "column"
+export function viewsFor(ctx: Ctx, hosted = false): View[] {
+  // A host draws the threads: on the page, only what marks where they are.
+  const comments = hosted
+    ? [createBubbles(ctx, { popovers: false })]
+    : ctx.state.mode === "column"
       ? [createColumn(ctx), createBubbles(ctx, { popovers: false })]
       : [createBubbles(ctx, { popovers: true })];
   return [...comments, createSelection(ctx), createLauncher(ctx)];
@@ -141,7 +158,7 @@ export function startApp(o: AppOptions): App {
     // Comments show unless the reviewer chose Hide comments for this page.
     hide,
     hidden: hide,
-    mode: chooseMode(o.root),
+    mode: o.host ? "bubbles" : chooseMode(o.root),
     draft: null,
     commenting: false,
     paused: false,
@@ -985,6 +1002,13 @@ export function startApp(o: AppOptions): App {
   }
 
   function open(id: string | null, sent = false): void {
+    // A host shows the thread; the page marks it.
+    if (o.host) {
+      state.active = id;
+      render();
+      if (id) pulse(id);
+      return o.host.open(id);
+    }
     // Words being written are never dropped: another thread waits, and the reviewer goes back to them.
     if (id && state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
     // While All comments is open, a thread opens there (a click on its highlight, bubble or column thread).
@@ -1023,6 +1047,8 @@ export function startApp(o: AppOptions): App {
 
   function startDraft(d: Draft): void {
     hideHint();
+    // A host writes the comment; the page keeps the chosen block outlined.
+    if (o.host) return o.host.pick({ anchor: d.anchor, label: d.label });
     // While All comments is open the new comment is written there; otherwise where comments are written.
     state.draft = d;
     state.active = null;
@@ -1199,7 +1225,7 @@ export function startApp(o: AppOptions): App {
     keepReplies();
     const typing = !!focusedIn()?.closest(".rbox");
     for (const v of views) v.destroy();
-    views = viewsFor(ctx);
+    views = viewsFor(ctx, !!o.host);
     render();
     if (state.active) putReply(state.active, typing);
   }
@@ -1333,7 +1359,7 @@ export function startApp(o: AppOptions): App {
       shapeTimer = window.setTimeout(inView, 200);
     }
     host.layer.style.setProperty("--pu-pop", `${popover()}px`);
-    const mode = chooseMode(o.root, state.mode === "column");
+    const mode = o.host ? "bubbles" : chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {
       state.mode = mode;
       buildViews();
@@ -1593,6 +1619,14 @@ export function startApp(o: AppOptions): App {
   return {
     ctx,
     appearance: () => appearance,
+    goTo(id) {
+      const r = resolved.get(id);
+      const el = r?.element ?? r?.range?.startContainer.parentElement;
+      el?.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+      state.active = id;
+      render();
+      window.setTimeout(() => pulse(id), reduced ? 0 : 450);
+    },
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);

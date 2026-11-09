@@ -110,38 +110,88 @@
     },
   };
 
-  // With the extension, the toolbar is the way into Pipeup: its corner control steps aside unless the reviewer wants it.
+  // With the extension, Pipeup's threads, comment box and menu are the browser's (the side panel and the toolbar panel);
+  // Pipeup draws only on the page. A reviewer who wants Pipeup's own button on pages gets plain Pipeup instead.
   const { settings } = await storage.get("settings");
+  const hosted = !settings?.showButton;
   let pu;
   try {
-    pu = await Pipeup.mount({ store, prefs, ...(settings?.showButton ? {} : { control: "off" }) });
+    pu = await Pipeup.mount({ store, prefs, ...(hosted ? { ui: "host", control: "off" } : {}) });
   } catch (e) {
     state.starting = false;
     throw e;
   }
-  /** The toolbar button: the page's open comments, and whether comment mode is on. */
+  const send = (message) => void chrome.runtime.sendMessage(message).catch(() => {});
+  /** What the side panel draws: every thread, who you are, and where each one is on the page. */
+  const snapshot = () => {
+    const where = new Map(pu.comments({ all: true }).threads.map((t) => [t.id, t]));
+    return {
+      me: pu.document.me,
+      name: pu.name,
+      title: document.title,
+      threads: pu.document
+        .threads()
+        .filter((t) => !t.root.deleted)
+        .map((t) => ({ ...t, where: where.get(t.id)?.where ?? "", state: where.get(t.id)?.state ?? "" })),
+    };
+  };
+  /** The toolbar button (open comments, comment mode) and the side panel (the threads), whenever anything changes. */
   const tell = () => {
     try {
       const n = pu.comments().threads.length;
-      void chrome.runtime.sendMessage({ type: "state", n, commenting: pu.commentMode }).catch(() => {});
+      send({ type: "state", n, commenting: pu.commentMode });
+      if (hosted) send({ type: "threads", ...snapshot() });
     } catch {
       // Pipeup was taken off the page meanwhile.
     }
   };
-  const stopChanges = pu.document.onChange(tell);
-  const stopMode = pu.on("change", tell);
+  const stops = [
+    pu.document.onChange(tell),
+    pu.on("change", tell),
+    pu.on("open", (id) => send({ type: "open", id })),
+    pu.on("pick", (place) => send({ type: "pick", anchor: place.anchor, label: place.label })),
+  ];
   tell();
+
+  // What the side panel asks for, or asks to be done.
+  const doc = pu.document;
+  const asks = {
+    snapshot: () => snapshot(),
+    comment: (m) => doc.comment(m.anchor, m.text),
+    reply: (m) => doc.reply(m.id, m.text),
+    edit: (m) => doc.edit(m.id, m.text),
+    remove: (m) => doc.remove(m.id),
+    resolve: (m) => doc.resolve(m.id),
+    reopen: (m) => doc.reopen(m.id),
+    react: (m) => (m.on ? doc.react(m.id, m.emoji) : doc.unreact(m.id, m.emoji)),
+    go: (m) => pu.openThread(m.id),
+  };
+  const onAsk = (message, _sender, reply) => {
+    const ask = message?.to === "page" && Object.hasOwn(asks, message.type) ? asks[message.type] : null;
+    if (!ask || !state.on) return false;
+    Promise.resolve()
+      .then(() => ask(message))
+      .then(
+        (result) => reply({ ok: true, result: result ?? null }),
+        (e) => reply({ ok: false, error: String(e?.message ?? e) }),
+      );
+    return true;
+  };
+  chrome.runtime.onMessage.addListener(onAsk);
+
   Object.assign(state, {
     on: true,
     starting: false,
+    hosted,
     pu,
     count: () => pu.comments().threads.length,
     off() {
-      stopChanges();
-      stopMode();
+      for (const stop of stops) stop();
+      chrome.runtime.onMessage.removeListener(onAsk);
       pu.unmount();
       state.on = false;
-      void chrome.runtime.sendMessage({ type: "state", n: 0, commenting: false }).catch(() => {});
+      send({ type: "state", n: 0, commenting: false });
+      send({ type: "threads", me: "", name: "", title: document.title, threads: [], off: true });
     },
   });
 })();
