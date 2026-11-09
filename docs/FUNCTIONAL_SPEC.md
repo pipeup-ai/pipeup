@@ -177,7 +177,9 @@ any of them off.
   want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so. Space is
   the key because it changes nothing about a click (⌘, Ctrl, Shift and Option all make a click on a link do
   something else, such as open a new tab or download it). While Space is held the page doesn't hear it, so it
-  doesn't scroll or turn a slide. Space keeps its usual job where it has one: typing in a field, and a link,
+  doesn't scroll or turn a slide. In Pipeup's own comment or reply box while it is empty, Space doesn't type (a
+  comment never starts with a space): holding it pauses, as on the page. Once the box has words, Space types. Space
+  keeps its usual job where it has one: typing in a field, and a link,
   button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
   keep it). On the block cursor, Enter comments and Space pauses.
 - **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
@@ -2071,3 +2073,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — A host that adds Pipeup (such as the browser extension) can keep the reviewer's choices for the page (look, Hide comments) in its own storage instead of the page's (section 4a).
 - 2026-11-09 — A host (such as the browser extension) can show Pipeup's threads in its own interface, while new comments are still written on the page; it can copy the comments, set the look and Hide comments, and go to a thread (section 4a).
 - 2026-11-09 — One thing at a time in comment mode (section 5; visual spec docs/design/one-thing-at-a-time.html): while a thread is open to read, no other block is outlined, and a click on the page only closes it; a thread just written doesn't hold up the next comment.
+- 2026-11-09 — Space in an empty comment or reply box doesn't type a space; holding it pauses comment mode, as on the page (section 5).

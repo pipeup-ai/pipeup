@@ -405,6 +405,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const t = e.composedPath()[0];
     // The block cursor comments with Enter; Space pauses there too.
     if (markers.some((m) => m === t)) return true;
+    // Pipeup's own comment or reply box, still empty: a space there would be thrown away, so Space pauses instead.
+    if (t instanceof HTMLTextAreaElement && ctx.layer.contains(t) && !t.value.trim()) return true;
     const c = t instanceof Element ? t.closest(CONTROL) : null;
     return (
       !c || (!byKeys && !c.matches("input,textarea,select,[contenteditable]:not([contenteditable=false])"))
