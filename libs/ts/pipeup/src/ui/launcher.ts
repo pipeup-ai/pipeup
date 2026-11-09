@@ -3,7 +3,7 @@ import { formatAgo, type ExportItem } from "../export/format";
 import { animalName, nameOf } from "../model/animals";
 import type { Thread } from "../model/types";
 import { avatar, faceOf } from "./animals";
-import { lost as lostIn, moved as movedIn } from "./column";
+import { alike as alikeIn, lost as lostIn, moved as movedIn } from "./column";
 import type { Ctx, Draft, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
@@ -607,6 +607,7 @@ export function createLauncher(ctx: Ctx): View {
           rest,
           quote: t.anchor.quote?.exact,
           moved: moved(t),
+          alike: alikeIn(ctx, t),
         };
         let c = closed.get(t.id);
         if (c) c.view.update(t, o);
@@ -686,6 +687,7 @@ export function createLauncher(ctx: Ctx): View {
       lost: lost(t) || away ? t.anchor.snapshot : null,
       place: away ? placeOf(t) : null,
       moved: moved(t),
+      alike: alikeIn(ctx, t),
       note: narrow() && !lost(t) && !away && !t.anchor.quote ? about : null,
     };
   }

@@ -1,6 +1,7 @@
 import type { Anchor } from "../model/types";
 import { isAnchor, LIMITS } from "../model/ops";
 import { fingerprint, normalizeText } from "../util/encoding";
+import { cluesOf, headsOf, kindOf } from "./clues";
 import { indexText, textOffset } from "./text";
 
 const CONTEXT = 32;
@@ -75,13 +76,17 @@ export function describeRange(range: Range, root: Element, view?: Record<string,
     throw new Error(`pipeup: selections are limited to ${LIMITS.quote} characters`);
   const prefix = slice(text, Math.max(0, start - CONTEXT), start);
   const suffix = slice(text, end, end + CONTEXT);
+  const block = blockOf(range.startContainer, root);
+  const heads = headsOf(block, root);
   return checked({
     ...(marked ? { id: marked.getAttribute("data-pipeup-id") ?? "" } : {}),
     path: "",
     quote: { exact, prefix, suffix },
     ...(view ? { view } : {}),
-    fingerprint: fingerprint(blockOf(range.startContainer, root).textContent ?? ""),
+    fingerprint: fingerprint(block.textContent ?? ""),
     snapshot: slice(normalizeText(prefix + exact + suffix), 0, SNAPSHOT),
+    kind: kindOf(block),
+    ...(heads.length ? { heads } : {}),
   });
 }
 
@@ -99,6 +104,7 @@ export function describeElement(
     ...(view ? { view } : {}),
     fingerprint: fingerprint(el.textContent ?? ""),
     snapshot: slice(normalizeText(el.textContent ?? ""), 0, SNAPSHOT),
+    ...cluesOf(el, root),
   });
 }
 

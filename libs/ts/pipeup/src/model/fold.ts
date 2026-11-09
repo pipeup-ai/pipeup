@@ -1,6 +1,6 @@
 import { isAiName, nameOf } from "./animals";
 import { compareOps } from "./ops";
-import type { Comment, Mention, SignedOp, Thread } from "./types";
+import type { Comment, Mention, PlaceHow, SignedOp, Thread } from "./types";
 
 /** At most this many different emoji on one comment, so a comment can't be flooded; later ones are ignored. */
 export const MAX_REACTIONS = 12;
@@ -36,6 +36,12 @@ export function foldThreads(ops: Iterable<SignedOp>): Thread[] {
     if (o.kind === "resolve" || o.kind === "reopen") {
       thread.resolved = o.kind === "resolve";
       if (o.kind === "reopen") delete thread.addressed;
+      continue;
+    }
+    if (o.kind === "place") {
+      if (!o.anchor) continue;
+      thread.anchor = o.anchor;
+      thread.placed = { how: o.text as PlaceHow, author: o.author, name: o.name, at: o.at };
       continue;
     }
     if (o.kind === "addressed") {

@@ -1,3 +1,4 @@
+import { wasOn } from "../anchor/clues";
 import { formatAgo } from "../export/format";
 import { AI_NAME, isAiName, nameOf } from "../model/animals";
 import type { Comment, Mention, Thread } from "../model/types";
@@ -28,6 +29,8 @@ export interface ThreadActions {
   /** "Still not right" on an addressed thread: reopens it and puts the cursor in its reply line. */
   notRight(threadId: string): Promise<void>;
   copy(threadId: string): void;
+  /** Answers where a re-found or lost thread belongs: here, somewhere to pick, or gone (§8). */
+  place?(threadId: string, how: "confirmed" | "pick" | "gone"): void;
   /** Cancel or Esc threw away the words in thread `threadId`'s reply line: offers them back. */
   drop(threadId: string, words: string): void;
   /** Esc in an empty reply line: closes the thread. */
@@ -46,6 +49,8 @@ export interface ThreadViewOptions {
   place?: string | null;
   /** Its content was found changed or nearby: flagged Moved, with what it was about, for someone to confirm. */
   moved?: boolean;
+  /** Found by looking alike: it asks whether this is the right place. */
+  alike?: boolean;
   /** A card's line about what it's on, as written (in place of the quote). */
   note?: string | null;
   /** A card's quiet last line (its replies and reactions), as written. */
@@ -55,6 +60,12 @@ export interface ThreadViewOptions {
 
 /** How long Delete's second question ignores presses: the second click of a double-click lands well within it. */
 const CONFIRM_MS = 500;
+
+const PLACED = {
+  confirmed: "confirmed the place",
+  moved: "moved this comment",
+  gone: "marked the place as gone",
+};
 
 export const plural = (n: number) => `${n} ${n === 1 ? "reply" : "replies"}`;
 /** A thread's replies that haven't been deleted: a deleted comment goes away. */
@@ -106,6 +117,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   let seen: HTMLElement | null = null;
   let addressed: HTMLElement | null = null;
   let addressedKey = "";
+  let placing: HTMLElement | null = null;
+  let placingKey = "";
   const element = h("div", {}, root, card ? null : h("div", { class: "more" }, inner));
   /**
    * Avatars by comment, with the face they show. Updates rebuild the comment's box, so the same avatar is
@@ -438,7 +451,7 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       o.note && !o.moved
         ? o.note
         : o.lost
-          ? `${o.place || "No longer on the page"} — it read “${clip(o.lost, 120)}”`
+          ? `${o.place || ["No longer on the page", wasOn(t.anchor)].filter(Boolean).join(" · ")} — it read “${clip(o.lost, 120)}”`
           : o.moved
             ? `Moved · ${quote || `it read “${clip(t.anchor.snapshot, 80)}”`}`
             : quote;
@@ -529,6 +542,41 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
       }
     }
     if (addressed) inner.insertBefore(addressed, seen ?? (line.parentNode === inner ? line : null));
+    // Where it belongs (§8): a look-alike asks once; a lost one can be shown its place; who last said so.
+    const ask = !card && !!actions.place && !!o.alike;
+    const show = !card && !!actions.place && !!o.lost && !o.place;
+    const by = t.placed && !ask ? `${nameOf(t.placed)} ${PLACED[t.placed.how]}` : "";
+    const pk = `${ask}|${show}|${by}`;
+    if (pk !== placingKey) {
+      placing?.remove();
+      placingKey = pk;
+      const choice = (label: string, how: "confirmed" | "pick" | "gone") => {
+        const b = h("button", { type: "button" }, label);
+        b.addEventListener("click", (e) => {
+          e.stopPropagation();
+          actions.place?.(t.id, how);
+        });
+        return b;
+      };
+      placing =
+        ask || show || by
+          ? h(
+              "div",
+              { class: "adr" },
+              by && h("small", {}, by),
+              ask && "Is this the right place?",
+              (ask || show) &&
+                h(
+                  "div",
+                  { class: "go" },
+                  ...(ask
+                    ? [choice("Yes", "confirmed"), choice("Not here", "pick"), choice("It's gone", "gone")]
+                    : [choice("Show where it belongs", "pick")]),
+                ),
+            )
+          : null;
+    }
+    if (placing) inner.insertBefore(placing, addressed ?? seen ?? (line.parentNode === inner ? line : null));
     // A quiet line from an add-on: it has looked at this thread (and had nothing to add, or is reading it now).
     seen?.remove();
     const mark = threadMarks.get(t.id);

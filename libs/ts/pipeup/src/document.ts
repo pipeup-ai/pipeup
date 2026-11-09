@@ -2,7 +2,7 @@ import { sign as signBytes, type Identity } from "./crypto/identity";
 import { OpLog, type NewOp } from "./model/log";
 import { agentName, isAiName } from "./model/animals";
 import { compareOps, CONTACT, isEmoji, LIMITS, MAX_TEXT } from "./model/ops";
-import type { Anchor, Comment, Mention, SignedOp, Thread } from "./model/types";
+import type { Anchor, Comment, Mention, PlaceHow, SignedOp, Thread } from "./model/types";
 import { readFeedbackFile, writeFeedbackFile } from "./storage/feedback-file";
 import type { OpStore } from "./storage/store";
 import { fromB64u, utf8 } from "./util/encoding";
@@ -109,6 +109,18 @@ export class PipeupDocument {
         ...(mentions?.length ? { mentions } : {}),
       }),
     );
+  }
+
+  /**
+   * Sets a thread's place from now on, for everyone: `confirmed` keeps it where it was found (described again, so its
+   * clues follow the page), `moved` puts it somewhere else, `gone` makes it Lost on purpose.
+   */
+  place(threadId: string, anchor: Anchor, how: PlaceHow): Promise<void> {
+    return this.enqueue(async () => {
+      const { thread } = this.find(threadId);
+      const at: Anchor = how === "gone" ? { ...anchor, lost: true } : anchor;
+      await this.write({ kind: "place", thread, anchor: at, text: how });
+    });
   }
 
   reply(parentId: string, text: string, mentions?: Mention[]): Promise<string> {

@@ -44,6 +44,8 @@ export interface UiState {
   menu: boolean;
   /** Pin was tapped on a touch screen: the next tap on the page is where the pin goes, even on a highlight. */
   pinning: boolean;
+  /** The thread whose place is being chosen (Not here, Show where it belongs): comment mode's next pick moves it. */
+  picking: string | null;
 }
 
 /** Something that draws: rebuilt on render, repositioned every frame. */
@@ -118,6 +120,8 @@ export interface Ctx {
   startDraft(d: Draft): void;
   /** Moves the open draft to another block, keeping its words (starts one if none is open). */
   moveDraft(d: Draft): void;
+  /** Comment mode picked the new place of the thread being placed: moves it there, for everyone. */
+  repoint(anchor: Anchor): void;
   /** Nothing has been typed in the open draft. */
   draftEmpty(): boolean;
   /** Runs `fn`, then puts focus and the caret back in the open draft as they were. */

@@ -20,7 +20,22 @@ export interface Anchor {
   fingerprint: string;
   /** A short plain-text excerpt of what the reviewer saw. */
   snapshot: string;
+  /** What kind of thing it was on, so a look-alike can be found when the page changes. */
+  kind?: AnchorKind;
+  /** Its accessible name (a label, a picture's description or file name, a link's address), when it has one. */
+  name?: string;
+  /** The headings it sat under, outermost first. */
+  heads?: string[];
+  /** Where it was down the commentable area, 0 (top) to 1 (bottom). */
+  y?: number;
+  /** Someone said its place is gone: it is Lost on purpose and never re-found. */
+  lost?: true;
 }
+
+export type AnchorKind = "h" | "p" | "img" | "button" | "link" | "field" | "media" | "box";
+
+/** How a `place` op set a thread's place: kept where it was found, moved somewhere else, or gone. */
+export type PlaceHow = "confirmed" | "moved" | "gone";
 
 export type OpKind =
   | "create"
@@ -34,7 +49,8 @@ export type OpKind =
   | "unreact"
   | "seen"
   | "contact"
-  | "uncontact";
+  | "uncontact"
+  | "place";
 
 /** A person named in a comment's words: `text.slice(start, end)` is the "@Name"; `ref` says who (a key, or a supplied person). */
 export interface Mention {
@@ -56,7 +72,7 @@ export interface OpBody {
   text?: string;
   /** create, reply and edit: the people named in the words. Signed with them, so it can't be altered. */
   mentions?: Mention[];
-  /** create only. */
+  /** create, and place (the thread's place from now on). */
   anchor?: Anchor;
   /** Author's public key. */
   author: string;
@@ -108,4 +124,6 @@ export interface Thread {
   resolved: boolean;
   /** An agent has said it dealt with this thread. Not resolved: a person closes it, and reopening clears it. */
   addressed?: { text: string; author: string; name: string; at: number };
+  /** Someone set this thread's place since it was made (the latest `place`); `anchor` is then that place. */
+  placed?: { how: PlaceHow; author: string; name: string; at: number };
 }

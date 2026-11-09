@@ -1,5 +1,6 @@
 import type { Anchor } from "../model/types";
 import { normalizeText } from "../util/encoding";
+import { wasOn } from "./clues";
 import type { Resolved } from "./resolve";
 
 export interface Location {
@@ -117,7 +118,7 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
   const el = resolved.element;
   if (resolved.state === "orphaned" || !el) {
     return {
-      where: `No longer on the page (it read: "${anchor.snapshot}")`,
+      where: `No longer on the page (${[wasOn(anchor), `it read: "${anchor.snapshot}"`].filter(Boolean).join(", ")})`,
       element: null,
       id,
       quote,
@@ -140,6 +141,11 @@ export function locate(anchor: Anchor, resolved: Resolved, root: Element): Locat
   }
   const label = labelOf(el);
   parts.push(label);
+  // Found by looking alike: an agent should check it against what it was.
+  if (resolved.alike)
+    parts.push(
+      `Moved, not yet confirmed (${[wasOn(anchor), `it read: "${anchor.snapshot}"`].filter(Boolean).join(", ")})`,
+    );
   return {
     where: parts.join(" › "),
     element: label,

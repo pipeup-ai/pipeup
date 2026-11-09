@@ -136,11 +136,13 @@ describe("locate", () => {
     expect(locate(cta, resolveAnchor(cta, document.body), document.body).within).toBe(false);
   });
 
-  it("explains orphaned comments with their snapshot", () => {
+  it("explains lost comments: what they were on, the headings, and their words", () => {
     const anchor = describeElement(document.querySelector("a")!, document.body);
     document.querySelector("a")!.remove();
     const loc = locate(anchor, resolveAnchor(anchor, document.body), document.body);
-    expect(loc.where).toBe('No longer on the page (it read: "Start free trial")');
+    expect(loc.where).toBe(
+      'No longer on the page (it was a link under Pricing, it read: "Start free trial")',
+    );
   });
 });
 
