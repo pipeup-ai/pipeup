@@ -85,6 +85,11 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
   has its own.
 - **Tests:** Playwright loads `dist/chromium-test` (the build plus `host_permissions` for the test server, made with
   `--test`) in Chromium. Always on isn't tested: it needs the browser's permission prompt.
+- **The toolbar is the way in** (docs/design/extension-on-page.html): `start.js` mounts with `control: "off"` unless
+  `settings.showButton`; the panel's rows call `setCommentMode`, `openAllComments` and `openMenu` through
+  `executeScript` with a fixed list of actions (Manifest V3 allows no eval in content scripts); `pu.on("change")` and
+  the document's changes send `{ n, commenting }` to the worker, which sets the badge (green, "on" when 0, while
+  commenting). The setting lives on the extension's page (`comments.html`, also its options page).
 - **Not yet:** add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
 
 ## Change log
@@ -92,3 +97,4 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
 - 2026-11-09 — Proposed.
 - 2026-11-09 — The maintainer agreed the four recommendations; spec written (EXTENSION_SPEC.md).
 - 2026-11-09 — Built for local testing in Chrome; see As built.
+- 2026-11-09 — The toolbar is the way in: the corner button hidden by default, the panel's new rows, comment mode on the badge.

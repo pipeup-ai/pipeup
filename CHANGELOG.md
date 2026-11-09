@@ -10,7 +10,7 @@ change the API and the stored comment format.
 ### Added
 
 - `mount({ prefs })`: a host can keep the reviewer's choices (look, Hide comments) somewhere other than the page's localStorage.
-- Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome (`apps/extension`). Not in any store yet.
+- Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome (`apps/extension`). The toolbar is the way in: Pipeup's corner button stays off the page unless the reviewer wants it. Not in any store yet.
 - Comments follow what they were on when a site changes. A comment on something clicked keeps what kind of thing it was, its name and the headings it sat under, so it follows that thing when content is added or reordered instead of landing on a neighbour. When Pipeup found it by looking alike, the thread asks "Is this the right place?" (Yes, Not here, It's gone), once, for everyone. A comment whose place is gone says what it was, and anyone can show where it belongs. Copy for AI says the same.
 
 ## [0.9.1] - 2026-11-01

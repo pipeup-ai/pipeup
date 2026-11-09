@@ -1,0 +1,180 @@
+<title>Extension Page Controls</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column: the page before and after, the toolbar panel at its real size; light only, like the Pipeup site. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:920px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:52px 0 8px;text-wrap:balance}
+p{max-width:68ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+ul{padding-left:20px;max-width:68ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px;max-width:68ch}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+code{font:13px var(--mono);background:var(--bone);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+td:first-child{font-weight:600;color:var(--strong)}
+.tw{overflow-x:auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pair>div{min-width:0}
+@media (max-width:720px){.pair{grid-template-columns:1fr}}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch}
+.spec ul{margin:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch;margin:12px 0}
+.ask p{margin:0} .ask b{color:var(--strong)}
+
+/* A browser window with someone else's site in it. */
+.win{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;max-width:100%}
+.bar{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:var(--bone);border-bottom:1px solid var(--line);font-size:12px;color:var(--faint)}
+.dots{display:flex;gap:5px} .dots i{width:9px;height:9px;border-radius:50%;background:#d8d6cf;display:block}
+.url{flex:1;min-width:0;height:22px;border-radius:6px;background:#fff;border:1px solid var(--line);padding:0 8px;line-height:20px;overflow:hidden;white-space:nowrap}
+.tb{position:relative;width:22px;height:22px;border-radius:6px;display:grid;place-items:center}
+.tb.lit{background:var(--tint);outline:1.5px solid var(--violet)}
+.tb .badge{position:absolute;right:-6px;bottom:-4px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:var(--violet);color:#fff;font:600 9px/14px var(--sans);text-align:center}
+.tb.writing .badge{background:#2f7d4a}
+.site{position:relative;height:250px;padding:18px 20px;font:14px/1.55 var(--serif);color:#333}
+.site h4{margin:0 0 8px;font:600 17px var(--sans);color:#111}
+.site p{margin:0 0 8px;max-width:52%}
+.hl{background:#e6e3f7;border-radius:2px}
+.card{position:absolute;right:16px;top:20px;width:38%;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(20,20,40,.08);padding:8px 10px;font:12.5px/1.4 var(--sans)}
+.card b{color:#111}
+.ctl{position:absolute;right:0;bottom:0;width:30px;height:30px;border-top-left-radius:9px;background:#eceaf6;display:grid;place-items:center;color:var(--violet);font:600 11px var(--sans)}
+.ctl.gone{outline:2px dashed var(--warnline);background:transparent;color:transparent}
+.toast{position:absolute;right:10px;bottom:10px;max-width:62%;padding:6px 10px;border-radius:8px;background:#fff;border:1px solid var(--line);box-shadow:0 4px 12px rgba(0,0,0,.08);font:12px/1.35 var(--sans);color:#333}
+
+/* The toolbar panel, at its real size. */
+.pop{width:100%;max-width:320px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 10px 30px rgba(20,20,40,.10);font-size:14px;overflow:hidden}
+.pop .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #ecebe6}
+.pop .lg{width:22px;height:22px;border-radius:6px;background:var(--violet);display:grid;place-items:center;color:#fff;flex:none}
+.pop .hd b{color:var(--strong)} .pop .hd span{display:block;font-size:12px;color:var(--faint)}
+.pop .bd{padding:6px 6px;display:flex;flex-direction:column}
+.pop .it{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px;padding:0 8px;border-radius:8px;color:var(--ink)}
+.pop .it:first-child{background:var(--tint)}
+.pop .it small{color:var(--faint);font:12px var(--mono)}
+.pop .n{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--violet);color:#fff;font:600 11px/18px var(--sans);text-align:center}
+.pop .sep{height:1px;background:#ecebe6;margin:4px 8px}
+.sw{flex:none;width:30px;height:18px;border-radius:9px;background:#d8d6cf;position:relative}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on{background:var(--violet)} .sw.on::after{left:14px}
+.pop .ft{display:flex;justify-content:space-between;padding:9px 14px;border-top:1px solid #ecebe6;font-size:12px;color:var(--faint)}
+.pop .ft a{color:var(--violet)}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed and built 9 November 2026</div>
+<h1>The page, when the extension adds Pipeup</h1>
+<p class="lede">On a page that has Pipeup built in, the corner control is how a reviewer reaches Pipeup. With the
+extension, the toolbar button already does that job. So when the extension adds Pipeup, the corner control steps aside,
+and the page shows only the comments themselves.</p>
+
+<h2>1. What changes on the page</h2>
+<div class="pair">
+  <div>
+    <div class="label">Today</div>
+    <div class="win">
+      <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="2"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M12.3 8.2v6.6M9 11.5h6.6"/></svg><span class="badge">1</span></span></div>
+      <div class="site"><h4>Lumen launch plan</h4><p>We launch in <span class="hl">the second week of May</span>, after the beta with Ada's team.</p><p>Pricing changes follow in June.</p>
+        <div class="card"><b>Sam</b> · 2h<br>Which beta, Ada's or the public one?</div>
+        <span class="ctl">1</span></div>
+    </div>
+    <p class="cap">Two ways in, side by side: the toolbar button and Pipeup's corner control. Both show the same count.</p>
+  </div>
+  <div>
+    <div class="label">Proposed</div>
+    <div class="win">
+      <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="2"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M12.3 8.2v6.6M9 11.5h6.6"/></svg><span class="badge">1</span></span></div>
+      <div class="site"><h4>Lumen launch plan</h4><p>We launch in <span class="hl">the second week of May</span>, after the beta with Ada's team.</p><p>Pricing changes follow in June.</p>
+        <div class="card"><b>Sam</b> · 2h<br>Which beta, Ada's or the public one?</div>
+        <span class="ctl gone"></span></div>
+    </div>
+    <p class="cap">One way in: the toolbar. The site's corner is its own again. Highlights, the column and threads show
+    as before.</p>
+  </div>
+</div>
+
+<h2>2. Where each of the control's jobs goes</h2>
+<div class="tw"><table>
+<tr><th>The corner control's job</th><th>With the extension</th></tr>
+<tr><td>Start and stop comment mode</td><td>The toolbar panel's first row, or <code>⇧⌥C</code> as before. Esc stops it.</td></tr>
+<tr><td>Show how many comments are open</td><td>The number on the toolbar button (already there).</td></tr>
+<tr><td>Open the menu (name, Copy comments, Theme, Hide comments, add-ons)</td><td>The panel's <b>Pipeup's menu</b> row opens Pipeup's own menu on the page, unchanged.</td></tr>
+<tr><td>Open All comments</td><td>The panel's <b>All comments</b> row.</td></tr>
+<tr><td>Show that comment mode is on</td><td>The toolbar button's number turns green while comment mode is on, and comment mode's hint says how to stop, as today.</td></tr>
+<tr><td>Hold Pipeup's short messages ("Resolved", a mention)</td><td>They show in the same corner, on their own.</td></tr>
+</table></div>
+<p class="cap">Nothing new is built in Pipeup for this: hiding the control, opening the menu and All comments, and
+turning comment mode on are the page API that pages with their own Comment button already use (§4a).</p>
+
+<h2>3. The toolbar panel, with Pipeup on</h2>
+<div class="pair">
+  <div>
+    <div class="pop">
+      <div class="hd"><span class="lg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M12.3 8.2v6.6M9 11.5h6.6"/></svg></span><div><b>Pipeup</b><span>docs.example.com/plan</span></div></div>
+      <div class="bd">
+        <div class="it"><span>Start commenting</span><span style="display:flex;gap:8px;align-items:center"><small>⇧⌥C</small><span class="sw"></span></span></div>
+        <div class="it"><span>All comments</span><span class="n">1</span></div>
+        <div class="it"><span>Pipeup's menu</span><small>name, copy, theme</small></div>
+        <div class="sep"></div>
+        <div class="it"><span>Always on for docs.example.com</span><span class="sw on"></span></div>
+        <div class="it"><span>Turn off on this page</span></div>
+      </div>
+      <div class="ft"><span>Shortcut <span style="font-family:var(--mono)">⇧⌥P</span></span><a>Comments you've made</a></div>
+    </div>
+  </div>
+  <div>
+    <ul>
+      <li><b>Start commenting</b> is first, with its switch and shortcut, as it is nearest the control in Pipeup's own
+      menu. Choosing it closes the panel and turns comment mode on, so the next click on the page picks a block.</li>
+      <li><b>All comments</b> and <b>Pipeup's menu</b> close the panel and open Pipeup's own on the page, with focus in
+      them. Nothing of Pipeup's menu is copied into the panel, so add-ons' rows keep working.</li>
+      <li>Off, the panel is as now: <b>Comment on this page</b>. Choosing it also turns comment mode on, since that is
+      why the reviewer pressed it.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>4. Comment mode, shown in the toolbar</h2>
+<div class="pair">
+  <div class="win">
+    <div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb writing lit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="2"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M12.3 8.2v6.6M9 11.5h6.6"/></svg><span class="badge">1</span></span></div>
+    <div class="site" style="height:150px"><h4>Lumen launch plan</h4><p style="outline:2px solid #534ab7;outline-offset:3px;border-radius:3px">We launch in the second week of May, after the beta with Ada's team.</p>
+      <span class="toast">Click anything to comment · Esc to finish</span></div>
+  </div>
+  <div>
+    <p>While comment mode is on, the toolbar button's number turns from violet to green, and the button stays lit.
+    Comment mode's hint and the block outline work as they do now. Esc, <code>⇧⌥C</code> or the panel's switch stops it.</p>
+    <p class="cap">With no corner control, this is how the reviewer can tell at a glance that a click on the page will
+    pick a block rather than follow a link.</p>
+  </div>
+</div>
+
+<h2>5. The spec change</h2>
+<p>An addition to <code>docs/EXTENSION_SPEC.md</code> §3 and §4:</p>
+<div class="spec"><ul>
+<li>When the extension adds Pipeup to a page, Pipeup's corner control is hidden: the page shows the comments and nothing
+else of Pipeup's until the reviewer asks. A page with Pipeup built in keeps its own control.</li>
+<li>With Pipeup on, the toolbar panel offers <b>Start commenting</b> (with its switch and shortcut), <b>All comments</b>
+(with the open count), <b>Pipeup's menu</b>, <b>Always on for this site</b> and <b>Turn off on this page</b>.</li>
+<li><b>Comment on this page</b> turns comment mode on as it adds Pipeup.</li>
+<li>While comment mode is on, the toolbar button shows it: its number turns green, and says "on" when there are none.</li>
+<li>A setting in the extension, <b>Show Pipeup's button on pages</b>, brings the corner control back for reviewers who
+want it. Off by default.</li>
+</ul></div>
+
+<h2>6. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Hide the corner control by default?</b> Agreed: yes, with the setting to bring it back. The
+other choice is to keep it, as on pages with Pipeup built in.</p></div>
+<div class="ask"><p><b>How comment mode shows.</b> Agreed: in the toolbar button (green number, lit button). The
+other choice is a small "Commenting · Esc" label in the page's corner while it's on, which is clearer but puts Pipeup back
+on the page.</p></div>
+<div class="ask"><p><b>Does Comment on this page also start comment mode?</b> Agreed: yes. The other choice is
+only adding Pipeup, so existing comments show first.</p></div>
+
+<h2>What changes, in one place</h2>
+<ul>
+<li>With the extension, the site's corner is left alone; the toolbar is the one way into Pipeup.</li>
+<li>The panel gains Start commenting, All comments and Pipeup's menu.</li>
+<li>Unchanged: comments on the page, the menu itself, pages with Pipeup built in, and Pipeup's code.</li>
+</ul>
+</main>

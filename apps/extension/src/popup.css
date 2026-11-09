@@ -177,3 +177,63 @@ kbd {
     transition: none !important;
   }
 }
+
+/* With Pipeup on, the panel is the comment control: rows, the first nearest at hand, as in Pipeup's own menu. */
+.rows {
+  gap: 2px;
+  margin: -4px -6px 0;
+}
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.item:hover,
+.item.first {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.item.first:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.item small,
+.item kbd {
+  color: var(--faint);
+}
+.item .end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.n {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+.rows hr {
+  width: calc(100% - 16px);
+  margin: 4px 8px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.quiet-item {
+  margin: 0 -6px;
+  color: var(--muted);
+}

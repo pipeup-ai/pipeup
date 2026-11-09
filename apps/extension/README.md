@@ -27,10 +27,13 @@ After a rebuild, press the reload arrow on Pipeup's card in `chrome://extensions
 
 - `src/manifest.json`: the extension's name and what it may do. It asks for no access to sites when installed: a press
   on the toolbar button reaches that one tab, and **Always on for this site** asks the browser for that site only.
-- `src/popup.*`: the toolbar panel (off, on, built in, can't run).
+- `src/popup.*`: the toolbar panel. Off: Comment on this page (which also starts comment mode). On: Start commenting,
+  All comments, Pipeup's menu, Always on for this site, Turn off on this page. Pipeup's own corner button stays off the
+  page unless **Show Pipeup's button on pages** is on (on the extension's page).
 - `src/start.js`: adds Pipeup to the tab, in the extension's own world, with the extension's storage.
 - `src/background.js`: the toolbar button's count of open comments.
-- `src/comments.*`: **Comments you've made**, every page with comments, newest first.
+- `src/comments.*`: **Comments you've made**, every page with comments, newest first, and the extension's one setting
+  (also its options page).
 - `pipeup/pipeup.esm.js`: copied unchanged from `libs/ts/pipeup/dist` by the build, so it is npm's file byte for byte
   (the build prints its hash).
 

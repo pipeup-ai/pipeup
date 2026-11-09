@@ -110,33 +110,38 @@
     },
   };
 
+  // With the extension, the toolbar is the way into Pipeup: its corner control steps aside unless the reviewer wants it.
+  const { settings } = await storage.get("settings");
   let pu;
   try {
-    pu = await Pipeup.mount({ store, prefs });
+    pu = await Pipeup.mount({ store, prefs, ...(settings?.showButton ? {} : { control: "off" }) });
   } catch (e) {
     state.starting = false;
     throw e;
   }
-  /** The toolbar button's number: the page's open comments. */
-  const count = () => {
+  /** The toolbar button: the page's open comments, and whether comment mode is on. */
+  const tell = () => {
     try {
       const n = pu.comments().threads.length;
-      void chrome.runtime.sendMessage({ type: "count", n }).catch(() => {});
+      void chrome.runtime.sendMessage({ type: "state", n, commenting: pu.commentMode }).catch(() => {});
     } catch {
       // Pipeup was taken off the page meanwhile.
     }
   };
-  const stop = pu.document.onChange(count);
-  count();
+  const stopChanges = pu.document.onChange(tell);
+  const stopMode = pu.on("change", tell);
+  tell();
   Object.assign(state, {
     on: true,
     starting: false,
+    pu,
     count: () => pu.comments().threads.length,
     off() {
-      stop();
+      stopChanges();
+      stopMode();
       pu.unmount();
       state.on = false;
-      void chrome.runtime.sendMessage({ type: "count", n: 0 }).catch(() => {});
+      void chrome.runtime.sendMessage({ type: "state", n: 0, commenting: false }).catch(() => {});
     },
   });
 })();

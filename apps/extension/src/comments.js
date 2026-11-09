@@ -31,3 +31,10 @@ for (const p of pages) {
   list.append(item);
 }
 document.getElementById("none").hidden = pages.length > 0;
+
+// The one setting: bring Pipeup's own corner button back on pages the extension adds it to.
+const show = document.getElementById("show-button");
+show.checked = !!all.settings?.showButton;
+show.addEventListener("change", () => {
+  void chrome.storage.local.set({ settings: { ...all.settings, showButton: show.checked } });
+});

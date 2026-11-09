@@ -13,7 +13,10 @@
   "action": {
     "default_title": "Pipeup",
     "default_popup": "popup.html",
-    "default_icon": { "16": "icons/16.png", "32": "icons/32.png" }
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
   },
   "background": {
     "service_worker": "background.js",
@@ -24,12 +27,26 @@
   "optional_host_permissions": ["<all_urls>"],
   "commands": {
     "_execute_action": {
-      "suggested_key": { "default": "Alt+Shift+P" },
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
       "description": "Open Pipeup for this page"
     }
   },
-  "web_accessible_resources": [{ "resources": ["pipeup/*"], "matches": ["<all_urls>"] }],
+  "web_accessible_resources": [
+    {
+      "resources": ["pipeup/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "browser_specific_settings": {
-    "gecko": { "id": "extension@pipeup.ai", "strict_min_version": "121.0" }
+    "gecko": {
+      "id": "extension@pipeup.ai",
+      "strict_min_version": "121.0"
+    }
+  },
+  "options_ui": {
+    "page": "comments.html",
+    "open_in_tab": true
   }
 }

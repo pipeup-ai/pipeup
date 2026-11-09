@@ -21,9 +21,15 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   Shift+Alt+C stays comment mode once Pipeup is on).
 - Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
   asks the browser's permission for that site only.
-- The toolbar button's panel shows the page's address and one main action: **Comment on this page**, or **Turn off on
-  this page** when Pipeup is on. Turning it off takes Pipeup away; the comments stay and come back next time.
-- The toolbar button shows how many open comments the current page has.
+- The toolbar button's panel shows the page's address. Off, it offers one main action, **Comment on this page**, which
+  adds Pipeup and starts comment mode, since that is why the reviewer pressed it.
+- With Pipeup on, the panel is Pipeup's control: **Start commenting** (with its switch and shortcut), **All comments**
+  (with the open count), **Pipeup's menu** (Pipeup's own, on the page), **Always on for this site** and **Turn off on this
+  page**. Turning it off takes Pipeup away; the comments stay and come back next time.
+- When the extension adds Pipeup, **Pipeup's corner button is hidden**: the page shows the comments and nothing else of
+  Pipeup's until the reviewer asks. A setting, **Show Pipeup's button on pages** (off by default), brings it back.
+- The toolbar button shows how many open comments the current page has, and shows comment mode: its number turns green
+  while comment mode is on, and says "on" when there are none.
 - On a page that has **Pipeup built in**, the extension steps aside and says so; the page's own copy is the only one.
 - On pages browsers keep closed to extensions (their settings, new tab and store pages, files such as PDFs the browser
   draws itself), the panel says Pipeup can't run there and why.
@@ -65,3 +71,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   in stores at first.
 - 2026-11-09 — A small picture of where each comment was made, in that browser only, shown on a Lost comment to the reviewer who made it (§5; visual spec docs/design/refind-comments.html). On by default.
 - 2026-11-09 — Built for local testing in Chrome (load unpacked; apps/extension/README.md). Not in any store yet.
+- 2026-11-09 — The toolbar is the way into Pipeup (visual spec docs/design/extension-on-page.html): Pipeup's corner button is hidden on pages the extension adds it to, unless the reviewer turns on Show Pipeup's button on pages; the panel gains Start commenting, All comments and Pipeup's menu; Comment on this page also starts comment mode; the toolbar button shows comment mode.

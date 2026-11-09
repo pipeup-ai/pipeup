@@ -17,17 +17,27 @@
       <section id="off" hidden>
         <button id="start" class="main" type="button">Comment on this page</button>
       </section>
-      <section id="on" hidden>
-        <p id="count"></p>
-        <button id="stop" class="main quiet" type="button">Turn off on this page</button>
+      <section id="on" class="rows" hidden>
+        <label class="item first" for="commenting">
+          <span>Start commenting</span>
+          <span class="end"><kbd>⇧⌥C</kbd><input id="commenting" type="checkbox" role="switch" /></span>
+        </label>
+        <button id="all" class="item" type="button">
+          <span>All comments</span><span id="count" class="n">0</span>
+        </button>
+        <button id="menu" class="item" type="button">
+          <span>Pipeup's menu</span><small>name, copy, theme</small>
+        </button>
+        <hr />
       </section>
-      <section id="always-row" class="row" hidden>
+      <section id="always-row" class="row item-row" hidden>
         <label for="always">
           <span id="always-label">Always on for this site</span>
           <small>Pipeup starts whenever you open it</small>
         </label>
         <input id="always" type="checkbox" role="switch" />
       </section>
+      <button id="stop" class="item quiet-item" type="button" hidden>Turn off on this page</button>
       <p id="built-in" hidden>
         This page has Pipeup built in, so the extension stays out of the way. Its comments go where the page's
         author chose.
