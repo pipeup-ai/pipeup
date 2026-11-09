@@ -366,6 +366,9 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     if (ctx.state.draft && e.altKey) return ctx.dismiss();
     // A click on a highlight reads its thread (the comment views open it), never picks the block under it.
     if (!e.altKey && ctx.readsAt(e.clientX, e.clientY)) return;
+    // A thread open to read: a click on the page closes it (keeping any reply being written) and does nothing else; the
+    // next click chooses a block. One just written doesn't hold up the next comment.
+    if (reading()) return ctx.open(null);
     if (ctx.state.active) ctx.open(null);
     // A pointer's click puts the block cursor away; a screen reader's activate (no pointer) moves it there.
     if (cur && e.detail) stow();
@@ -422,6 +425,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   // The click comes just after the button is let go, in the same task.
   const lifted = () => setTimeout(() => (press = null));
 
+  /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
+  const reading = () => !!ctx.state.active && !ctx.state.sent;
   const onMove = (e: PointerEvent) => {
     if (ctx.owns(e) || ctx.state.paused) return;
     if (!onPage(e)) {
@@ -429,6 +434,11 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       return;
     }
     e.stopPropagation();
+    // One thing at a time: while a thread is open to read, no other block is offered (§5).
+    if (reading()) {
+      if (!chosen) show(null);
+      return;
+    }
     if (chosen || ctx.state.draft) return;
     const block = !selected() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
     if (cur) {

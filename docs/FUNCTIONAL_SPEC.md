@@ -204,6 +204,12 @@ any of them off.
   pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
   selection is cleared or its comment is started or cancelled. Double- or triple-clicking words selects them
   without choosing the block they are in, and Esc with words selected clears the selection first.
+- **One thing at a time.** While a thread is open to read in comment mode, no block is outlined or named on hover, and
+  a click on the page closes the thread and does nothing else (a reply being written in it is kept for when it opens
+  again); the next click chooses a block. A thread just written shows but doesn't hold up the next comment: the next
+  click goes on to the next block. While a comment has words, blocks aren't offered either, and a click goes back to
+  it. An empty comment box still moves to the block clicked. When a host shows the threads (§4a), the page has none
+  open, so blocks are always offered.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
@@ -2064,3 +2070,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — Re-finding comments (§8; visual spec docs/design/refind-comments.html): a comment remembers what kind of thing it was on, its name, the headings it sat under and roughly where it was, so it follows that thing when a site adds or reorders content instead of landing on a neighbour; a look-alike match asks "Is this the right place?" (Yes, or Not here to show the right place or say it's gone), answered once by anyone for everyone; Orphaned is now called Lost, and says the kind of thing, its headings and its words; anyone can show where a Lost comment belongs; Copy for AI describes Moved and Lost comments the same way.
 - 2026-11-09 — A host that adds Pipeup (such as the browser extension) can keep the reviewer's choices for the page (look, Hide comments) in its own storage instead of the page's (section 4a).
 - 2026-11-09 — A host (such as the browser extension) can show Pipeup's threads in its own interface, while new comments are still written on the page; it can copy the comments, set the look and Hide comments, and go to a thread (section 4a).
+- 2026-11-09 — One thing at a time in comment mode (section 5; visual spec docs/design/one-thing-at-a-time.html): while a thread is open to read, no other block is outlined, and a click on the page only closes it; a thread just written doesn't hold up the next comment.

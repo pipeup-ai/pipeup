@@ -44,6 +44,8 @@ export interface UiState {
   menu: boolean;
   /** Pin was tapped on a touch screen: the next tap on the page is where the pin goes, even on a highlight. */
   pinning: boolean;
+  /** The open thread was opened by sending it: it shows, but the next click in comment mode goes on to the next block. */
+  sent: boolean;
   /** The thread whose place is being chosen (Not here, Show where it belongs): comment mode's next pick moves it. */
   picking: string | null;
 }

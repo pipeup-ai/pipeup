@@ -14,6 +14,11 @@ change the API and the stored comment format.
 - Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome (`apps/extension`). Pipeup's menu is the toolbar panel; new comments are written beside what they're about, and comments open as popovers or, pinned, in the browser's side panel. Not in any store yet.
 - Comments follow what they were on when a site changes. A comment on something clicked keeps what kind of thing it was, its name and the headings it sat under, so it follows that thing when content is added or reordered instead of landing on a neighbour. When Pipeup found it by looking alike, the thread asks "Is this the right place?" (Yes, Not here, It's gone), once, for everyone. A comment whose place is gone says what it was, and anyone can show where it belongs. Copy for AI says the same.
 
+### Changed
+
+- In comment mode, while a thread is open to read, no other block is outlined, and a click on the page only closes it; the next click chooses a block. A thread you just wrote doesn't hold up the next comment.
+
+
 ## [0.9.1] - 2026-11-01
 
 Inline asks are compact and can match the page, and a page with its own Comment button can open Pipeup's menu itself.

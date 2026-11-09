@@ -163,6 +163,7 @@ export function startApp(o: AppOptions): App {
     menu: false,
     pinning: false,
     picking: null,
+    sent: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   /** What the message's Undo does while it shows, also on ⌘Z or Ctrl+Z (the block cursor has no Tab stop for it). */
@@ -1020,6 +1021,7 @@ export function startApp(o: AppOptions): App {
     // What is being written in the closing thread's reply line waits for it.
     keepReplies();
     state.active = id;
+    state.sent = !!id && sent;
     if (id) {
       state.draft = null;
       pulse(id);
