@@ -1,7 +1,7 @@
 # Pipeup for browsers (extension)
 
-Status: **proposal, for review**. Visual spec: [browser-extension.html](browser-extension.html). Functional
-requirements will go in a new `docs/EXTENSION_SPEC.md` once agreed. Targets `next`.
+Status: **agreed, not built**. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
+[EXTENSION_SPEC.md](../EXTENSION_SPEC.md). Targets `next`.
 
 ## Shape
 
@@ -61,11 +61,14 @@ requirements will go in a new `docs/EXTENSION_SPEC.md` once agreed. Targets `nex
   comments out of the page origin's storage.
 - `web-ext lint` for Firefox in `npm run check`.
 
-## Open
+## Decided (2026-11-09)
 
-See section 9 of the visual spec: where comments are kept, whether agents can reach the extension's copy, browser order,
-pre-releases.
+- Comments are kept by the extension, by page address (`ExtensionStore` above).
+- A page's scripts can't reach the extension's Pipeup (isolated world; no `window.Pipeup` bridge).
+- Chrome, Edge and Firefox first; Safari after an Apple Developer account and the Mac release step exist.
+- Stable releases only in stores at first.
 
 ## Change log
 
 - 2026-11-09 — Proposed.
+- 2026-11-09 — The maintainer agreed the four recommendations; spec written (EXTENSION_SPEC.md).

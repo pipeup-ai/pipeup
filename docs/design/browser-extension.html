@@ -77,7 +77,7 @@ td:first-child{font-weight:600;color:var(--strong);white-space:nowrap}
 </style>
 
 <main>
-<div class="label">Visual spec · proposal for review · 9 November 2026</div>
+<div class="label">Visual spec · agreed 9 November 2026 · not built yet</div>
 <h1>Pipeup for browsers</h1>
 <p class="lede">An extension that lets anyone comment on any web page with Pipeup, even pages that never added it. It
 installs from each browser's own store, and it ships from the same release as the npm package, with the same version and
@@ -283,22 +283,22 @@ updates the extension.</li>
 <li><b>Size:</b> under 1 MB in all; stores and browsers don't mind.</li>
 </ul>
 
-<h2>9. Decisions for you</h2>
-<div class="ask"><p><b>Where are comments kept?</b> Recommended: in the extension, by page address, so they follow the
+<h2>9. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Where are comments kept?</b> Agreed: in the extension, by page address, so they follow the
 reviewer across tabs, can't be read or cleared by the site, and show in "Comments you've made". The other choice is the
 site's own storage, as a page with Pipeup built in does; simpler, but the site can wipe them.</p></div>
-<div class="ask"><p><b>Can an agent reach the extension's Pipeup?</b> Recommended: no. A page's scripts can't see the
+<div class="ask"><p><b>Can an agent reach the extension's Pipeup?</b> Agreed: no. A page's scripts can't see the
 extension's copy, and that is what keeps the reviewer's comments private. Agents get comments the ways they do today:
 Copy for AI, Share, or the agents' mailbox.</p></div>
-<div class="ask"><p><b>Which browsers first?</b> Recommended: Chrome, Edge and Firefox together (one zip, free or $5),
+<div class="ask"><p><b>Which browsers first?</b> Agreed: Chrome, Edge and Firefox together (one zip, free or $5),
 then Safari once the Apple Developer account and a Mac release step are in place. Safari is the most work: an app wrapper,
 a yearly fee and its own review.</p></div>
-<div class="ask"><p><b>Pre-releases in stores from day one?</b> Recommended: not yet. Ship stable only, add the testing
+<div class="ask"><p><b>Pre-releases in stores from day one?</b> Agreed: not yet. Ship stable only, add the testing
 listings after the first stable extension release.</p></div>
 
 <h2>10. The spec change</h2>
-<p>Proposed as a new, short spec, <code>docs/EXTENSION_SPEC.md</code>, beside the website's. Functional requirements
-only:</p>
+<p>Written as a new, short spec, <code>docs/EXTENSION_SPEC.md</code>, beside the website's. Functional requirements
+only; in short:</p>
 <div class="spec">
 <p><b>Pipeup for browsers</b></p>
 <ul>
