@@ -42,6 +42,8 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - When the extension adds Pipeup, **Pipeup's corner button is hidden**. A setting, **Show Pipeup's button on pages** (off
   by default), brings back Pipeup's own button, menu and panel on the page instead.
 - On a page that has **Pipeup built in**, the extension steps aside and says so; the page's own copy is the only one.
+- When the extension is reloaded or updated, Pipeup on open pages takes itself off them; pressing Pipeup again starts the
+  new version. Comments are kept.
 - On pages browsers keep closed to extensions (their settings, new tab and store pages, files such as PDFs the browser
   draws itself), the panel says Pipeup can't run there and why.
 
@@ -85,3 +87,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — The toolbar is the way into Pipeup (visual spec docs/design/extension-on-page.html): Pipeup's corner button is hidden on pages the extension adds it to, unless the reviewer turns on Show Pipeup's button on pages; the panel gains Start commenting, All comments and Pipeup's menu; Comment on this page also starts comment mode; the toolbar button shows comment mode.
 - 2026-11-09 — Pipeup in the browser, not on the page (visual spec docs/design/extension-native-ui.html): the toolbar panel is Pipeup's whole menu, and the comments (the list, threads, replies and the new-comment box) are in the browser's side panel; the page keeps only highlights, pins and comment mode's outline. Reactions, mentions and add-ons' rows aren't in the extension's panels yet.
 - 2026-11-09 — Write where you point; pin the comments (visual spec docs/design/extension-pin.html): a new comment's box opens on the page with the cursor in it; comments are pinned in the side panel or, by default, open as popovers on the page.
+- 2026-11-09 — After the extension is reloaded or updated, Pipeup on open pages takes itself off them.

@@ -293,3 +293,20 @@ test("Show Pipeup's button on pages brings the corner button back", async ({ con
     .click();
   await expect(page.locator(".launch .mode")).toBeVisible();
 });
+
+test("after the extension is reloaded or updated, the old Pipeup takes itself off the page", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await (
+    await panel(context, worker, id, page)
+  )
+    .getByRole("button", { name: "Comment on this page" })
+    .click();
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await worker.evaluate(() => chrome.runtime.reload()).catch(() => {});
+  await expect(page.locator("pipeup-root")).toHaveCount(0, { timeout: 5000 });
+});

@@ -119,7 +119,33 @@
     pinned: { ui: "host", control: "off" },
     popovers: { control: "off", layout: "bubbles" },
   };
-  const send = (message) => void chrome.runtime.sendMessage(message).catch(() => {});
+  /** The extension was reloaded or updated: this copy can't reach it any more (its own `chrome.runtime` is gone). */
+  const orphaned = () => !chrome.runtime?.id;
+  const send = (message) => {
+    if (orphaned()) return retire();
+    try {
+      void chrome.runtime.sendMessage(message).catch(() => {});
+    } catch {
+      retire();
+    }
+  };
+  // An orphaned copy takes itself off the page, so the updated extension starts clean when it is pressed again.
+  let retired = false;
+  function retire() {
+    if (retired) return;
+    retired = true;
+    window.clearInterval(watch);
+    for (const stop of stops) stop();
+    stops = [];
+    try {
+      pu?.unmount();
+    } catch {
+      // Already gone.
+    }
+    pu = null;
+    state.on = false;
+  }
+  const watch = window.setInterval(() => orphaned() && retire(), 2000);
 
   let pu = null;
   let stops = [];
@@ -216,6 +242,8 @@
     starting: false,
     count: () => pu?.comments().threads.length ?? 0,
     off() {
+      window.clearInterval(watch);
+      retired = true;
       chrome.runtime.onMessage.removeListener(onAsk);
       chrome.storage.onChanged.removeListener(onSettings);
       unmountNow();
