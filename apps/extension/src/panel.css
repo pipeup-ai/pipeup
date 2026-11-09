@@ -227,3 +227,17 @@ textarea:focus-visible {
   opacity: 0.5;
   cursor: default;
 }
+.shot {
+  margin: 6px 0;
+}
+.shot img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.shot figcaption {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--faint);
+}

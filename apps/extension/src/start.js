@@ -12,6 +12,26 @@
   state.starting = true;
   const storage = chrome.storage.local;
   const Pipeup = await import(chrome.runtime.getURL("pipeup/pipeup.esm.js"));
+  // Add-ons read their settings through `Pipeup.setting`, as on a page that loads them.
+  globalThis.Pipeup = Pipeup;
+  const settingsNow = async () => (await storage.get("settings")).settings ?? {};
+
+  // The add-ons the reviewer turned on (Emoji is on unless turned off), loaded once, before Pipeup starts.
+  const ADDONS = ["emoji", "voice", "share", "live", "github", "identity"];
+  const enabled = (settings, id) => settings.addons?.[id] ?? id === "emoji";
+  const first = await settingsNow();
+  for (const id of ADDONS.filter((a) => enabled(first, a)))
+    try {
+      const mod = await import(chrome.runtime.getURL(`addons/${id}.esm.js`));
+      Pipeup.use(mod.default());
+    } catch (e) {
+      console.warn(`pipeup: the ${id} add-on didn't load`, e);
+    }
+  /** What add-ons are told about this page, from the extension's settings (a page would say it in its own HTML). */
+  const pageSettings = (settings) => ({
+    ...(settings.share ? { "data-pipeup-share": settings.share } : {}),
+    ...(settings.githubRepo ? { "data-pipeup-github-repo": settings.githubRepo } : {}),
+  });
 
   // Ed25519 private keys from a 32-byte seed, as the identity add-on makes them: the seed is what is kept.
   const PKCS8 = Uint8Array.from([
@@ -135,6 +155,9 @@
     if (retired) return;
     retired = true;
     window.clearInterval(watch);
+    window.clearInterval(follow);
+    window.clearInterval(places);
+    document.removeEventListener("contextmenu", onMenu, true);
     for (const stop of stops) stop();
     stops = [];
     try {
@@ -150,11 +173,14 @@
   let pu = null;
   let stops = [];
   async function mountAs(mode) {
-    pu = await Pipeup.mount({ store, prefs, ...OPTIONS[mode] });
+    pu = await Pipeup.mount({ store, prefs, settings: pageSettings(await settingsNow()), ...OPTIONS[mode] });
+    place = where();
+    known = new Set(pu.document.threads().map((t) => t.id));
     state.mode = mode;
     state.hosted = mode === "pinned";
     stops = [
       pu.document.onChange(tell),
+      pu.document.onChange(picture),
       pu.on("change", tell),
       pu.on("open", (id) => send({ type: "open", id })),
     ];
@@ -165,6 +191,81 @@
     stops = [];
     pu?.unmount();
     pu = null;
+  }
+
+  /** Starts Pipeup again (a new mode, or a new page in a single-page app), keeping comment mode. */
+  async function restart(mode = state.mode) {
+    const commenting = pu?.commentMode;
+    await pu?.flush().catch(() => {});
+    unmountNow();
+    await mountAs(mode);
+    if (commenting) await pu.setCommentMode(true);
+  }
+
+  // Where each comment is can change without any comment changing (the page changed, and one's place has gone): the
+  // side panel hears about that too.
+  let placed = "";
+  const places = window.setInterval(() => {
+    if (!pu || !state.on) return;
+    try {
+      const now = pu
+        .comments({ all: true })
+        .threads.map((t) => `${t.id}:${t.where}`)
+        .join("|");
+      if (now !== placed) {
+        placed = now;
+        send({ type: "threads", ...snapshot() });
+      }
+    } catch {
+      // Pipeup was taken off the page meanwhile.
+    }
+  }, 1500);
+
+  // A single-page app changes page without loading one: Pipeup follows, with the new page's comments.
+  const where = () => location.origin + location.pathname;
+  let place = where();
+  const follow = window.setInterval(() => {
+    if (state.on && pu && where() !== place) void restart();
+  }, 600);
+
+  // A picture of where each of the reviewer's new comments is, taken by the extension and kept in this browser only.
+  let known = new Set();
+  function picture() {
+    if (!pu) return;
+    const mine = pu.document.threads().filter((t) => !known.has(t.id));
+    for (const t of mine) known.add(t.id);
+    for (const t of mine) {
+      if (t.root.author !== pu.document.me || Date.now() - t.root.at > 10_000) continue;
+      const r = Pipeup.resolveAnchor(t.anchor, document.body);
+      const box = (r.range ?? r.element)?.getBoundingClientRect();
+      if (!box || !box.width) continue;
+      send({
+        type: "shot",
+        thread: t.id,
+        rect: { x: box.x, y: box.y, width: box.width, height: box.height },
+        view: { width: innerWidth, height: innerHeight },
+      });
+    }
+  }
+
+  // What was right-clicked last, for the browser menu's "Comment on this".
+  const onMenu = (e) => (state.lastTarget = e.composedPath()[0]);
+  document.addEventListener("contextmenu", onMenu, true);
+  /** The thing the browser menu's "Comment on this" means: the words selected, the picture, the link, or what was right-clicked. */
+  function targetOf(m) {
+    const sel = getSelection();
+    if (m.selection && sel && !sel.isCollapsed) return sel.getRangeAt(0);
+    const same = (a, b) => !!a && !!b && new URL(a, location.href).href === b;
+    if (m.src) {
+      const img = [...document.images].find((i) => same(i.currentSrc, m.src) || same(i.src, m.src));
+      if (img) return img;
+    }
+    if (m.link) {
+      const a = [...document.links].find((l) => same(l.href, m.link));
+      if (a) return a;
+    }
+    const t = state.lastTarget;
+    return t instanceof Element && document.contains(t) ? t : null;
   }
 
   /** What the side panel draws: every thread, who you are, and where each one is on the page. */
@@ -200,6 +301,33 @@
     reopen: (m) => pu.document.reopen(m.id),
     react: (m) => (m.on ? pu.document.react(m.id, m.emoji) : pu.document.unreact(m.id, m.emoji)),
     go: (m) => pu.openThread(m.id),
+    commentOn: (m) => {
+      const target = targetOf(m);
+      return target ? pu.startComment(target) : pu.setCommentMode(true);
+    },
+    file: () => pu.document.exportFile(),
+    // For the local agent: what to send, and its replies put into their threads (each once).
+    agentSend: async () => ({
+      doc: pu.document.id,
+      url: location.href,
+      title: document.title,
+      markdown: pu.commentsAs("ai", { all: true }),
+      file: await pu.document.exportFile(),
+    }),
+    agentReplies: async (m) => {
+      const key = `agentReplies:${pu.document.id}`;
+      const done = new Set((await storage.get(key))[key] ?? []);
+      const threads = new Set(pu.document.threads().map((t) => t.id));
+      let added = 0;
+      for (const r of m.replies ?? []) {
+        if (done.has(r.id) || !threads.has(r.thread) || !r.text) continue;
+        await pu.document.paste(r.thread, String(r.agent || "Agent"), String(r.text));
+        done.add(r.id);
+        added++;
+      }
+      await storage.set({ [key]: [...done] });
+      return added;
+    },
   };
   const onAsk = (message, _sender, reply) => {
     const ask = message?.to === "page" && Object.hasOwn(asks, message.type) ? asks[message.type] : null;
@@ -218,12 +346,7 @@
   const onSettings = async (changes, area) => {
     if (area !== "local" || !changes.settings || !state.on) return;
     const mode = modeOf(changes.settings.newValue);
-    if (mode === state.mode) return;
-    const commenting = pu?.commentMode;
-    await pu?.flush().catch(() => {});
-    unmountNow();
-    await mountAs(mode);
-    if (commenting) await pu.setCommentMode(true);
+    if (mode !== state.mode) await restart(mode);
   };
 
   try {
@@ -243,6 +366,9 @@
     count: () => pu?.comments().threads.length ?? 0,
     off() {
       window.clearInterval(watch);
+      window.clearInterval(follow);
+      window.clearInterval(places);
+      document.removeEventListener("contextmenu", onMenu, true);
       retired = true;
       chrome.runtime.onMessage.removeListener(onAsk);
       chrome.storage.onChanged.removeListener(onSettings);

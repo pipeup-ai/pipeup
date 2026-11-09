@@ -23,7 +23,16 @@
     "scripts": ["background.js"],
     "type": "module"
   },
-  "permissions": ["activeTab", "scripting", "storage", "unlimitedStorage", "sidePanel", "clipboardWrite"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "unlimitedStorage",
+    "sidePanel",
+    "clipboardWrite",
+    "contextMenus",
+    "nativeMessaging"
+  ],
   "optional_host_permissions": ["<all_urls>"],
   "commands": {
     "_execute_action": {
@@ -35,7 +44,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["pipeup/*"],
+      "resources": ["pipeup/*", "addons/*"],
       "matches": ["<all_urls>"]
     }
   ],

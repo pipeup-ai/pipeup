@@ -4,8 +4,8 @@
 //
 //   node tools/build-extension.mjs          needs libs/ts/pipeup/dist (npm run build in libs/ts/pipeup)
 //   node tools/build-extension.mjs --test   also apps/extension/dist/chromium-test, for the tests only: it may reach
-//                                           the test pages' server without a press on the toolbar button, which a
-//                                           test can't make. Never published.
+//                                           any page without a press on the toolbar button, which a test can't make.
+//                                           Never published.
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -29,6 +29,13 @@ mkdirSync(`${out}/pipeup`, { recursive: true });
 mkdirSync(`${out}/icons`, { recursive: true });
 cpSync(src, out, { recursive: true });
 cpSync(pipeup, `${out}/pipeup/pipeup.esm.js`);
+// The add-ons the reviewer can turn on, each its release file unchanged (build them with npm run build in libs/ts/addons).
+mkdirSync(`${out}/addons`, { recursive: true });
+for (const id of ["emoji", "voice", "share", "live", "github", "identity"]) {
+  const file = `${root}libs/ts/addons/${id}/dist/${id}.esm.js`;
+  if (existsSync(file)) cpSync(file, `${out}/addons/${id}.esm.js`);
+  else console.warn(`build-extension: the ${id} add-on isn't built; the extension is packed without it`);
+}
 const manifest = JSON.parse(readFileSync(`${src}/manifest.json`, "utf8"));
 manifest.version = version.replace(/-.*/, "");
 manifest.version_name = version;
@@ -53,7 +60,8 @@ if (process.argv.includes("--test")) {
   cpSync(out, test, { recursive: true });
   writeFileSync(
     `${test}/manifest.json`,
-    JSON.stringify({ ...manifest, host_permissions: ["http://localhost:4931/*"] }, null, 2) + "\n",
+    // Every page: the tests can't press the toolbar button, which is what lets the extension see a tab (and take a picture).
+    JSON.stringify({ ...manifest, host_permissions: ["<all_urls>"] }, null, 2) + "\n",
   );
 }
 console.log(`Pipeup extension ${version}: ${out}`);

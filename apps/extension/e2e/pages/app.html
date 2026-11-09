@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Lumen app</title>
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Inbox</h1>
+      <p id="p1">Three new articles saved today.</p>
+      <button id="go" type="button">Go to settings</button>
+    </main>
+    <script>
+      // A single-page app: the address and the page change without loading one.
+      document.getElementById("go").addEventListener("click", () => {
+        history.pushState({}, "", "/settings");
+        document.getElementById("title").textContent = "Settings";
+        document.getElementById("p1").textContent = "Voice and reading speed.";
+      });
+    </script>
+  </body>
+</html>

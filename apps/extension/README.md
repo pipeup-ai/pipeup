@@ -35,7 +35,12 @@ After a rebuild, press the reload arrow on Pipeup's card in `chrome://extensions
   the cursor in it. **Show Pipeup's button on pages** (on the extension's page) brings back Pipeup's own button, menu and
   panel instead.
 - `src/start.js`: adds Pipeup to the tab, in the extension's own world, with the extension's storage.
-- `src/background.js`: the toolbar button's count of open comments.
+- `src/background.js`: the toolbar button's count, the right-click **Comment with Pipeup**, and pictures of where
+  comments were made (`chrome.tabs.captureVisibleTab`, cut and faded around the place, kept in the extension).
+- `addons/`: Emoji, Voice, Share, Live, Save to GitHub and My identity, copied unchanged from `libs/ts/addons/*/dist`
+  (build them first with `npm run build` in `libs/ts/addons`), turned on in the extension's settings.
+- **Send to my agent** talks to `pipeup browser` on this computer through Chrome's native messaging; set it up once
+  with `npx --yes pipeup@0 browser install --extension-id <id>`.
 - `src/comments.*`: **Comments you've made**, every page with comments, newest first, and the extension's one setting
   (also its options page).
 - `pipeup/pipeup.esm.js`: copied unchanged from `libs/ts/pipeup/dist` by the build, so it is npm's file byte for byte

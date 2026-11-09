@@ -66,3 +66,25 @@ test("a host can copy the comments as text, set the look and Hide comments, and 
   await expect(page.locator(".pop.show, .col .th")).toHaveCount(0);
   expect(await heard(page)).toEqual([]);
 });
+
+test("a host can open the comment box on an element or on words, and give page settings", async ({
+  page,
+}) => {
+  await open(page, "doc.html", { settings: { "data-pipeup-github-repo": "lumen/plans", other: "x" } });
+  const got = await page.evaluate(() => {
+    const w = window as any;
+    return [w.Pipeup.setting("data-pipeup-github-repo"), w.Pipeup.setting("other")];
+  });
+  expect(got).toEqual(["lumen/plans", null]);
+  await page.evaluate(() => (window as any).pu.startComment(document.querySelector("#p2")));
+  await expect(page.locator(".draft textarea").first()).toBeFocused();
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => {
+    const r = document.createRange();
+    const t = document.querySelector("#p1")!.firstChild!;
+    r.setStart(t, 0);
+    r.setEnd(t, 10);
+    return (window as any).pu.startComment(r);
+  });
+  await expect(page.locator(".draft").first()).toContainText("“");
+});

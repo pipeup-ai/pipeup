@@ -83,10 +83,13 @@ jobs:
           cache: npm
           cache-dependency-path: |
             libs/ts/pipeup/package-lock.json
+            libs/ts/addons/package-lock.json
             apps/extension/package-lock.json
-      # The extension carries the release's own Pipeup file, built here.
+      # The extension carries the release's own Pipeup file and add-ons, built here.
       - run: npm ci && npm run build
         working-directory: libs/ts/pipeup
+      - run: npm ci && npm run build
+        working-directory: libs/ts/addons
       - run: npm ci
         working-directory: apps/extension
       - run: npx playwright install --with-deps chromium

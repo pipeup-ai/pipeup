@@ -105,6 +105,29 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
   (plain Pipeup), and starts again the new way when the setting changes, keeping comment mode. The side panel always
   lists the comments; its pin writes `settings.pinned`, unpinning closes it (`window.close()`), and closing it unpins
   (`pagehide`).
+- **Integrations** (2026-11-09):
+  - Right-click: `contextMenus` "Comment with Pipeup" (selection, image, link, page). The click grants `activeTab`;
+    the worker injects `start.js`, waits for Pipeup, then asks `commentOn` with the selection flag, `srcUrl` or
+    `linkUrl`. `start.js` finds the element (an image by `currentSrc`/`src`, a link by `href`) or uses the last
+    `contextmenu` target it saw, and calls Pipeup's new `startComment()`.
+  - Single-page apps: `start.js` checks `origin + pathname` every 600 ms and starts Pipeup again on a new address (no
+    `webNavigation`, which would ask to "read your browsing history").
+  - Local pages: one registered content script, `always local`, for `http://localhost/*`, `127.0.0.1` and `[::1]`.
+  - Pictures: `start.js` sends the new thread's box after the reviewer's own create; the worker uses
+    `captureVisibleTab` (allowed after a press, by `activeTab`), crops with `OffscreenCanvas`, fades outside the box,
+    rings it, and keeps a JPEG data URL as `shot:<thread>`. The side panel shows it on lost threads. Settings can turn
+    pictures off, which deletes them.
+  - Save comments: a download from the toolbar panel (`commentsAs("ai")`, `document.exportFile()`); no `downloads`
+    permission.
+  - Send to my agent: `nativeMessaging` to `ai.pipeup.browser`, a host in the `pipeup` package
+    (`cli/browser-host.mjs`, launched by `~/.pipeup/browser-host.sh` with Node's absolute path). Pages are kept in
+    `~/.pipeup/browser/<doc>/` (`page.json`, `comments.md`, `comments.json`, `replies.json`); replies are pasted with
+    `document.paste()` once each (`agentReplies:<doc>` remembers which).
+  - Add-ons: their ESM files are imported in the content script and registered with `Pipeup.use()` before Pipeup
+    starts; `globalThis.Pipeup` lets them read settings, and `mount({ settings })` gives `data-pipeup-share` and
+    `data-pipeup-github-repo` from the extension's settings. Save to GitHub needs no sign-in (it opens GitHub's own
+    new-issue page), so item 7 needed no OAuth.
+  - The side panel hears when a comment's place changes (checked every 1.5 s), not only when comments change.
 - **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
 
 ## Change log
@@ -115,3 +138,4 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
 - 2026-11-09 — The toolbar is the way in: the corner button hidden by default, the panel's new rows, comment mode on the badge.
 - 2026-11-09 — Pipeup in the browser: the menu in the toolbar panel, the comments in the side panel, `ui: "host"` in Pipeup.
 - 2026-11-09 — The comment box on the page; pinned or popovers.
+- 2026-11-09 — Integrations: right-click, single-page apps, local pages, pictures, saving, Send to my agent, add-ons.

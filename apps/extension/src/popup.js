@@ -7,6 +7,9 @@ const [active] = named ? [] : await chrome.tabs.query({ active: true, currentWin
 const tab = named ? await chrome.tabs.get(named) : active;
 const url = new URL(tab?.url || "about:blank");
 const web = url.protocol === "http:" || url.protocol === "https:";
+// Pages served from this computer, where agents mostly build: one switch covers every port.
+const LOCAL = ["http://localhost/*", "http://127.0.0.1/*", "http://[::1]/*"];
+const local = web && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
 const origin = url.origin;
 const scriptId = `always ${origin}`;
 const LOOKS = ["auto", "light", "dark"];
@@ -36,6 +39,12 @@ async function probe() {
           name: pu?.name ?? "",
           look: pu?.look ?? "auto",
           hidden: !!pu?.hidden,
+          // Add-ons whose rows are in Pipeup's own menu (Emoji and Voice work inside the comment box instead).
+          extras:
+            !!pu &&
+            !!globalThis.Pipeup?.addons?.().some(
+              (a) => ["share", "live", "github", "identity"].includes(a.id) && a.state === "on",
+            ),
         };
       },
     });
@@ -59,6 +68,7 @@ async function ask(what, value) {
       else if (action === "look") await pu.setLook(v);
       else if (action === "hide") await pu.setHidden(v);
       else if (action === "all") await pu.openAllComments();
+      else if (action === "menu") await pu.openMenu();
       else if (action === "copy") return pu.commentsAs(v);
       return null;
     },
@@ -84,7 +94,10 @@ async function show() {
   $("off").hidden = !state || state.on || state.builtIn;
   $("on").hidden = !state?.on;
   $("stop").hidden = !state?.on;
-  $("always-row").hidden = !state || state.builtIn;
+  $("always-row").hidden = !state || state.builtIn || local;
+  $("local-row").hidden = !state || state.builtIn || !local;
+  $("local").checked =
+    (await chrome.scripting.getRegisteredContentScripts({ ids: ["always local"] })).length > 0;
   if (state?.on) {
     $("count").textContent = String(state.count);
     $("count").hidden = state.count === 0;
@@ -94,6 +107,7 @@ async function show() {
     $("who-name").textContent = state.name || "Add your name";
     $("who-hint").textContent = state.name ? "Edit name" : "Add name";
     $("pinned").checked = !!(await settings()).pinned;
+    $("extras").hidden = !state.extras;
   }
   $("always").checked = await always();
 }
@@ -102,6 +116,8 @@ async function show() {
 async function done() {
   if (!named) window.close();
   else await show();
+  // Replies an agent left since this page was last open come into their threads.
+  if (state?.on) void agentReplies();
 }
 
 /** Opens the browser's side panel for this tab, where the comments are. Only allowed in answer to a press here. */
@@ -130,11 +146,105 @@ $("commenting").addEventListener("change", async (e) => {
   await done();
 });
 
-// Comments: every comment, in the side panel, pinned or not.
+// Comments: every comment. Pinned, in the side panel; otherwise in Pipeup's own panel on the page.
 $("all").addEventListener("click", async () => {
-  if (state?.mode === "button") await ask("all");
-  else await openComments();
+  if (state?.mode === "pinned") await openComments();
+  else await ask("all");
   await done();
+});
+
+// Add-ons' own rows (Share, Live and the rest) are in Pipeup's menu on the page.
+$("extras").addEventListener("click", async () => {
+  await ask("menu");
+  await done();
+});
+
+// Save comments: one row that opens to its two choices; the file is saved where the browser saves downloads.
+$("save").addEventListener("click", () => {
+  const open = $("save-as").hidden;
+  $("save-as").hidden = !open;
+  $("save").setAttribute("aria-expanded", String(open));
+});
+const fileName = (ext) =>
+  `${
+    (tab.title || url.host)
+      .replace(/[^\p{L}\p{N} _-]+/gu, " ")
+      .trim()
+      .slice(0, 60) || "comments"
+  }.${ext}`;
+async function save(text, ext, type) {
+  const a = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(new Blob([text], { type })),
+    download: fileName(ext),
+  });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  $("saved").textContent = "Saved";
+  $("save-as").hidden = true;
+}
+$("save-md").addEventListener("click", async () => {
+  const text = await ask("copy", "ai");
+  if (typeof text === "string") await save(text, "md", "text/markdown");
+});
+$("save-file").addEventListener("click", async () => {
+  const text = await page("file");
+  if (typeof text === "string") await save(text, "pipeup.json", "application/json");
+});
+
+// Send to my agent: the page's comments go to agents on this computer (`pipeup browser read`), and their replies
+// (`pipeup browser reply`) come back into the threads.
+const HOST = "ai.pipeup.browser";
+const page = async (type, fields = {}) => {
+  const answer = await chrome.tabs.sendMessage(tab.id, { to: "page", type, ...fields }).catch(() => null);
+  return answer?.ok ? answer.result : null;
+};
+async function agentReplies() {
+  const sent = await page("agentSend");
+  if (!sent) return 0;
+  const back = await chrome.runtime
+    .sendNativeMessage(HOST, { type: "replies", doc: sent.doc })
+    .catch(() => null);
+  return back?.ok && back.replies.length ? ((await page("agentReplies", { replies: back.replies })) ?? 0) : 0;
+}
+$("agent").addEventListener("click", async () => {
+  const sent = await page("agentSend");
+  if (!sent) return;
+  const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
+  if (!answer?.ok) {
+    $("agent-cmd").textContent = `npx --yes pipeup@0 browser install --extension-id ${chrome.runtime.id}`;
+    $("agent-help").hidden = false;
+    $("agent-said").textContent = "not set up yet";
+    return;
+  }
+  $("agent-said").textContent = "Sent";
+  await agentReplies();
+});
+$("agent-copy").addEventListener(
+  "click",
+  () => void navigator.clipboard.writeText($("agent-cmd").textContent),
+);
+
+$("local").addEventListener("change", async (e) => {
+  if (e.target.checked) {
+    // The browser asks the reviewer, for pages on this computer only.
+    const granted = await chrome.permissions.request({ origins: LOCAL });
+    if (!granted) return void (e.target.checked = false);
+    await chrome.scripting.registerContentScripts([
+      {
+        id: "always local",
+        matches: LOCAL,
+        js: ["start.js"],
+        runAt: "document_idle",
+        persistAcrossSessions: true,
+      },
+    ]);
+    await start();
+  } else {
+    await chrome.scripting.unregisterContentScripts({ ids: ["always local"] }).catch(() => {});
+    await chrome.permissions.remove({ origins: LOCAL }).catch(() => {});
+  }
+  await show();
 });
 
 $("pinned").addEventListener("change", async (e) => {

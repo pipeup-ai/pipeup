@@ -55,12 +55,32 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - The add-ons that work on any page are included, each turned on by the reviewer. Add-ons that need the page's own
   markup (Inline) and update notices (the store updates the extension) are not.
 
+## 4a. More ways in, and out
+
+- **Right-click menu:** **Comment with Pipeup** on selected words, a picture, a link or anything on a page adds Pipeup if
+  it isn't on, and opens the comment box on what was right-clicked (words selected; the picture; the link; else what
+  was right-clicked, or comment mode when Pipeup wasn't on yet).
+- **Comments** in the toolbar menu opens Pipeup's own panel on the page when comments aren't pinned, and the side panel
+  when they are.
+- **Single-page apps:** when a site changes page without loading one (its address changes), Pipeup follows: the new
+  address's comments show, in the same comment mode.
+- **Pages on this computer:** on a page from localhost or 127.0.0.1, the toolbar menu offers **Always on for local
+  pages** (every port), in place of Always on for this site.
+- **Save comments**, in the toolbar menu: **As a Markdown file** (for people and AIs) or **As a Pipeup file** (to open
+  again), saved where the browser saves downloads.
+- **Send to my agent**, in the toolbar menu: the page's comments go to agents on this computer, and their replies come
+  back into the threads (functional spec §15g). Until it is set up, it says the one command to run.
+- **Add-ons**, turned on in the extension's settings: Emoji (on by default), Voice, Share (with a sharing address),
+  Live, Save to GitHub (with a repository; GitHub asks the reviewer to sign in on its own page, so the extension holds
+  no GitHub sign-in) and My identity. Their menu rows are in Pipeup's own menu, reached from **More from add-ons**.
+
 ## 5. Where comments are kept
 
 - In the browser, **by the extension**, by page address. The site can't read or remove them, and the extension writes
   nothing into the site's own storage.
 - **Comments you've made** lists every page the reviewer has commented on, newest first, and opens any of them.
-- When a comment is made, the extension keeps a **small picture of where it was**, in that browser only. A Lost comment
+- When a comment is made, the extension keeps a **small picture of where it was** (where the browser lets it see the
+  tab: after a press on Pipeup or its right-click menu), in that browser only. A Lost comment
   (functional spec §8) shows it to the reviewer who made it, marked "only in this browser". The picture is never sent
   with the comment, shared or copied for AI. Pictures are on by default; the reviewer can turn them off, which also
   removes the ones kept.
@@ -91,3 +111,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — Write where you point; pin the comments (visual spec docs/design/extension-pin.html): a new comment's box opens on the page with the cursor in it; comments are pinned in the side panel or, by default, open as popovers on the page.
 - 2026-11-09 — After the extension is reloaded or updated, Pipeup on open pages takes itself off them.
 - 2026-11-09 — Side panel: a click anywhere on a thread opens it; a thread on something without words says what it is and its name.
+- 2026-11-09 — The right-click menu, Comments opening Pipeup's own panel when unpinned, single-page apps, Always on for local pages, pictures (shown on lost comments in the side panel), Save comments, Send to my agent, and add-ons with their settings (§4a, §5).

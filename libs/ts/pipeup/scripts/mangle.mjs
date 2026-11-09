@@ -109,6 +109,8 @@ export const PUBLIC_NAMES = [
   "comments",
   "control",
   "prefs",
+  "startComment",
+  "settings",
   "ui",
   "commentsAs",
   "look",

@@ -67,6 +67,31 @@
         max-width: 56ch;
         margin-top: 2px;
       }
+      .cmd {
+        overflow-x: auto;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+        font:
+          12.5px ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        color: var(--strong);
+      }
+      .field {
+        display: block;
+        width: 100%;
+        max-width: 360px;
+        height: 30px;
+        margin-top: 6px;
+        padding: 0 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--strong);
+        font: inherit;
+      }
       li span {
         flex: none;
         color: var(--muted);
@@ -92,6 +117,34 @@
       </label>
       <input id="show-button" type="checkbox" role="switch" />
     </div>
+    <div class="row setting">
+      <label for="pictures">
+        Keep a picture of where each comment was made
+        <small
+          >A small picture, so a comment whose place has gone still shows what it was about. Kept in this
+          browser only, never sent, shared or copied. Turning this off deletes the pictures kept.</small
+        >
+      </label>
+      <input id="pictures" type="checkbox" role="switch" />
+    </div>
+
+    <h2>Add-ons</h2>
+    <p class="lede">
+      What each one sends, and where, is said in Pipeup's menu once it's on. Changes take effect the next time
+      Pipeup starts on a page.
+    </p>
+    <div id="addons"></div>
+
+    <h2>Send to my agent</h2>
+    <p class="lede">
+      Sends a page's comments to agents on this computer; their replies come back into the threads. Set it up
+      once, in a terminal:
+    </p>
+    <pre class="cmd"><code id="agent-cmd"></code></pre>
+    <p class="lede">
+      Agents then read with <code>npx --yes pipeup@0 browser read</code> and answer with
+      <code>npx --yes pipeup@0 browser reply</code>.
+    </p>
     <script type="module" src="comments.js"></script>
   </body>
 </html>

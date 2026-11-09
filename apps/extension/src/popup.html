@@ -33,6 +33,28 @@
           <button id="copy-md" class="item" type="button">As Markdown<small>for an AI</small></button>
           <button id="copy-text" class="item" type="button">As text</button>
         </div>
+        <button id="save" class="item" type="button" aria-expanded="false">
+          <span>Save comments</span><small id="saved">›</small>
+        </button>
+        <div id="save-as" class="sub" hidden>
+          <button id="save-md" class="item" type="button">
+            As a Markdown file<small>for people and AIs</small>
+          </button>
+          <button id="save-file" class="item" type="button">
+            As a Pipeup file<small>to open again</small>
+          </button>
+        </div>
+        <button id="agent" class="item" type="button">
+          <span>Send to my agent</span><small id="agent-said">on this computer</small>
+        </button>
+        <p id="agent-help" class="help" hidden>
+          Set up once, in a terminal:
+          <code id="agent-cmd"></code>
+          <button id="agent-copy" class="btn-link" type="button">Copy</button>
+        </p>
+        <button id="extras" class="item" type="button" hidden>
+          <span>More from add-ons</span><small>›</small>
+        </button>
         <button id="theme" class="item" type="button">
           <span>Theme</span><small id="theme-now">Automatic</small>
         </button>
@@ -52,6 +74,13 @@
           <span class="end"><kbd>⇧⌥C</kbd><input id="commenting" type="checkbox" role="switch" /></span>
         </label>
         <hr />
+      </section>
+      <section id="local-row" class="row item-row" hidden>
+        <label for="local">
+          <span>Always on for local pages</span>
+          <small>localhost and 127.0.0.1, any port</small>
+        </label>
+        <input id="local" type="checkbox" role="switch" />
       </section>
       <section id="always-row" class="row item-row" hidden>
         <label for="always">

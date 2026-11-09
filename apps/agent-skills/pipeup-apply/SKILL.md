@@ -15,6 +15,11 @@ Use the first of these that works:
    prints, and switches on **Share with my agent**): run `npx --yes pipeup@0 comments report.html` (add `--all` for resolved
    threads, `--json` for data). No browser needed. If it says nothing is shared, ask the author to switch the switch on.
    Your replies below reach the open page within seconds. The link lists your key for the page while it runs.
+   **Sent from the browser extension** (the reviewer pressed **Send to my agent** in Pipeup's menu, on any website):
+   run `npx --yes pipeup@0 browser` to list the pages sent, newest first, and `npx --yes pipeup@0 browser read <page>`
+   for one page's comments (`<page>` is part of its address or title). Answer each thread with
+   `npx --yes pipeup@0 browser reply <page> --thread <id> --agent <your name> "<words>"`; the extension puts the reply
+   in the thread when the page is next open. There's no page file to edit: tell the author what to change on the site.
 1. **Run the page** in a browser (you can drive one, or the author has it open) and evaluate
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each

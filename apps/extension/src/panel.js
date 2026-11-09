@@ -16,6 +16,15 @@ let tabId = named || (await chrome.tabs.query({ active: true, currentWindow: tru
 let data = null;
 let openId = null;
 const filter = { mine: false, resolved: false };
+/** Pictures of where comments were made, by thread: kept by the extension, in this browser only. */
+const shots = new Map();
+async function loadShots(threads) {
+  const want = threads.map((t) => `shot:${t.id}`).filter((k) => !shots.has(k));
+  if (!want.length) return;
+  const got = await chrome.storage.local.get(want);
+  for (const k of want) shots.set(k, got[k] ?? null);
+  draw();
+}
 /** Edits under way, by comment id: their words, kept across redraws. */
 const editing = new Map();
 /** Replies being written, by thread id. */
@@ -222,7 +231,19 @@ function thread(t, now) {
     if (e.target.closest("button,textarea,input,a") || getSelection()?.toString()) return;
     toggle();
   });
-  card.append(headline, comment(t.root, now));
+  card.append(headline);
+  // A comment whose place is gone shows how it looked when it was made, to the reviewer who kept the picture.
+  const shot = lost ? shots.get(`shot:${t.id}`) : null;
+  if (shot)
+    card.append(
+      el(
+        "figure",
+        { className: "shot" },
+        el("img", { src: shot, alt: `How it looked when ${nameOf(t.root)} commented` }),
+        el("figcaption", { textContent: "How it looked · only in this browser" }),
+      ),
+    );
+  card.append(comment(t.root, now));
   const replies = t.root.replies.filter((r) => !r.deleted);
   if (!open) {
     if (replies.length)
@@ -290,6 +311,7 @@ function draw() {
       (!filter.mine || mentionsMe(t.root) || t.root.replies.some(mentionsMe)),
   );
   list.append(...shown.map((t) => thread(t, now)));
+  void loadShots(shown.filter((t) => (t.where ?? "").startsWith("No longer on the page")));
   $("empty").hidden = shown.length > 0;
   $("empty").textContent = filter.mine
     ? "No comments mention you."

@@ -270,3 +270,31 @@ kbd {
   overflow: hidden;
   clip-path: inset(50%);
 }
+
+.help {
+  margin: 0 8px 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  font-size: 12px;
+  color: var(--muted);
+}
+.help code {
+  display: block;
+  margin: 4px 0;
+  font:
+    11.5px ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+  color: var(--strong);
+  overflow-wrap: anywhere;
+}
+.btn-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}

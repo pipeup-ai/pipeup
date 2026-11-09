@@ -137,7 +137,8 @@ Pipeup without reaching inside it.
 - When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
   copy of Pipeup already owns the page), as well as in the browser's console.
 - Whatever adds Pipeup to a page (such as the browser extension) can keep the reviewer's choices for it (look, Hide
-  comments) in its own storage, as it can keep the comments, instead of the page's.
+  comments) in its own storage, as it can keep the comments, instead of the page's. It can also give page settings the
+  page doesn't (an add-on's address, say), and open the comment box on an element or on words it chooses.
 - It can also **show Pipeup's threads itself**, in its own interface. Pipeup then opens no thread on the page and says when
   one is opened there (its place clicked, or just written); new comments are still written on the page, beside what
   they're about. It can draw Pipeup's menu from what the page's code can already ask and do, copy the comments as Copy
@@ -1737,6 +1738,17 @@ agent's replies.
 - Exit codes: 0 done (including no comments), 1 a source couldn't be read, 2 the command wasn't understood or needs
   something first.
 
+### 15g. Comments sent from the browser extension: `pipeup browser`
+
+- **Send to my agent**, in the extension's menu, sends the page's comments (as Markdown, and as a Pipeup comments file)
+  to agents on this computer. Nothing leaves the computer; each page is kept in its own folder in the reviewer's home.
+- `pipeup browser` lists the pages sent, newest first; `pipeup browser read <page>` prints one page's comments as
+  Markdown; `pipeup browser reply <page> --thread <id> [--agent <name>] "<words>"` answers a thread. The extension puts
+  agents' replies into their threads, each once, the next time Pipeup's menu is opened on the page; they show as the
+  agent's, like any reply an agent wrote.
+- `pipeup browser install --extension-id <id>` sets this up once, for the reviewer's browser (Chrome, Edge, Chromium or
+  Brave, on macOS and Linux). Until then, Send to my agent says the command to run.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -2074,3 +2086,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — A host (such as the browser extension) can show Pipeup's threads in its own interface, while new comments are still written on the page; it can copy the comments, set the look and Hide comments, and go to a thread (section 4a).
 - 2026-11-09 — One thing at a time in comment mode (section 5; visual spec docs/design/one-thing-at-a-time.html): while a thread is open to read, no other block is outlined, and a click on the page only closes it; a thread just written doesn't hold up the next comment.
 - 2026-11-09 — Space in an empty comment or reply box doesn't type a space; holding it pauses comment mode, as on the page (section 5).
+- 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.

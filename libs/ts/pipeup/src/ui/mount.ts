@@ -4,6 +4,8 @@ import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
 import { addons, attachAddons, drainQueue, firstCore } from "./addons";
+import { describeElement, describeRange } from "../anchor/describe";
+import { labelOf } from "../anchor/locate";
 import { startApp, type Prefs } from "./app";
 import type { LookChoice } from "./context";
 import { copyAll, type CopyAs } from "../export/format";
@@ -41,6 +43,8 @@ export interface MountOptions {
    * and says when one is opened there ("open"); new comments are still written on the page.
    */
   ui?: string;
+  /** More page settings, as `data-pipeup-…` attributes would give them (for hosts that can't write the page's own). */
+  settings?: Record<string, string>;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -92,6 +96,8 @@ export interface PipeupInstance {
   setHidden(on: boolean): Promise<void>;
   /** Goes to a thread's place on the page: scrolls it into view and marks it; with Pipeup's own panel, opens it. */
   openThread(id: string): Promise<void>;
+  /** Opens the comment box on an element or on words (a Range), as choosing it in comment mode does. */
+  startComment(target: Element | Range): Promise<void>;
 }
 
 let current: Promise<PipeupInstance> | null = null;
@@ -126,6 +132,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 
 async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Promise<PipeupInstance> {
   setGiven({
+    ...Object.fromEntries(Object.entries(o.settings ?? {}).filter(([k]) => k.startsWith("data-pipeup-"))),
     "data-pipeup-doc": o.doc,
     "data-pipeup-layout": o.layout,
     "data-pipeup-theme": o.theme,
@@ -326,6 +333,21 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     },
     setHidden: async (on) => {
       if (!unmounted) started.ctx.menu.setHide(Boolean(on));
+    },
+    startComment: async (target) => {
+      if (unmounted) return;
+      const ctx = started.ctx;
+      if (ctx.state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
+      const root = o.root ?? document.body;
+      const words = target instanceof Range;
+      ctx.startDraft({
+        anchor: words
+          ? describeRange(target, root, ctx.here.view(target.commonAncestorContainer))
+          : describeElement(target, root, undefined, ctx.here.view(target)),
+        label: words ? `“${target.toString().replace(/\s+/g, " ").trim().slice(0, 60)}”` : labelOf(target),
+        ranges: words ? [target] : [],
+        resolved: { state: "attached", element: words ? null : target, range: words ? target : null },
+      });
     },
     openThread: async (id) => {
       if (unmounted) return;

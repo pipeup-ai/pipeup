@@ -9,9 +9,11 @@ change the API and the stored comment format.
 
 ### Added
 
+- `mount({ settings })` gives page settings a host can't write into the page, and `startComment(element or range)` opens the comment box on what it names.
+- `pipeup browser`: agents read comments sent from the browser extension and answer them (`browser read`, `browser reply`, set up once with `browser install`).
 - `mount({ prefs })`: a host can keep the reviewer's choices (look, Hide comments) somewhere other than the page's localStorage.
 - `mount({ ui: "host" })`: a host shows Pipeup's threads itself; Pipeup opens none on the page and says `on("open")` when one is opened there. New comments are still written on the page. New on the instance: `commentsAs("ai" | "text")`, `look`/`setLook()`, `hidden`/`setHidden()` and `openThread(id)`.
-- Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome (`apps/extension`). Pipeup's menu is the toolbar panel; new comments are written beside what they're about, and comments open as popovers or, pinned, in the browser's side panel. Not in any store yet.
+- Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome (`apps/extension`). It has a right-click Comment with Pipeup, follows single-page apps, can be always on for local pages, keeps a private picture of where each comment was made, saves comments as a file, sends them to agents on this computer, and carries Emoji, Voice, Share, Live, Save to GitHub and My identity. Pipeup's menu is the toolbar panel; new comments are written beside what they're about, and comments open as popovers or, pinned, in the browser's side panel. Not in any store yet.
 - Comments follow what they were on when a site changes. A comment on something clicked keeps what kind of thing it was, its name and the headings it sat under, so it follows that thing when content is added or reordered instead of landing on a neighbour. When Pipeup found it by looking alike, the thread asks "Is this the right place?" (Yes, Not here, It's gone), once, for everyone. A comment whose place is gone says what it was, and anyone can show where it belongs. Copy for AI says the same.
 
 ### Changed
