@@ -116,7 +116,6 @@ export const PUBLIC_NAMES = [
   "hidden",
   "setHidden",
   "openThread",
-  "pick",
   "open",
   "getItem",
   "setItem",

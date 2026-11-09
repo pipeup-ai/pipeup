@@ -56,18 +56,16 @@ export interface AppOptions {
   /** Where the reviewer's choices for this page are kept (look, Hide comments). Default: the page's localStorage. */
   prefs?: Prefs;
   /**
-   * A host draws Pipeup's threads, comment box and menu itself (the browser extension's side panel): Pipeup draws only
-   * on the page (highlights, pins, comment mode) and tells the host when a thread is opened or a place is picked.
+   * A host shows Pipeup's threads itself (the browser extension's side panel): Pipeup opens none on the page, and tells
+   * the host when one is opened there. New comments are still written on the page, beside what they're about.
    */
   host?: Host;
 }
 
-/** What Pipeup tells a host that draws its threads and comment box. */
+/** What Pipeup tells a host that shows its threads. */
 export interface Host {
-  /** A thread was opened on the page (its highlight clicked), or closed (null). */
-  open(id: string | null): void;
-  /** A place was picked to comment on, with words naming it. */
-  pick(place: { anchor: Draft["anchor"]; label: string }): void;
+  /** A thread was opened on the page (its highlight clicked, or just written). */
+  open(id: string): void;
 }
 
 /** A place for the reviewer's small choices, read as Pipeup starts: localStorage, or the host's own. */
@@ -87,11 +85,9 @@ export function chooseMode(root: Element, showing = false): UiState["mode"] {
   return columnSpot(root, showing) ? "column" : "bubbles";
 }
 
-export function viewsFor(ctx: Ctx, hosted = false): View[] {
-  // A host draws the threads: on the page, only what marks where they are.
-  const comments = hosted
-    ? [createBubbles(ctx, { popovers: false })]
-    : ctx.state.mode === "column"
+export function viewsFor(ctx: Ctx): View[] {
+  const comments =
+    ctx.state.mode === "column"
       ? [createColumn(ctx), createBubbles(ctx, { popovers: false })]
       : [createBubbles(ctx, { popovers: true })];
   return [...comments, createSelection(ctx), createLauncher(ctx)];
@@ -1003,10 +999,12 @@ export function startApp(o: AppOptions): App {
 
   function open(id: string | null, sent = false): void {
     // A host shows the thread; the page marks it.
-    if (o.host) {
-      state.active = id;
+    if (o.host && id) {
+      if (state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
+      state.draft = null;
+      state.hot = id;
       render();
-      if (id) pulse(id);
+      pulse(id);
       return o.host.open(id);
     }
     // Words being written are never dropped: another thread waits, and the reviewer goes back to them.
@@ -1047,8 +1045,6 @@ export function startApp(o: AppOptions): App {
 
   function startDraft(d: Draft): void {
     hideHint();
-    // A host writes the comment; the page keeps the chosen block outlined.
-    if (o.host) return o.host.pick({ anchor: d.anchor, label: d.label });
     // While All comments is open the new comment is written there; otherwise where comments are written.
     state.draft = d;
     state.active = null;
@@ -1225,7 +1221,7 @@ export function startApp(o: AppOptions): App {
     keepReplies();
     const typing = !!focusedIn()?.closest(".rbox");
     for (const v of views) v.destroy();
-    views = viewsFor(ctx, !!o.host);
+    views = viewsFor(ctx);
     render();
     if (state.active) putReply(state.active, typing);
   }
@@ -1623,9 +1619,7 @@ export function startApp(o: AppOptions): App {
       const r = resolved.get(id);
       const el = r?.element ?? r?.range?.startContainer.parentElement;
       el?.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
-      state.active = id;
-      render();
-      window.setTimeout(() => pulse(id), reduced ? 0 : 450);
+      hot(id);
     },
     destroy() {
       destroyed = true;

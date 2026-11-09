@@ -10,21 +10,27 @@
   <body>
     <header class="ph">
       <h1>Comments</h1>
+      <button id="pin" class="pin" type="button" aria-pressed="false" title="Keep comments beside the page">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M9 4h6l-1 6 4 4H6l4-4z" />
+          <path d="M12 14v6" />
+        </svg>
+        <span class="sr">Keep comments beside the page</span>
+      </button>
       <button id="for-you" class="pill" type="button" aria-pressed="false">@ For you</button>
       <button id="resolved" class="pill" type="button" aria-pressed="false">✓ Resolved</button>
     </header>
     <p id="away" class="away" hidden>
       Pipeup isn't on this page. Press Pipeup in the toolbar and choose Comment on this page.
     </p>
-    <section id="draft" class="card draft" hidden aria-label="New comment">
-      <p class="on" id="draft-on"></p>
-      <label class="sr" for="draft-words">Your comment</label>
-      <textarea id="draft-words" rows="3" placeholder="Comment"></textarea>
-      <div class="btns">
-        <button id="draft-cancel" class="btn" type="button">Cancel</button>
-        <button id="draft-send" class="btn primary" type="button">Comment</button>
-      </div>
-    </section>
     <ol id="list" class="list" aria-label="Comments"></ol>
     <p id="empty" class="empty" hidden></p>
     <script type="module" src="panel.js"></script>

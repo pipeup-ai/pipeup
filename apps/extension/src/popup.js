@@ -30,6 +30,7 @@ async function probe() {
           on: !!pu,
           builtIn,
           hosted: !!s?.hosted,
+          mode: s?.mode ?? "",
           count: pu ? s.count() : 0,
           commenting: !!pu?.commentMode,
           name: pu?.name ?? "",
@@ -72,6 +73,9 @@ async function always() {
   return found.length > 0;
 }
 
+/** Kept for every site: comments pinned beside the page in the side panel, or popovers on it. */
+const settings = async () => (await chrome.storage.local.get("settings")).settings ?? {};
+
 let state = null;
 async function show() {
   state = web ? await probe() : null;
@@ -89,6 +93,7 @@ async function show() {
     $("theme-now").textContent = LOOK_WORDS[state.look] ?? "Automatic";
     $("who-name").textContent = state.name || "Add your name";
     $("who-hint").textContent = state.name ? "Edit name" : "Add name";
+    $("pinned").checked = !!(await settings()).pinned;
   }
   $("always").checked = await always();
 }
@@ -108,10 +113,10 @@ async function start() {
   await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["start.js"] });
 }
 
-// Comment on this page adds Pipeup, opens the comments beside the page and starts comment mode: that's why the
-// reviewer pressed it.
+// Comment on this page adds Pipeup and starts comment mode: that's why the reviewer pressed it. Pinned, the comments
+// open beside the page too.
 $("start").addEventListener("click", async () => {
-  const side = openComments();
+  const side = (await settings()).pinned ? openComments() : null;
   await start();
   await ask("mode", true);
   await side;
@@ -125,9 +130,19 @@ $("commenting").addEventListener("change", async (e) => {
   await done();
 });
 
+// Comments: every comment, in the side panel, pinned or not.
 $("all").addEventListener("click", async () => {
-  if (state?.hosted) await openComments();
-  else await ask("all");
+  if (state?.mode === "button") await ask("all");
+  else await openComments();
+  await done();
+});
+
+$("pinned").addEventListener("change", async (e) => {
+  const pinned = e.target.checked;
+  // Opened in answer to this press, as the browser requires; the tab's Pipeup changes to match.
+  const side = pinned ? openComments() : null;
+  await chrome.storage.local.set({ settings: { ...(await settings()), pinned } });
+  await side;
   await done();
 });
 

@@ -2,10 +2,10 @@ import { expect, PAGES, panel, sidePanel, tabOf, test } from "./fixtures";
 import type { Page } from "@playwright/test";
 
 /**
- * Comment mode, a click on the paragraph, then the words and Comment in the side panel: as a reviewer writes one with
- * the extension. `side` is the side panel, open beside the page.
+ * Comment mode, a click on the paragraph, the words and Comment: as a reviewer writes one with the extension. The box
+ * opens on the page, beside the paragraph, with the cursor in it.
  */
-async function writeComment(page: Page, side: Page, text: string): Promise<void> {
+async function writeComment(page: Page, text: string): Promise<void> {
   await page.bringToFront();
   // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
   await expect(page.locator(".launch")).toBeAttached();
@@ -14,12 +14,12 @@ async function writeComment(page: Page, side: Page, text: string): Promise<void>
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
   const at = (await page.locator("#p1").boundingBox())!;
   await page.mouse.click(at.x + 20, at.y + at.height / 2);
-  // No comment box on the page: it opens in the side panel, saying what it's on.
-  await expect(page.locator(".draft")).toHaveCount(0);
-  await expect(side.locator("#draft-on")).toContainText("We launch in the second week of May");
-  await side.locator("#draft-words").fill(text);
-  await side.getByRole("button", { name: "Comment", exact: true }).click();
-  await expect(side.locator(".card", { hasText: text })).toBeVisible();
+  const box = page.locator(".draft textarea");
+  await expect(box).toBeFocused();
+  await page.keyboard.type(text);
+  await page.locator(".draft").getByRole("button", { name: "Comment" }).click();
+  // Sent: no box shows (a closed popover fades out and stays in Pipeup's layer, unseen).
+  await expect(page.locator(".pop.show .draft")).toHaveCount(0);
 }
 
 test("Comment on this page adds Pipeup and starts comment mode, with no button on the page; Turn off takes it away", async ({
@@ -57,8 +57,7 @@ test("comments are kept by the extension, not the site, and come back after a re
   )
     .getByRole("button", { name: "Comment on this page" })
     .click();
-  const side = await sidePanel(context, worker, id, page);
-  await writeComment(page, side, "Which beta, Ada's or the public one?");
+  await writeComment(page, "Which beta, Ada's or the public one?");
 
   // The site's own storage has nothing of Pipeup's: no database, no saved choices.
   const site = await page.evaluate(async () => ({
@@ -87,7 +86,7 @@ test("comments are kept by the extension, not the site, and come back after a re
   const p = await panel(context, worker, id, page);
   await p.getByRole("button", { name: "Comment on this page" }).click();
   await expect(p.locator("#count")).toHaveText("1");
-  await side.reload();
+  const side = await sidePanel(context, worker, id, page);
   await expect(side.locator(".card", { hasText: "Which beta" })).toBeVisible();
 });
 
@@ -99,7 +98,7 @@ test("Comments you've made lists the pages commented on", async ({ context, work
   )
     .getByRole("button", { name: "Comment on this page" })
     .click();
-  await writeComment(page, await sidePanel(context, worker, id, page), "Say which week in May.");
+  await writeComment(page, "Say which week in May.");
   const list = await context.newPage();
   await list.goto(`chrome-extension://${id}/comments.html`);
   await expect(list.locator("li")).toHaveCount(1);
@@ -177,7 +176,7 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
   await expect(page.locator(".launch .mode.on")).toHaveCount(0);
 });
 
-test("the side panel shows a thread when its highlight is clicked, and replies and resolves there", async ({
+test("unpinned, threads open as popovers on the page, and Comments lists them all", async ({
   context,
   worker,
   id,
@@ -189,16 +188,53 @@ test("the side panel shows a thread when its highlight is clicked, and replies a
   )
     .getByRole("button", { name: "Comment on this page" })
     .click();
+  await writeComment(page, "Which beta?");
+  // Written: it opens beside the paragraph, as a popover, and the page keeps its width.
+  await expect(page.locator(".pop.show", { hasText: "Which beta?" })).toBeVisible();
   const side = await sidePanel(context, worker, id, page);
-  await writeComment(page, side, "Which beta?");
-  // The new thread is open; closed, its marker on the page opens it again in the side panel.
-  await side.getByRole("button", { name: /On “We launch/ }).click();
-  await expect(side.locator(".card.open")).toHaveCount(0);
-  await page.bringToFront();
-  await page.keyboard.press("Escape");
-  await page.locator(".bub").first().click();
+  await expect(side.locator(".card", { hasText: "Which beta?" })).toBeVisible();
+  await expect(side.getByRole("button", { name: "Keep comments beside the page" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+});
+
+test("pinned, a thread opened on the page shows in the side panel, and replies and resolves there", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  const p = await panel(context, worker, id, page);
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  const side = await sidePanel(context, worker, id, page);
+  // The side panel's pin: Pipeup on the page starts again the pinned way.
+  await side.getByRole("button", { name: "Keep comments beside the page" }).click();
+  await expect(side.getByRole("button", { name: "Keep comments beside the page" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  const tab = await tabOf(worker, page);
+  await expect
+    .poll(() =>
+      worker.evaluate(
+        async (t) =>
+          (
+            await chrome.scripting.executeScript({
+              target: { tabId: t },
+              func: () => (globalThis as unknown as { __pipeupExt?: { mode?: string } }).__pipeupExt?.mode,
+            })
+          )[0]!.result,
+        tab,
+      ),
+    )
+    .toBe("pinned");
+  await writeComment(page, "Which beta?");
+  // Written on the page; the thread shows in the side panel, not on the page.
   const card = side.locator(".card.open");
   await expect(card).toContainText("Which beta?");
+  await expect(page.locator(".pop.show .th")).toHaveCount(0);
   await card.getByRole("textbox", { name: "Reply" }).fill("Ours. I'll say so.");
   await card.getByRole("button", { name: "Reply", exact: true }).click();
   await expect(side.locator(".card", { hasText: "Which beta?" })).toContainText("Ours. I'll say so.");
@@ -207,6 +243,9 @@ test("the side panel shows a thread when its highlight is clicked, and replies a
   await expect(side.locator(".card", { hasText: "Which beta?" })).toHaveCount(0);
   await side.getByRole("button", { name: "✓ Resolved" }).click();
   await expect(side.locator(".card.resolved", { hasText: "Which beta?" })).toBeVisible();
+  // The toolbar panel's switch says so too.
+  await p.reload();
+  await expect(p.getByRole("switch", { name: "Keep comments beside the page" })).toBeChecked();
 });
 
 test("the toolbar button shows comment mode: green, saying on when there are no comments", async ({

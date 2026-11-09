@@ -8,7 +8,6 @@ async function hosted(page: import("@playwright/test").Page): Promise<void> {
     const w = window as any;
     w.heard = [];
     w.pu.on("open", (id: string | null) => w.heard.push(["open", id]));
-    w.pu.on("pick", (p: { label: string; anchor: unknown }) => w.heard.push(["pick", p.label, !!p.anchor]));
   });
 }
 const heard = (page: import("@playwright/test").Page) =>
@@ -26,15 +25,20 @@ test("with a host, a click on a highlight tells the host and opens nothing on th
   await expect(page.locator(".pop.show, .col .th, .all.show")).toHaveCount(0);
 });
 
-test("with a host, picking a place in comment mode tells the host, and no comment box opens on the page", async ({
+test("with a host, a new comment is written on the page with the cursor in its box, and the host is told", async ({
   page,
 }) => {
   await hosted(page);
   await page.evaluate(() => (window as any).pu.setCommentMode(true));
   const at = (await page.locator("#p2").boundingBox())!;
   await page.mouse.click(at.x + 20, at.y + at.height / 2);
-  await expect.poll(() => heard(page)).toEqual([["pick", expect.stringMatching(/Paragraph/), true]]);
-  await expect(page.locator(".draft")).toHaveCount(0);
+  const box = page.locator(".draft textarea");
+  await expect(box).toBeFocused();
+  await box.fill("Say which week.");
+  await page.locator(".draft").getByRole("button", { name: "Comment" }).click();
+  await expect.poll(() => heard(page)).toEqual([["open", expect.any(String)]]);
+  // The host shows the thread: none opens on the page.
+  await expect(page.locator(".pop.show .th, .col .th")).toHaveCount(0);
 });
 
 test("a host can copy the comments as text, set the look and Hide comments, and go to a thread", async ({

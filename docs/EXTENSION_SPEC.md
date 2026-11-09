@@ -25,14 +25,20 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   adds Pipeup and starts comment mode, since that is why the reviewer pressed it.
 - With Pipeup on, the toolbar panel is **Pipeup's menu**, drawn by the extension: where comments go, who you are (the
   name edited in place), **Copy comments** (As Markdown, As text), **Theme**, **Comments** (with the open count),
-  **Hide comments** and **Start commenting**, then **Always on for this site** and **Turn off on this page**.
-- The comments are in the browser's **side panel** (Chrome and Edge's side panel; Firefox's sidebar): the list with
-  **@ For you** and **✓ Resolved**, each thread with its replies, **Reply**, **✓ Resolve** (or **Reopen**), and **Edit**
-  and **Delete** on your own comments. A new comment is written there, in a box that says what it's on. Comment on this
-  page, Start commenting and Comments open the side panel.
-- The page shows only where comments are (highlights and pins) and, in comment mode, what is about to be chosen.
-  Clicking a thread's place opens it in the side panel; opening a thread there scrolls the page to it. A place picked
-  while the side panel is closed waits for it.
+  **Hide comments**, **Keep comments beside the page** and **Start commenting**, then **Always on for this site** and
+  **Turn off on this page**.
+- **A new comment is written on the page**, in a box beside what it's about, with the cursor in it (the browser can't
+  move the cursor into its side panel).
+- Comments can be **pinned** beside the page, in the browser's **side panel** (Chrome and Edge's side panel; Firefox's
+  sidebar), or not:
+  - **Unpinned** (the default): a comment's thread opens beside it on the page, as a popover, and the page keeps its
+    width. **Comments** in the toolbar panel opens the side panel with every comment.
+  - **Pinned**: the side panel stays beside the page. A thread opened on the page, or just written, shows there.
+  - The side panel lists every comment with **@ For you** and **✓ Resolved**; each thread has its replies, **Reply**,
+    **✓ Resolve** (or **Reopen**), and **Edit** and **Delete** on your own comments. Opening a thread there goes to its
+    place on the page (unpinned, its popover opens there too).
+  - The pin is in the side panel's header and in the toolbar panel (**Keep comments beside the page**); the choice is
+    kept for every site. Unpinning closes the side panel, and closing it unpins.
 - When the extension adds Pipeup, **Pipeup's corner button is hidden**. A setting, **Show Pipeup's button on pages** (off
   by default), brings back Pipeup's own button, menu and panel on the page instead.
 - On a page that has **Pipeup built in**, the extension steps aside and says so; the page's own copy is the only one.
@@ -78,3 +84,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — Built for local testing in Chrome (load unpacked; apps/extension/README.md). Not in any store yet.
 - 2026-11-09 — The toolbar is the way into Pipeup (visual spec docs/design/extension-on-page.html): Pipeup's corner button is hidden on pages the extension adds it to, unless the reviewer turns on Show Pipeup's button on pages; the panel gains Start commenting, All comments and Pipeup's menu; Comment on this page also starts comment mode; the toolbar button shows comment mode.
 - 2026-11-09 — Pipeup in the browser, not on the page (visual spec docs/design/extension-native-ui.html): the toolbar panel is Pipeup's whole menu, and the comments (the list, threads, replies and the new-comment box) are in the browser's side panel; the page keeps only highlights, pins and comment mode's outline. Reactions, mentions and add-ons' rows aren't in the extension's panels yet.
+- 2026-11-09 — Write where you point; pin the comments (visual spec docs/design/extension-pin.html): a new comment's box opens on the page with the cursor in it; comments are pinned in the side panel or, by default, open as popovers on the page.

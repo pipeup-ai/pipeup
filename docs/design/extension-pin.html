@@ -1,0 +1,111 @@
+<title>Pin Pipeup's Comments</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column: unpinned and pinned windows side by side, then the spec; light only, like the Pipeup site. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:980px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:48px 0 8px;text-wrap:balance}
+p{max-width:70ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+ul{padding-left:20px;max-width:70ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px;max-width:70ch}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+td:first-child{font-weight:600;color:var(--strong)}
+.tw{overflow-x:auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pair>div{min-width:0}
+@media (max-width:760px){.pair{grid-template-columns:1fr}}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch}
+.spec ul{margin:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch;margin:12px 0}
+.ask p{margin:0} .ask b{color:var(--strong)}
+
+.win{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.bar{display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;background:var(--bone);border-bottom:1px solid var(--line);font-size:11px;color:var(--faint)}
+.url{flex:1;height:18px;border-radius:5px;background:#fff;border:1px solid var(--line);padding:0 8px;line-height:16px}
+.ic{width:16px;height:16px;border-radius:4px;background:var(--violet)}
+.body{display:flex;height:270px}
+.pg{flex:1;position:relative;padding:16px;font:13px/1.55 var(--serif);color:#333;min-width:0}
+.pg h4{margin:0 0 8px;font:600 16px var(--sans);color:#111}
+.pg p{margin:0 0 8px}
+.ol{outline:2px solid var(--violet);outline-offset:3px;border-radius:2px}
+.hl{background:#e6e3f7}
+.pop{position:absolute;left:30px;top:112px;width:220px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 22px rgba(20,20,40,.12);padding:9px 10px;font:12px/1.4 var(--sans)}
+.pop .on{color:var(--violet);font-weight:600;margin-bottom:6px}
+.pop .box{border:1.5px solid var(--violet);border-radius:7px;padding:5px 7px;color:#222}
+.pop .box i{display:inline-block;width:1px;height:12px;background:#111;vertical-align:-2px;margin-left:1px}
+.pop .bt{display:flex;justify-content:flex-end;gap:5px;margin-top:6px}
+.pop .bt span{border:1px solid var(--line);border-radius:6px;padding:1px 8px} .pop .bt .p{background:var(--violet);border-color:var(--violet);color:#fff}
+.side{width:42%;border-left:1px solid var(--line);background:#fbfaf7;font:11.5px/1.4 var(--sans);padding:8px;display:flex;flex-direction:column;gap:6px}
+.side .sh{display:flex;align-items:center;gap:6px}
+.side .sh b{flex:1;color:#111}
+.pin{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:var(--tint);color:var(--violet)}
+.cd{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.cd b{color:#111}
+.cd.open{border-color:var(--violet)}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed and built 9 November 2026</div>
+<h1>Write where you point; pin the comments when you want them beside the page</h1>
+<p class="lede">Picking something to comment on should put the cursor in the comment box straight away. The browser
+won't move the cursor from the page into its side panel, so the box opens on the page, as a popover beside what you
+picked. The side panel becomes something you choose: pinned, it stays beside the page with every comment; unpinned,
+comments open as popovers on the page and nothing pushes the page aside.</p>
+
+<h2>1. Unpinned and pinned</h2>
+<div class="pair">
+  <div>
+    <div class="label">Unpinned (the default)</div>
+    <div class="win"><div class="bar"><span class="url">docs.example.com/plan</span><span class="ic"></span></div>
+      <div class="body"><div class="pg"><h4>Lumen launch plan</h4><p>We launch in <span class="hl">the second week of May</span>, after the beta.</p><p class="ol">Pricing changes follow in June.</p>
+        <div class="pop"><div class="on">On “Pricing changes follow in June.”</div><div class="box">Which plans<i></i></div><div class="bt"><span>Cancel</span><span class="p">Comment</span></div></div></div></div></div>
+    <p class="cap">The page keeps its full width. The box opens beside the paragraph with the cursor in it. A comment's
+    marker opens its thread the same way. The toolbar panel's <b>Comments</b> opens the side panel.</p>
+  </div>
+  <div>
+    <div class="label">Pinned</div>
+    <div class="win"><div class="bar"><span class="url">docs.example.com/plan</span><span class="ic"></span></div>
+      <div class="body"><div class="pg"><h4>Lumen launch plan</h4><p>We launch in <span class="hl">the second week of May</span>, after the beta.</p><p class="ol">Pricing changes follow in June.</p>
+        <div class="pop" style="width:170px;left:16px"><div class="on">On “Pricing changes…”</div><div class="box">Which plans<i></i></div><div class="bt"><span>Cancel</span><span class="p">Comment</span></div></div></div>
+        <div class="side"><div class="sh"><b>Comments</b><span class="pin" title="Unpin">📌</span></div>
+          <div class="cd open"><b>Sam</b> · 2h<br>Which beta?<div style="margin-top:4px;padding-left:10px;color:#555"><b>Ada</b> · 1h<br>Ours.</div></div>
+          <div class="cd"><b>Lee</b> · 1d<br>Is June firm?</div></div></div></div>
+    <p class="cap">The side panel stays beside the page with every thread. Writing still happens in the popover, so the
+    cursor goes there; once sent, the thread shows in the side panel. A comment's marker opens its thread in the side panel.</p>
+  </div>
+</div>
+
+<h2>2. What does what</h2>
+<div class="tw"><table>
+<tr><th></th><th>Unpinned</th><th>Pinned</th></tr>
+<tr><td>Pick something to comment on</td><td colspan="2">A popover beside it on the page, with the cursor in the box. Esc or Cancel closes it.</td></tr>
+<tr><td>Click a comment's marker</td><td>The thread opens as a popover beside it</td><td>The thread opens in the side panel</td></tr>
+<tr><td>Every comment</td><td>The toolbar panel's Comments opens the side panel</td><td>Always in the side panel</td></tr>
+<tr><td>The page's width</td><td>Unchanged</td><td>Narrower, beside the side panel</td></tr>
+<tr><td>Pin or unpin</td><td colspan="2">The pin at the top of the side panel, or the toolbar panel's <b>Keep comments beside the page</b> switch. Kept for every site.</td></tr>
+</table></div>
+<p class="cap">The browser decides where the side panel goes and lets people close it with its own ×; closing it
+unpins.</p>
+
+<h2>3. The spec change</h2>
+<div class="spec"><ul>
+<li>Choosing something to comment on opens the comment box on the page, beside it, with the cursor in the box.</li>
+<li>Comments can be <b>pinned</b> beside the page, in the browser's side panel, or not. Unpinned (the default), a
+comment's thread opens beside it on the page, and the side panel opens only from Comments in the toolbar panel. Pinned,
+the side panel stays open, threads open there, and new comments show there once sent.</li>
+<li>The pin is in the side panel's header and in the toolbar panel (<b>Keep comments beside the page</b>); the choice is
+kept for every site. Closing the side panel unpins.</li>
+</ul></div>
+
+<h2>4. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Unpinned by default?</b> Agreed: yes. The page stays as its author made it, and the first
+comment is a click and some typing. The other choice is pinned by default, which shows every comment from the start but
+narrows the page.</p></div>
+<div class="ask"><p><b>Writing always in a popover, even pinned?</b> Agreed: yes, because that's the only way the
+cursor can land in the box. The other choice is writing in the side panel when pinned, which needs a click into the box
+first.</p></div>
+</main>

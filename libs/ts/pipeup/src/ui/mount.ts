@@ -7,7 +7,6 @@ import { addons, attachAddons, drainQueue, firstCore } from "./addons";
 import { startApp, type Prefs } from "./app";
 import type { LookChoice } from "./context";
 import { copyAll, type CopyAs } from "../export/format";
-import type { Anchor } from "../model/types";
 import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
@@ -38,17 +37,10 @@ export interface MountOptions {
   /** Where the reviewer's choices (look, Hide comments) are kept, read as Pipeup starts. Default: localStorage. */
   prefs?: Prefs;
   /**
-   * "host": whatever adds Pipeup draws its threads, comment box and menu (the browser extension's side panel). Pipeup
-   * draws only on the page, and says when a thread is opened ("open") or a place is picked ("pick").
+   * "host": whatever adds Pipeup shows its threads (the browser extension's side panel). Pipeup opens none on the page,
+   * and says when one is opened there ("open"); new comments are still written on the page.
    */
   ui?: string;
-}
-
-/** A place picked to comment on, for a host that writes the comment: `document.comment(anchor, words)`. */
-export interface PipeupPick {
-  anchor: Anchor;
-  /** What it is, in words ("Paragraph · We launch in…"). */
-  label: string;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -88,10 +80,8 @@ export interface PipeupInstance {
   openAllComments(): Promise<void>;
   /** Calls `fn` whenever comment mode or the name changes, however it changed; returns a function that stops it. */
   on(event: "change", fn: (state: PipeupState) => void): () => void;
-  /** With `ui: "host"`: a thread was opened on the page (its highlight clicked), or closed (null). */
-  on(event: "open", fn: (id: string | null) => void): () => void;
-  /** With `ui: "host"`: a place was picked to comment on. */
-  on(event: "pick", fn: (place: PipeupPick) => void): () => void;
+  /** With `ui: "host"`: a thread was opened on the page (its highlight clicked, or just written). */
+  on(event: "open", fn: (id: string) => void): () => void;
   /** The open comments (`all`: and resolved ones), as Copy comments makes them: Markdown for AI, or plain text. */
   commentsAs(as: CopyAs, options?: { all?: boolean }): string;
   /** The reviewer's look: "auto" follows the author, then the page. Kept like their other choices. */
@@ -188,16 +178,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   setSlideHook(o.slides ?? null);
   // The page's code hears comment mode and the name changing, once per change, after Pipeup has drawn it.
   const heard = new Set<(state: PipeupState) => void>();
-  /** A host's listeners for "open" and "pick". */
-  const hosts = { open: new Set<(id: string | null) => void>(), pick: new Set<(p: PipeupPick) => void>() };
-  const toHost = <T>(set: Set<(v: T) => void>, v: T) => {
-    for (const fn of [...set])
-      try {
-        fn(v);
-      } catch (e) {
-        globalThis.reportError?.(e);
-      }
-  };
+  /** A host's listeners for "open". */
+  const opened = new Set<(id: string) => void>();
   let said = "";
   const tell = () =>
     queueMicrotask(() => {
@@ -229,7 +211,18 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       onName: saveName,
       onRender: tell,
       ...(o.ui === "host"
-        ? { host: { open: (id) => toHost(hosts.open, id), pick: (p) => toHost(hosts.pick, p) } }
+        ? {
+            host: {
+              open: (id) => {
+                for (const fn of [...opened])
+                  try {
+                    fn(id);
+                  } catch (e) {
+                    globalThis.reportError?.(e);
+                  }
+              },
+            },
+          }
         : {}),
       ...(o.prefs ? { prefs: o.prefs } : {}),
     });
@@ -309,8 +302,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     },
     on: ((event: string, fn: never) => {
       if (typeof fn !== "function") return () => {};
-      const set: Set<unknown> | null =
-        event === "change" ? heard : event === "open" ? hosts.open : event === "pick" ? hosts.pick : null;
+      const set: Set<unknown> | null = event === "change" ? heard : event === "open" ? opened : null;
       if (!set) return () => {};
       set.add(fn);
       return () => set.delete(fn);
@@ -344,8 +336,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       if (unmounted) return;
       unmounted = true;
       heard.clear();
-      hosts.open.clear();
-      hosts.pick.clear();
+      opened.clear();
       setGiven(null);
       window.removeEventListener("pagehide", onHide);
       window.clearTimeout(agentsWarning);

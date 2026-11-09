@@ -98,6 +98,13 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
   only in answer to a press in the extension, so the toolbar panel opens it with Comment on this page, Start commenting
   and Comments; a pick while it's closed is kept in `storage.session` for when it opens. The toolbar panel draws the
   menu from the instance (`name`, `look`, `hidden`, `commentMode`) and `commentsAs()` for Copy comments.
+- **Write where you point; pin or not** (docs/design/extension-pin.html): the side panel can't take focus from the page,
+  so `ui: "host"` now leaves the comment box on the page (Pipeup's bubbles view, popovers on) and only threads go to the
+  host (`on("open")`, also after a comment is sent); `pick` is gone. `start.js` mounts one of three ways from
+  `settings`: `popovers` (`control: "off"`, `layout: "bubbles"`, the default), `pinned` (`ui: "host"`) or `button`
+  (plain Pipeup), and starts again the new way when the setting changes, keeping comment mode. The side panel always
+  lists the comments; its pin writes `settings.pinned`, unpinning closes it (`window.close()`), and closing it unpins
+  (`pagehide`).
 - **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
 
 ## Change log
@@ -107,3 +114,4 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
 - 2026-11-09 — Built for local testing in Chrome; see As built.
 - 2026-11-09 — The toolbar is the way in: the corner button hidden by default, the panel's new rows, comment mode on the badge.
 - 2026-11-09 — Pipeup in the browser: the menu in the toolbar panel, the comments in the side panel, `ui: "host"` in Pipeup.
+- 2026-11-09 — The comment box on the page; pinned or popovers.

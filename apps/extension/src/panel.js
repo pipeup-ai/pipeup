@@ -1,5 +1,5 @@
 // The browser's side panel: Pipeup's comments for the tab in front. Pipeup, running in the tab, sends the threads and
-// what happens on the page (a highlight clicked, a place picked); this panel draws them and sends back what the
+// what happens on the page (a thread opened there); this panel draws them and sends back what the
 // reviewer does. Words come from other people: they are set as text, never as HTML.
 import { formatAgo, nameOf } from "./pipeup/pipeup.esm.js";
 
@@ -15,7 +15,6 @@ const named = Number(new URLSearchParams(location.search).get("tab"));
 let tabId = named || (await chrome.tabs.query({ active: true, currentWindow: true }))[0]?.id;
 let data = null;
 let openId = null;
-let pick = null;
 const filter = { mine: false, resolved: false };
 /** Edits under way, by comment id: their words, kept across redraws. */
 const editing = new Map();
@@ -36,32 +35,19 @@ async function load() {
   } catch {
     data = null;
   }
-  // A place picked while this panel was closed waits for it.
-  const key = `pick:${tabId}`;
-  const kept = (await chrome.storage.session?.get(key))?.[key];
-  if (kept && data && !pick) {
-    pick = { anchor: kept.anchor, label: kept.label };
-    void chrome.storage.session.remove(key);
-  }
   draw();
-  if (pick) drawDraft(true);
 }
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (sender.tab?.id !== tabId) return;
   if (message.type === "threads") {
     data = message.off ? null : message;
-    if (message.off) pick = null;
     draw();
   } else if (message.type === "open") {
     openId = message.id;
     draw();
     if (openId)
       document.querySelector(`[data-thread="${CSS.escape(openId)}"]`)?.scrollIntoView({ block: "nearest" });
-  } else if (message.type === "pick") {
-    pick = { anchor: message.anchor, label: message.label };
-    void chrome.storage.session?.remove(`pick:${tabId}`);
-    drawDraft(true);
   }
 });
 
@@ -70,13 +56,33 @@ if (!named) {
   chrome.tabs.onActivated.addListener(({ tabId: id }) => {
     tabId = id;
     openId = null;
-    pick = null;
     void load();
   });
   chrome.tabs.onUpdated.addListener((id, change) => {
     if (id === tabId && change.status === "complete") void load();
   });
 }
+
+// The pin: kept for every site. Pinned, threads opened on the page show here; unpinned, they open on the page and this
+// panel closes. Closing the panel unpins.
+const settings = async () => (await chrome.storage.local.get("settings")).settings ?? {};
+const showPin = (pinned) => $("pin").setAttribute("aria-pressed", String(!!pinned));
+showPin((await settings()).pinned);
+$("pin").addEventListener("click", async () => {
+  const pinned = $("pin").getAttribute("aria-pressed") !== "true";
+  await chrome.storage.local.set({ settings: { ...(await settings()), pinned } });
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local" || !changes.settings) return;
+  const was = !!changes.settings.oldValue?.pinned;
+  const now = !!changes.settings.newValue?.pinned;
+  showPin(now);
+  if (was && !now && !named) window.close();
+});
+window.addEventListener("pagehide", () => {
+  if (named) return;
+  void settings().then((s) => s.pinned && chrome.storage.local.set({ settings: { ...s, pinned: false } }));
+});
 
 $("for-you").addEventListener("click", () => {
   filter.mine = !filter.mine;
@@ -87,38 +93,6 @@ $("resolved").addEventListener("click", () => {
   filter.resolved = !filter.resolved;
   $("resolved").setAttribute("aria-pressed", String(filter.resolved));
   draw();
-});
-
-// A new comment: written here, about the place picked on the page.
-function drawDraft(focus = false) {
-  $("draft").hidden = !pick;
-  if (!pick) return;
-  $("draft-on").textContent = `On ${pick.label}`;
-  if (focus) $("draft-words").focus();
-}
-$("draft-cancel").addEventListener("click", () => {
-  pick = null;
-  $("draft-words").value = "";
-  drawDraft();
-});
-const send = async () => {
-  const text = $("draft-words").value.trim();
-  if (!text || !pick) return;
-  $("draft-send").disabled = true;
-  try {
-    openId = await ask("comment", { anchor: pick.anchor, text });
-    pick = null;
-    $("draft-words").value = "";
-    // The new thread opens; the page may have sent it already, before its id came back.
-    draw();
-  } finally {
-    $("draft-send").disabled = false;
-  }
-};
-$("draft-send").addEventListener("click", () => void send());
-$("draft-words").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) void send();
-  if (e.key === "Escape") $("draft-cancel").click();
 });
 
 const mentionsMe = (c) => (c.mentions ?? []).some((m) => m.ref === data.me);
@@ -274,7 +248,6 @@ function thread(t, now) {
 
 function draw() {
   $("away").hidden = !!data;
-  drawDraft();
   const list = $("list");
   const typingIn = document.activeElement?.closest?.("[data-thread]")?.dataset.thread;
   const caret = document.activeElement?.tagName === "TEXTAREA" ? document.activeElement.selectionStart : null;
@@ -293,7 +266,7 @@ function draw() {
   $("empty").hidden = shown.length > 0;
   $("empty").textContent = filter.mine
     ? "No comments mention you."
-    : "No comments yet. Turn on Start commenting and click something on the page.";
+    : "No comments yet. Turn on Start commenting in Pipeup's toolbar menu and click something on the page.";
   // A redraw keeps the caret where the reviewer was writing.
   if (typingIn) {
     const box = list.querySelector(`[data-thread="${CSS.escape(typingIn)}"] textarea`);

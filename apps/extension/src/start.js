@@ -110,18 +110,37 @@
     },
   };
 
-  // With the extension, Pipeup's threads, comment box and menu are the browser's (the side panel and the toolbar panel);
-  // Pipeup draws only on the page. A reviewer who wants Pipeup's own button on pages gets plain Pipeup instead.
-  const { settings } = await storage.get("settings");
-  const hosted = !settings?.showButton;
-  let pu;
-  try {
-    pu = await Pipeup.mount({ store, prefs, ...(hosted ? { ui: "host", control: "off" } : {}) });
-  } catch (e) {
-    state.starting = false;
-    throw e;
-  }
+  // How Pipeup shows on the page. Pinned: threads in the browser's side panel (Pipeup opens none on the page). Not
+  // pinned: threads open as popovers beside what they're about. Either way new comments are written on the page, with
+  // the cursor in the box, and Pipeup's corner button stays off the page unless the reviewer wants it back.
+  const modeOf = (settings) => (settings?.showButton ? "button" : settings?.pinned ? "pinned" : "popovers");
+  const OPTIONS = {
+    button: {},
+    pinned: { ui: "host", control: "off" },
+    popovers: { control: "off", layout: "bubbles" },
+  };
   const send = (message) => void chrome.runtime.sendMessage(message).catch(() => {});
+
+  let pu = null;
+  let stops = [];
+  async function mountAs(mode) {
+    pu = await Pipeup.mount({ store, prefs, ...OPTIONS[mode] });
+    state.mode = mode;
+    state.hosted = mode === "pinned";
+    stops = [
+      pu.document.onChange(tell),
+      pu.on("change", tell),
+      pu.on("open", (id) => send({ type: "open", id })),
+    ];
+    tell();
+  }
+  function unmountNow() {
+    for (const stop of stops) stop();
+    stops = [];
+    pu?.unmount();
+    pu = null;
+  }
+
   /** What the side panel draws: every thread, who you are, and where each one is on the page. */
   const snapshot = () => {
     const where = new Map(pu.comments({ all: true }).threads.map((t) => [t.id, t]));
@@ -136,39 +155,29 @@
     };
   };
   /** The toolbar button (open comments, comment mode) and the side panel (the threads), whenever anything changes. */
-  const tell = () => {
+  function tell() {
     try {
-      const n = pu.comments().threads.length;
-      send({ type: "state", n, commenting: pu.commentMode });
-      if (hosted) send({ type: "threads", ...snapshot() });
+      send({ type: "state", n: pu.comments().threads.length, commenting: pu.commentMode });
+      send({ type: "threads", ...snapshot() });
     } catch {
       // Pipeup was taken off the page meanwhile.
     }
-  };
-  const stops = [
-    pu.document.onChange(tell),
-    pu.on("change", tell),
-    pu.on("open", (id) => send({ type: "open", id })),
-    pu.on("pick", (place) => send({ type: "pick", anchor: place.anchor, label: place.label })),
-  ];
-  tell();
+  }
 
   // What the side panel asks for, or asks to be done.
-  const doc = pu.document;
   const asks = {
     snapshot: () => snapshot(),
-    comment: (m) => doc.comment(m.anchor, m.text),
-    reply: (m) => doc.reply(m.id, m.text),
-    edit: (m) => doc.edit(m.id, m.text),
-    remove: (m) => doc.remove(m.id),
-    resolve: (m) => doc.resolve(m.id),
-    reopen: (m) => doc.reopen(m.id),
-    react: (m) => (m.on ? doc.react(m.id, m.emoji) : doc.unreact(m.id, m.emoji)),
+    reply: (m) => pu.document.reply(m.id, m.text),
+    edit: (m) => pu.document.edit(m.id, m.text),
+    remove: (m) => pu.document.remove(m.id),
+    resolve: (m) => pu.document.resolve(m.id),
+    reopen: (m) => pu.document.reopen(m.id),
+    react: (m) => (m.on ? pu.document.react(m.id, m.emoji) : pu.document.unreact(m.id, m.emoji)),
     go: (m) => pu.openThread(m.id),
   };
   const onAsk = (message, _sender, reply) => {
     const ask = message?.to === "page" && Object.hasOwn(asks, message.type) ? asks[message.type] : null;
-    if (!ask || !state.on) return false;
+    if (!ask || !state.on || !pu) return false;
     Promise.resolve()
       .then(() => ask(message))
       .then(
@@ -177,18 +186,39 @@
       );
     return true;
   };
-  chrome.runtime.onMessage.addListener(onAsk);
 
+  // Pinning, unpinning or bringing the button back changes how Pipeup shows: it starts again the new way, in the same
+  // comment mode, with nothing lost (comments are saved as they are written).
+  const onSettings = async (changes, area) => {
+    if (area !== "local" || !changes.settings || !state.on) return;
+    const mode = modeOf(changes.settings.newValue);
+    if (mode === state.mode) return;
+    const commenting = pu?.commentMode;
+    await pu?.flush().catch(() => {});
+    unmountNow();
+    await mountAs(mode);
+    if (commenting) await pu.setCommentMode(true);
+  };
+
+  try {
+    await mountAs(modeOf((await storage.get("settings")).settings));
+  } catch (e) {
+    state.starting = false;
+    throw e;
+  }
+  chrome.runtime.onMessage.addListener(onAsk);
+  chrome.storage.onChanged.addListener(onSettings);
+
+  // `pu` is read live: it changes when Pipeup starts again the new way.
+  Object.defineProperty(state, "pu", { get: () => pu, configurable: true });
   Object.assign(state, {
     on: true,
     starting: false,
-    hosted,
-    pu,
-    count: () => pu.comments().threads.length,
+    count: () => pu?.comments().threads.length ?? 0,
     off() {
-      for (const stop of stops) stop();
       chrome.runtime.onMessage.removeListener(onAsk);
-      pu.unmount();
+      chrome.storage.onChanged.removeListener(onSettings);
+      unmountNow();
       state.on = false;
       send({ type: "state", n: 0, commenting: false });
       send({ type: "threads", me: "", name: "", title: document.title, threads: [], off: true });
