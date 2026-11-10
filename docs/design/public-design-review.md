@@ -23,3 +23,5 @@ The core check passed, including 570 browser tests. The website built successful
 ## Change log
 
 - 2026-11-10: Initial integration, requested by the maintainer for the approved public-design/private-feedback workflow.
+
+- 2026-11-10: Regenerate specification downloads from the sanitized public model. The final local HTML-resource scan reports zero missing files.

@@ -7,6 +7,9 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Fixed
+- Public design specification downloads are included in the published snapshot.
+
 ### Added
 
 - **Public design reviews.** The website links to the Pipeup design at `/design/`, where visitors can submit private suggestions for the owner to review before implementation.
