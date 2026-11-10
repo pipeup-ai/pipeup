@@ -5,3 +5,5 @@
 /* Keep submission above the prototype navigation, including on narrow screens. */
 html[data-da-shared] .du-review-dock{bottom:76px}
 @media print{.du-review-dock,.du-review-dialog{display:none!important}}
+
+.du-review-account{border-bottom:1px solid #ddd;padding-bottom:12px;margin-bottom:12px}.du-review-account small{font-size:12px;color:#596159}.du-review-account p{margin:8px 0}.du-review-account summary{cursor:pointer}

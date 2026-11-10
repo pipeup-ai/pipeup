@@ -346,9 +346,9 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 ## Public design review
 
-The existing website exposes Pipeup's public design at `/design/`, linked quietly from the home page. Anyone may browse its personas, journeys, screens and prototype and submit suggestions without a reviewer account. Reviews go privately to the author; they are not public comments by default.
+The existing website exposes Pipeup's public design at `/design/`, linked quietly from the home page. Anyone may browse its personas, journeys, screens and prototype. Submitting a review requires a signed-in account; anonymous reviews are not accepted. Reviewers and owners can sign in through configured common identity providers. Reviews go privately to the author; they are not public comments by default.
 
-Submission confirms durable receipt and retains a browser draft after a connection failure. The authenticated owner reads suggestions in a separate private inbox, approves or declines them, and can refine implementation wording without replacing the original feedback. Preparing implementation includes only approved suggestions. Sharing any feedback publicly is a separate, explicit owner choice.
+The service verifies the submitting account and records its stable identity with the review; a typed display name never establishes identity or owner access. Sign-in cancellation or session expiry preserves the draft and never sends it. Submission confirms durable receipt and retains a browser draft after a connection failure. The authenticated owner reads suggestions in a separate private inbox, approves or declines them, and can refine implementation wording without replacing the original feedback. Preparing implementation includes only approved suggestions. Sharing any feedback publicly is a separate, explicit owner choice.
 
 The published design snapshot excludes imported private feedback and decisions. It contains no owner credentials. The static website sends submissions to the configured review service and never exposes the private inbox's records through static files.
 
@@ -421,3 +421,4 @@ The published design snapshot excludes imported private feedback and decisions. 
 - 2026-11-01 — The Create prompt, What your AI does, llms.txt and the integrate skill tell agents that a page can have its own Comment button (Pipeup's page API, keeping a way to Pipeup's menu); Inline's page, its prompt and llms.txt say how to match an ask to the page's look while its mark and tint stay. Visual spec: docs/design/compact-asks.html.
 - 2026-11-10: Public design review under `/design/`, private direct submissions, authenticated owner decisions and separate public feedback sharing.
 - 2026-11-10 — Privacy and Support pages, and a page for trying the extension, for the browsers' stores (§3 items 2b, 2c). Agreed with the maintainer as part of preparing the stores.
+- 2026-11-10: Maintainer replaces anonymous review submission with required account sign-in through common providers. Public browsing and private owner moderation remain available; verified identity is required at the submission endpoint.

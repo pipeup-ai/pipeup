@@ -14,7 +14,7 @@ Chrome, Edge, Firefox and Safari.
 
 ### Added
 
-- **Public design reviews.** The website links to the Pipeup design at `/design/`, where visitors can submit private suggestions for the owner to review before implementation.
+- **Public design reviews.** The website links to the Pipeup design at `/design/`, where signed-in visitors can submit private suggestions for the owner to review before implementation.
 - The website has a Privacy page and a Support page for Pipeup for browsers, and a sample page for trying the extension, Share and Live included. Safari's Pipeup comes in a Mac app with a window of its own (what it is, whether it's on in Safari, how to start), its own icon, and support for macOS 12 and later. Each extension package carries its licences.
 - `mount({ field })`: a host can show its own stand-in for Pipeup's text boxes, typed in where the page can't hear. In the browser extension, what is typed into a comment, reply or edit box is typed in the extension's own frame, so the page hears neither the words nor the keys.
 - `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
@@ -41,6 +41,7 @@ Chrome, Edge, Firefox and Safari.
 - Moving the mouse onto another block takes the outline from the keyboard's block cursor in browsers that don't say how far the pointer moved.
 - A press on a card in All comments opens it even when the list updates between the press and its release (a comment arriving just then lost the click).
 - Public design specification downloads are included in the published snapshot.
+- **Review accounts.** Public design submissions require a verified account. Configured social providers and managed email sign-in support reviewers and owners; account identity never grants owner permissions by itself.
 - **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
   how it began, so holding Space during it handed the page a click meant for Pipeup.
 - **⋯ stays where a click finds it.** Pointed at, the comment control shows its ⋯ right beside the comment bubble
