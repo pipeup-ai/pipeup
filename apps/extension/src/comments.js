@@ -111,4 +111,8 @@ for (const a of ADDONS.filter((x) => build.addons.includes(x.id))) {
 }
 
 document.getElementById("agent-cmd").textContent = agentSetup();
+// Agents read and answer with the same release as this extension.
+const release = `npx --yes pipeup@${chrome.runtime.getManifest().version} browser`;
+document.getElementById("agent-read").textContent = `${release} read`;
+document.getElementById("agent-reply").textContent = `${release} reply`;
 document.getElementById("agent-section").hidden = !canReachAgents;

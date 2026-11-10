@@ -194,3 +194,32 @@ test("add-ons: Emoji is on by default, and the others are turned on in the exten
   );
   expect(states).toEqual(expect.arrayContaining(["emoji:on", "github:on"]));
 });
+
+test("a page can't say where comments go: Share stays off without the reviewer's own sharing address", async ({
+  context,
+  worker,
+  id,
+}) => {
+  await worker.evaluate(() => chrome.storage.local.set({ settings: { addons: { share: true } } }));
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await page.evaluate(() =>
+    document.documentElement.setAttribute("data-pipeup-share", "https://mailbox.example/lumen"),
+  );
+  await started(context, worker, id, page);
+  const tab = await tabOf(worker, page);
+  const share = await worker.evaluate(
+    async (t) =>
+      (
+        await chrome.scripting.executeScript({
+          target: { tabId: t },
+          func: () =>
+            (
+              globalThis as unknown as { Pipeup: { addons(): { id: string; state: string }[] } }
+            ).Pipeup.addons().find((a) => a.id === "share")?.state,
+        })
+      )[0]!.result,
+    tab,
+  );
+  expect(share).toBe("off");
+});

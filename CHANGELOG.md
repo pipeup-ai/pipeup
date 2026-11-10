@@ -20,7 +20,7 @@ change the API and the stored comment format.
 
 ### Changed
 
-- The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture.
+- The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture; a page can't choose where Share or Save to GitHub sends (only the reviewer's own address and repository count).
 - Save to GitHub says that GitHub receives the comment's words, name, page title and address when its new-issue page opens; nothing is filed until you submit it.
 
 - In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.

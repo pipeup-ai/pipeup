@@ -42,9 +42,11 @@
   const closed = true;
 
   /** What add-ons are told about this page, from the extension's settings (a page would say it in its own HTML). */
+  // Where comments are sent is the reviewer's to say, never the page's: an empty value hides the page's own.
   const pageSettings = (settings) => ({
-    ...(settings.share ? { "data-pipeup-share": settings.share } : {}),
-    ...(settings.githubRepo ? { "data-pipeup-github-repo": settings.githubRepo } : {}),
+    "data-pipeup-share": settings.share ?? "",
+    "data-pipeup-github-repo": settings.githubRepo ?? "",
+    "data-pipeup-agents": "",
   });
 
   // Ed25519 private keys from a 32-byte seed, as the identity add-on makes them: the seed is what is kept.
