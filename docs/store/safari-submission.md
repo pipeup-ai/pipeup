@@ -31,8 +31,9 @@ Nothing can drive Safari with an extension in it, so this is the only test of th
 3. **(you)** In Certificates, Identifiers & Profiles → Identifiers, register two App IDs: `ai.pipeup.Pipeup` (the app)
    and `ai.pipeup.Pipeup.Extension` (the extension). Xcode can also do this when it first signs.
 4. **(you)** In [App Store Connect](https://appstoreconnect.apple.com) → Apps → **+** → New App: platform **macOS**,
-   name **Pipeup** (if it's taken, *Pipeup – Page Comments*), primary language English (U.K.), bundle ID
-   `ai.pipeup.Pipeup`, SKU `pipeup-mac`, full access.
+   name **Pipeup: Commenting for HTML** (plain "Pipeup" is taken on the App Store), bundle ID `ai.pipeup.Pipeup`
+   (the app's, not `ai.pipeup.Pipeup.Extension`: an app made with the extension's ID can't take an upload), SKU
+   `pipeup-mac`. Done 2026-11-10 (Apple ID 6833108976).
 5. **(you)** Business: accept the Free Apps agreement, and answer the EU trader question (a legal call: as an
    individual not trading, usually non-trader).
 
@@ -74,3 +75,5 @@ Nothing can drive Safari with an extension in it, so this is the only test of th
 ## Change log
 
 - 2026-11-10: First version.
+- 2026-11-10: The app is created in App Store Connect as Pipeup: Commenting for HTML; build 0.9.1 (1) uploaded for
+  TestFlight from Xcode's Organizer.
