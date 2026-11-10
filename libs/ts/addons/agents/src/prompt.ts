@@ -24,10 +24,10 @@ export interface PromptMeta {
 /**
  * The command an agent runs: it never stops to ask (an agent can't answer), and asks npm for any release of the page's
  * major version, not only its exact one, since some computers accept only packages a few days old and every release
- * from 0.6 answers these commands the same way. A pre-release page names its own pre-release.
+ * of a major version answers these commands the same way. A pre-release page names its own pre-release.
  */
 export function agentCommand(version?: string): { cli: string; fallback: string | null } {
-  if (!version) return { cli: "npx --yes pipeup@0", fallback: null };
+  if (!version) return { cli: "npx --yes pipeup@1", fallback: null };
   const major = version.split(".")[0] ?? "0";
   const any = `npx --yes pipeup@${major}`;
   return version.includes("-")

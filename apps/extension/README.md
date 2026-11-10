@@ -32,7 +32,7 @@ After a rebuild, press the reload arrow on Pipeup's card in `chrome://extensions
 
 Firefox keeps a temporary add-on until it quits; after a rebuild, press **Reload** on Pipeup's card there. Comments sit
 in Firefox's **sidebar** when pinned. **Send to my agent** is set up with
-`npx --yes pipeup@0 browser install --browser firefox`.
+`npx --yes pipeup@1 browser install --browser firefox`.
 
 ## Try it in Safari (Mac)
 
@@ -64,7 +64,7 @@ offered), and **Send to my agent** isn't offered yet: Safari lets an extension t
 - `addons/`: Emoji, Voice, Share, Live, Save to GitHub and My identity, copied unchanged from `libs/ts/addons/*/dist`
   (build them first with `npm run build` in `libs/ts/addons`), turned on in the extension's settings.
 - **Send to my agent** talks to `pipeup browser` on this computer through the browser's native messaging; set it up
-  once with `npx --yes pipeup@0 browser install --extension-id <id>` (Chrome and its kin) or `--browser firefox`.
+  once with `npx --yes pipeup@1 browser install --extension-id <id>` (Chrome and its kin) or `--browser firefox`.
 - `src/browser.js`: what differs between browsers (the panel beside the page, reaching agents), in one place. The build
   gives each browser a manifest without the others' keys.
 - `src/comments.*`: **Comments you've made**, every page with comments, newest first, and the extension's one setting

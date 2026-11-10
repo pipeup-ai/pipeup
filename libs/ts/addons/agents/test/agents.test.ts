@@ -50,7 +50,7 @@ describe("Copy for my agent", () => {
   it("tells an agent whose key isn't listed to ask, then list itself on the page in one command, and carries no key", () => {
     const p = agentPrompt({ ...meta, listed: false });
     expect(p).toContain(
-      "Ask me first; after my yes, run `npx --yes pipeup@0 agent --name <your name> --page /a/brief.html --yes`",
+      "Ask me first; after my yes, run `npx --yes pipeup@1 agent --name <your name> --page /a/brief.html --yes`",
     );
     expect(p).not.toMatch(/[A-Za-z0-9_-]{43}/);
   });
@@ -63,7 +63,7 @@ describe("Copy for my agent", () => {
 
   it("points an agent at the link's commands when a link is running", () => {
     expect(agentPrompt({ ...meta, file: "/a/brief.html" })).toContain(
-      "npx --yes pipeup@0 comments /a/brief.html",
+      "npx --yes pipeup@1 comments /a/brief.html",
     );
   });
 

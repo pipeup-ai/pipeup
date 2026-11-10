@@ -17,7 +17,7 @@ ready. Fixes ship as a patch release, with the advisory published on GitHub.
 | 0.3.x | Yes: the latest patch release gets security fixes |
 | < 0.3 | No (never published) |
 
-Pipeup is alpha until 1.0; only the newest minor version receives fixes.
+Only the newest minor version of the current major version receives fixes.
 
 ## Security model, in brief
 

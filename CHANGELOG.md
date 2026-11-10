@@ -7,6 +7,11 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-10
+
+Pipeup 1.0: the API and the stored comment format are stable, and Pipeup for browsers comments on any web page from
+Chrome, Edge, Firefox and Safari.
+
 ### Added
 
 - **Public design reviews.** The website links to the Pipeup design at `/design/`, where visitors can submit private suggestions for the owner to review before implementation.
@@ -22,6 +27,7 @@ change the API and the stored comment format.
 
 ### Changed
 
+- Pipeup is stable: the API and the stored comment format change only in a new major version. Commands are run as `npx --yes pipeup@1`; `pipeup@0` keeps fetching 0.9.
 - The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture; a page can't choose where Share or Save to GitHub sends (only the reviewer's own address and repository count).
 - Save to GitHub says that GitHub receives the comment's words, name, page title and address when its new-issue page opens; nothing is filed until you submit it.
 - In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.
@@ -527,7 +533,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...v0.8.2

@@ -40,6 +40,20 @@ function build(d) {
   box.addEventListener("focus", () => say({ type: "focus" }));
   // The frame given the focus (a press on it, or Pipeup's) puts it in the box.
   window.addEventListener("focus", () => document.activeElement !== box && box.focus());
+  // A key pressed in the instant the frame has the focus but the box doesn't yet still lands in the box.
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (document.activeElement === box) return;
+      box.focus();
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        box.setRangeText(e.key, box.selectionStart, box.selectionEnd, "end");
+        box.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    },
+    true,
+  );
   new ResizeObserver(height).observe(document.documentElement);
   height();
 }

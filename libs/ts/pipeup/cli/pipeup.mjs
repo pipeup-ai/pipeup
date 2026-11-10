@@ -79,10 +79,10 @@ pipeup browser [read <page>]
 pipeup browser reply <page> --thread <id> [--agent <name>] "<words>"
   Answers a thread on a page sent from the browser; the extension puts the reply in the thread.
 
-Agents run these as \`npx --yes pipeup@0 …\`: any release from 0.6 answers agent, reply and comments the same way.`;
+Agents run these as \`npx --yes pipeup@1 …\`: any 1.x release answers agent, reply and comments the same way.`;
 
 /** How agents are told to run this command line: never stopping to ask, and any release npm will give. */
-const RUN = "npx --yes pipeup@0";
+const RUN = "npx --yes pipeup@1";
 /** A path as the person typed it, or relative to where they are. */
 const shown = (file) => relative(process.cwd(), resolve(file)) || file;
 const DOC = /<html\b[^>]*\sdata-pipeup-doc\s*=\s*["']([^"']+)["']/i;
