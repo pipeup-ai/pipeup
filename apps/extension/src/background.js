@@ -44,21 +44,25 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const target = { tabId: tab.id, ...(info.frameId ? { frameIds: [info.frameId] } : {}) };
   try {
     await chrome.scripting.executeScript({ target, files: ["start.js"] });
-    // Pipeup starts in a moment; then the comment box opens on what was right-clicked.
-    await chrome.scripting.executeScript({
-      target,
-      func: async () => {
-        for (let i = 0; i < 100 && !globalThis.__pipeupExt?.pu; i++)
-          await new Promise((r) => setTimeout(r, 50));
+    // Pipeup starts in a moment (it answers once it has); then the comment box opens on what was right-clicked.
+    for (let i = 0; i < 100; i++) {
+      const answer = await chrome.tabs
+        .sendMessage(tab.id, { to: "page", type: "probe" }, { frameId: info.frameId ?? 0 })
+        .catch(() => null);
+      if (answer?.ok) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    await chrome.tabs.sendMessage(
+      tab.id,
+      {
+        to: "page",
+        type: "commentOn",
+        selection: !!info.selectionText,
+        src: info.srcUrl ?? null,
+        link: info.linkUrl ?? null,
       },
-    });
-    await chrome.tabs.sendMessage(tab.id, {
-      to: "page",
-      type: "commentOn",
-      selection: !!info.selectionText,
-      src: info.srcUrl ?? null,
-      link: info.linkUrl ?? null,
-    });
+      { frameId: info.frameId ?? 0 },
+    );
   } catch {
     // A page browsers keep closed to extensions, or one with Pipeup built in.
   }

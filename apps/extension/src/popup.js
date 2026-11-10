@@ -20,63 +20,49 @@ const LOOK_WORDS = { auto: "Automatic", light: "Light", dark: "Dark" };
 $("where").textContent = web ? url.host + url.pathname.replace(/\/$/, "") : url.protocol.replace(":", "");
 $("always-label").textContent = `Always on for ${url.host}`;
 
-/** Asks the tab's Pipeup, in the extension's world, what it is showing. */
+/** Says something to the tab's Pipeup and returns its answer, or null when it isn't there (yet). */
+async function tell(type, fields = {}) {
+  // The page's own frame: Pipeup may also be in a frame the right-click menu reached.
+  const answer = await chrome.tabs
+    .sendMessage(tab.id, { to: "page", type, ...fields }, { frameId: 0 })
+    .catch(() => null);
+  return answer?.ok ? answer.result : null;
+}
+
+/**
+ * What the tab is showing. The extension's Pipeup answers for itself, by message; otherwise the page is looked at for
+ * a Pipeup of its own (its root, or Pipeup's file in a script), or the browser keeps it closed to extensions (null).
+ */
 async function probe() {
+  const mine = await tell("probe");
+  if (mine) return { ...mine, builtIn: false };
   try {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () => {
-        const s = globalThis.__pipeupExt;
-        const builtIn =
-          !s?.on &&
-          !!(document.querySelector("pipeup-root") || document.querySelector('script[src*="pipeup"]'));
-        const pu = s?.on ? s.pu : null;
-        return {
-          on: !!pu,
-          builtIn,
-          hosted: !!s?.hosted,
-          mode: s?.mode ?? "",
-          count: pu ? s.count() : 0,
-          commenting: !!pu?.commentMode,
-          name: pu?.name ?? "",
-          look: pu?.look ?? "auto",
-          hidden: !!pu?.hidden,
-          // Add-ons whose rows are in Pipeup's own menu (Emoji and Voice work inside the comment box instead).
-          extras:
-            !!pu &&
-            !!globalThis.Pipeup?.addons?.().some(
-              (a) => ["share", "live", "github", "identity"].includes(a.id) && a.state === "on",
-            ),
-        };
-      },
+      func: () =>
+        !!document.querySelector("pipeup-root") ||
+        [...document.scripts].some((script) => {
+          const path = script.src ? new URL(script.src, location.href).pathname : "";
+          return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
+        }),
     });
-    return result;
+    return { on: false, builtIn: !!result, count: 0 };
   } catch {
     return null;
   }
 }
 
-/** Asks the tab's Pipeup to do one thing, once it has started there. */
-async function ask(what, value) {
-  const [{ result } = {}] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: async (action, v) => {
-      const s = globalThis.__pipeupExt;
-      for (let i = 0; i < 100 && !s?.pu; i++) await new Promise((r) => setTimeout(r, 50));
-      const pu = s?.pu;
-      if (!pu) return null;
-      if (action === "mode") await pu.setCommentMode(v);
-      else if (action === "name") await pu.setName(v);
-      else if (action === "look") await pu.setLook(v);
-      else if (action === "hide") await pu.setHidden(v);
-      else if (action === "all") await pu.openAllComments();
-      else if (action === "menu") await pu.openMenu();
-      else if (action === "copy") return pu.commentsAs(v);
-      return null;
-    },
-    args: [what, value ?? null],
-  });
-  return result;
+/** Asks the tab's Pipeup to do one thing, once it has started there (it takes a moment after Comment on this page). */
+async function ask(action, value) {
+  for (let i = 0; i < 100; i++) {
+    const answer = await chrome.tabs
+      .sendMessage(tab.id, { to: "page", type: "act", action, value: value ?? null }, { frameId: 0 })
+      .catch(() => null);
+    if (answer?.ok) return answer.result;
+    if (answer && !answer.ok) return null;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return null;
 }
 
 async function always() {
@@ -193,27 +179,23 @@ $("save-md").addEventListener("click", async () => {
   if (typeof text === "string") await save(text, "md", "text/markdown");
 });
 $("save-file").addEventListener("click", async () => {
-  const text = await page("file");
+  const text = await tell("file");
   if (typeof text === "string") await save(text, "pipeup.json", "application/json");
 });
 
 // Send to my agent: the page's comments go to agents on this computer (`pipeup browser read`), and their replies
 // (`pipeup browser reply`) come back into the threads.
 const HOST = "ai.pipeup.browser";
-const page = async (type, fields = {}) => {
-  const answer = await chrome.tabs.sendMessage(tab.id, { to: "page", type, ...fields }).catch(() => null);
-  return answer?.ok ? answer.result : null;
-};
 async function agentReplies() {
-  const sent = await page("agentSend");
+  const sent = await tell("agentSend");
   if (!sent) return 0;
   const back = await chrome.runtime
     .sendNativeMessage(HOST, { type: "replies", doc: sent.doc })
     .catch(() => null);
-  return back?.ok && back.replies.length ? ((await page("agentReplies", { replies: back.replies })) ?? 0) : 0;
+  return back?.ok && back.replies.length ? ((await tell("agentReplies", { replies: back.replies })) ?? 0) : 0;
 }
 $("agent").addEventListener("click", async () => {
-  const sent = await page("agentSend");
+  const sent = await tell("agentSend");
   if (!sent) return;
   const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
   if (!answer?.ok) {
@@ -322,10 +304,9 @@ $("copy-md").addEventListener("click", () => void copy("ai"));
 $("copy-text").addEventListener("click", () => void copy("text"));
 
 $("stop").addEventListener("click", async () => {
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => globalThis.__pipeupExt?.off?.(),
-  });
+  await tell("off");
+  // Pipeup takes itself off a moment after answering.
+  for (let i = 0; i < 40 && (await tell("probe")); i++) await new Promise((r) => setTimeout(r, 50));
   await show();
 });
 

@@ -354,3 +354,21 @@ test("the toolbar button's bubble follows the browser's look: light on a dark to
   );
   expect(found).toEqual([true, true]);
 });
+
+test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}lookalike.html`);
+  const p = await panel(context, worker, id, page);
+  await expect(p.getByRole("button", { name: "Comment on this page" })).toBeVisible();
+  await expect(p.locator("#built-in")).toBeHidden();
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  // Reopened, the panel is Pipeup's menu: the extension's own Pipeup is never mistaken for the page's.
+  const again = await panel(context, worker, id, page);
+  await expect(again.getByRole("button", { name: "Turn off on this page" })).toBeVisible();
+  await expect(again.locator("#built-in")).toBeHidden();
+});

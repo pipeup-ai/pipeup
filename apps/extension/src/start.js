@@ -5,7 +5,12 @@
   const state = (globalThis.__pipeupExt ??= { on: false, builtIn: false });
   if (state.on || state.starting) return;
   // A page with Pipeup built in keeps its own: two copies would mean two controls and two sets of comments.
-  if (document.querySelector("pipeup-root") || document.querySelector('script[src*="pipeup"]')) {
+  const ownScript = [...document.scripts].some((script) => {
+    // Pipeup's own file, from npm, a CDN or the site: …/pipeup.min.js, …/pipeup@0.9.1/…, …/pipeup/dist/…
+    const path = script.src ? new URL(script.src, location.href).pathname : "";
+    return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
+  });
+  if (document.querySelector("pipeup-root") || ownScript) {
     state.builtIn = true;
     return;
   }
@@ -298,6 +303,33 @@
 
   // What the side panel asks for, or asks to be done.
   const asks = {
+    // What the toolbar panel shows: asked by message, which reaches this copy the same way in every browser.
+    probe: () => ({
+      on: true,
+      hosted: !!state.hosted,
+      mode: state.mode ?? "",
+      count: state.count(),
+      commenting: !!pu.commentMode,
+      name: pu.name ?? "",
+      look: pu.look ?? "auto",
+      hidden: !!pu.hidden,
+      // Add-ons whose rows are in Pipeup's own menu (Emoji and Voice work inside the comment box instead).
+      extras: !!globalThis.Pipeup?.addons?.().some(
+        (a) => ["share", "live", "github", "identity"].includes(a.id) && a.state === "on",
+      ),
+    }),
+    // The toolbar panel's rows.
+    act: async ({ action, value }) => {
+      if (action === "mode") await pu.setCommentMode(value);
+      else if (action === "name") await pu.setName(value);
+      else if (action === "look") await pu.setLook(value);
+      else if (action === "hide") await pu.setHidden(value);
+      else if (action === "all") await pu.openAllComments();
+      else if (action === "menu") await pu.openMenu();
+      else if (action === "copy") return pu.commentsAs(value);
+      return null;
+    },
+    off: () => void setTimeout(() => state.off(), 0),
     snapshot: () => snapshot(),
     reply: (m) => pu.document.reply(m.id, m.text),
     edit: (m) => pu.document.edit(m.id, m.text),
