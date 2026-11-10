@@ -1,6 +1,6 @@
 # Contributing to Pipeup
 
-Thanks for helping. Pipeup is alpha, so open an issue to discuss anything larger than a bug fix
+Thanks for helping. Open an issue to discuss anything larger than a bug fix
 before you spend time on it.
 
 ## Build and test
@@ -11,7 +11,7 @@ server (`services/mailbox`) need Node 22 or later.
 ```sh
 cd libs/ts/pipeup
 npm ci
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run check
 ```
 
@@ -20,6 +20,7 @@ npm run check
 | `npm run check` | Types, lint, unit tests, build, size budget and browser tests |
 | `npm test` | Unit tests only |
 | `npm run e2e` | Browser tests (run `npm run build` first) |
+| `npm run e2e:safari` | Every browser test in Safari's engine. Some fail there for the test browser's own reasons: see [docs/testing/extension-checklist.md](docs/testing/extension-checklist.md) |
 | `npm run format` | Format with Prettier |
 
 The add-ons are written against the core's types and built into combined files with its classic build, so build

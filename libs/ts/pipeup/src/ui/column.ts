@@ -75,6 +75,8 @@ export function lost(ctx: Ctx, t: Thread): boolean {
 /** The thread's content was found changed, or nearby: it is flagged Moved, for someone to confirm. */
 export const moved = (ctx: Ctx, t: Thread): boolean =>
   !ctx.earlier(t) && ctx.resolved.get(t.id)?.state === "moved";
+/** Found by looking alike: its card asks whether this is the right place. */
+export const alike = (ctx: Ctx, t: Thread): boolean => moved(ctx, t) && !!ctx.resolved.get(t.id)?.alike;
 
 /** Threads beside the document, level with what they're about; the open one aligns exactly. */
 export function createColumn(ctx: Ctx): View {
@@ -183,7 +185,11 @@ export function createColumn(ctx: Ctx): View {
     item.note = notesKey(t);
     item.lost = isLost(t);
     item.moved = moved(ctx, t);
-    item.view.update(t, { lost: item.lost ? t.anchor.snapshot : null, moved: item.moved });
+    item.view.update(t, {
+      lost: item.lost ? t.anchor.snapshot : null,
+      moved: item.moved,
+      alike: alike(ctx, t),
+    });
   }
 
   function create(t: Thread): Item {
@@ -192,6 +198,7 @@ export function createColumn(ctx: Ctx): View {
       variant: "column",
       lost: lost ? t.anchor.snapshot : null,
       moved: moved(ctx, t),
+      alike: alike(ctx, t),
     });
     // A closed thread opens from the keyboard with its button, which has no box of its own (the thread shows its
     // focus); `data-thread`: Esc in the open thread comes back to it.

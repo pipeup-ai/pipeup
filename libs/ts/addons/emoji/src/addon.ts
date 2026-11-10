@@ -31,7 +31,7 @@ export function createAddon(): PipeupAddon {
     },
     setup(host) {
       const offStyles = host.addStyles(CSS);
-      host.setReactionPicker(createPicker());
+      host.setReactionPicker(createPicker(host.keep));
       return () => {
         host.setReactionPicker(null);
         offStyles();

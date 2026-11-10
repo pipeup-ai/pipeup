@@ -8,6 +8,7 @@ import { placeBar, touch } from "./layout";
 import { byPage, nodeOf } from "./order";
 import { blockTree, childBlocks, IGNORED, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
 import { HOLD } from "./shortcut";
+import { onWindowKey } from "./field";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -156,6 +157,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let from: Element | null = null;
   /** How far the pointer has moved since the cursor last moved: past NUDGE, the mouse takes the outline. */
   let moved = 0;
+  /** Where the pointer last was: how far it moved is measured from here (not every browser reports movement on the event itself). */
+  let lastAt: { x: number; y: number } | null = null;
   /** Shift+Enter: the block's thread opened last (-1: none yet on this block). */
   let nth = -1;
   /** The hint is still to be read with the first landing. */
@@ -314,6 +317,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       ctx.report(err);
       return;
     }
+    // Choosing where a comment belongs: the pick is its new place, not a new comment.
+    if (ctx.state.picking) return ctx.repoint(anchor);
     const next: Draft = {
       anchor,
       label: point ? `Pin on ${labelOf(el).replace(/^[A-Z](?=[a-z])/, (c) => c.toLowerCase())}` : labelOf(el),
@@ -364,6 +369,9 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     if (ctx.state.draft && e.altKey) return ctx.dismiss();
     // A click on a highlight reads its thread (the comment views open it), never picks the block under it.
     if (!e.altKey && ctx.readsAt(e.clientX, e.clientY)) return;
+    // A thread open to read: a click on the page closes it (keeping any reply being written) and does nothing else; the
+    // next click chooses a block. One just written doesn't hold up the next comment.
+    if (reading()) return ctx.open(null);
     if (ctx.state.active) ctx.open(null);
     // A pointer's click puts the block cursor away; a screen reader's activate (no pointer) moves it there.
     if (cur && e.detail) stow();
@@ -400,6 +408,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     const t = e.composedPath()[0];
     // The block cursor comments with Enter; Space pauses there too.
     if (markers.some((m) => m === t)) return true;
+    // Pipeup's own comment or reply box, still empty: a space there would be thrown away, so Space pauses instead.
+    if (t instanceof HTMLTextAreaElement && ctx.layer.contains(t) && !t.value.trim()) return true;
     const c = t instanceof Element ? t.closest(CONTROL) : null;
     return (
       !c || (!byKeys && !c.matches("input,textarea,select,[contenteditable]:not([contenteditable=false])"))
@@ -428,13 +438,22 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     });
   };
 
+  /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
+  const reading = () => !!ctx.state.active && !ctx.state.sent;
   const onMove = (e: PointerEvent) => {
+    const step = lastAt ? Math.abs(e.clientX - lastAt.x) + Math.abs(e.clientY - lastAt.y) : 0;
+    lastAt = { x: e.clientX, y: e.clientY };
     if (ctx.owns(e) || ctx.state.paused) return;
     if (!onPage(e)) {
       if (!chosen) show(null);
       return;
     }
     e.stopPropagation();
+    // One thing at a time: while a thread is open to read, no other block is offered (§5).
+    if (reading()) {
+      if (!chosen) show(null);
+      return;
+    }
     if (chosen || ctx.state.draft) return;
     const block = !selected() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
     if (cur) {
@@ -442,7 +461,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       // makes up after a scroll has no movement, so the cursor's own scrolling never puts it away.
       if (!block || block === cur) return;
       // A nudge of a pixel or two (a trackpad touched while typing) doesn't count.
-      moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+      moved += step;
       if (moved <= NUDGE) return;
       stow();
     }
@@ -862,7 +881,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   /** Comment mode has ended: the listener stays only for the keyup of the key that ended it (Esc). */
   let ended = false;
   const onKeyUp = (e: KeyboardEvent) => {
-    if (ended) window.removeEventListener("keyup", onKeyUp, true);
+    if (ended) offKeyUp();
     if (e.key === HOLD && ctx.state.paused) {
       pause(false);
       e.preventDefault();
@@ -876,7 +895,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
   // Leaving the window (⌘-Tab, say) loses the key-up: the pause ends with it.
   const onBlur = () => pause(false);
-  window.addEventListener("keyup", onKeyUp, true);
+  const offKeyUp = onWindowKey("keyup", onKeyUp, true);
   window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
   window.addEventListener("pointerdown", pressed, true);
@@ -884,7 +903,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
-  window.addEventListener("keydown", onKey, true);
+  const offKey = onWindowKey("keydown", onKey, true);
 
   return {
     back() {
@@ -961,7 +980,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       stopBar();
       ctx.state.pinning = false;
       ended = true;
-      if (!taken) window.removeEventListener("keyup", onKeyUp, true);
+      if (!taken) offKeyUp();
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
       window.removeEventListener("pointerdown", pressed, true);
@@ -969,7 +988,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);
-      window.removeEventListener("keydown", onKey, true);
+      offKey();
       // The outline and bar fade out where they are, then leave. Comment mode coming back meanwhile makes
       // its own, so these only ever touch themselves.
       outline.classList.remove("show");

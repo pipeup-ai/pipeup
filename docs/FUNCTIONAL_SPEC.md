@@ -136,6 +136,13 @@ Pipeup without reaching inside it.
   and sending comments live there; `pipeup check` warns when the control is hidden and the page never opens the menu.
 - When Pipeup can't start, the page can learn why, in words and as a short code it can act on (for example, another
   copy of Pipeup already owns the page), as well as in the browser's console.
+- Whatever adds Pipeup to a page (such as the browser extension) can keep the reviewer's choices for it (look, Hide
+  comments) in its own storage, as it can keep the comments, instead of the page's. It can also give page settings the
+  page doesn't (an add-on's address, say), and open the comment box on an element or on words it chooses.
+- It can also **show Pipeup's threads itself**, in its own interface. Pipeup then opens no thread on the page and says when
+  one is opened there (its place clicked, or just written); new comments are still written on the page, beside what
+  they're about. It can draw Pipeup's menu from what the page's code can already ask and do, copy the comments as Copy
+  comments does, set the reviewer's look and Hide comments, and go to a thread's place.
 - None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
@@ -171,7 +178,9 @@ any of them off.
   want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so. Space is
   the key because it changes nothing about a click (⌘, Ctrl, Shift and Option all make a click on a link do
   something else, such as open a new tab or download it). While Space is held the page doesn't hear it, so it
-  doesn't scroll or turn a slide. Space keeps its usual job where it has one: typing in a field, and a link,
+  doesn't scroll or turn a slide. In Pipeup's own comment or reply box while it is empty, Space doesn't type (a
+  comment never starts with a space): holding it pauses, as on the page. Once the box has words, Space types. Space
+  keeps its usual job where it has one: typing in a field, and a link,
   button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
   keep it). On the block cursor, Enter comments and Space pauses.
 - **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
@@ -198,6 +207,12 @@ any of them off.
   pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
   selection is cleared or its comment is started or cancelled. Double- or triple-clicking words selects them
   without choosing the block they are in, and Esc with words selected clears the selection first.
+- **One thing at a time.** While a thread is open to read in comment mode, no block is outlined or named on hover, and
+  a click on the page closes the thread and does nothing else (a reply being written in it is kept for when it opens
+  again); the next click chooses a block. A thread just written shows but doesn't hold up the next comment: the next
+  click goes on to the next block. While a comment has words, blocks aren't offered either, and a click goes back to
+  it. An empty comment box still moves to the block clicked. When a host shows the threads (§4a), the page has none
+  open, so blocks are always offered.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
@@ -631,9 +646,21 @@ any of them off.
 - When the page changes, every comment re-finds what it was attached to. Each comment is in one
   of three states, shown to the reader:
   - **Attached** — found where it was;
-  - **Moved** — found nearby or after the content changed; flagged so someone can confirm;
-  - **Orphaned** — its content is gone; the comment remains in the panel with a **snapshot** of
-    what the reviewer was looking at.
+  - **Moved** — found nearby, after the content changed, or by looking alike; flagged so someone can confirm;
+  - **Lost** — its content is gone; the comment remains in the panel and says what it was about.
+- A comment remembers enough about what it was on to find it again after the page changes: its words, what kind of
+  thing it is (a heading, a paragraph, a picture, a button, a link, a box), its name where it has one (a label, a
+  picture's description or file name, a link's address), the headings it sits under, and roughly where it was.
+- A comment never stays on something that no longer matches it when something else on the page clearly does. When two
+  things match about equally, it is Lost rather than guessed.
+- A comment found by looking alike, rather than by its words or its place, is Moved and asks, in its open thread, **Is
+  this the right place?** with **Yes**, **Not here** and **It's gone**. Anyone reading can answer; the answer is kept for
+  everyone and shown in the thread ("Ada confirmed the place"), so it is asked once. Yes keeps it there. Not here starts
+  comment mode with "Click where this comment belongs", and the next click moves it there (Esc cancels). It's gone
+  makes it Lost without asking again.
+- A Lost comment says what it was: the kind of thing, the headings it sat under and its words. Anyone reading can
+  **show where it belongs** now, the same way. Copy for AI describes Moved and Lost comments the same way, so an agent
+  can find their place in the page's source.
 - Every comment remembers the view it was made in: the slide, and whatever the page reports about
   itself (such as the open tab or route), with a readable name when the page gives one. A comment belongs
   to a view only when what it is about is inside that view; content outside a tab panel or accordion shows
@@ -1217,7 +1244,7 @@ other comments are.
 - **Asks the author needs.** An author can mark an ask as needed. The menu says "2 of 5 asks answered" and lists the
   unanswered ones, each going to its ask.
 - **When the question changes.** An answer given to earlier words of the same ask is marked with the words it answered
-  ("Asked as: …"). An ask removed from the page leaves its answers as orphaned comments (§8), with their question kept.
+  ("Asked as: …"). An ask removed from the page leaves its answers as Lost comments (§8), with their question kept.
 - **Without the add-on**, or with a Pipeup that can't run it, the author's own content inside the ask shows instead
   (for example, the question and "Comment on this"), and the block is commented on as any other.
 - A comment someone starts on an ask's block in comment mode is an ordinary comment on it, shown with the ask's
@@ -1712,6 +1739,18 @@ agent's replies.
 - Exit codes: 0 done (including no comments), 1 a source couldn't be read, 2 the command wasn't understood or needs
   something first.
 
+### 15g. Comments sent from the browser extension: `pipeup browser`
+
+- **Send to my agent**, in the extension's menu, sends the page's comments (as Markdown, and as a Pipeup comments file)
+  to agents on this computer. Nothing leaves the computer; each page is kept in its own folder in the reviewer's home.
+- `pipeup browser` lists the pages sent, newest first; `pipeup browser read <page>` prints one page's comments as
+  Markdown; `pipeup browser reply <page> --thread <id> [--agent <name>] "<words>"` answers a thread. The extension puts
+  agents' replies into their threads, each once, the next time Pipeup's menu is opened on the page; they show as the
+  agent's, like any reply an agent wrote.
+- `pipeup browser install --extension-id <id>` sets this up once, for the reviewer's browser (Chrome, Edge, Chromium or
+  Brave, on macOS and Linux); `pipeup browser install --browser firefox` does it for Firefox, which needs no id. Until
+  then, Send to my agent says the command to run.
+
 ## 16. Distribution
 
 - Published to **npm as `pipeup`** and served by **common public CDNs**, with every release at a
@@ -2027,7 +2066,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
 - 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
-- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@1`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
 - 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
@@ -2042,3 +2081,13 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.
 - 2026-11-01 — Asks are compact (one line for a question and its buttons where it fits, one line after answering); their field looks like a field, grows on its own and has no resize handle; an ask takes the page's font, and the author can set its accent, font and rounding while Pipeup's mark and tint stay (§11b). A page with its own way to start commenting can hide Pipeup's comment control and open Pipeup's menu and All comments from its code (§4a). Visual spec: docs/design/compact-asks.html.
 - 2026-11-03 — When the comment control is pointed at, its ⋯ eases in right beside the comment bubble instead of at the far end of the reach, where longer words could push it away from a click (section 5).
+- 2026-11-09 — Built: re-finding comments (§8). It's gone is a third answer beside Yes and Not here, rather than a
+  choice after Not here. It adds 2.0 KB to Pipeup (65.5 KB gzip), 1.5 KB of it in the core that add-ons and the command
+  line use (12.2 KB), so the budgets rise to 66 KB and 12.5 KB (section 16a).
+- 2026-11-09 — Re-finding comments (§8; visual spec docs/design/refind-comments.html): a comment remembers what kind of thing it was on, its name, the headings it sat under and roughly where it was, so it follows that thing when a site adds or reorders content instead of landing on a neighbour; a look-alike match asks "Is this the right place?" (Yes, or Not here to show the right place or say it's gone), answered once by anyone for everyone; Orphaned is now called Lost, and says the kind of thing, its headings and its words; anyone can show where a Lost comment belongs; Copy for AI describes Moved and Lost comments the same way.
+- 2026-11-09 — A host that adds Pipeup (such as the browser extension) can keep the reviewer's choices for the page (look, Hide comments) in its own storage instead of the page's (section 4a).
+- 2026-11-09 — A host (such as the browser extension) can show Pipeup's threads in its own interface, while new comments are still written on the page; it can copy the comments, set the look and Hide comments, and go to a thread (section 4a).
+- 2026-11-09 — One thing at a time in comment mode (section 5; visual spec docs/design/one-thing-at-a-time.html): while a thread is open to read, no other block is outlined, and a click on the page only closes it; a thread just written doesn't hold up the next comment.
+- 2026-11-09 — Space in an empty comment or reply box doesn't type a space; holding it pauses comment mode, as on the page (section 5).
+- 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.
+- 2026-11-10 — `pipeup browser install --browser firefox` sets up Send to my agent for Firefox (section 15g).

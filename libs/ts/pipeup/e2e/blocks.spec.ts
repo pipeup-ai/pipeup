@@ -90,6 +90,7 @@ test("the expand icon moves the open box to the surrounding block, keeping its w
   ]);
   expect(caret).toEqual([4, 4]);
   await textbox(page).press("Enter");
+  await expect.poll(() => page.evaluate(() => (window as any).pu.document.threads().length)).toBe(1);
   const tag = await page.evaluate(() => {
     const w = window as any;
     return w.Pipeup.resolveAnchor(w.pu.document.threads()[0].anchor, document.body).element?.tagName;

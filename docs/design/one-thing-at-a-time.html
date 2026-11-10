@@ -1,0 +1,94 @@
+<title>One Thing at a Time</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column: the cases as a table, two small before/after pages, and the spec wording; light only. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--old:#fbeeee;--oldline:#b3261e;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:920px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:44px 0 8px;text-wrap:balance}
+p{max-width:70ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+.cap{font-size:13px;color:var(--faint);margin-top:8px;max-width:70ch}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+td:first-child{font-weight:600;color:var(--strong);width:24%}
+.same{color:var(--faint)} .chg{color:var(--newline);font-weight:600}
+.tw{overflow-x:auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pair>div{min-width:0}
+@media (max-width:720px){.pair{grid-template-columns:1fr}}
+.page{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;height:230px;padding:16px;font:13px/1.55 var(--serif);color:#333;overflow:hidden}
+.page h4{margin:0 0 8px;font:600 16px var(--sans);color:#111}
+.page p{margin:0 0 8px;max-width:60%}
+.ol{outline:2px solid var(--violet);outline-offset:3px;border-radius:2px}
+.ol.bad{outline-color:var(--oldline)}
+.pop{position:absolute;left:150px;top:96px;width:200px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 22px rgba(20,20,40,.12);padding:8px 10px;font:12px/1.4 var(--sans)}
+.pop b{color:#111}
+.ptr{position:absolute;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #111;transform:rotate(-30deg)}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch}
+.spec p{margin:0 0 8px} .spec p:last-child{margin:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch;margin:12px 0}
+.ask p{margin:0} .ask b{color:var(--strong)}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed and built 9 November 2026</div>
+<h1>One thing at a time in comment mode</h1>
+<p class="lede">In comment mode, while a thread is open or a comment has words in it, the page stops offering blocks:
+no outlines on hover, and a click on the page closes or returns rather than starting something new. The page offers
+blocks again as soon as that thread or comment is done. This is Pipeup's own behaviour, on every page, not only with
+the extension.</p>
+
+<h2>1. What changes</h2>
+<div class="pair">
+  <div>
+    <div class="label">Today</div>
+    <div class="page"><h4>Lumen launch plan</h4><p class="ol bad">We launch in the second week of May, after the beta.</p><p>Pricing changes follow in June.</p>
+      <div class="pop"><b>Sam</b> · 2h<br>Which beta?<br><span style="color:#999">Reply or add others with @</span></div>
+      <span class="ptr" style="left:110px;top:60px"></span></div>
+    <p class="cap">A thread is open, and moving toward it outlines the paragraph behind, as if a click there would start a
+    new comment. It would: the thread closes and a box opens.</p>
+  </div>
+  <div>
+    <div class="label">Proposed</div>
+    <div class="page"><h4>Lumen launch plan</h4><p>We launch in the second week of May, after the beta.</p><p>Pricing changes follow in June.</p>
+      <div class="pop"><b>Sam</b> · 2h<br>Which beta?<br><span style="color:#999">Reply or add others with @</span></div>
+      <span class="ptr" style="left:110px;top:60px"></span></div>
+    <p class="cap">Nothing is outlined while the thread is open. A click on the page closes the thread; the next click
+    chooses a block.</p>
+  </div>
+</div>
+
+<h2>2. Every case</h2>
+<div class="tw"><table>
+<tr><th>In comment mode, with…</th><th>Hovering the page</th><th>Clicking the page</th></tr>
+<tr><td>Nothing open</td><td class="same">Outlines the block under the pointer (as now)</td><td class="same">Opens a comment box on it (as now)</td></tr>
+<tr><td>An empty comment box</td><td class="same">Outlines blocks (as now)</td><td class="same">Moves the box there, so a mis-click is fixed in one click (as now)</td></tr>
+<tr><td>A comment box with words</td><td class="chg">No outlines</td><td class="same">Goes back to the box, cursor in it; the words are kept (as now)</td></tr>
+<tr><td>An open thread</td><td class="chg">No outlines</td><td class="chg">Closes the thread, and nothing else. The next click chooses a block.</td></tr>
+<tr><td>An open thread with a reply being written</td><td class="chg">No outlines</td><td class="same">Closes the thread; the reply's words are kept for when it opens again (as now)</td></tr>
+<tr><td>A thread you just wrote</td><td class="same">Outlines blocks</td><td class="same">Goes on to the next block, so commenting block after block stays one click each</td></tr>
+<tr><td>Words selected on the page</td><td class="same">No outlines (as now)</td><td class="same">The selection's comment icon is the offer (as now)</td></tr>
+</table></div>
+<p class="cap">Esc, Cancel, Comment and closing the thread all end it, and blocks are offered again at once. The
+keyboard's block cursor follows the same rule: while a thread is open or a comment has words, Tab stays in it.
+Clicking a comment's highlight still opens that comment, in every case without words being written.</p>
+
+<h2>3. The spec change</h2>
+<div class="spec">
+<p>In §5, beside the rule for selected words:</p>
+<p><b>While a thread is open to read,</b> no block is outlined or named on hover, and a click on the page closes it and
+does nothing else (a reply being written is kept); the next click chooses a block. A thread just written doesn't hold
+up the next comment. While a comment has words, blocks aren't offered and a click goes back to it. An empty comment box
+still moves to the block clicked.</p>
+</div>
+
+<h2>4. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>An empty comment box: move it, or close it first?</b> Agreed: move it, as now. A box opened
+on the wrong block is the commonest slip, and one click fixes it. The other choice is one click to close the box and a
+second to choose again.</p></div>
+<div class="ask"><p><b>An open thread: close it, or close it and choose the block clicked?</b> Agreed: only close
+it. Reading a thread and clicking away to dismiss it shouldn't start a comment. The other choice saves a click when the
+reviewer meant to comment next.</p></div>
+</main>

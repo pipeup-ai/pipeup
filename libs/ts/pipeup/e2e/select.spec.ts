@@ -16,22 +16,26 @@ const clearOfWords = async (page: Page, selector: string) => {
   }, b);
 };
 
-test("selecting text offers one comment icon, beside the words, never over them", async ({ page }) => {
-  await open(page, "doc.html");
-  await showComments(page);
-  await selectWords(page, "#p1", "pricing changes");
-  const bar = page.locator(".selbar.show");
-  await expect(bar).toBeVisible();
-  await expect(bar.getByRole("button")).toHaveAttribute("aria-label", "Comment");
-  expect(await clearOfWords(page, "#p1")).toBe(true);
-  // Level with the selection's last line.
-  const b = (await bar.boundingBox())!;
-  const line = await page.evaluate(() => {
-    const r = [...getSelection()!.getRangeAt(0).getClientRects()].at(-1)!;
-    return (r.top + r.bottom) / 2;
-  });
-  expect(Math.abs(b.y + b.height / 2 - line)).toBeLessThan(4);
-});
+test(
+  "selecting text offers one comment icon, beside the words, never over them",
+  { tag: "@safari" },
+  async ({ page }) => {
+    await open(page, "doc.html");
+    await showComments(page);
+    await selectWords(page, "#p1", "pricing changes");
+    const bar = page.locator(".selbar.show");
+    await expect(bar).toBeVisible();
+    await expect(bar.getByRole("button")).toHaveAttribute("aria-label", "Comment");
+    expect(await clearOfWords(page, "#p1")).toBe(true);
+    // Level with the selection's last line.
+    const b = (await bar.boundingBox())!;
+    const line = await page.evaluate(() => {
+      const r = [...getSelection()!.getRangeAt(0).getClientRects()].at(-1)!;
+      return (r.top + r.bottom) / 2;
+    });
+    expect(Math.abs(b.y + b.height / 2 - line)).toBeLessThan(4);
+  },
+);
 
 test("the selection's icon never covers the line above, on a headline or a slide title", async ({ page }) => {
   await open(page, "site.html", { name: "Sam" });

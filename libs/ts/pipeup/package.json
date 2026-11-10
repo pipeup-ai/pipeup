@@ -1,6 +1,6 @@
 {
   "name": "pipeup",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "description": "Comments and feedback right on any HTML page: documents, slide decks and whole sites.",
   "keywords": [
     "comments",
@@ -58,7 +58,8 @@
     "lint": "eslint src test e2e && prettier --check src test e2e",
     "format": "prettier --write src test e2e",
     "check": "tsc --noEmit && tsc -p tsconfig.e2e.json --noEmit && npm run lint && vitest run && npm run build && node scripts/size.mjs && npm run e2e",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:safari": "WEBKIT=all playwright test --project=webkit"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

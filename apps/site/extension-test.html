@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- A page for trying Pipeup for browsers, the extension, on a page that doesn't have Pipeup built in. It carries a
+     Pipeup document id, so the extension's Share and Live work here too. The stores' reviewers are sent here.
+     Spec: docs/WEBSITE_SPEC.md §3 item 2c. Light only. -->
+<html lang="en" data-pipeup-doc="34QMFEtnHDawkDRL:84MXjLlElwGra1U-R0InTfjo5PNIThgTK2GYZ1aYPTY">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lumen launch plan · a page to try Pipeup for browsers</title>
+    <meta name="description" content="A sample page for trying the Pipeup browser extension, with Share and Live." />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <style>
+      :root { --ink: #2f3437; --strong: #111; --muted: #6a6a64; --line: #e3e1da; --paper: #fff; --soft: #f6f5f0; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.65 Georgia, "Iowan Old Style", serif; }
+      .note { background: var(--soft); border-bottom: 1px solid var(--line); font: 14px/1.5 -apple-system, "Segoe UI", sans-serif; color: var(--muted); padding: 12px 20px; text-align: center; }
+      article { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+      h1 { font-size: 40px; line-height: 1.1; color: var(--strong); margin: 0 0 6px; letter-spacing: -0.02em; }
+      .by { color: var(--muted); font-size: 15px; margin: 0 0 32px; }
+      h2 { font-size: 24px; color: var(--strong); margin: 36px 0 8px; }
+      figure { margin: 28px 0; }
+      figure svg { display: block; width: 100%; height: auto; border-radius: 10px; }
+      figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+      table { border-collapse: collapse; width: 100%; font-size: 15px; }
+      th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    </style>
+  </head>
+  <body>
+    <div class="note">A sample page for trying Pipeup for browsers. Press Pipeup in the toolbar and choose Comment on this page.</div>
+    <article>
+      <h1>Lumen launch plan</h1>
+      <p class="by">By Sam · draft for review</p>
+      <p id="p1">We launch in the second week of May, after the beta with Ada's team. The beta runs for three weeks and
+        ends with a short survey.</p>
+      <p id="p2">Pricing changes follow in June. Current customers keep their price until their next renewal.</p>
+      <figure>
+        <svg viewBox="0 0 640 220" role="img" aria-label="Sign-ups by week during the beta">
+          <rect width="640" height="220" fill="#f6f5f0" />
+          <g fill="#534ab7">
+            <rect x="60" y="150" width="70" height="40" rx="4" />
+            <rect x="170" y="120" width="70" height="70" rx="4" />
+            <rect x="280" y="90" width="70" height="100" rx="4" />
+            <rect x="390" y="60" width="70" height="130" rx="4" />
+            <rect x="500" y="40" width="70" height="150" rx="4" />
+          </g>
+          <line x1="40" y1="190" x2="600" y2="190" stroke="#c9c6bd" />
+        </svg>
+        <figcaption>Sign-ups by week during the beta.</figcaption>
+      </figure>
+      <h2>Who does what</h2>
+      <table>
+        <thead><tr><th>Part</th><th>Who</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>Beta invitations</td><td>Ada</td><td>14 April</td></tr>
+          <tr><td>Launch post</td><td>Sam</td><td>8 May</td></tr>
+          <tr><td>Support guide</td><td>Lee</td><td>12 May</td></tr>
+        </tbody>
+      </table>
+      <h2>Open questions</h2>
+      <p id="p3">Do we open the waiting list before the post goes out, or on the same day? Lee would rather wait a day,
+        so support isn't answering both at once.</p>
+    </article>
+  </body>
+</html>

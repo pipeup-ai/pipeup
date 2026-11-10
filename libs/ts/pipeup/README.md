@@ -2,7 +2,7 @@
 
 Comments and feedback right on any HTML page: documents, slide decks and whole sites.
 
-> **Alpha (0.9.1).** The API and the stored comment format may change before 1.0; pin an exact version.
+> **Alpha (1.0.0).** The API and the stored comment format may change before 1.0; pin an exact version.
 > Website and Try pages: https://pipeup-ai.github.io/pipeup/ · Source: https://github.com/pipeup-ai/pipeup
 
 Pipeup: signed comment operations, threads with one-level replies, anchors that survive page changes,
@@ -23,7 +23,7 @@ its address:
 ```html
 <html data-pipeup-doc="<id>:<key>">
   ...
-  <script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.1/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/pipeup@1.0.0/dist/pipeup.min.js" integrity="sha384-…" crossorigin="anonymous" defer></script>
 ```
 
 On a host that writes its own `<html>` (claude.ai Artifacts, for example), put the same settings on the script
@@ -45,7 +45,7 @@ Install with `npm i pipeup`. From a bundler (no side effects; call `mount` yours
 
 ```js
 import { mount } from "pipeup";
-const pipeup = await mount({ name: "Sam" }); // options: root, name, store, slides, doc, layout, theme, select
+const pipeup = await mount({ name: "Sam" }); // options: root, name, store, prefs, keep, closed, field, ui, slides, doc, layout, theme, select, control
 await pipeup.flush(); // write any unsaved changes now (this also happens when the page is hidden)
 pipeup.unmount(); // remove Pipeup from the page; the comments stay saved
 ```

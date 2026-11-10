@@ -241,6 +241,36 @@ test("the Theme row in the menu overrides the page, and the choice is kept", asy
   await expect(layer(page)).not.toHaveClass(/dark/);
 });
 
+test("a host's own prefs keep the reviewer's choices instead of the page's localStorage", async ({
+  page,
+}) => {
+  await page.goto(fixture("hostile.html"));
+  await page.evaluate(async () => {
+    const w = window as any;
+    const kept: Record<string, string> = { "pipeup:look": "dark" };
+    w.kept = kept;
+    w.pu = await w.Pipeup.mount({
+      prefs: {
+        getItem: (k: string) => kept[k] ?? null,
+        setItem: (k: string, v: string) => void (kept[k] = v),
+        removeItem: (k: string) => void delete kept[k],
+      },
+    });
+  });
+  // Read as Pipeup starts: the host's Dark.
+  await expect(layer(page)).toHaveClass(/dark/);
+  const row = page.locator(".mi", { hasText: "Theme" });
+  await openMenu(page);
+  await row.click();
+  await expect(row).toContainText("Automatic");
+  expect(
+    await page.evaluate(() => ({ kept: (window as any).kept, site: Object.keys(localStorage) })),
+  ).toEqual({
+    kept: {},
+    site: [],
+  });
+});
+
 test("a reviewer's choice beats the author's setting", async ({ page }) => {
   await page.goto(fixture("hostile.html"));
   await page.evaluate(async () => {

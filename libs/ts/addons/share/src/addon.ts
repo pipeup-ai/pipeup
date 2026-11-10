@@ -48,7 +48,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
       if (!pageSecret(doc.id)) return host.off("needs a document identity");
 
       const l = ladder(doc.id, address.key);
-      const store = await settings("share", { memory: host.ephemeral });
+      const store = await settings("share", { memory: host.ephemeral, keep: host.keep });
       const saved = await store.get<Saved>(`doc:${doc.id}`);
       const policy = new Policy(doc.me, saved, listedAgents);
       policy.hold(doc.ops());

@@ -5,16 +5,21 @@ description: Use when someone asks you to act on Pipeup feedback for an HTML pag
 
 # Apply Pipeup feedback
 
-Written for Pipeup 0.9.1 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
+Written for Pipeup 1.0.0 This skill is published at https://pipeup-ai.github.io/pipeup/skills/pipeup-apply/SKILL.md. Its companions: [integrate](https://pipeup-ai.github.io/pipeup/skills/pipeup-integrate/SKILL.md), [summarise](https://pipeup-ai.github.io/pipeup/skills/pipeup-summarise/SKILL.md).
 
 ## 1. Read the comments
 
 Use the first of these that works:
 
-0. **A live link** (the author runs `npx --yes pipeup@0 watch report.html --agent Claude` on this computer, opens the page it
-   prints, and switches on **Share with my agent**): run `npx --yes pipeup@0 comments report.html` (add `--all` for resolved
+0. **A live link** (the author runs `npx --yes pipeup@1 watch report.html --agent Claude` on this computer, opens the page it
+   prints, and switches on **Share with my agent**): run `npx --yes pipeup@1 comments report.html` (add `--all` for resolved
    threads, `--json` for data). No browser needed. If it says nothing is shared, ask the author to switch the switch on.
    Your replies below reach the open page within seconds. The link lists your key for the page while it runs.
+   **Sent from the browser extension** (the reviewer pressed **Send to my agent** in Pipeup's menu, on any website):
+   run `npx --yes pipeup@1 browser` to list the pages sent, newest first, and `npx --yes pipeup@1 browser read <page>`
+   for one page's comments (`<page>` is part of its address or title). Answer each thread with
+   `npx --yes pipeup@1 browser reply <page> --thread <id> --agent <your name> "<words>"`; the extension puts the reply
+   in the thread when the page is next open. There's no page file to edit: tell the author what to change on the site.
 1. **Run the page** in a browser (you can drive one, or the author has it open) and evaluate
    `await Pipeup.comments()`. It returns `{ markdown, threads }`: `markdown` is the same text as **Copy as
    Markdown**, and `threads` is the same threads as data (`id`, `state`, `where`, `element`, `quote`, and each
@@ -44,9 +49,9 @@ Answer a question with an answer, not a change.
 You answer in the page's **replies file**, next to the page (`report.html` → `report.replies.js`), signed with your
 own key. The key stays on this computer in `~/.pipeup/agent.json`; never put it in the page or its folder.
 
-Run these commands exactly as written: `--yes` stops npx asking "Ok to proceed?", and `pipeup@0` takes any release npm
-will give (some computers only accept packages a few days old). Every release from 0.6 answers them the same way. A
-pre-release page's prompt names its pre-release; if npm refuses that one, use `pipeup@0`.
+Run these commands exactly as written: `--yes` stops npx asking "Ok to proceed?", and `pipeup@1` takes any release npm
+will give (some computers only accept packages a few days old). Every 1.x release answers them the same way. A
+pre-release page's prompt names its pre-release; if npm refuses that one, use `pipeup@1`.
 
 `--page` is **the HTML file that runs Pipeup**, the one the author opened, never a file it shows: on a viewer such as
 `wiki/viewer.html?file=notes.md`, pass `wiki/viewer.html`. The prompt the author copies names it. If you can't tell,
@@ -58,13 +63,13 @@ and lists it; without `--yes` it only shows the change. The author also needs th
 key and adds the add-on for you):
 
 ```bash
-npx --yes pipeup@0 agent --name Claude --page report.html --yes
+npx --yes pipeup@1 agent --name Claude --page report.html --yes
 ```
 
 Then, for each thread:
 
 ```bash
-npx --yes pipeup@0 reply --page report.html --thread <Thread id> "Changed the 20% to 15 to 20%, in the second paragraph." --addressed "addressed in revision 2"
+npx --yes pipeup@1 reply --page report.html --thread <Thread id> "Changed the 20% to 15 to 20%, in the second paragraph." --addressed "addressed in revision 2"
 ```
 
 It says where it wrote the replies, and, if the page doesn't list you yet, that the page will ignore them until it does.
@@ -100,7 +105,7 @@ addressed: short note, only if you made the change
 ````
 
 If you keep a Pipeup key between sessions (`~/.pipeup/agent.json`), sign each reply so it shows as yours rather than as
-pasted by the author: `npx --yes pipeup@0 reply --print --doc <document id> --thread <Thread id> "…" --addressed "…"` prints the
+pasted by the author: `npx --yes pipeup@1 reply --print --doc <document id> --thread <Thread id> "…" --addressed "…"` prints the
 entry, signed (Copy for my agent gives the document id). Ask the author to list your key only when you can sign; if you
 can't keep a key, the plain block works and the reply shows as pasted by them.
 

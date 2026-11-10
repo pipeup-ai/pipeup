@@ -25,7 +25,7 @@ jobs:
           cache: npm
           cache-dependency-path: libs/ts/pipeup/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run check
       - name: Upload Playwright report on failure
         if: failure()
@@ -71,4 +71,39 @@ jobs:
           path: |
             libs/ts/addons/playwright-report
             libs/ts/addons/test-results
+          if-no-files-found: ignore
+
+  extension:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            libs/ts/pipeup/package-lock.json
+            libs/ts/addons/package-lock.json
+            apps/extension/package-lock.json
+      # The extension carries the release's own Pipeup file and add-ons, built here.
+      - run: npm ci && npm run build
+        working-directory: libs/ts/pipeup
+      - run: npm ci && npm run build
+        working-directory: libs/ts/addons
+      - run: npm ci
+        working-directory: apps/extension
+      - run: npx playwright install --with-deps chromium && npm run firefox
+        working-directory: apps/extension
+      - run: ../../libs/ts/pipeup/node_modules/.bin/prettier --check .
+        working-directory: apps/extension
+      - run: npm run check
+        working-directory: apps/extension
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report-extension
+          path: |
+            apps/extension/playwright-report
+            apps/extension/test-results
           if-no-files-found: ignore

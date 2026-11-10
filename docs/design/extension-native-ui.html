@@ -1,0 +1,210 @@
+<title>Pipeup in the Browser</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column: a storyboard, the browser window with its toolbar panel and side panel, and the spec; light only. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:980px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:52px 0 8px;text-wrap:balance}
+p{max-width:70ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+ul{padding-left:20px;max-width:70ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px;max-width:70ch}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+code{font:13px var(--mono);background:var(--bone);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+td:first-child{font-weight:600;color:var(--strong)}
+.tw,.dw{overflow-x:auto}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch}
+.spec ul{margin:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:76ch;margin:12px 0}
+.ask p{margin:0} .ask b{color:var(--strong)}
+
+/* Storyboard */
+.story{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:14px}
+@media (max-width:820px){.story{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.story{grid-template-columns:1fr}}
+.frame h3{margin:8px 0 2px;font-size:14px;color:var(--strong)} .frame p{font-size:13px;color:var(--muted);margin:0}
+.mini{border:1px solid var(--line);border-radius:8px;background:#fff;aspect-ratio:4/3;display:flex;flex-direction:column;overflow:hidden}
+.mini .b{height:18px;background:var(--bone);border-bottom:1px solid var(--line);display:flex;justify-content:flex-end;align-items:center;padding:0 6px}
+.mini .ic{width:10px;height:10px;border-radius:3px;background:var(--violet)}
+.mini .ic.lit{outline:2px solid #2f7d4a;outline-offset:1px}
+.mini .r{flex:1;display:flex;min-height:0}
+.mini .pg{flex:1;padding:8px;font:9px/1.4 var(--serif);color:#555;position:relative}
+.mini .ln{height:4px;border-radius:2px;background:#e7e5df;margin:0 0 5px}
+.mini .sp{width:42%;border-left:1px solid var(--line);background:#fbfaf7;padding:6px;font:8.5px/1.35 var(--sans);color:#333}
+.mini .pop{position:absolute;right:4px;top:2px;width:62%;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.08);padding:5px;font:8.5px/1.5 var(--sans);color:#333}
+.mini .ol{outline:1.5px solid var(--violet);outline-offset:2px;border-radius:2px}
+.mini .hl{background:#e6e3f7}
+.mini .box{border:1px solid #c9c4ee;border-radius:4px;background:#fff;padding:3px;color:#999;margin-top:3px}
+
+/* The browser window: page, toolbar panel, side panel */
+.win{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;min-width:900px}
+.wbar{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;background:var(--bone);border-bottom:1px solid var(--line);font-size:12px;color:var(--faint)}
+.wbar .url{flex:1;height:24px;border-radius:6px;background:#fff;border:1px solid var(--line);padding:0 10px;line-height:22px}
+.tbi{position:relative;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:var(--tint);outline:1.5px solid var(--violet)}
+.tbi .bd{position:absolute;right:-6px;bottom:-4px;min-width:14px;height:14px;border-radius:7px;background:var(--violet);color:#fff;font:600 9px/14px var(--sans);text-align:center;padding:0 3px}
+.wbody{display:grid;grid-template-columns:1fr 340px;min-height:520px;position:relative}
+.page{padding:28px 32px;font:15px/1.65 var(--serif);color:#333}
+.page h4{font:600 22px var(--sans);color:#111;margin:0 0 12px}
+.page p{margin:0 0 12px;max-width:52ch}
+.hl{background:#e6e3f7;border-radius:2px;box-shadow:0 2px 0 #b9b2ea}
+.outl{outline:2px solid var(--violet);outline-offset:4px;border-radius:3px}
+.side{border-left:1px solid var(--line);background:#fbfaf7;display:flex;flex-direction:column;font:13.5px/1.45 var(--sans)}
+.side .sh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.side .sh b{color:#111;flex:1}
+.pill{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12px;color:var(--muted)}
+.side .list{padding:8px;display:flex;flex-direction:column;gap:8px;flex:1}
+.cd{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.cd .w{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--faint)}
+.av{width:20px;height:20px;border-radius:50%;background:#e4e1f5;color:var(--violet);display:grid;place-items:center;font:600 10px var(--sans)}
+.cd .w b{color:#111;font-size:13px}
+.cd .on{font-size:12px;color:var(--muted);margin:3px 0}
+.cd .tx{color:#222}
+.cd.open{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
+.cd .rep{margin:8px 0 0 26px;padding-top:8px;border-top:1px solid #ecebe6}
+.inp{margin-top:8px;border:1px solid #c9c4ee;border-radius:8px;background:#fff;padding:6px 9px;color:var(--faint);font-size:13px}
+.btns{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
+.btn{height:26px;padding:0 10px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:12.5px;display:inline-flex;align-items:center}
+.btn.p{background:var(--violet);border-color:var(--violet);color:#fff}
+.draft{border-color:var(--violet)}
+.draft .on{color:var(--violet);font-weight:600}
+.tp{position:absolute;right:300px;top:2px;width:300px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 34px rgba(20,20,40,.14);font:13.5px/1.4 var(--sans);overflow:hidden;z-index:2}
+.tp .hd{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid #ecebe6}
+.tp .lg{width:20px;height:20px;border-radius:5px;background:var(--violet)}
+.tp .hd b{color:#111} .tp .hd span{display:block;font-size:11.5px;color:var(--faint)}
+.tp .st{padding:7px 12px;font-size:12px;color:var(--faint);border-bottom:1px solid #ecebe6}
+.tp .rows{padding:4px}
+.tp .it{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;padding:0 8px;border-radius:7px;color:var(--ink)}
+.tp .it.first{background:var(--tint)}
+.tp .it small{color:var(--faint);font:11.5px var(--mono)}
+.tp .sub{padding-left:26px;color:var(--muted);font-size:12.5px}
+.tp .sep{height:1px;background:#ecebe6;margin:4px 8px}
+.sw{flex:none;width:28px;height:16px;border-radius:8px;background:#d8d6cf;position:relative}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff}
+.sw.on{background:var(--violet)} .sw.on::after{left:14px}
+.n{min-width:16px;height:16px;border-radius:8px;background:var(--violet);color:#fff;font:600 10px/16px var(--sans);text-align:center;padding:0 4px}
+.tp .ft{display:flex;justify-content:space-between;padding:8px 12px;border-top:1px solid #ecebe6;font-size:11.5px;color:var(--faint)}
+.tp .ft a{color:var(--violet)}
+.callout{font:12px/1.35 var(--sans);color:var(--warnline);position:absolute}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed and built 9 November 2026 · writing and pinning changed by extension-pin.html</div>
+<h1>Pipeup in the browser, not on the page</h1>
+<p class="lede">With the extension, everything you use Pipeup with lives in the browser itself: its menu in the toolbar
+panel, and the comments, where you read, reply and write, in the browser's side panel. The page keeps only what has to
+be on it: the highlights that say where comments are, and the outline that shows what you're about to comment on.</p>
+
+<h2>1. The journey</h2>
+<div class="story">
+  <div class="frame"><div class="mini"><div class="b"><span class="ic"></span></div><div class="r"><div class="pg"><div class="ln" style="width:60%"></div><div class="ln"></div><div class="ln" style="width:80%"></div>
+    <div class="pop"><b>Pipeup</b><br>Start commenting ●<br>Comments 1<br>Copy comments<br>Theme · Hide comments</div></div></div></div>
+    <h3>Open Pipeup</h3><p>The toolbar panel is Pipeup's menu: your name, Start commenting, Comments, Copy, Theme, Hide.</p></div>
+  <div class="frame"><div class="mini"><div class="b"><span class="ic lit"></span></div><div class="r"><div class="pg"><div class="ln" style="width:60%"></div><p class="ol" style="margin:6px 0">We launch in the second week of May.</p><div class="ln" style="width:80%"></div></div></div></div>
+    <h3>Pick what it's about</h3><p>In comment mode the page outlines a block; a click chooses it. The toolbar button shows comment mode.</p></div>
+  <div class="frame"><div class="mini"><div class="b"><span class="ic lit"></span></div><div class="r"><div class="pg"><div class="ln" style="width:60%"></div><p class="ol" style="margin:6px 0">We launch in the second week of May.</p></div>
+    <div class="sp"><b>Comments</b><div style="margin-top:4px;color:#534ab7;font-weight:600">On “We launch in…”</div><div class="box">Comment or add others with @</div></div></div></div>
+    <h3>Write in the side panel</h3><p>The box opens in the browser's side panel, saying what it's on. Nothing is drawn over the page.</p></div>
+  <div class="frame"><div class="mini"><div class="b"><span class="ic"></span></div><div class="r"><div class="pg"><div class="ln" style="width:60%"></div><p style="margin:6px 0">We launch in <span class="hl">the second week of May</span>.</p></div>
+    <div class="sp"><b>Comments</b><div style="margin-top:4px"><b>Sam</b> · now<br>Which beta?</div></div></div></div>
+    <h3>Read and reply there</h3><p>The page shows a highlight. Clicking it opens the thread in the side panel; choosing a thread there scrolls the page to it.</p></div>
+</div>
+
+<h2>2. Where everything lives</h2>
+<div class="tw"><table>
+<tr><th>Pipeup today, on the page</th><th>With the extension</th></tr>
+<tr><td>The corner control</td><td>The toolbar button: the open count, green while comment mode is on.</td></tr>
+<tr><td>The menu: where comments go, who you are, Copy comments, Theme, Hide comments, Start commenting, add-ons' rows</td><td>The toolbar panel, row for row, drawn by the extension.</td></tr>
+<tr><td>All comments: the list, @ For you and ✓ Resolved, threads, replies, reactions, Resolve, ⋯</td><td>The side panel: Chrome's and Edge's side panel, Firefox's sidebar. It stays open as you move around the page.</td></tr>
+<tr><td>The comment box, beside what it's on</td><td>The side panel, with "On …" naming what it's on; the page keeps the outline while you write.</td></tr>
+<tr><td>A thread, opened beside its highlight or in the column</td><td>The side panel; the page shows only the highlight, a little stronger while its thread is open.</td></tr>
+<tr><td>Highlights, pins, comment mode's outline and its hint</td><td><b>Stay on the page.</b> They have to: they show where on the page a comment is.</td></tr>
+<tr><td>Pipeup's short messages ("Resolved", a mention)</td><td>The side panel when it's open; otherwise a quiet message in the page's corner, as now.</td></tr>
+</table></div>
+
+<h2>3. The window, with both panels</h2>
+<div class="dw"><div class="win">
+  <div class="wbar"><span class="url">docs.example.com/plan</span><span class="tbi"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="2"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z"/><path d="M12.3 8.2v6.6M9 11.5h6.6"/></svg><span class="bd">2</span></span></div>
+  <div class="wbody">
+    <div class="page">
+      <h4>Lumen launch plan</h4>
+      <p>We launch in <span class="hl">the second week of May</span>, after the beta with Ada's team.</p>
+      <p class="outl">Pricing changes follow in June, once the beta has shown which plans people choose.</p>
+      <p>Support stays with the current team; Lee leads it.</p>
+    </div>
+    <div class="side">
+      <div class="sh"><b>Comments</b><span class="pill">@ For you</span><span class="pill">✓ Resolved</span></div>
+      <div class="list">
+        <div class="cd open"><div class="w"><span class="av">S</span><b>Sam</b> · 2h</div><div class="on">On “the second week of May”</div><div class="tx">Which beta, Ada's or the public one?</div>
+          <div class="rep"><div class="w"><span class="av">A</span><b>Ada</b> · 1h</div><div class="tx">Ours. I'll say so.</div></div>
+          <div class="inp">Reply or add others with @</div></div>
+        <div class="cd draft"><div class="on">On “Pricing changes follow in June…”</div><div class="inp" style="color:#222">Which plans do we expect to drop?</div><div class="btns"><span class="btn">Cancel</span><span class="btn p">Comment</span></div></div>
+      </div>
+    </div>
+    <div class="tp">
+      <div class="hd"><span class="lg"></span><div><b>Pipeup</b><span>docs.example.com/plan</span></div></div>
+      <div class="st">Comments stay in this browser until you send them</div>
+      <div class="rows">
+        <div class="it"><span>Sam</span><small>Edit name</small></div>
+        <div class="it"><span>Copy comments</span><small>›</small></div>
+        <div class="it sub">As Markdown · As text</div>
+        <div class="it"><span>Theme</span><small>Automatic</small></div>
+        <div class="it"><span>Comments</span><span class="n">2</span></div>
+        <div class="it"><span>Hide comments</span><span class="sw"></span></div>
+        <div class="it first"><span>Start commenting</span><span style="display:flex;gap:6px;align-items:center"><small>⇧⌥C</small><span class="sw on"></span></span></div>
+        <div class="sep"></div>
+        <div class="it"><span>Always on for docs.example.com</span><span class="sw"></span></div>
+        <div class="it"><span>Turn off on this page</span></div>
+      </div>
+      <div class="ft"><span>⇧⌥P</span><a>Comments you've made</a></div>
+    </div>
+  </div>
+</div></div>
+<p class="cap">The toolbar panel is drawn open over the window here to show both at once; in use it closes as soon as
+you choose Start commenting or Comments. Rows keep the order of Pipeup's own menu, Start commenting nearest at hand.</p>
+
+<h2>4. What Pipeup needs for this</h2>
+<p>Pipeup today draws its menu, panel, threads and comment box itself, inside the page. For the extension to draw them
+instead, Pipeup gains one way of running and a few things a host can ask and hear (an addition to §4a):</p>
+<ul>
+<li><b>Drawn by the host:</b> Pipeup draws only highlights, pins, comment mode's outline and hint on the page; it opens
+no thread, panel or box there.</li>
+<li><b>It tells the host</b> when a block is chosen in comment mode (with what it's on), when a highlight is clicked, and
+when the comments change.</li>
+<li><b>The host can</b> go to a thread (scroll to it and mark its highlight), and write, reply, react, resolve, edit and
+delete through the document Pipeup already exposes.</li>
+</ul>
+<p class="cap">The extension then draws the panel and side panel from the same comment data, in plain words and text
+only, as Pipeup does. Safari has no side panel, so there the comments open in Pipeup's own panel on the page, as today.</p>
+
+<h2>5. The spec change</h2>
+<div class="spec"><ul>
+<li>With the extension, Pipeup's menu is the toolbar panel: where comments go, who you are, Copy comments (As Markdown,
+As text), Theme, Comments, Hide comments and Start commenting, then Always on for this site and Turn off on this page.</li>
+<li>The comments are in the browser's side panel (Chrome and Edge's side panel, Firefox's sidebar): the list with @ For
+you and ✓ Resolved, every thread with its replies and actions, and the box for a new comment, which says what it's on.
+It stays open as the reviewer moves around the page.</li>
+<li>The page shows only where comments are (highlights and pins) and, in comment mode, what is about to be chosen.
+Clicking a highlight opens its thread in the side panel; choosing a thread there scrolls the page to it.</li>
+<li>Where the browser has no side panel (Safari), the comments open in Pipeup's own panel on the page.</li>
+</ul></div>
+
+<h2>6. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Comments in the side panel?</b> Agreed: yes. It stays open, has room for threads and doesn't
+cover the page. The other choice is the toolbar panel, which closes on every click outside it, so it can't hold a
+conversation.</p></div>
+<div class="ask"><p><b>Add-ons in the extension.</b> Agreed: their menu rows move into the toolbar panel when the
+add-ons come to the extension, a later step. Until then, the extension runs plain Pipeup.</p></div>
+<div class="ask"><p><b>Order of work.</b> Agreed: first the toolbar panel as the full menu (no Pipeup change
+needed), then the side panel, which needs Pipeup's "drawn by the host" way of running.</p></div>
+
+<h2>What changes, in one place</h2>
+<ul>
+<li>Pipeup's menu, All comments, threads and the comment box move off the page into the browser's toolbar panel and side
+panel.</li>
+<li>The page keeps highlights, pins and comment mode's outline.</li>
+<li>Pipeup gains a way of running where a host draws its interface; pages with Pipeup built in are unchanged.</li>
+</ul>
+</main>

@@ -1,0 +1,261 @@
+<title>Re-finding Comments</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column of spec with mock cards drawn at Pipeup's sizes; light only, like the Pipeup site. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--old:#fbeeee;--oldline:#b3261e;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--serif:Georgia,"Times New Roman",serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:920px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:52px 0 8px;text-wrap:balance}
+h3{font-size:15px;color:var(--strong);margin:24px 0 8px}
+p{max-width:68ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+ul,ol{padding-left:20px;max-width:68ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px;max-width:68ch}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+code{font:13px var(--mono);background:var(--bone);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+.tw,.dw{overflow-x:auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.pair>div{min-width:0}
+@media (max-width:720px){.pair{grid-template-columns:1fr}}
+.was{color:var(--oldline)} .now{color:var(--newline)}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch}
+.spec p{margin:0 0 8px} .spec ul{margin:0 0 8px} .spec p:last-child,.spec ul:last-child{margin-bottom:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch;margin:12px 0}
+.ask p{margin:0} .ask b{color:var(--strong)}
+
+/* A mock page: the site, before and after it changed. */
+.page{border:1px solid var(--line);border-radius:10px;background:#fff;padding:16px 18px;font:14px/1.5 var(--sans);color:#333;position:relative}
+.page h4{margin:0 0 6px;font-size:15px;color:#111}
+.page p{margin:0 0 8px}
+.page .tier{display:flex;gap:8px;margin:8px 0}
+.page .tier div{flex:1;border:1px solid #e3e1da;border-radius:8px;padding:8px;font-size:12.5px}
+.page .tier b{display:block;color:#111}
+.page .new{background:#fff7d6;outline:1px dashed #d6b64a}
+.page .wrong{outline:2px solid var(--oldline);outline-offset:2px;border-radius:6px}
+.page .right{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+.pin{position:absolute;width:20px;height:20px;border-radius:50% 50% 50% 2px;background:var(--violet);color:#fff;font-size:11px;display:grid;place-items:center}
+.pin.bad{background:var(--oldline)}
+
+/* Pipeup's thread card, at its real sizes. */
+.card{max-width:340px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(20,20,40,.08);padding:12px 14px;font-size:13.5px;line-height:1.45}
+.card .who{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.card .av{width:22px;height:22px;border-radius:50%;background:#e4e1f5;display:grid;place-items:center;font-size:11px;color:var(--violet);font-weight:600}
+.card .who b{color:#111;font-size:13.5px} .card .who span{color:var(--faint);font-size:12px}
+.card .ctx{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+.card .ctx em{font-style:normal;color:#111}
+.card .words{color:#222;margin:0}
+.card .check{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #ecebe6;font-size:12.5px;color:var(--muted)}
+.card .check .b{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#222}
+.card .check .b.p{background:var(--violet);border-color:var(--violet);color:#fff}
+.card .was-box{margin:4px 0 8px;border-left:2px solid var(--line);padding:4px 0 4px 10px;font-size:12.5px;color:var(--muted)}
+.card .was-box .h{color:var(--faint);font-size:11.5px;letter-spacing:.02em}
+.card .was-box q{quotes:"“" "”";color:#222}
+.card .shot{display:block;width:100%;height:72px;border-radius:6px;border:1px solid #ecebe6;margin:6px 0 2px;background:linear-gradient(#fff 0 0) padding-box;position:relative;overflow:hidden}
+.shot .s1{position:absolute;left:10px;top:10px;width:46%;height:8px;border-radius:4px;background:#dcdad3}
+.shot .s2{position:absolute;left:10px;top:26px;right:10px;height:34px;border-radius:6px;border:1px solid #e3e1da}
+.shot .s3{position:absolute;left:18px;top:34px;width:28%;height:7px;border-radius:4px;background:#bdb8e6}
+.shot .s4{position:absolute;left:18px;top:46px;width:42%;height:6px;border-radius:4px;background:#e7e5df}
+.shot .ring{position:absolute;left:12px;top:28px;width:52%;height:30px;border:2px solid var(--violet);border-radius:6px}
+.card .mini{font-size:11.5px;color:var(--faint)}
+.bar-pick{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:520px;padding:8px 12px;border-radius:10px;background:#1f2230;color:#fff;font-size:13.5px}
+.bar-pick span{color:#c9c7d6}
+.bar-pick .b{border:1px solid #4a4d5e;border-radius:999px;padding:2px 10px;color:#fff}
+
+/* The re-finding ladder */
+.ladder{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+@media (max-width:820px){.ladder{grid-template-columns:1fr 1fr}}
+@media (max-width:460px){.ladder{grid-template-columns:1fr}}
+.step{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-width:0}
+.step .n{font-size:12px;color:var(--faint);font-weight:600}
+.step b{display:block;color:#111;font-size:14px;margin:2px 0 4px}
+.step p{font-size:13px;color:var(--muted);margin:0 0 6px}
+.step .out{font-size:12.5px;padding:2px 8px;border-radius:999px;display:inline-block}
+.out.att{background:#eef7ee;color:#2f7d4a} .out.mov{background:#f3f2fa;color:var(--violet)} .out.lost{background:#f1f0ec;color:var(--muted)}
+.step.added{border-color:var(--newline);background:var(--new)}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed 9 November 2026 · not built yet</div>
+<h1>Re-finding comments when a site changes</h1>
+<p class="lede">Websites change all the time. A comment should land on the right thing when it can, say so plainly when
+it isn't sure, and never vanish when its place is gone. This adds more clues to each comment, a question when Pipeup
+isn't sure, a way to point a comment at its place again, and a clearer record of what a lost comment was about.</p>
+
+<h2>1. What happens today</h2>
+<table>
+<tr><th>Comment on</th><th>How Pipeup finds it again</th><th>When the site changes</th></tr>
+<tr><td>Words someone selected</td><td>The words, plus the words just before and after them; a near match if the exact words are gone</td><td class="now">Holds up well. Reworded text shows as <b>Moved</b>.</td></tr>
+<tr><td>A thing someone clicked (a card, an image, a button)</td><td>Only its position in the page's structure: "the 3rd section, its 2nd box"</td><td class="was">Weak. A new box added above puts the comment on the <b>wrong</b> thing. A bigger redesign loses it.</td></tr>
+<tr><td>Anything lost</td><td>Nothing more is tried</td><td>Listed in All comments as "No longer on the page — it read “…”", with up to 200 characters of its text.</td></tr>
+</table>
+<p>The middle row is the real problem: on a website most comments are on things people clicked, and a site redesign
+easily shifts their positions.</p>
+
+<div class="pair" style="margin-top:20px">
+  <div>
+    <div class="label">Before the change</div>
+    <div class="page"><h4>Pricing</h4>
+      <div class="tier"><div><b>Starter</b>$8 a month</div><div class="right"><b>Team</b>$20 a month</div><div><b>Business</b>Ask us</div></div>
+      <span class="pin" style="right:30%;top:44px">1</span></div>
+    <p class="cap">Sam comments on the Team box: "Show the yearly price too?"</p>
+  </div>
+  <div>
+    <div class="label">After: a Free tier is added first</div>
+    <div class="page"><h4>Pricing</h4>
+      <div class="tier"><div class="new"><b>Free</b>$0</div><div class="wrong"><b>Starter</b>$8 a month</div><div><b>Team</b>$20 a month</div><div><b>Business</b>Ask us</div></div>
+      <span class="pin bad" style="left:39%;top:44px">1</span></div>
+    <p class="cap"><span class="was">Today:</span> "the 2nd box" is now Starter, so Sam's comment sits on Starter, marked
+    only as Moved.</p>
+  </div>
+</div>
+
+<h2>2. Remember more than a position</h2>
+<p>When someone comments on a thing they clicked, Pipeup also keeps a few clues about it. Each is small text, kept with
+the comment and sent with it:</p>
+<ul>
+<li><b>What kind of thing it is:</b> a heading, a paragraph, a picture, a button, a link, a box.</li>
+<li><b>Its words:</b> the start of its text, as today.</li>
+<li><b>Its name, where it has one:</b> a button's or link's label, a picture's description or file name, a link's address.</li>
+<li><b>The heading it sits under,</b> such as "Pricing".</li>
+<li><b>Roughly where it was</b> down the page.</li>
+</ul>
+<p>Text comments already keep their words and the words around them; they gain the heading they sit under too.</p>
+
+<h2>3. How a comment finds its place</h2>
+<p>Pipeup tries these in order and stops at the first that's sure. The new steps are green.</p>
+<div class="ladder">
+  <div class="step"><span class="n">1</span><b>The author's own marker</b><p>Elements the author marked with <code>data-pipeup-id</code>.</p><span class="out att">Attached</span></div>
+  <div class="step"><span class="n">2</span><b>Same place, same thing</b><p>The old position still holds something with the same words.</p><span class="out att">Attached</span></div>
+  <div class="step"><span class="n">3</span><b>The same words</b><p>Text comments: the words with what comes before and after, as today.</p><span class="out att">Attached</span> <span class="out mov">Moved</span></div>
+  <div class="step added"><span class="n">4</span><b>Something that looks the same</b><p>Every candidate of the same kind is scored on its words, name, heading and place. One clear best match wins.</p><span class="out mov">Moved, asks</span></div>
+  <div class="step"><span class="n">5</span><b>Nothing close</b><p>The comment stays in All comments with what it was about.</p><span class="out lost">Lost</span></div>
+</div>
+<p class="cap">One change to step 2: today an old position always wins, even when what's there now has different words.
+In future, if something elsewhere matches the clues clearly better, the comment goes there instead. That is the
+Free-tier case above: the Team box still says "Team" and "$20 a month", so the comment follows it.</p>
+<p class="cap">A close call between two look-alikes (two "Learn more" buttons, say) is never guessed: the comment is
+Lost, so nobody reads it against the wrong thing.</p>
+
+<h2>4. When Pipeup isn't sure, it asks</h2>
+<p>A comment that was re-found by looking alike says so on its card, with one question. Anyone reading can answer, and
+the answer is kept for everyone, so it's asked only once.</p>
+<div class="pair">
+  <div>
+    <div class="label">Moved, with the question</div>
+    <div class="card">
+      <div class="who"><span class="av">S</span><b>Sam</b><span>2 days ago</span></div>
+      <p class="ctx">Moved · the page changed. It was on <em>Team, $20 a month</em> under Pricing.</p>
+      <p class="words">Show the yearly price too?</p>
+      <div class="check">Is this the right place? <span class="b p">Yes</span><span class="b">Not here</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="label">After "Yes"</div>
+    <div class="card">
+      <div class="who"><span class="av">S</span><b>Sam</b><span>2 days ago</span></div>
+      <p class="words">Show the yearly price too?</p>
+    </div>
+    <p class="cap">The card is plain again. Its clues are updated to what's there now, so the next change starts from the
+    right place.</p>
+  </div>
+</div>
+<p style="margin-top:16px"><b>Not here</b> lets the reader show the right place, or say it's gone:</p>
+<div class="bar-pick">Click where this comment belongs <span>or</span><span class="b">It's gone</span><span class="b">Cancel</span></div>
+<p class="cap">Shown at the top of the page while picking, with Esc to cancel. Picking works as commenting does: hover
+outlines, a click chooses. "It's gone" makes it Lost on purpose, so nobody is asked again.</p>
+
+<h2>5. A lost comment still says what it was about</h2>
+<div class="pair">
+  <div>
+    <div class="label">Today</div>
+    <div class="card">
+      <div class="who"><span class="av">L</span><b>Lee</b><span>last week</span></div>
+      <p class="ctx">No longer on the page — it read “Our Business plan includes priority support and a named contact for…”</p>
+      <p class="words">Can we say how fast "priority" is?</p>
+    </div>
+  </div>
+  <div>
+    <div class="label">Proposed</div>
+    <div class="card">
+      <div class="who"><span class="av">L</span><b>Lee</b><span>last week</span></div>
+      <div class="was-box"><div class="h">No longer on the page · it was a paragraph under Pricing › Business</div><q>Our Business plan includes priority support and a named contact for every team.</q></div>
+      <p class="words">Can we say how fast "priority" is?</p>
+      <div class="check"><span class="b">Show where it belongs</span></div>
+    </div>
+  </div>
+</div>
+<p class="cap">The heading path and the kind of thing make the old words easy to place in the new page. "Show where it
+belongs" uses the same picking as Not here. Copy for AI gives an agent the same description, so it can find the spot in
+the page's source even when the reviewer can't.</p>
+
+<h2>6. Should we keep a picture?</h2>
+<p>A picture of where the comment was is the clearest record. Whether Pipeup can take one depends on where it runs:</p>
+<table>
+<tr><th>Where</th><th>Can it take a picture?</th><th>Proposal</th></tr>
+<tr><td>A page with Pipeup built in</td><td>Not really. A page can't photograph itself without asking the reviewer to share their screen. Redrawing the page ourselves is slow, often wrong (fonts, images from other sites, video) and would add a lot to Pipeup's size.</td><td>No picture. The richer text record in section 5.</td></tr>
+<tr><td>The browser extension</td><td>Yes, cheaply. An extension may take a picture of the tab the reviewer is using.</td><td>A small picture around the comment's place, taken when it's made.</td></tr>
+</table>
+<div class="pair" style="margin-top:16px">
+  <div>
+    <div class="label">Lost, made with the extension</div>
+    <div class="card">
+      <div class="who"><span class="av">L</span><b>Lee</b><span>last week</span></div>
+      <div class="was-box"><div class="h">No longer on the page · it was a box under Pricing</div>
+        <span class="shot"><span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="ring"></span></span>
+        <span class="mini">How it looked when Lee commented · only in this browser</span></div>
+      <p class="words">Can we say how fast "priority" is?</p>
+      <div class="check"><span class="b">Show where it belongs</span></div>
+    </div>
+  </div>
+  <div>
+    <h3 style="margin-top:0">The picture stays in this browser</h3>
+    <ul>
+      <li>It may show more than the comment is about: other text on screen, a name, an email. So it is never sent with
+      the comment, shared, or put in Copy for AI.</li>
+      <li>About 20 KB each, cropped around the comment's place and blurred outside it. The reviewer can turn pictures
+      off in the extension's settings.</li>
+      <li>Others see the text record; the reviewer who made the comment also sees the picture.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>7. The spec change</h2>
+<p>Written into §8, Staying attached on changing pages, in <code>docs/FUNCTIONAL_SPEC.md</code>; the picture goes in
+<code>docs/EXTENSION_SPEC.md</code>.</p>
+<div class="spec">
+<ul>
+<li>A comment remembers enough about what it was on to find it again after the page changes: its words, what kind of
+thing it is, its name where it has one (a label, a picture's description, a link's address), the heading it sits under,
+and roughly where it was.</li>
+<li>A comment never stays on something that no longer matches it when something else on the page clearly does. When two
+things match about equally, it is Lost rather than guessed.</li>
+<li>A comment found by looking alike is <b>Moved</b> and asks <b>Is this the right place?</b> Anyone reading can answer
+Yes or Not here; the answer is kept for everyone. Not here lets them show the right place, or say it's gone.</li>
+<li>A <b>Lost</b> comment (today's Orphaned) stays in All comments and says what it was: the kind of thing, the
+headings it sat under and its words. Anyone can show where it now belongs.</li>
+<li>Copy for AI describes Moved and Lost comments the same way, so an agent can find their place in the page's
+source.</li>
+<li><i>Extension spec:</i> the extension keeps a small picture of where each comment was made, in that browser only.
+It is never sent, shared or copied, and the reviewer can turn pictures off.</li>
+</ul>
+</div>
+
+<h2>8. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Who can answer "Is this the right place?"</b> Agreed: anyone reading, kept for everyone, and
+shown in the thread as "Ada confirmed the place". The other choice is only the commenter, which leaves the question open
+when they've moved on.</p></div>
+<div class="ask"><p><b>Pictures in the extension.</b> Agreed: on by default, this browser only. The other choice is
+off by default.</p></div>
+<div class="ask"><p><b>Rename Orphaned to Lost</b> in the spec, to match the words people see. Agreed.</p></div>
+
+<h2>What changes, in one place</h2>
+<ul>
+<li>Comments on things people click follow them when a site adds or reorders content, instead of landing on a neighbour.</li>
+<li>Pipeup asks once when it isn't sure, and anyone can point a comment at its place again.</li>
+<li>Lost comments say what and where they were, for people and agents.</li>
+<li>With the extension, a small private picture of where each comment was made.</li>
+<li>Unchanged: text comments' matching, editions, views and slides.</li>
+</ul>
+</main>

@@ -9,6 +9,7 @@ import { check, table } from "./check.mjs";
 import { apply, htmlAttr, init, InitError, survey } from "./init.mjs";
 import { read, ReadError } from "./read.mjs";
 import { comments, watch } from "./link.mjs";
+import * as browser from "./browser.mjs";
 import * as skills from "./skills.mjs";
 
 // The page library, loaded only by the commands that sign or read a page: `skills` and `comments` need nothing built.
@@ -66,10 +67,22 @@ pipeup reply --print (--doc <document id> | --page <file.html>) --thread <id> "<
   Prints the same signed reply as a replies block for the person to paste into the page (Paste my agent's replies),
   for an agent that can't write next to the page. Copy for my agent gives the document id. Nothing is written.
 
-Agents run these as \`npx --yes pipeup@0 …\`: any release from 0.6 answers agent, reply and comments the same way.`;
+pipeup browser install --extension-id <id> [--browser chrome|edge|chromium|brave]
+pipeup browser install --browser firefox
+  Lets the Pipeup browser extension send comments to agents on this computer (macOS and Linux). Run it once; in Chrome
+  and its kin the id is on Pipeup's card in chrome://extensions; Firefox needs none.
+
+pipeup browser [read <page>]
+  Lists the pages whose comments were sent from the browser (Send to my agent), newest first; read prints one page's
+  comments as Markdown (<page> is part of its address, title or document id; the newest when left out).
+
+pipeup browser reply <page> --thread <id> [--agent <name>] "<words>"
+  Answers a thread on a page sent from the browser; the extension puts the reply in the thread.
+
+Agents run these as \`npx --yes pipeup@1 …\`: any 1.x release answers agent, reply and comments the same way.`;
 
 /** How agents are told to run this command line: never stopping to ask, and any release npm will give. */
-const RUN = "npx --yes pipeup@0";
+const RUN = "npx --yes pipeup@1";
 /** A path as the person typed it, or relative to where they are. */
 const shown = (file) => relative(process.cwd(), resolve(file)) || file;
 const DOC = /<html\b[^>]*\sdata-pipeup-doc\s*=\s*["']([^"']+)["']/i;
@@ -466,6 +479,45 @@ else if (command === "skills") {
   const stop = () => link.close().then(() => process.exit(0));
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);
+} else if (command === "browser") {
+  const [sub, which] = args._;
+  try {
+    if (sub === "install") {
+      const { file } = await browser.install({
+        extensionId: typeof args["extension-id"] === "string" ? args["extension-id"] : "",
+        browser: typeof args.browser === "string" ? args.browser : "chrome",
+      });
+      console.log(
+        `Done: the extension can now send comments here (${file}). Reload the extension to use it.`,
+      );
+    } else if (sub === "read") {
+      const page = await browser.find(which);
+      if (!page) fail("no page has been sent from the browser yet: press Send to my agent in Pipeup's menu");
+      console.log(await browser.readComments(page.doc));
+    } else if (sub === "reply") {
+      const page = await browser.find(which);
+      if (!page) fail("no page with that address, title or id has been sent from the browser");
+      const text = args._.slice(2).join(" ");
+      await browser.reply({
+        doc: page.doc,
+        thread: typeof args.thread === "string" ? args.thread : "",
+        agent: typeof args.agent === "string" ? args.agent : AI,
+        text,
+      });
+      console.log(
+        `Reply kept for "${page.title || page.url}"; it shows in the thread when the page is next open.`,
+      );
+    } else {
+      const all = await browser.pages();
+      if (!all.length) console.log("No pages sent from the browser yet.");
+      for (const p of all)
+        console.log(
+          `${new Date(p.at).toISOString().slice(0, 16).replace("T", " ")}  ${p.title || ""}  ${p.url}`,
+        );
+    }
+  } catch (e) {
+    fail(e.message);
+  }
 } else {
   console.log(USAGE);
   process.exit(command ? 1 : 0);

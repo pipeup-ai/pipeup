@@ -61,7 +61,7 @@ test("reply writes where the page reads, says so, and before the agent is listed
   expect(unlisted.code).toBe(0);
   expect(unlisted.out).toContain("Wrote 2 entries to wiki/viewer.replies.js.");
   expect(unlisted.err).toContain("The page will ignore them until it lists");
-  expect(unlisted.err).toContain("npx --yes pipeup@0 agent --page wiki/viewer.html --yes");
+  expect(unlisted.err).toContain("npx --yes pipeup@1 agent --page wiki/viewer.html --yes");
   expect(await readFile(join(w.dir, "wiki", "viewer.replies.js"), "utf8")).toContain('"kind":"addressed"');
   // Listed: it says the page will show them.
   await run(w.dir, w.key, ["agent", "--name", "Muse", "--page", "wiki/viewer.html", "--yes"]);
@@ -112,5 +112,5 @@ test("agent --page refuses a file that doesn't run Pipeup, and options a release
   const r = await run(w.dir, w.key, ["agent", "--name", "Muse", "--colour", "teal"]);
   expect(r.code).toBe(0);
   expect(r.err).toContain("this release doesn't know --colour; carrying on without it");
-  expect(r.out).toContain("Or list it in one step: npx --yes pipeup@0 agent --page <page.html>");
+  expect(r.out).toContain("Or list it in one step: npx --yes pipeup@1 agent --page <page.html>");
 });

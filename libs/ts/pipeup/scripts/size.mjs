@@ -41,11 +41,16 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // line (+0.9 KB; docs/design/one-tap-page-api.md); then 63 KB for the place and post slots add-ons draw and post
 // with inside elements the author marked (+1.0 KB; docs/design/inline-comments.md); then 63.5 KB for saying where comments are: the menu's "Only in this
 // browser" line and the box's glyph, and a mark on each comment a sharing add-on hasn't sent (+0.3 KB;
-// docs/design/comments-stay-here.md, only-in-this-browser.md).
+// docs/design/comments-stay-here.md, only-in-this-browser.md); then 66 KB, and 12.5 KB for the core, for re-finding
+// comments when a site changes: the clues a comment keeps, the look-alike search, the place op, the question in the
+// thread and choosing a new place (+2.0 KB, +1.5 KB of it in the core, which add-ons and the command line use to find
+// comments; docs/design/refind-comments.md).
+// Then 67 KB for what a host such as the browser extension needs (prefs, ui: "host", settings, startComment and the
+// menu's calls; docs/design/browser-extension.md), with the maintainer's agreement to go up to 70 KB.
 const BUDGETS = {
-  "dist/pipeup.min.js": 63.5 * 1024,
-  "dist/pipeup.esm.js": 63.5 * 1024,
-  "dist/pipeup.core.js": 12 * 1024,
+  "dist/pipeup.min.js": 67 * 1024,
+  "dist/pipeup.esm.js": 67 * 1024,
+  "dist/pipeup.core.js": 12.5 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 let over = false;

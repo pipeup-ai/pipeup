@@ -1,0 +1,329 @@
+<title>Pipeup for Browsers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* One reading column of spec with storyboard, swimlanes and toolbar mock-ups; light only, like the Pipeup site. */
+:root{--ink:#2f3437;--strong:#111;--muted:#55544f;--faint:#7d7c76;--line:#d2d0c8;--bone:#f6f5f0;--paper:#fff;--violet:#534ab7;--tint:#f3f2fa;--new:#eef7ee;--newline:#2f7d4a;--warn:#fdf6e7;--warnline:#a8741a;
+--sans:"SF Pro Text",-apple-system,"Helvetica Neue",sans-serif;--mono:"SF Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans)}
+main{max-width:920px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:28px;color:var(--strong);letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:19px;color:var(--strong);margin:52px 0 8px;text-wrap:balance}
+h3{font-size:15px;color:var(--strong);margin:24px 0 8px}
+p{max-width:68ch;margin:0 0 12px} .lede{color:var(--muted);font-size:16px}
+ul,ol{padding-left:20px;max-width:68ch} li{margin:4px 0}
+.cap{font-size:13px;color:var(--faint);margin-top:8px}
+.label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+code{font:13px var(--mono);background:var(--bone);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top} th{color:var(--faint);font-weight:600;font-size:13px}
+td:first-child{font-weight:600;color:var(--strong);white-space:nowrap}
+.tw,.dw{overflow-x:auto}
+.spec{border-left:3px solid var(--newline);background:var(--new);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch}
+.spec p{margin:0 0 8px} .spec ul{margin:0 0 8px} .spec p:last-child,.spec ul:last-child{margin-bottom:0}
+.ask{border-left:3px solid var(--warnline);background:var(--warn);padding:12px 16px;border-radius:0 8px 8px 0;max-width:74ch;margin:12px 0}
+.ask p{margin:0 0 6px} .ask p:last-child{margin:0}
+.ask b{color:var(--strong)}
+
+/* Storyboard: four moments, each a small browser window. */
+.story{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:16px}
+@media (max-width:820px){.story{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.story{grid-template-columns:1fr}}
+.frame{min-width:0}
+.win{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden;aspect-ratio:4/3;display:flex;flex-direction:column;max-width:100%}
+.bar{display:flex;align-items:center;gap:6px;height:24px;padding:0 8px;background:var(--bone);border-bottom:1px solid var(--line);font-size:10px;color:var(--faint)}
+.bar .dots{display:flex;gap:4px} .bar .dots i{width:6px;height:6px;border-radius:50%;background:#d8d6cf;display:block}
+.bar .url{flex:1;min-width:0;height:14px;border-radius:4px;background:#fff;border:1px solid var(--line);padding:0 6px;line-height:12px;overflow:hidden;white-space:nowrap}
+.bar .tb{width:14px;height:14px;border-radius:4px;display:grid;place-items:center;color:var(--violet)}
+.bar .tb.hot{background:var(--tint);outline:1.5px solid var(--violet)}
+.body{flex:1;position:relative;padding:10px;font-size:10px;line-height:1.4;color:#555}
+.body .ln{height:5px;border-radius:3px;background:#e7e5df;margin:0 0 6px}
+.body .hl{background:#e6e3f7;border-radius:2px;padding:0 2px;color:#333}
+.store{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.store .icon{width:28px;height:28px;border-radius:7px;background:var(--violet);display:grid;place-items:center;color:#fff}
+.store .btn{font-size:10px;padding:3px 10px;border-radius:999px;background:#1a73e8;color:#fff}
+.mini-ctl{position:absolute;right:0;bottom:0;width:22px;height:22px;border-top-left-radius:7px;background:#eceaf6;display:grid;place-items:center;color:var(--violet)}
+.mini-card{position:absolute;right:30px;bottom:26px;width:52%;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:6px;font-size:9px}
+.mini-pop{position:absolute;right:8px;top:4px;width:62%;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.1);padding:7px;font-size:9px}
+.mini-pop .b{margin-top:5px;background:var(--violet);color:#fff;border-radius:5px;padding:3px 6px;text-align:center}
+.frame h3{margin:10px 0 2px;font-size:14px}
+.frame p{font-size:13px;color:var(--muted);margin:0}
+
+/* The toolbar popup, drawn at its real size. */
+.pops{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:16px;align-items:start}
+.pop{width:100%;max-width:320px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 10px 30px rgba(20,20,40,.10);font-size:14px;overflow:hidden}
+.pop .hd{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #ecebe6}
+.pop .hd .lg{width:22px;height:22px;border-radius:6px;background:var(--violet);display:grid;place-items:center;color:#fff;flex:none}
+.pop .hd b{color:var(--strong);font-size:14px}
+.pop .hd span{display:block;font-size:12px;color:var(--faint);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop .hd>div{min-width:0}
+.pop .bd{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.pop .bd p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.pop .main{display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:8px;background:var(--violet);color:#fff;font-weight:600}
+.pop .main.quiet{background:#fff;color:var(--strong);border:1px solid var(--line)}
+.pop .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--ink)}
+.pop .row small{display:block;color:var(--faint);font-size:12px}
+.sw{flex:none;width:30px;height:18px;border-radius:9px;background:#d8d6cf;position:relative}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw.on{background:var(--violet)} .sw.on::after{left:14px}
+.pop .ft{display:flex;justify-content:space-between;padding:9px 14px;border-top:1px solid #ecebe6;font-size:12px;color:var(--faint)}
+.pop .ft a{color:var(--violet);text-decoration:none}
+.kbd{font:12px var(--mono);color:var(--faint)}
+.popcap{font-size:13px;color:var(--muted);margin-top:10px;max-width:320px}
+.popcap b{color:var(--strong)}
+.chip-n{display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--violet);color:#fff;font-size:10px;font-weight:600}
+
+/* Swimlanes */
+.lane-svg{min-width:820px;width:100%;height:auto;display:block}
+.lane-svg text{font-family:var(--sans)}
+</style>
+
+<main>
+<div class="label">Visual spec · agreed 9 November 2026 · not built yet</div>
+<h1>Pipeup for browsers</h1>
+<p class="lede">An extension that lets anyone comment on any web page with Pipeup, even pages that never added it. It
+installs from each browser's own store, and it ships from the same release as the npm package, with the same version and
+the same files.</p>
+
+<h2>What a browser extension is</h2>
+<p>An extension is a zip of plain web files: a <code>manifest.json</code> that names it and lists what it may do, icons,
+and scripts. Each browser's store reviews and signs that zip and then updates it on people's computers by itself. Two
+rules shape everything below:</p>
+<ul>
+<li><b>Everything ships inside the zip.</b> Stores don't allow an extension to load code from the web, so the extension
+carries its own copy of <code>pipeup.min.js</code> and the add-ons instead of loading them from jsDelivr.</li>
+<li><b>Every update goes through review.</b> npm publishes in minutes; a store takes from hours to a few days. The
+release plan below is built around that gap.</li>
+</ul>
+<p>Every major browser now uses the same extension format (Manifest V3, the "WebExtensions" standard). That means
+<b>one code base</b> with a few manifest lines that differ per browser, not four extensions.</p>
+
+<h2>1. The journey</h2>
+<div class="story">
+  <div class="frame">
+    <div class="win"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">Your browser's store</span></div>
+      <div class="body store"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M12 9v6M9 12h6"/></svg></span><b style="color:#222;font-size:11px">Pipeup</b><span>Comment on any web page</span><span class="btn">Add to browser</span></div></div>
+    <h3>Install</h3><p>From the Chrome Web Store, Edge Add-ons, Firefox Add-ons or the App Store. No warning about "all your data on all websites".</p>
+  </div>
+  <div class="frame">
+    <div class="win"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb hot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span></div>
+      <div class="body"><div class="ln" style="width:60%"></div><div class="ln"></div><div class="ln" style="width:85%"></div>
+        <div class="mini-pop"><b style="color:#222">Pipeup</b><br>docs.example.com<div class="b">Comment on this page</div></div></div></div>
+    <h3>Turn it on</h3><p>On any page, press Pipeup in the toolbar, or its shortcut. Pipeup appears in the corner, as on a page that has it built in.</p>
+  </div>
+  <div class="frame">
+    <div class="win"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span></div>
+      <div class="body"><div class="ln" style="width:60%"></div><p style="margin:0 0 6px">Launch in <span class="hl">the second week of May</span>, after the beta.</p><div class="ln" style="width:85%"></div>
+        <div class="mini-card"><b style="color:#222">Sam</b><br>Can we say which beta?</div><div class="mini-ctl">1</div></div></div>
+    <h3>Comment</h3><p>Everything works as it does today. Comments are kept by the extension, so the site can't read them or wipe them.</p>
+  </div>
+  <div class="frame">
+    <div class="win"><div class="bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">docs.example.com/plan</span><span class="tb"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span></div>
+      <div class="body"><div class="ln" style="width:60%"></div><div class="ln"></div>
+        <div class="mini-pop" style="top:auto;bottom:26px"><span style="color:#222">Copy for AI</span><br><span style="color:#222">Send to the agent</span><br><span style="color:#222">Share this page's comments</span></div><div class="mini-ctl">1</div></div></div>
+    <h3>Hand it back</h3><p>From Pipeup's menu, as today: Copy for AI, or an add-on that sends the comments on (Share, the agents' mailbox).</p>
+  </div>
+</div>
+
+<h2>2. What happens, lane by lane</h2>
+<p>The extension never puts Pipeup into a page by itself. It waits for the reviewer, checks the page, then adds its own
+copy, which the page's scripts can't see or change.</p>
+<div class="dw">
+<svg class="lane-svg" viewBox="0 0 900 430" role="img" aria-label="Swimlane: reviewer, toolbar button, the page, Pipeup, the extension's storage">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7d7c76"/></marker></defs>
+  <g font-size="12" fill="#55544f">
+    <rect x="0" y="0" width="900" height="80" fill="#fbfaf7"/><text x="12" y="44" font-weight="600" fill="#111">Reviewer</text>
+    <rect x="0" y="80" width="900" height="90" fill="#fff"/><text x="12" y="129" font-weight="600" fill="#111">Toolbar button</text>
+    <rect x="0" y="170" width="900" height="80" fill="#fbfaf7"/><text x="12" y="214" font-weight="600" fill="#111">The page</text>
+    <rect x="0" y="250" width="900" height="90" fill="#fff"/><text x="12" y="299" font-weight="600" fill="#111">Pipeup</text>
+    <rect x="0" y="340" width="900" height="90" fill="#fbfaf7"/><text x="12" y="389" font-weight="600" fill="#111">Extension storage</text>
+    <line x1="120" y1="0" x2="120" y2="430" stroke="#d2d0c8"/>
+  </g>
+  <g font-size="12" fill="#2f3437">
+    <rect x="140" y="20" width="130" height="40" rx="8" fill="#fff" stroke="#534ab7"/><text x="205" y="44" text-anchor="middle">Presses Pipeup</text>
+    <rect x="140" y="100" width="130" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="205" y="121" text-anchor="middle">Is this a page</text><text x="205" y="137" text-anchor="middle">Pipeup can run on?</text>
+    <rect x="300" y="100" width="140" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="370" y="121" text-anchor="middle">Does the page have</text><text x="370" y="137" text-anchor="middle">Pipeup built in?</text>
+    <rect x="300" y="186" width="140" height="48" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="370" y="206" text-anchor="middle">Looks for the page's</text><text x="370" y="222" text-anchor="middle">own Pipeup</text>
+    <rect x="470" y="186" width="150" height="48" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="545" y="206" text-anchor="middle">Pipeup added, apart</text><text x="545" y="222" text-anchor="middle">from the page's scripts</text>
+    <rect x="470" y="270" width="150" height="50" rx="8" fill="#f3f2fa" stroke="#534ab7"/><text x="545" y="291" text-anchor="middle">Starts, on this</text><text x="545" y="307" text-anchor="middle">page's address</text>
+    <rect x="470" y="360" width="150" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="545" y="381" text-anchor="middle">Comments for this</text><text x="545" y="397" text-anchor="middle">address, if any</text>
+    <rect x="650" y="20" width="110" height="40" rx="8" fill="#fff" stroke="#534ab7"/><text x="705" y="44" text-anchor="middle">Comments</text>
+    <rect x="650" y="270" width="110" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="705" y="291" text-anchor="middle">Draws it,</text><text x="705" y="307" text-anchor="middle">saves it</text>
+    <rect x="650" y="360" width="110" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="705" y="389" text-anchor="middle">Kept here</text>
+    <rect x="780" y="100" width="105" height="50" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="832" y="121" text-anchor="middle">Badge shows</text><text x="832" y="137" text-anchor="middle">the count</text>
+    <text x="205" y="166" text-anchor="middle" font-size="11" fill="#a8741a">no: says why</text>
+    <text x="440" y="96" text-anchor="end" font-size="11" fill="#a8741a">yes: steps aside</text>
+  </g>
+  <g stroke="#7d7c76" stroke-width="1.3" fill="none" marker-end="url(#ar)">
+    <path d="M205 60V98"/><path d="M270 125H298"/><path d="M370 150V184"/><path d="M440 210H468"/><path d="M545 234V268"/><path d="M545 320V358"/>
+    <path d="M620 295H636V40H648"/><path d="M705 60V268"/><path d="M705 320V358"/><path d="M760 295H832V152"/>
+  </g>
+</svg>
+</div>
+<p class="cap">The extension asks for no access to sites until the reviewer presses the button; that press grants it for
+that one tab. "Always on for this site" asks the browser once, for that site only.</p>
+
+<h2>3. The toolbar button</h2>
+<p>One small panel with one main action. It shows the page's address, so the reviewer knows what they're about to
+comment on, and the badge on the button shows how many open comments the page has.</p>
+<div class="pops">
+  <div>
+    <div class="pop"><div class="hd"><span class="lg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><div><b>Pipeup</b><span>docs.example.com/plan</span></div></div>
+      <div class="bd"><div class="main">Comment on this page</div>
+        <div class="row"><div>Always on for docs.example.com<small>Pipeup starts whenever you open it</small></div><span class="sw"></span></div></div>
+      <div class="ft"><span>Shortcut <span class="kbd">⇧⌥P</span></span><a>Comments you've made</a></div></div>
+    <p class="popcap"><b>Off.</b> The usual case. Pressing the main button adds Pipeup to this tab and closes the panel.</p>
+  </div>
+  <div>
+    <div class="pop"><div class="hd"><span class="lg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><div><b>Pipeup</b><span>docs.example.com/plan</span></div></div>
+      <div class="bd"><p><span class="chip-n">3</span> &nbsp;3 open comments on this page.</p><div class="main quiet">Turn off on this page</div>
+        <div class="row"><div>Always on for docs.example.com<small>Pipeup starts whenever you open it</small></div><span class="sw on"></span></div></div>
+      <div class="ft"><span>Shortcut <span class="kbd">⇧⌥P</span></span><a>Comments you've made</a></div></div>
+    <p class="popcap"><b>On.</b> Turning it off takes Pipeup away from the page; the comments stay and come back next time.</p>
+  </div>
+  <div>
+    <div class="pop"><div class="hd"><span class="lg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><div><b>Pipeup</b><span>review.example.org/deck</span></div></div>
+      <div class="bd"><p>This page has Pipeup built in, so the extension stays out of the way. Its comments go where the page's author chose.</p></div>
+      <div class="ft"><span></span><a>Comments you've made</a></div></div>
+    <p class="popcap"><b>Built in.</b> Two copies would mean two corner controls and two sets of comments, so the page's own copy wins.</p>
+  </div>
+  <div>
+    <div class="pop"><div class="hd"><span class="lg" style="background:#b8b6ae"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><div><b>Pipeup</b><span>Settings</span></div></div>
+      <div class="bd"><p>Pipeup can't run here. Browsers keep their own pages, like settings, the new tab page and their stores, closed to extensions.</p></div>
+      <div class="ft"><span></span><a>Comments you've made</a></div></div>
+    <p class="popcap"><b>Can't run.</b> Also shown for PDFs and other files the browser draws itself.</p>
+  </div>
+</div>
+<p class="cap">"Comments you've made" opens a page that lists every page with your comments, newest first, so nothing is
+stranded on a page you can't find again. The shortcut is <span class="kbd">⇧⌥P</span> because pages with Pipeup built in
+already use <span class="kbd">⇧⌥C</span> for comment mode; once Pipeup is on, <span class="kbd">⇧⌥C</span> works as usual.</p>
+
+<h2>4. Which browsers, from which store</h2>
+<p>Four stores cover every major browser. Most browsers you might add are built on Chromium or Firefox and install from
+those stores.</p>
+<div class="tw"><table>
+<tr><th>Store</th><th>Browsers it covers</th><th>Account</th></tr>
+<tr><td>Chrome Web Store</td><td>Chrome, Brave, Vivaldi, Opera, Arc, Dia and other Chromium browsers; Edge can install from it too</td><td>Google developer account, a one-time $5 fee</td></tr>
+<tr><td>Microsoft Edge Add-ons</td><td>Edge on Windows and Mac (Edge's own listing, found from Edge's menu)</td><td>Microsoft Partner Center, free</td></tr>
+<tr><td>Firefox Add-ons</td><td>Firefox on desktop and Android, Zen, Floorp, LibreWolf, Waterfox</td><td>Mozilla account, free</td></tr>
+<tr><td>App Store</td><td>Safari on Mac, iPhone, iPad and Vision Pro; the extension comes inside a small app</td><td>Apple Developer Program, $99 a year</td></tr>
+</table></div>
+<p class="cap">Also covered for free: Orion (by Kagi) installs from both the Chrome and Firefox stores, on Mac and iPhone.
+Not possible: Chrome and Edge on iPhone (Apple allows extensions only in Safari there) and Chrome on Android, which has no
+extensions. Samsung Internet has its own small store; worth adding later if people ask.</p>
+
+<h2>5. One release, every store</h2>
+<p>The same tag that publishes npm today also builds the extension and sends it to each store. The extension's copy of
+<code>pipeup.min.js</code> is the very file on npm, byte for byte, and the release checks that.</p>
+<div class="dw">
+<svg class="lane-svg" viewBox="0 0 900 360" role="img" aria-label="Release swimlane: maintainer, GitHub Actions, npm, the four stores, the release check">
+  <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7d7c76"/></marker></defs>
+  <g font-size="12" fill="#55544f">
+    <rect x="0" y="0" width="900" height="70" fill="#fbfaf7"/><text x="12" y="39" font-weight="600" fill="#111">Maintainer</text>
+    <rect x="0" y="70" width="900" height="80" fill="#fff"/><text x="12" y="114" font-weight="600" fill="#111">Release workflow</text>
+    <rect x="0" y="150" width="900" height="60" fill="#fbfaf7"/><text x="12" y="184" font-weight="600" fill="#111">npm and CDNs</text>
+    <rect x="0" y="210" width="900" height="80" fill="#fff"/><text x="12" y="254" font-weight="600" fill="#111">Stores</text>
+    <rect x="0" y="290" width="900" height="70" fill="#fbfaf7"/><text x="12" y="329" font-weight="600" fill="#111">Release check</text>
+    <line x1="130" y1="0" x2="130" y2="360" stroke="#d2d0c8"/>
+  </g>
+  <g font-size="12" fill="#2f3437">
+    <rect x="150" y="15" width="120" height="40" rx="8" fill="#fff" stroke="#534ab7"/><text x="210" y="39" text-anchor="middle">Tags vX.Y.Z</text>
+    <rect x="150" y="88" width="120" height="44" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="210" y="106" text-anchor="middle">Builds and tests</text><text x="210" y="122" text-anchor="middle">once</text>
+    <rect x="300" y="88" width="150" height="44" rx="8" fill="#f3f2fa" stroke="#534ab7"/><text x="375" y="106" text-anchor="middle">Packs the extension</text><text x="375" y="122" text-anchor="middle">from the same files</text>
+    <rect x="300" y="160" width="150" height="40" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="375" y="184" text-anchor="middle">npm: live in minutes</text>
+    <rect x="480" y="220" width="96" height="60" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="528" y="244" text-anchor="middle">Chrome</text><text x="528" y="262" text-anchor="middle" font-size="11" fill="#7d7c76">hours–1 day</text>
+    <rect x="586" y="220" width="96" height="60" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="634" y="244" text-anchor="middle">Edge</text><text x="634" y="262" text-anchor="middle" font-size="11" fill="#7d7c76">1–7 days</text>
+    <rect x="692" y="220" width="96" height="60" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="740" y="244" text-anchor="middle">Firefox</text><text x="740" y="262" text-anchor="middle" font-size="11" fill="#7d7c76">minutes–days</text>
+    <rect x="798" y="220" width="92" height="60" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="844" y="244" text-anchor="middle">Safari</text><text x="844" y="262" text-anchor="middle" font-size="11" fill="#7d7c76">1–2 days</text>
+    <rect x="300" y="305" width="150" height="40" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="375" y="329" text-anchor="middle">Same hash everywhere</text>
+    <rect x="560" y="305" width="250" height="40" rx="8" fill="#fff" stroke="#d2d0c8"/><text x="685" y="329" text-anchor="middle">Each store: live, or "waiting for review"</text>
+  </g>
+  <g stroke="#7d7c76" stroke-width="1.3" fill="none" marker-end="url(#ar2)">
+    <path d="M210 55V86"/><path d="M270 110H298"/><path d="M375 132V158"/><path d="M450 110H528V218"/><path d="M528 110H634V218"/><path d="M634 110H740V218"/><path d="M740 110H844V218"/>
+    <path d="M375 200V303"/><path d="M685 280V303"/>
+  </g>
+</svg>
+</div>
+<div class="tw"><table>
+<tr><th>Store</th><th>What the release sends</th><th>How it's sent</th></tr>
+<tr><td>Chrome</td><td>The zip</td><td>Chrome Web Store API: upload, then publish; it can hold a release back and roll it out in stages</td></tr>
+<tr><td>Edge</td><td>The same zip</td><td>Edge Add-ons API</td></tr>
+<tr><td>Firefox</td><td>The same zip, plus a zip of Pipeup's source and how to build it</td><td>Mozilla's <code>web-ext</code> tool. Mozilla asks for the source of any minified file so its reviewers can rebuild it</td></tr>
+<tr><td>Safari</td><td>The same files, wrapped in a small Mac and iPhone app</td><td>Built on a Mac runner with Xcode and sent to App Store Connect; Apple is also rolling out a web packager that takes the zip directly</td></tr>
+</table></div>
+<p>As with npm's trusted publishing, the first listing in each store is made by hand once (name, icons, screenshots,
+privacy answers). Every release after that is automatic. The release workflow checks each store's key before it
+publishes anything, so a missing key stops the release early instead of halfway through, the lesson from 0.9.0.</p>
+
+<h2>6. Bug fixes</h2>
+<p>A fix is one patch release, as today. What differs is how fast it reaches people:</p>
+<ul>
+<li><b>Pages that load Pipeup from npm or a CDN</b> get it in minutes.</li>
+<li><b>People using the extension</b> get it once each store has reviewed it (hours to a few days), and then their
+browser updates it on its own within a few hours.</li>
+<li><b>An urgent fix can't skip review</b> in any store. Chrome lets us pause a staged rollout, which keeps a bad
+release from reaching everyone while the fix is reviewed. A store never takes a version back; "rolling back" is a new patch
+that carries the older code.</li>
+<li><b>No remote switches.</b> The extension never fetches settings or code from us; that keeps it private and keeps
+reviews quick, at the cost of fixes waiting for review.</li>
+</ul>
+<p>The release check reports each store as "live" or "waiting for review", so it's clear which fixes have reached whom.
+The menu's About line shows the same version number on a page and in the extension.</p>
+
+<h2>7. Pre-releases</h2>
+<p>Stores accept only plain numbered versions, so <code>0.10.0-beta.1</code> can't go to the main listings. Pre-releases
+go to separate testing listings instead: an unlisted "Pipeup Next" in the Chrome store (installed by link), a signed
+Firefox file that we host on the site, and TestFlight for Safari. The stable listings only ever get stable releases.</p>
+
+<h2>8. What it ships with</h2>
+<ul>
+<li><b>Pipeup and the add-ons that work on any page:</b> Share, Live, Voice, Emoji, Agents, GitHub and the rest that
+don't need the author's markup. The reviewer turns each on from the extension's settings, as an author would on a page.</li>
+<li><b>Not included:</b> Inline, which needs asks written into the page, and the update notices, because the store
+updates the extension.</li>
+<li><b>No analytics, no telemetry, nothing sent</b> unless the reviewer turns on an add-on that sends, same as today.</li>
+<li><b>Size:</b> under 1 MB in all; stores and browsers don't mind.</li>
+</ul>
+
+<h2>9. Decisions (agreed 9 November 2026)</h2>
+<div class="ask"><p><b>Where are comments kept?</b> Agreed: in the extension, by page address, so they follow the
+reviewer across tabs, can't be read or cleared by the site, and show in "Comments you've made". The other choice is the
+site's own storage, as a page with Pipeup built in does; simpler, but the site can wipe them.</p></div>
+<div class="ask"><p><b>Can an agent reach the extension's Pipeup?</b> Agreed: no. A page's scripts can't see the
+extension's copy, and that is what keeps the reviewer's comments private. Agents get comments the ways they do today:
+Copy for AI, Share, or the agents' mailbox.</p></div>
+<div class="ask"><p><b>Which browsers first?</b> Agreed: Chrome, Edge and Firefox together (one zip, free or $5),
+then Safari once the Apple Developer account and a Mac release step are in place. Safari is the most work: an app wrapper,
+a yearly fee and its own review.</p></div>
+<div class="ask"><p><b>Pre-releases in stores from day one?</b> Agreed: not yet. Ship stable only, add the testing
+listings after the first stable extension release.</p></div>
+
+<h2>10. The spec change</h2>
+<p>Written as a new, short spec, <code>docs/EXTENSION_SPEC.md</code>, beside the website's. Functional requirements
+only; in short:</p>
+<div class="spec">
+<p><b>Pipeup for browsers</b></p>
+<ul>
+<li>A reviewer can add Pipeup to any web page from the browser's toolbar, or with a shortcut, on Chrome, Edge, Firefox and
+Safari, and on the browsers that install from those stores.</li>
+<li>Pipeup works there as it does on a page that has it built in: the same control, menu, comments and add-ons.</li>
+<li>Nothing is added to a page until the reviewer asks. "Always on for this site" adds it whenever that site is opened,
+and asks the browser's permission for that site only.</li>
+<li>On a page that has Pipeup built in, the extension steps aside and says so. On pages browsers keep closed to
+extensions, it says why it can't run.</li>
+<li>Comments made with the extension are kept in the browser by the extension, by page address; the site can't read or
+remove them. The reviewer can see every page they've commented on.</li>
+<li>The toolbar button shows how many open comments the current page has.</li>
+<li>Each Pipeup release is also an extension release with the same version and the same Pipeup files. Stores review each
+release; until a store has, that store offers the previous version.</li>
+<li>The extension sends nothing anywhere and loads no code from the web; only add-ons the reviewer turns on send, as
+they say.</li>
+</ul>
+</div>
+
+<h2>What changes, in one place</h2>
+<ul>
+<li>New: an extension in the repo (<code>apps/extension</code>), built from the release's own files.</li>
+<li>New: a release step per store, a store-key check before publishing, and store status in the release check.</li>
+<li>New: a short spec, a design note, four store listings and an Apple Developer account.</li>
+<li>Unchanged: Pipeup, its add-ons, npm, the CDNs and the site.</li>
+</ul>
+</main>

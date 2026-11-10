@@ -278,6 +278,7 @@ export interface AddonHost {
   readonly document: AddonDocument;      // read only (§1)
   readonly root: Element;                // the area people comment on
   readonly ephemeral: boolean;           // this browser can't keep comments (the in-memory store)
+  readonly keep?: Keep;                  // the host's store for this add-on's choices (the extension); absent on a page
   readonly signal: AbortSignal;          // aborted at teardown: pass it to fetch, timers, sockets
   has(c: Capability): boolean;
   /** Says the add-on can't work here (no speech engine, nothing configured): it stays off, with this reason. */
@@ -597,6 +598,10 @@ The smallest complete add-on:
 | `presence` | the presence message types and one renderer, shared by live and later relay | 3 KB (live only) |
 | `inlineWorker(code)` | the only way to start a worker: a classic Blob worker | 0.1 KB |
 | `schnorr` | Pipeup's own minimal BIP-340 signer over secp256k1, for Nostr meeting points (§9.1); signing only | 1.0 KB (live only, measured in S2) |
+
+**Settings kept by a host.** `settings(id, { keep: host.keep })` uses the host's store when there is one (the browser
+extension's own storage, keys prefixed with the add-on's id), so the site can neither read an add-on's choices nor set
+them in advance (Live's consent, above all). Without one, it uses the page's IndexedDB as below.
 
 **Settings when storage fails.** `settings` uses memory when `host.ephemeral` is true or its own
 database fails to open. `settings.lasting` is then false, and an add-on that asks the reviewer
@@ -1797,3 +1802,4 @@ gets into the core").
 - 2026-10-29: dictation's consent sentences name no maker, Safari's says Pipeup can't tell where the words are worked out, and a language with no way to dictate is said before starting; the sentences and failures are kept current in voice-safari-firefox.md.
 - 2026-10-29: the menu's status line reads "Only in this browser until you send them." while no add-on has a status, and the comment box carries a glyph named "Comments stay in this browser until you send them." while no add-on has a status or a composer note.
 - 2026-10-30: `setCommentMark` and the `commentmark` capability (additive, `ADDON_API` stays 1): a quiet mark on one comment, under its words in a thread and a glyph on a closed card; Share uses it for comments not in the shared copy.
+- 2026-11-10: `host.keep` (additive, `ADDON_API` stays 1): a host that adds Pipeup apart from the page (the extension, `mount({ keep })`) keeps add-ons' choices; `settings` and Emoji's recent emoji use it.

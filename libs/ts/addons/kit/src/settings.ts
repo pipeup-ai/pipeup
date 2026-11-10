@@ -1,6 +1,9 @@
+import type { Keep } from "pipeup";
+
 /**
- * An add-on's own non-secret settings (a choice, a list of op ids): IndexedDB `pipeup-addon-<id>`, opened within
- * 4 s, else kept in memory. Secrets are never stored: on `file://` every local page can read what is kept.
+ * An add-on's own non-secret settings (a choice, a list of op ids): where whatever added Pipeup keeps them (`host.keep`,
+ * the browser extension's own storage, out of the site's reach), else IndexedDB `pipeup-addon-<id>` in the page's site,
+ * opened within 4 s, else kept in memory. Secrets are never stored: on `file://` every local page can read what is kept.
  */
 export interface Settings {
   get<T>(key: string): Promise<T | undefined>;
@@ -11,7 +14,14 @@ export interface Settings {
 
 const OPEN_MS = 4000;
 
-export async function settings(id: string, o: { memory?: boolean } = {}): Promise<Settings> {
+export async function settings(id: string, o: { memory?: boolean; keep?: Keep } = {}): Promise<Settings> {
+  const keep = o.keep;
+  if (keep)
+    return {
+      get: async <T>(k: string) => (await keep.get(k)) as T | undefined,
+      set: (k, v) => keep.set(k, v),
+      lasting: true,
+    };
   const mem = new Map<string, unknown>();
   const inMemory: Settings = {
     get: async <T>(k: string) => mem.get(k) as T | undefined,

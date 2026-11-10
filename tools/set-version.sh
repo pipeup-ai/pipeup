@@ -35,7 +35,7 @@ pinned=(README.md libs/ts/pipeup/README.md apps/agent-skills/README.md
 # Each add-on page's Markdown copy pins its add-on too.
 for f in "$root"/apps/site/addons/*.md; do pinned+=("${f#"$root"/}"); done
 for f in "${pinned[@]}"; do
-  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha) \($semver\)#\1 ($version)#g; s#(ADDONS_VERSION = \")$semver\"#\1$version\"#g; s#(Written for Pipeup )$semver#\1$version#g" "$root/$f"
+  sed -i.bak -E "s#pipeup@$semver/#pipeup@$version/#g; s#(@pipeup/[a-z]+)@$semver/#\1@$version/#g; s#([Aa]lpha|[Ss]table) \($semver\)#\1 ($version)#g; s#(ADDONS_VERSION = \")$semver\"#\1$version\"#g; s#(Written for Pipeup )$semver#\1$version#g" "$root/$f"
 done
 rm -f "$lib/src/core.ts.bak"
 for f in "${pinned[@]}"; do rm -f "$root/$f.bak"; done

@@ -5,6 +5,7 @@ import { composer, composerNote, composerReporting, SOURCE_CHANGED } from "./com
 import type { Ctx, Draft } from "./context";
 import { h, inert } from "./dom";
 import { icon } from "./icons";
+import { offerField } from "./field";
 import type { Person } from "./mentions";
 
 /** Where comments go with plain Pipeup; the menu's top line says the same in words. */
@@ -81,6 +82,7 @@ export function renderDraft(o: DraftOptions): DraftBox {
   // One line: a pasted newline can't split the name.
   const field = h("input", { class: "input", type: "text", maxlength: "80", "aria-label": "Your name" });
   const nf = h("div", { class: "nf" }, field);
+  offerField(field);
   const you = h("div", { class: "you" }, say, nf);
   let shown = "";
   let saving = false;

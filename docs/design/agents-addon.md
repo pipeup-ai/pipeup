@@ -77,7 +77,7 @@ the version in a script address (`pipeup@X.Y.Z` on jsDelivr or unpkg, or a path 
 | 0.7 or later | starts; adds the attributes and the add-on's script |
 | can't tell | starts as for 0.7 or later; the add-on's own check (`needs: listnote`) stays off with its reason on a page that can't take it, and the page says so in words |
 
-A floating address (`pipeup@latest`, `pipeup@0`) can't be resolved offline, so it counts as "can't tell". The command
+A floating address (`pipeup@latest`, `pipeup@1`) can't be resolved offline, so it counts as "can't tell". The command
 never changes the page's file in any case.
 
 The add-on's link client is the same code as today's `ui/link.ts`, driven by the same attributes
@@ -96,7 +96,7 @@ page's ops; it needs no private core API.
   byte-identical. `pipeup comments` is unaffected: it reads what `Pipeup.comments()` shares.
 - **Skills:** `pipeup-add` adds the add-on (with its integrity hash) when the author asks for replies, and says what
   that lets the agent do. Every skill's version line moves to 0.7; older installed skills still work against 0.6 pages.
-- **Floating addresses** (`pipeup@latest`, `pipeup@0`) would lose the loader on the next CDN refresh; the docs already say
+- **Floating addresses** (`pipeup@latest`, `pipeup@1`) would lose the loader on the next CDN refresh; the docs already say
   to pin the exact version, and the CHANGELOG and the console warning say what changed.
 
 ## Order of work

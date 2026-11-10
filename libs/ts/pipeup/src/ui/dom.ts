@@ -22,7 +22,13 @@ export function h<K extends keyof HTMLElementTagNameMap>(
 /** Takes `el` out of (or back into) the keyboard's reach; focus never stays on something that goes inert. */
 export function inert(el: HTMLElement, on: boolean): void {
   const active = (el.getRootNode() as Document | ShadowRoot).activeElement;
-  if (on && active instanceof HTMLElement && el.contains(active)) active.blur();
+  if (on && active instanceof HTMLElement && el.contains(active)) {
+    // Safari drops the page's selection when focus is taken away: it is put back.
+    const sel = window.getSelection();
+    const range = sel?.rangeCount ? sel.getRangeAt(0) : null;
+    active.blur();
+    if (range && !sel!.rangeCount) sel!.addRange(range);
+  }
   el.inert = on;
 }
 
