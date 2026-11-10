@@ -7,14 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
-### Fixed
-- Public design specification downloads are included in the published snapshot.
-
 ### Added
 
-- **Public design reviews.** The website links to the Pipeup design at `/design/`, where visitors can submit private suggestions for the owner to review before implementation.
+- **Public design reviews.** The website links to the Pipeup design at `/design/`, where signed-in visitors can submit private suggestions for the owner to review before implementation.
 
 ### Fixed
+
+- Public design specification downloads are included in the published snapshot.
+- **Review accounts.** Public design submissions require a verified account. Configured social providers and managed email sign-in support reviewers and owners; account identity never grants owner permissions by itself.
 
 - **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
   how it began, so holding Space during it handed the page a click meant for Pipeup.
