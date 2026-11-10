@@ -83,10 +83,10 @@ test("in Firefox, Comment on this page adds Pipeup in comment mode; comments are
   expect(await p.$eval("#pin-row", (e) => (e as HTMLElement).hidden)).toBe(false);
   expect(await p.$eval("#agent-group", (e) => (e as HTMLElement).hidden)).toBe(false);
   await press(p, "Send to my agent");
+  // Firefox asks the reviewer to agree first; the test can't answer, so nothing is sent.
   await until(
-    () =>
-      p.$eval("#agent-cmd", (e) => e.textContent === "npx --yes pipeup@0 browser install --browser firefox"),
-    "Firefox's setup command",
+    () => p.$eval("#agent-said", (e) => /Firefox wasn't allowed/.test(e.textContent ?? "")),
+    "Firefox's question before anything is sent",
   );
 
   // After a reload, the extension's copy brings the comment back.
@@ -124,9 +124,12 @@ test("in Firefox, the settings page offers the add-ons and the agents' setup for
   browser,
 }) => {
   const p = await open(browser, `${BASE}comments.html`);
+  const version = await p.evaluate(() => chrome.runtime.getManifest().version);
   expect(await p.$eval("#agent-cmd", (e) => e.textContent)).toBe(
-    "npx --yes pipeup@0 browser install --browser firefox",
+    `npx --yes pipeup@${version} browser install --browser firefox`,
   );
   expect(await p.$eval("#agent-section", (e) => (e as HTMLElement).hidden)).toBe(false);
   await until(() => p.$eval("#addons", (e) => e.textContent!.includes("Emoji")), "the add-ons");
+  // Firefox can't turn speech into text, so Voice isn't offered there.
+  expect(await p.$eval("#addons", (e) => e.textContent!.includes("Voice"))).toBe(false);
 });

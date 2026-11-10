@@ -8,6 +8,15 @@ The text in each `text` block is ready to paste once the placeholders in square 
 draft was checked against the code and that store's rules by a separate reviewer; their findings are listed under
 each store. The privacy policy all four point to is in [privacy-policy.md](privacy-policy.md).
 
+## Status (10 November 2026)
+
+The code changes marked blocker below are made on `feat/browser-extension`, except the release itself and the Safari
+app: the page can no longer read Pipeup's UI or add-ons' choices, Live's consent is kept by the extension, Firefox
+declares and asks before anything is sent, each browser's package holds only what works there, and Send to my agent's
+command names the release and the browser. **The listing texts below were written before those changes** and still
+carry caveats they removed (the open shadow root, the site's storage, `pipeup@0`, Voice in Firefox): they need one
+pass against the new build before submitting.
+
 ## Before anything is submitted
 
 These block submission to at least one store. Details, and the recommended changes, are under
@@ -1587,3 +1596,4 @@ Contact: [support contact: maintainer to supply]
 ## Change log
 
 - 2026-11-10: First drafts for Chrome, Edge, Firefox and Safari, with the checks' findings, the code changes they call for and the privacy policy.
+- 2026-11-10: Status added: the code blockers are fixed on the extension branch; the texts need a pass against the new build.

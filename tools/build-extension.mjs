@@ -15,6 +15,17 @@ import { INK, listed, toolbar } from "./extension-icons.mjs";
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
 const ADDONS = ["emoji", "voice", "share", "live", "github", "identity"];
+/**
+ * What each browser's package holds beyond the manifest (build.json): the add-ons that work there, and whether it takes
+ * pictures of where comments were made. Firefox can't turn speech into text, so no Voice; Safari leaves out Share and
+ * Live (they show other people's comments, which Apple's store requires ways to report and block for) and pictures
+ * (it has no side panel to show them in).
+ */
+const PACKAGE = {
+  chromium: { addons: ADDONS, pictures: true },
+  firefox: { addons: ADDONS.filter((a) => a !== "voice"), pictures: true },
+  safari: { addons: ADDONS.filter((a) => a !== "share" && a !== "live"), pictures: false },
+};
 const pipeup = `${root}libs/ts/pipeup/dist/pipeup.esm.js`;
 if (!existsSync(pipeup)) {
   console.error("build-extension: build Pipeup first (npm run build in libs/ts/pipeup)");
@@ -57,9 +68,11 @@ const TARGETS = {
       dark: `icons/toolbar-light-${size}.png`,
       size,
     }));
-    // Firefox's add-ons site asks what an extension collects: nothing.
+    // Firefox's add-ons site asks what an extension sends: nothing on its own; Share, Live, Save to GitHub and Send
+    // to my agent send what the reviewer writes, once the reviewer agrees (browser.js agreeToSend, from Firefox 140).
     m.browser_specific_settings.gecko.data_collection_permissions = {
       required: ["none"],
+      optional: ["websiteContent", "browsingActivity", "personalCommunications", "personallyIdentifyingInfo"],
     };
     return m;
   },
@@ -91,10 +104,13 @@ for (const [target, shape] of Object.entries(TARGETS)) {
   cpSync(pipeup, `${dir}/pipeup/pipeup.esm.js`);
   // The add-ons the reviewer can turn on, each its release file unchanged (build them with npm run build in libs/ts/addons).
   mkdirSync(`${dir}/addons`, { recursive: true });
-  for (const id of ADDONS) {
+  for (const id of PACKAGE[target].addons) {
     const file = `${root}libs/ts/addons/${id}/dist/${id}.esm.js`;
-    if (existsSync(file)) cpSync(file, `${dir}/addons/${id}.esm.js`);
+    if (!existsSync(file))
+      throw new Error(`build-extension: the ${id} add-on isn't built (npm run build in libs/ts/addons)`);
+    cpSync(file, `${dir}/addons/${id}.esm.js`);
   }
+  writeFileSync(`${dir}/build.json`, JSON.stringify(PACKAGE[target]) + "\n");
   writeFileSync(`${dir}/manifest.json`, JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n");
   for (const size of [16, 32, 48, 128]) writeFileSync(`${dir}/icons/${size}.png`, listed(size));
   // The toolbar button: the bubble alone, dark for light toolbars and light for dark ones (Safari: one template).
@@ -113,9 +129,6 @@ for (const [target, shape] of Object.entries(TARGETS)) {
   execFileSync("zip", ["-qr", zip, "."], { cwd: dir });
   zips.push(zip);
 }
-for (const id of ADDONS)
-  if (!existsSync(`${root}libs/ts/addons/${id}/dist/${id}.esm.js`))
-    console.warn(`build-extension: the ${id} add-on isn't built; the extension is packed without it`);
 
 if (process.argv.includes("--test")) {
   // Every page: the tests can't press the toolbar button, which is what lets the extension see a tab (and take a picture).
@@ -128,6 +141,10 @@ if (process.argv.includes("--test")) {
       `${test}/manifest.json`,
       JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) + "\n",
     );
+    // The tests reach into Pipeup's UI, which the published build keeps in a closed shadow root.
+    const start = readFileSync(`${test}/start.js`, "utf8");
+    if (!start.includes("const closed = true;")) throw new Error("build-extension: start.js has no `closed` switch");
+    writeFileSync(`${test}/start.js`, start.replace("const closed = true;", "const closed = false;"));
   }
 }
 

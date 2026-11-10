@@ -76,9 +76,19 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     // The extension may not be allowed to see this tab (a site that is "Always on" without a press): no picture.
   });
 });
+// A comment deleted: its picture goes too.
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== "unshot" || typeof message.thread !== "string") return;
+  void chrome.storage.local.remove(`shot:${message.thread}`).catch(() => {});
+});
+/** Whether this browser's package takes pictures (build.json: Safari's doesn't, having nowhere to show them). */
+const takesPictures = fetch(chrome.runtime.getURL("build.json"))
+  .then((r) => r.json())
+  .then((b) => b.pictures === true)
+  .catch(() => false);
 async function picture(windowId, { thread, rect, view }) {
   const { settings } = await chrome.storage.local.get("settings");
-  if (settings?.pictures === false) return;
+  if (settings?.pictures === false || !(await takesPictures)) return;
   const shot = await chrome.tabs.captureVisibleTab(windowId, { format: "jpeg", quality: 80 });
   const bmp = await createImageBitmap(await (await fetch(shot)).blob());
   const k = bmp.width / view.width;

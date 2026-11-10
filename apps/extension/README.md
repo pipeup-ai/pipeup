@@ -1,8 +1,8 @@
 # Pipeup for browsers
 
 A browser extension that adds Pipeup to any web page: press Pipeup in the toolbar (or Shift+Alt+P) and choose
-**Comment on this page**. Comments, the reviewer's identity and their choices are kept by the extension, so nothing goes
-into the site's own storage, and the page's scripts can't see or change them.
+**Comment on this page**. Comments, the reviewer's identity, their choices and add-ons' choices are kept by the
+extension, so nothing goes into the site's own storage, and Pipeup's UI is closed to the page's scripts.
 
 Spec: [docs/EXTENSION_SPEC.md](../../docs/EXTENSION_SPEC.md). Design: [docs/design/browser-extension.md](../../docs/design/browser-extension.md).
 
@@ -11,6 +11,7 @@ Mac. Not in any store yet.
 
 ```bash
 cd libs/ts/pipeup && npm ci && npm run build && cd ../../..
+cd libs/ts/addons && npm ci && npm run build && cd ../../..
 node tools/build-extension.mjs           # dist/chromium and dist/firefox
 node tools/build-extension.mjs --safari  # also Safari's app, on a Mac with Xcode
 ```

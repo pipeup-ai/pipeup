@@ -1,6 +1,6 @@
 // The toolbar panel: Pipeup's menu. It reads the tab's state each time it opens: on, off, built in, or a page
 // extensions can't reach. With Pipeup on, every row of Pipeup's own menu is here, drawn by the extension.
-import { agentSetup, canPin, canReachAgents, openSide } from "./browser.js";
+import { agentSetup, agreeToSend, canPin, canReachAgents, openSide } from "./browser.js";
 
 const $ = (id) => document.getElementById(id);
 // The tab it acts on: the active tab, or one named in the address (how the tests open it in a tab of its own).
@@ -107,8 +107,9 @@ async function show() {
 async function done() {
   if (!named) window.close();
   else await show();
-  // Replies an agent left since this page was last open come into their threads.
-  if (state?.on) void agentReplies();
+  // Replies an agent left since this page was last open come into their threads (once Send to my agent has been used).
+  if (state?.on && canReachAgents && (await chrome.storage.local.get("agentUsed")).agentUsed)
+    void agentReplies();
 }
 
 /** Opens the browser's side panel for this tab, where the comments are. Only allowed in answer to a press here. */
@@ -195,6 +196,11 @@ async function agentReplies() {
   return back?.ok && back.replies.length ? ((await tell("agentReplies", { replies: back.replies })) ?? 0) : 0;
 }
 $("agent").addEventListener("click", async () => {
+  // Firefox asks first; the question is put in answer to this press, before anything is awaited.
+  if (!(await agreeToSend())) {
+    $("agent-said").textContent = "not sent: Firefox wasn't allowed to";
+    return;
+  }
   const sent = await tell("agentSend");
   if (!sent) return;
   const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
@@ -205,6 +211,7 @@ $("agent").addEventListener("click", async () => {
     return;
   }
   $("agent-said").textContent = "Sent";
+  await chrome.storage.local.set({ agentUsed: true });
   await agentReplies();
 });
 $("agent-copy").addEventListener(

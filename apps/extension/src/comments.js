@@ -1,5 +1,5 @@
 // Every page with comments made through the extension, newest first. Words come from other pages: text only.
-import { agentSetup, canReachAgents } from "./browser.js";
+import { agentSetup, agreeToSend, build, canReachAgents } from "./browser.js";
 const all = await chrome.storage.local.get(null);
 const pages = Object.entries(all)
   .filter(([k]) => k.startsWith("page:"))
@@ -43,7 +43,9 @@ const show = document.getElementById("show-button");
 show.checked = !!all.settings?.showButton;
 show.addEventListener("change", () => void save({ showButton: show.checked }));
 
-// Pictures: on unless turned off; turning them off deletes the ones kept.
+// Pictures: on unless turned off; turning them off deletes the ones kept. A browser with nowhere to show them (Safari)
+// takes none, and doesn't offer the switch.
+document.getElementById("pictures").closest(".row").hidden = !build.pictures;
 const pictures = document.getElementById("pictures");
 pictures.checked = all.settings?.pictures !== false;
 pictures.addEventListener("change", async () => {
@@ -75,16 +77,21 @@ const ADDONS = [
     says: "Take your reviewer identity to another browser with a recovery code.",
   },
 ];
+// Add-ons that send what the reviewer writes: Firefox asks the reviewer to agree before the first is turned on.
+const SENDS = new Set(["share", "live", "github"]);
 const addonList = document.getElementById("addons");
-for (const a of ADDONS) {
+for (const a of ADDONS.filter((x) => build.addons.includes(x.id))) {
   const id = `addon-${a.id}`;
   const box = Object.assign(document.createElement("input"), { id, type: "checkbox" });
   box.setAttribute("role", "switch");
   box.checked = all.settings?.addons?.[a.id] ?? !!a.on;
-  box.addEventListener(
-    "change",
-    () => void save({ addons: { ...(settings().addons ?? {}), [a.id]: box.checked } }),
-  );
+  box.addEventListener("change", async () => {
+    if (box.checked && SENDS.has(a.id) && !(await agreeToSend())) {
+      box.checked = false;
+      return;
+    }
+    await save({ addons: { ...(settings().addons ?? {}), [a.id]: box.checked } });
+  });
   const label = Object.assign(document.createElement("label"), { htmlFor: id });
   label.append(a.name, Object.assign(document.createElement("small"), { textContent: a.says }));
   if (a.field) {

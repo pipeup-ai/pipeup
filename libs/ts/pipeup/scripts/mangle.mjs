@@ -10,6 +10,8 @@ export const MANGLED = new RegExp(`^(${INTERNAL})$`);
 /** Every property name of the add-on API (add-ons design §4). None may be mangled. */
 export const PUBLIC_NAMES = [
   "use",
+  "keep",
+  "closed",
   "off",
   "addons",
   "ops",

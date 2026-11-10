@@ -55,7 +55,7 @@ export function createAddon(): PipeupAddon {
     network: {
       when: "after-consent",
       to: ["github.com"],
-      says: "Only when you press Mention on GitHub: your browser opens GitHub's new-issue page with the person's @name and the comment's words filled in; nothing is sent until you submit it there.",
+      says: "Only when you press Mention on GitHub: your browser opens GitHub's new-issue page with the person's @name, your name, the comment's words and this page's title and address filled in, so GitHub receives them as the page opens; nothing is filed until you submit it there.",
     },
     setup(host: AddonHost) {
       const repo = repoOf();
@@ -74,7 +74,7 @@ export function createAddon(): PipeupAddon {
           icon: MARK,
           label: () => `Mention ${names.map((n) => `@${n}`).join(" ")} on GitHub`,
           hint: () =>
-            "Opens GitHub's new-issue page with their name and your words filled in; nothing is sent until you submit it",
+            "Opens GitHub's new-issue page with their name and your words filled in (GitHub receives them); nothing is filed until you submit it",
           select: () => {
             window.open(
               issueUrl(repo, names, host.document.name || "Someone", text, document.title, location.href),

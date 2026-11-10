@@ -1,24 +1,44 @@
-import type { ReactionPicker } from "pipeup";
+import type { Keep, ReactionPicker } from "pipeup";
 import { ALL, drawn, GROUP_NAMES, nameOf, search, TONES, withTone, type Entry } from "./emoji";
 
 const COLUMNS = 8;
 const RECENT = 24;
 const KEEP = { recent: "pipeup:emoji-recent", tone: "pipeup:emoji-tone" };
 
-const kept = (key: string): string => {
-  try {
-    return localStorage.getItem(key) ?? "";
-  } catch {
-    return "";
+/** Recent emoji and the skin tone: in the host's store when it has one (the extension), else the page's localStorage. */
+function memory(store?: Keep): { kept(key: string): string; keep(key: string, value: string): void } {
+  if (store) {
+    const mem = new Map<string, string>();
+    for (const key of Object.values(KEEP))
+      void store.get(key).then(
+        (v: unknown) => typeof v === "string" && !mem.has(key) && mem.set(key, v),
+        () => {},
+      );
+    return {
+      kept: (key) => mem.get(key) ?? "",
+      keep: (key, value) => {
+        mem.set(key, value);
+        void store.set(key, value).catch(() => {});
+      },
+    };
   }
-};
-const keep = (key: string, value: string): void => {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // remembered for this page only
-  }
-};
+  return {
+    kept: (key) => {
+      try {
+        return localStorage.getItem(key) ?? "";
+      } catch {
+        return "";
+      }
+    },
+    keep: (key, value) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // remembered for this page only
+      }
+    },
+  };
+}
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""): HTMLElementTagNameMap[K] => {
   const e = document.createElement(tag);
@@ -28,7 +48,8 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text = ""):
 };
 
 /** The picker: search, the groups phones use, recently used, and one skin tone for the hands and people. */
-export function createPicker(): ReactionPicker {
+export function createPicker(store?: Keep): ReactionPicker {
+  const { kept, keep } = memory(store);
   return {
     name: nameOf,
     fill(into, pick) {

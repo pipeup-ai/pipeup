@@ -110,6 +110,18 @@ test("a picture of where a new comment was is kept, and shown when the comment's
   const card = side.locator(".card", { hasText: "Is June firm?" });
   await expect(card).toContainText("No longer on the page");
   await expect(card.locator("img")).toBeVisible();
+  // Deleting the comment deletes its picture.
+  await card.click();
+  await side.getByRole("button", { name: "Delete", exact: true }).first().click();
+  await expect(side.locator(".card", { hasText: "Is June firm?" })).toHaveCount(0);
+  await expect
+    .poll(async () =>
+      worker.evaluate(
+        async () =>
+          Object.keys(await chrome.storage.local.get(null)).filter((k) => k.startsWith("shot:")).length,
+      ),
+    )
+    .toBe(0);
 });
 
 test("Save comments gives a Markdown file and a Pipeup file", async ({ context, worker, id }) => {
@@ -142,7 +154,11 @@ test("Send to my agent says how to set it up when this computer isn't set up yet
   await page.goto(`${PAGES}plain.html`);
   const p = await started(context, worker, id, page);
   await p.getByRole("button", { name: /Send to my agent/ }).click();
-  await expect(p.locator("#agent-cmd")).toHaveText(`npx --yes pipeup@0 browser install --extension-id ${id}`);
+  // From the release this extension is, for this browser (Chromium: Chrome's host file).
+  const version = await worker.evaluate(() => chrome.runtime.getManifest().version);
+  await expect(p.locator("#agent-cmd")).toHaveText(
+    `npx --yes pipeup@${version} browser install --extension-id ${id}`,
+  );
 });
 
 test("add-ons: Emoji is on by default, and the others are turned on in the extension's settings", async ({

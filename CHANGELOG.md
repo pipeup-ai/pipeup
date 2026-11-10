@@ -9,6 +9,8 @@ change the API and the stored comment format.
 
 ### Added
 
+- `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
+
 - `mount({ settings })` gives page settings a host can't write into the page, and `startComment(element or range)` opens the comment box on what it names.
 - `pipeup browser`: agents read comments sent from the browser extension and answer them (`browser read`, `browser reply`, set up once with `browser install`, or `browser install --browser firefox`).
 - `mount({ prefs })`: a host can keep the reviewer's choices (look, Hide comments) somewhere other than the page's localStorage.
@@ -17,6 +19,9 @@ change the API and the stored comment format.
 - Comments follow what they were on when a site changes. A comment on something clicked keeps what kind of thing it was, its name and the headings it sat under, so it follows that thing when content is added or reordered instead of landing on a neighbour. When Pipeup found it by looking alike, the thread asks "Is this the right place?" (Yes, Not here, It's gone), once, for everyone. A comment whose place is gone says what it was, and anyone can show where it belongs. Copy for AI says the same.
 
 ### Changed
+
+- The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture.
+- Save to GitHub says that GitHub receives the comment's words, name, page title and address when its new-issue page opens; nothing is filed until you submit it.
 
 - In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.
 - In comment mode, while a thread is open to read, no other block is outlined, and a click on the page only closes it; the next click chooses a block. A thread you just wrote doesn't hold up the next comment.

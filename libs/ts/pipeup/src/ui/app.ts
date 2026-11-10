@@ -60,6 +60,8 @@ export interface AppOptions {
    * the host when one is opened there. New comments are still written on the page, beside what they're about.
    */
   host?: Host;
+  /** Pipeup's UI is in a closed shadow root, out of the page's scripts' reach (the browser extension). */
+  closed?: boolean;
 }
 
 /** What Pipeup tells a host that shows its threads. */
@@ -128,7 +130,7 @@ export function startApp(o: AppOptions): App {
   };
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
-  const host = createHost(theme, o.styles);
+  const host = createHost(theme, o.styles, document, o.closed);
   // A look that differs from the page's keeps its see-through parts solid, so each look reads as itself.
   host.layer.classList.toggle("flip", dark !== pageDark);
   const sheet = installPageSheet(document);

@@ -24,6 +24,7 @@ export {
   type ComposerTool,
   type Dictation,
   type ItemHandle,
+  type Keep,
   type ListNote,
   type ReactionPicker,
   type MenuItem,

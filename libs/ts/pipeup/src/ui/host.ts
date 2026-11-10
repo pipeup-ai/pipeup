@@ -14,12 +14,12 @@ export interface Host {
  * z-index there is and comes after <body>, so a page's own bar at that z-index (a consent banner, say) still sits under
  * it: of two equals, the later one is drawn on top.
  */
-export function createHost(theme: Theme, styles: string, doc: Document = document): Host {
+export function createHost(theme: Theme, styles: string, doc: Document = document, closed = false): Host {
   const element = doc.createElement("pipeup-root");
   element.setAttribute("data-pipeup-ignore", "");
   element.style.cssText =
     "position:fixed!important;inset:0!important;pointer-events:none!important;z-index:2147483647!important;display:block!important;margin:0!important;visibility:visible!important;opacity:1!important;transform:none!important;translate:none!important;scale:none!important;rotate:none!important;filter:none!important;clip-path:none!important;mask:none!important;zoom:1!important;";
-  const shadow = element.attachShadow({ mode: "open" });
+  const shadow = element.attachShadow({ mode: closed ? "closed" : "open" });
   const Sheet = doc.defaultView?.CSSStyleSheet;
   if (Sheet && "replaceSync" in Sheet.prototype && "adoptedStyleSheets" in shadow) {
     const sheet = new Sheet();

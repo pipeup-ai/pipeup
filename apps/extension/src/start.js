@@ -1,5 +1,6 @@
-// Adds Pipeup to this tab, in the extension's own world: the page's scripts can't see it or change it. Comments, the
-// reviewer's identity and their choices are kept by the extension, so nothing goes into the site's own storage.
+// Adds Pipeup to this tab, in the extension's own world: the page's scripts can't see it or change it (its UI is in a
+// closed shadow root). Comments, the reviewer's identity, their choices and add-ons' choices are kept by the extension,
+// so nothing goes into the site's own storage.
 // Run by the toolbar's "Comment on this page", and on every load of a site that is "Always on".
 (async () => {
   const state = (globalThis.__pipeupExt ??= { on: false, builtIn: false });
@@ -32,6 +33,14 @@
     } catch (e) {
       console.warn(`pipeup: the ${id} add-on didn't load`, e);
     }
+  /** Add-ons' choices (Live's consent, Share's, Voice's, Emoji's recent emoji), kept by the extension, not the site. */
+  const addonKeep = {
+    get: async (k) => (await storage.get(`addon:${k}`))[`addon:${k}`],
+    set: (k, v) => storage.set({ [`addon:${k}`]: v }),
+  };
+  // The tests' build leaves the UI open to them (tools/build-extension.mjs --test); the published one never does.
+  const closed = true;
+
   /** What add-ons are told about this page, from the extension's settings (a page would say it in its own HTML). */
   const pageSettings = (settings) => ({
     ...(settings.share ? { "data-pipeup-share": settings.share } : {}),
@@ -183,7 +192,14 @@
   let pu = null;
   let stops = [];
   async function mountAs(mode) {
-    pu = await Pipeup.mount({ store, prefs, settings: pageSettings(await settingsNow()), ...OPTIONS[mode] });
+    pu = await Pipeup.mount({
+      store,
+      prefs,
+      keep: addonKeep,
+      closed,
+      settings: pageSettings(await settingsNow()),
+      ...OPTIONS[mode],
+    });
     place = where();
     known = new Set(pu.document.threads().map((t) => t.id));
     state.mode = mode;
@@ -242,7 +258,15 @@
   let known = new Set();
   function picture() {
     if (!pu) return;
-    const mine = pu.document.threads().filter((t) => !known.has(t.id));
+    // A thread deleted (its first comment deleted): its picture goes with it.
+    const now = pu.document.threads().filter((t) => !t.root.deleted);
+    const ids = new Set(now.map((t) => t.id));
+    for (const id of known)
+      if (!ids.has(id)) {
+        known.delete(id);
+        send({ type: "unshot", thread: id });
+      }
+    const mine = now.filter((t) => !known.has(t.id));
     for (const t of mine) known.add(t.id);
     for (const t of mine) {
       if (t.root.author !== pu.document.me || Date.now() - t.root.at > 10_000) continue;

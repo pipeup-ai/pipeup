@@ -3,7 +3,7 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { addons, attachAddons, drainQueue, firstCore } from "./addons";
+import { addons, attachAddons, drainQueue, firstCore, type Keep } from "./addons";
 import { describeElement, describeRange } from "../anchor/describe";
 import { labelOf } from "../anchor/locate";
 import { startApp, type Prefs } from "./app";
@@ -45,6 +45,10 @@ export interface MountOptions {
   ui?: string;
   /** More page settings, as `data-pipeup-…` attributes would give them (for hosts that can't write the page's own). */
   settings?: Record<string, string>;
+  /** Where add-ons keep their choices (`host.keep`). Default: none; each add-on keeps them in the page's own storage. */
+  keep?: Keep;
+  /** Pipeup's UI in a closed shadow root, out of the page's scripts' reach (for hosts apart from the page). */
+  closed?: boolean;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -173,7 +177,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     await kept.saveProfile(profile);
   }
   // Ask the browser not to clear what Pipeup keeps (best effort): a cleared browser would start the reviewer over.
-  void navigator.storage?.persist?.().catch(() => {});
+  // A host that keeps the comments itself keeps them out of the site's storage, so the site's is left alone.
+  if (!o.store) void navigator.storage?.persist?.().catch(() => {});
   const doc = await PipeupDocument.open({
     doc: id,
     key,
@@ -232,6 +237,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
           }
         : {}),
       ...(o.prefs ? { prefs: o.prefs } : {}),
+      ...(o.closed ? { closed: true } : {}),
     });
   } catch (e) {
     setSlideHook(null);
@@ -249,6 +255,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     doc,
     root: o.root ?? document.body,
     ephemeral,
+    ...(o.keep ? { keep: o.keep } : {}),
     version: VERSION,
     onIdentity: async (identity) => {
       profile = { ...profile, identity };

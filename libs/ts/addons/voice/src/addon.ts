@@ -143,7 +143,7 @@ export function createAddon(): PipeupAddon {
       let store: Settings | undefined;
       let choice: Choice | undefined;
       let ready = false;
-      const loaded = settings("voice", { memory: host.ephemeral }).then(async (s) => {
+      const loaded = settings("voice", { memory: host.ephemeral, keep: host.keep }).then(async (s) => {
         store = s;
         choice = await s.get<Choice>("choice").catch(() => undefined);
         ready = true;

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { open, seedText } from "./helpers";
+import { fixture, open, seedText } from "./helpers";
 
 /** Pipeup with its threads and comment box drawn by a host (the extension's side panel); what it says, kept. */
 async function hosted(page: import("@playwright/test").Page): Promise<void> {
@@ -87,4 +87,50 @@ test("a host can open the comment box on an element or on words, and give page s
     return (window as any).pu.startComment(r);
   });
   await expect(page.locator(".draft").first()).toContainText("“");
+});
+
+test("a host can keep Pipeup's UI from the page's scripts, and keep add-ons' choices out of the site's storage", async ({
+  page,
+}) => {
+  await page.goto(fixture("doc.html"));
+  const seen = await page.evaluate(async () => {
+    const w = window as any;
+    const held = new Map<string, unknown>();
+    let got: unknown;
+    w.Pipeup.use({
+      id: "keeper",
+      api: 1,
+      version: "1.0.0",
+      needs: [],
+      network: { when: "never", to: [], says: "Sends nothing." },
+      async setup(host: any) {
+        await host.keep.set("choice", { on: true });
+        got = await host.keep.get("choice");
+      },
+    });
+    w.pu = await w.Pipeup.mount({
+      closed: true,
+      keep: {
+        get: async (k: string) => held.get(k),
+        set: async (k: string, v: unknown) => void held.set(k, v),
+      },
+    });
+    await new Promise((r) => setTimeout(r, 200));
+    return {
+      root: !!document.querySelector("pipeup-root"),
+      shadow: document.querySelector("pipeup-root")!.shadowRoot,
+      held: Object.fromEntries(held),
+      got,
+      dbs:
+        (await indexedDB.databases?.())?.map((d) => d.name).filter((n) => n?.startsWith("pipeup-addon")) ??
+        [],
+    };
+  });
+  expect(seen).toEqual({
+    root: true,
+    shadow: null,
+    held: { "keeper:choice": { on: true } },
+    got: { on: true },
+    dbs: [],
+  });
 });

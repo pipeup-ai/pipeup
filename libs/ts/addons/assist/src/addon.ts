@@ -543,7 +543,7 @@ export function createAddon(): PipeupAddon {
 
       // Settings, availability and what was already looked at come in the background; the row is there meanwhile.
       void (async () => {
-        store = await settings("assist", { memory: host.ephemeral });
+        store = await settings("assist", { memory: host.ephemeral, keep: host.keep });
         avail = lowMemory() ? "none" : await engine.availability();
         checked =
           (await store.get<Record<string, string>>(`checked:${host.document.id}`).catch(() => undefined)) ??

@@ -27,4 +27,19 @@ describe("an add-on's settings", () => {
       globalThis.indexedDB = real;
     }
   });
+
+  it("are kept by the host when it keeps them (the browser extension), never in the site's IndexedDB", async () => {
+    const held = new Map<string, unknown>();
+    const keep = {
+      get: async (k: string) => held.get(k),
+      set: async (k: string, v: unknown) => void held.set(k, v),
+    };
+    const a = await settings("kit-host", { keep });
+    expect(a.lasting).toBe(true);
+    await a.set("consent", { on: true, seen: true });
+    expect(held.get("consent")).toEqual({ on: true, seen: true });
+    // A page that writes the same setting into its own storage changes nothing the add-on reads.
+    await (await settings("kit-host")).set("consent", { on: false });
+    expect(await a.get("consent")).toEqual({ on: true, seen: true });
+  });
 });

@@ -131,8 +131,7 @@ Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores 
 - **Firefox and Safari:**
   - The build writes one folder per browser from the same source: `dist/chromium` (no `sidebar_action` or
     `browser_specific_settings`; `background.service_worker`), `dist/firefox` (no `side_panel` or `sidePanel`;
-    `background.scripts` as an event page; `gecko.data_collection_permissions: none`; Firefox 128+, for
-    `optional_host_permissions`) and `dist/safari` (no side panel, sidebar or `nativeMessaging`; a service worker without
+    `background.scripts` as an event page; `gecko.data_collection_permissions`; Firefox 140+) and `dist/safari` (no side panel, sidebar or `nativeMessaging`; a service worker without
     `type`, since Safari takes none). Everything uses `chrome.*`, which all three answer to.
   - `src/browser.js` holds what differs at run time: the panel beside the page (`chrome.sidePanel`, or Firefox's
     `browser.sidebarAction`, opened and closed in answer to a press; neither in Safari, so the pin isn't offered), and
@@ -153,6 +152,22 @@ Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores 
   light toolbars and light for dark ones. The background can't see the browser's look, so the extension's pages and
   Pipeup in tabs say it (`prefers-color-scheme`) and `action.setIcon` follows; the last look is kept for the next start.
   Firefox also gets `theme_icons`; Safari gets one black bubble, which it takes as a template and tints.
+- **Ready for the stores** (2026-11-10, after checking the store drafts against the code, docs/store/):
+  - Pipeup's UI is in a closed shadow root (`mount({ closed: true })`), so the page's scripts can't read comments,
+    names or a recovery code; the tests' build opens it (`--test` swaps `const closed = true;` in `start.js`).
+  - Add-ons' choices are kept by the extension (`mount({ keep })` → `host.keep`, `addon:<id>:<key>` in
+    `chrome.storage.local`): Live's consent, Share's, Voice's and Assist's settings, Emoji's recent emoji and skin tone.
+    Pipeup no longer asks the site's storage to persist when a host gives the store.
+  - Each browser's package says what it holds (`build.json`): Firefox without Voice; Safari without Share, Live or
+    pictures. The settings page offers only those add-ons. A missing add-on fails the build.
+  - Firefox declares what it may send (`data_collection_permissions`: required none; optional websiteContent,
+    browsingActivity, personalCommunications, personallyIdentifyingInfo; Firefox 140+) and asks
+    (`permissions.request({ data_collection })`, `browser.js agreeToSend`) before Share, Live or Save to GitHub is
+    turned on and before Send to my agent sends. The automated Firefox can't answer the question, so the tests see it
+    declined; the prompt itself is checked by hand.
+  - Send to my agent: the setup command names the release (`pipeup@<version>`) and the browser (`--browser edge`,
+    `--browser brave`); not offered on Windows; replies are asked for only once it has been used.
+  - Deleting a comment (its first comment) deletes its picture.
 - **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, the release job and store status,
   Send to my agent in Safari (it needs the app to carry the messages), Firefox on Android, Safari on iPhone and iPad.
 
@@ -167,3 +182,4 @@ Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores 
 - 2026-11-09 — Integrations: right-click, single-page apps, local pages, pictures, saving, Send to my agent, add-ons.
 - 2026-11-10 — Firefox and Safari (Mac) builds, `browser.js`, Firefox tests; see As built.
 - 2026-11-10 — The toolbar button's icon: the bubble alone, following the browser's look; the listed icon, the violet bubble.
+- 2026-11-10 — Ready for the stores: closed UI root, add-ons' choices in the extension, per-browser packages, Firefox's data consent, Send to my agent's command per browser and release; see As built.
