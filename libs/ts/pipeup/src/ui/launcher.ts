@@ -349,9 +349,9 @@ export function createLauncher(ctx: Ctx): View {
         else if (!had.has(n)) grow(n, swaps.get(idOf(n)) ?? 0);
         else if (folding.delete(n)) grow(n, n.offsetHeight);
   };
-  /** The thread a card in the list is for. */
-  const idOf = (n: Node) =>
-    n instanceof HTMLElement ? (n.firstElementChild as HTMLElement | null)?.dataset.thread : undefined;
+  /** The thread a card in the list is for (its button moves to the thread's other card when it opens or closes). */
+  const cardIds = new WeakMap<Node, string>();
+  const idOf = (n: Node) => cardIds.get(n);
   /** What is folding out of the list; and whether the list has been drawn since the panel opened (changes ease). */
   const folding = new WeakSet<Node>();
   let drawn = false;
@@ -471,6 +471,8 @@ export function createLauncher(ctx: Ctx): View {
    * open): each shows its first comment, with that comment's actions on hover or focus.
    */
   const closed = new Map<string, { card: HTMLElement; view: ThreadView }>();
+  /** Each thread's card button (what a press on the card reaches) and the words it holds for screen readers. */
+  const cardButtons = new Map<string, { b: HTMLElement; sr: HTMLElement }>();
   /** Closed cards resolved from their own actions, easing out of the list before they go. */
   const leaving = new Set<string>();
   // A closed card's actions are the open card's, except that Resolve first eases the card out when it will leave.
@@ -567,21 +569,31 @@ export function createLauncher(ctx: Ctx): View {
             : i.location.where;
       // The card's button covers it, under its actions: choosing the card opens it. It holds what the card shows,
       // unseen, for screen readers.
-      const b = h(
-        "button",
-        { class: "mi", type: "button", "aria-expanded": String(open), "data-thread": t.id },
-        h(
-          "span",
-          { class: "sr" },
-          [nameOf(t.root), formatAgo(t.root.at, Date.now()), moved(t) && "Moved", about, t.root.text, rest]
-            .filter(Boolean)
-            .join(", "),
-        ),
-      );
-      b.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggle(t.id);
-      });
+      // The button is kept from one update to the next: were it made afresh, an update between a press and its
+      // release would leave the click with nothing to land on.
+      let r = cardButtons.get(t.id);
+      if (!r) {
+        const sr = h("span", { class: "sr" });
+        const made = h("button", { class: "mi", type: "button", "data-thread": t.id }, sr);
+        made.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggle(t.id);
+        });
+        cardButtons.set(t.id, (r = { b: made, sr }));
+      }
+      const b = r.b;
+      const said = [
+        nameOf(t.root),
+        formatAgo(t.root.at, Date.now()),
+        moved(t) && "Moved",
+        about,
+        t.root.text,
+        rest,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      if (r.sr.textContent !== said) r.sr.textContent = said;
+      b.setAttribute("aria-expanded", String(open));
       let card: HTMLElement;
       if (open && railView) {
         railView.update(t, threadOptions(t, about));
@@ -620,6 +632,7 @@ export function createLauncher(ctx: Ctx): View {
         card.className = `cd${t.resolved ? " done" : ""}${leaving.has(t.id) ? " out" : ""}`;
         place(card, [b, c.view.element]);
       }
+      cardIds.set(card, t.id);
       return draft && t.id === draftBefore ? [draft.card, card] : [card];
     };
     const gone = shownItems.filter((i) => lost(i.thread));
@@ -655,7 +668,8 @@ export function createLauncher(ctx: Ctx): View {
       true,
     );
     drawn = true;
-    for (const id of closed.keys()) if (!shownItems.some((i) => i.thread.id === id)) closed.delete(id);
+    for (const m of [closed, cardButtons])
+      for (const id of m.keys()) if (!shownItems.some((i) => i.thread.id === id)) m.delete(id);
     // Focus normally stays where it was; it is put back only if what held it was rebuilt.
     const now = focused();
     if (made) draft!.box.focus();

@@ -156,6 +156,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   let from: Element | null = null;
   /** How far the pointer has moved since the cursor last moved: past NUDGE, the mouse takes the outline. */
   let moved = 0;
+  /** Where the pointer last was: how far it moved is measured from here (not every browser reports movement on the event itself). */
+  let lastAt: { x: number; y: number } | null = null;
   /** Shift+Enter: the block's thread opened last (-1: none yet on this block). */
   let nth = -1;
   /** The hint is still to be read with the first landing. */
@@ -430,6 +432,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
   const reading = () => !!ctx.state.active && !ctx.state.sent;
   const onMove = (e: PointerEvent) => {
+    const step = lastAt ? Math.abs(e.clientX - lastAt.x) + Math.abs(e.clientY - lastAt.y) : 0;
+    lastAt = { x: e.clientX, y: e.clientY };
     if (ctx.owns(e) || ctx.state.paused) return;
     if (!onPage(e)) {
       if (!chosen) show(null);
@@ -448,7 +452,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       // makes up after a scroll has no movement, so the cursor's own scrolling never puts it away.
       if (!block || block === cur) return;
       // A nudge of a pixel or two (a trackpad touched while typing) doesn't count.
-      moved += Math.abs(e.movementX) + Math.abs(e.movementY);
+      moved += step;
       if (moved <= NUDGE) return;
       stow();
     }

@@ -24,6 +24,10 @@ change the API and the stored comment format.
 ### Fixed
 
 - In Safari, Delete in a comment's ⋯ menu now works: the menu closed as it was pressed, since Safari doesn't focus a button that is clicked.
+- In Safari, a button of Pipeup's that is pressed takes the focus, as in other browsers, so a menu opened with the mouse can be moved through with the arrow keys and a second press on the control closes it.
+- In Safari, selected words keep their selection, and their comment icon, when Pipeup moves the focus away.
+- Moving the mouse onto another block takes the outline from the keyboard's block cursor in browsers that don't say how far the pointer moved.
+- A press on a card in All comments opens it even when the list updates between the press and its release (a comment arriving just then lost the click).
 
 
 ## [0.9.1] - 2026-11-01

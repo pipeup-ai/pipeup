@@ -438,6 +438,9 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
   await expect(page.locator(".pop.show .draft")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator(".pop.show")).toHaveCount(0);
+  // The pointer leaves the highlight, so its preview (back now the thread is closed) isn't over the button.
+  await page.mouse.move(5, 790);
+  await expect(page.locator(".tip.show")).toHaveCount(0);
   // While a comment with words in it is being written, a highlight neither previews nor takes the click:
   // the same rule for both.
   await page.locator("#go").click();

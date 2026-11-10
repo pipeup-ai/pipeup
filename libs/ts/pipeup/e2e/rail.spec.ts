@@ -32,6 +32,23 @@ test("a row is a preview; clicking it opens the thread out in the panel, with a 
   await expect(page.locator(".cx.show")).toHaveCount(0);
 });
 
+test(
+  "a press on a row still opens it when the list updates before the release",
+  { tag: "@safari" },
+  async ({ page }) => {
+    await open(page, "site.html");
+    await seedText(page, "h1", "in minutes not meetings", "Love this line.");
+    await openAll(page);
+    await row(page, /Love this line/).hover();
+    await page.mouse.down();
+    // Another comment arrives while the button is held down.
+    await seedElement(page, "[data-pipeup-id=cta-trial]", "Match the nav?");
+    await expect(row(page, /Match the nav/)).toHaveCount(1);
+    await page.mouse.up();
+    await expect(panel(page).locator(".xr")).toContainText("Love this line.");
+  },
+);
+
 test("a thread can be replied to and resolved in the panel, and it stays until it is closed", async ({
   page,
 }) => {

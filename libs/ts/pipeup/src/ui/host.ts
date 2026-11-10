@@ -37,6 +37,22 @@ export function createHost(theme: Theme, styles: string, doc: Document = documen
   layer.style.setProperty("--pu-pop", `${popover()}px`);
   applyTheme(layer, theme);
   shadow.append(layer);
+  // Safari doesn't focus a button that is pressed, as every other browser does and Pipeup's menus, cards and keys count
+  // on: once the press has had its say, a button that never had the focus since (and that nothing else took focus
+  // from) gets it.
+  shadow.addEventListener("mousedown", (e) => {
+    const b = (e.target as Element).closest<HTMLElement>("button:not(:disabled),[tabindex]");
+    if (!b || e.defaultPrevented) return;
+    const before = shadow.activeElement;
+    let had = false;
+    const took = () => (had = true);
+    b.addEventListener("focus", took, { once: true });
+    setTimeout(() => {
+      b.removeEventListener("focus", took);
+      const a = shadow.activeElement;
+      if (!had && b.isConnected && a !== b && (!a || a === before)) b.focus({ preventScroll: true });
+    });
+  });
   doc.documentElement.append(element);
   return { element, shadow, layer, destroy: () => element.remove() };
 }

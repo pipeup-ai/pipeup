@@ -20,6 +20,7 @@ npm run check
 | `npm run check` | Types, lint, unit tests, build, size budget and browser tests |
 | `npm test` | Unit tests only |
 | `npm run e2e` | Browser tests (run `npm run build` first) |
+| `npm run e2e:safari` | Every browser test in Safari's engine. Some fail there for the test browser's own reasons: see [docs/testing/extension-checklist.md](docs/testing/extension-checklist.md) |
 | `npm run format` | Format with Prettier |
 
 The add-ons are written against the core's types and built into combined files with its classic build, so build

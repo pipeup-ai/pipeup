@@ -428,7 +428,7 @@ test("keys used in the menu never reach the page; ← and → on the comment con
   expect(await heard(page)).toEqual([]);
 });
 
-test("the arrows move into a menu opened with the mouse", async ({ page }) => {
+test("the arrows move into a menu opened with the mouse", { tag: "@safari" }, async ({ page }) => {
   await open(page, "doc.html");
   await openMenu(page);
   await page.keyboard.press("ArrowUp");
