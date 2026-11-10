@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
+  boxOf,
   control,
   focusInPipeup,
   HOLD_KEY,
@@ -280,7 +281,7 @@ test("a closed card's actions take a click only once they show: a click as the p
   await expect(card).not.toHaveClass(/\bwait\b/);
   await settled(card);
   await expect.poll(() => opacityOf(card.locator(".root .acts"))).toBe("0");
-  let b = (await card.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  let b = await boxOf(card.getByRole("button", { name: "Resolve", exact: true }));
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
   await page.mouse.down();
   await page.mouse.up();
@@ -296,7 +297,7 @@ test("a closed card's actions take a click only once they show: a click as the p
   await settled(page.locator(".all.show"));
   const acts = row.locator(".acts");
   await expect.poll(() => opacityOf(acts)).toBe("0");
-  b = (await row.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  b = await boxOf(row.getByRole("button", { name: "Resolve", exact: true }));
   await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
   await page.mouse.down();
   await page.mouse.up();
@@ -327,7 +328,7 @@ test("after Resolve in the column, a second click with the pointer still opens t
   await expect(first).toHaveCount(0);
   await settled(next);
   // The next card has moved up under the pointer, focus is on it, and its actions stay hidden there.
-  const r = (await next.getByRole("button", { name: "Resolve", exact: true }).boundingBox())!;
+  const r = await boxOf(next.getByRole("button", { name: "Resolve", exact: true }));
   const x = at!.x + at!.width / 2;
   const y = at!.y + at!.height / 2;
   expect(x > r.x && x < r.x + r.width && y > r.y && y < r.y + r.height).toBe(true);
