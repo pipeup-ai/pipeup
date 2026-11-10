@@ -11,6 +11,7 @@ export {
 export { setting } from "./ui/settings";
 export type { Appearance } from "./ui/legible";
 export type { Prefs } from "./ui/app";
+export type { Field, FieldHost } from "./ui/field";
 export { setPeople, type Person } from "./ui/mentions";
 export {
   ADDON_API,

@@ -48,6 +48,8 @@ WebKit. Nothing can drive Safari with an extension in it, so in Safari this list
 | 11 | On a tab where Pipeup is off, select words, right-click → **Comment with Pipeup** | Pipeup turns on and the box opens on the words. | | | |
 | 12 | From a block's bar, **Pin**, then click a point | A pin comment box opens at that point; sent, the pin stays there when the page scrolls. | | | |
 | 13 | Start a comment, type a word, press **Esc** | The draft is cancelled or offers to keep the words; nothing is lost silently. | | | |
+| 13a | Type a comment quickly the moment its box opens, with an @mention, an emoji from the box's button, and words in Japanese or Chinese input | Every letter arrives, in order; the @ list moves with the arrows; the input method's words are kept. | | | |
+| 13b | Turn on **Voice** and dictate into a comment box | The words arrive in the box. | | | — |
 
 ## C. Threads
 
@@ -147,3 +149,4 @@ ones that still fail there fail for the test browser's reasons, not Pipeup's, so
 ## Change log
 
 - 2026-11-10: First version.
+- 2026-11-10: Steps 13a and 13b, for typing in the extension's own frame.

@@ -15,6 +15,7 @@ import { narrow, PANEL, touch } from "./layout";
 import { mentionsMe } from "./mentions";
 import { draftBox, type DraftBox } from "./draft-view";
 import { nodeOf } from "./order";
+import { onWindowKey } from "./field";
 import { plural, replies, threadView, type ThreadActions, type ThreadView } from "./thread-view";
 
 /** How long the pointer may be away from the open menu (and its button) before the menu closes. */
@@ -1290,7 +1291,7 @@ export function createLauncher(ctx: Ctx): View {
     e.preventDefault();
     e.stopPropagation();
   };
-  window.addEventListener("keydown", onEscape, true);
+  const offEscape = onWindowKey("keydown", onEscape, true);
   // While the panel is open, a thread opened from the page (its highlight, bubble or column thread) opens here.
   ctx.registerList((id) => {
     if (openId !== id) toggle(id, true);
@@ -1350,7 +1351,7 @@ export function createLauncher(ctx: Ctx): View {
       window.removeEventListener("pointerout", onPointer, true);
       window.clearTimeout(away);
       window.clearTimeout(holding);
-      window.removeEventListener("keydown", onEscape, true);
+      offEscape();
       ctx.registerList(null);
       ctx.pageControls = null;
       menu.remove();

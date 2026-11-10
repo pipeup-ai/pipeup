@@ -26,7 +26,7 @@ The extension keeps the following in its own storage, in this browser on this de
 
 ## What the website you are on can see
 
-Pipeup draws its comments on the page you are commenting on, but in a part of the page that is closed to the page's own scripts. They can't read your comments, your name, add-ons' panels or a recovery code shown there, nor anything in the extension's storage. Pipeup writes nothing into the site's own storage, and a site can't read or set add-ons' choices (it can't agree to Live for you). As on any web page, the page's scripts may be able to see the keys you press while you type.
+Pipeup draws its comments on the page you are commenting on, but in a part of the page that is closed to the page's own scripts. They can't read your comments, your name, add-ons' panels or a recovery code shown there, nor anything in the extension's storage. Pipeup writes nothing into the site's own storage, and a site can't read or set add-ons' choices (it can't agree to Live for you). What you type into Pipeup's comment, reply and name boxes is typed in the extension's own frame: the page can't see the words or the keys you press, only that Pipeup's box has the focus.
 
 If you leave the sharing address or the GitHub repository empty, the page you are on can name its own, and it can name Live's relays.
 
@@ -80,3 +80,4 @@ Source code: https://github.com/pipeup-ai/pipeup
 
 - 2026-11-10: First draft, not yet published.
 - 2026-11-10: Revised against the new build: nothing in the site's storage, the UI closed to the page, each browser's add-ons, Firefox's question, pictures deleted with their comment.
+- 2026-11-10: What is typed into Pipeup's boxes is typed in the extension's own frame, out of the page's hearing.

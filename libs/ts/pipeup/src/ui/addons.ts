@@ -7,6 +7,7 @@ import { commentMarks, markAgain, threadMarks, threadNotes } from "./notes";
 import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
+import { boxOf } from "./field";
 import type { ViewState } from "./here";
 import { draw } from "./icons";
 import { describeElement } from "../anchor/describe";
@@ -489,7 +490,7 @@ export class Surface {
   /** A reviewer is writing: a Pipeup line has words or focus. */
   private isWriting(): boolean {
     return (
-      this.shadow.activeElement instanceof HTMLTextAreaElement ||
+      !!boxOf(this.shadow.activeElement) ||
       [...this.ctx.layer.querySelectorAll("textarea")].some((t) => t.value.trim() !== "")
     );
   }
@@ -580,10 +581,7 @@ export class Surface {
       allOpen: state.listing,
       dark: this.ctx.layer.classList.contains("dark"),
       view: this.ctx.here.view(),
-      writing:
-        a instanceof HTMLTextAreaElement
-          ? (a.closest<HTMLElement>("[data-thread]")?.dataset.thread ?? "")
-          : null,
+      writing: boxOf(a) ? (boxOf(a)!.closest<HTMLElement>("[data-thread]")?.dataset.thread ?? "") : null,
     };
   }
 

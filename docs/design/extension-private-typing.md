@@ -1,6 +1,6 @@
 # Private typing in the extension
 
-Status: **proposed** (2026-11-10), for review. Functional requirement: [EXTENSION_SPEC.md](../EXTENSION_SPEC.md) §5
+Status: **agreed** (2026-11-10). Functional requirement: [EXTENSION_SPEC.md](../EXTENSION_SPEC.md) §5
 ("What the reviewer types into Pipeup on a page can't be seen by the page"). Targets `next`, on the extension branch.
 
 ## The problem
@@ -69,6 +69,35 @@ Enter, Esc, undo, spelling, input methods, right-to-left words. Pages with Pipeu
 The page can still see that someone is typing (the frame has the focus) and when Pipeup's box opens. Comments written
 in the side panel or the toolbar panel never touched the page and are unchanged.
 
+## As built (2026-11-10)
+
+- **Core** (`src/ui/field.ts`): `mount({ field })` takes a `FieldHost`, called with each new comment, reply or edit box
+  (the composer's `<textarea>`) and the name field in a new comment, and a `pass(event)` that dispatches into that
+  field and marks the event. Pipeup's key listeners on `window` that matter while typing (comment mode's Space-hold
+  and Escape, All comments' Escape) are registered with `onWindowKey`, which also hears passed keys at the shadow
+  root. `ctx.owns(e)` counts an event whose path stops at Pipeup's shadow root as Pipeup's. Focus checks go through
+  `fieldOf`/`boxOf`, which map a host's frame to its field. +0.2 KB gzip.
+- **Extension** (`start.js` `typingField`, `typing.html/js/css`, `background.js` passes): each field gets a frame; the
+  field stays, hidden, as the model (its `value` setter, `setRangeText`, `setSelectionRange`, `select`, `focus` and
+  `blur` are overridden on the instance so Pipeup's writes reach the frame). The frame applies Enter, Shift+Enter,
+  Escape, the @mention list's keys and Space in an empty box as Pipeup does, and sends every key, input, caret move,
+  focus and blur over a `MessageChannel`.
+- **Passed events are plain `Event`s carrying the key's fields** (`key`, `code`, modifiers, `getModifierState`):
+  Firefox let a `KeyboardEvent` made by the content script out of the closed shadow root to the page's window,
+  `composed: false` notwithstanding (measured: the page heard each key twice). A plain `Event` stays inside in both
+  browsers.
+- **Hand-over:** until a box's frame is ready (a load and one round trip to the background), Pipeup's own box takes the
+  keys. At the hand-over the frame gets the words so far, then the focus; anything typed into the frame in between is
+  added after them (a test typed through it and lost a letter before this).
+- **Pipeup's key copy** (`guardKeys`) is never copied again: in Firefox it reached `document` and copied itself.
+- **Tests:** in Chromium and Firefox the page's own listeners hear no key, input or paste event while a comment is
+  typed and sent; Shift+Enter, Esc and a reply work in the frame; a page that frames `typing.html` itself gets no box.
+- **Not covered yet:** the menu's name row when Pipeup's button is shown on pages; add-ons' own fields (My identity's
+  recovery code); and the moment before a box's frame is ready. If a page's rules block the frame, Pipeup's own box
+  stays (it works, but the page can hear it).
+
 ## Change log
 
 - 2026-11-10 — Proposed, after measuring that a page hears every key typed into a comment box in the extension.
+- 2026-11-10 — Agreed with the maintainer; building.
+- 2026-11-10 — Built; see As built.

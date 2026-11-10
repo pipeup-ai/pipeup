@@ -44,7 +44,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["pipeup/*", "addons/*"],
+      "resources": ["pipeup/*", "addons/*", "typing.html", "typing.js", "typing.css"],
       "matches": ["<all_urls>"]
     }
   ],

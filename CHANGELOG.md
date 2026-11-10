@@ -9,6 +9,7 @@ change the API and the stored comment format.
 
 ### Added
 
+- `mount({ field })`: a host can show its own stand-in for Pipeup's text boxes, typed in where the page can't hear. In the browser extension, what is typed into a comment, reply or edit box is typed in the extension's own frame, so the page hears neither the words nor the keys.
 - `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
 
 - `mount({ settings })` gives page settings a host can't write into the page, and `startComment(element or range)` opens the comment box on what it names.

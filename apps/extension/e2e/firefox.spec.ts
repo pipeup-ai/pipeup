@@ -33,12 +33,25 @@ async function writeComment(page: Page, text: string): Promise<void> {
     () =>
       page.evaluate(
         () =>
-          document.querySelector("pipeup-root")!.shadowRoot!.activeElement?.matches(".draft textarea") ??
+          document.querySelector("pipeup-root")!.shadowRoot!.activeElement?.matches(".draft .line iframe") ??
           false,
       ),
-    "the comment box to take the cursor",
+    "the comment box, the extension's own frame, to take the cursor",
   );
   await page.keyboard.type(text);
+  await until(
+    () =>
+      page.evaluate(
+        (t) =>
+          (
+            document
+              .querySelector("pipeup-root")!
+              .shadowRoot!.querySelector(".draft .line textarea") as HTMLTextAreaElement
+          )?.value === t,
+        text,
+      ),
+    "the words to reach Pipeup",
+  );
   await page.evaluate(() =>
     [
       ...document
@@ -57,9 +70,17 @@ test("in Firefox, Comment on this page adds Pipeup in comment mode; comments are
   const page = await open(browser, `${PAGES}plain.html`);
   let p = await panel(browser, page);
   expect(await p.$eval("#where", (e) => e.textContent)).toBe("localhost:4931/plain.html");
+  // The page listens for everything typed anywhere.
+  await page.evaluate(() => {
+    const heard: string[] = ((window as unknown as { heard: string[] }).heard = []);
+    for (const type of ["keydown", "keyup", "keypress", "beforeinput", "input", "paste"])
+      window.addEventListener(type, (e) => heard.push(type + ":" + ((e as KeyboardEvent).key ?? "")), true);
+  });
   await press(p, "Comment on this page");
   await until(() => has(page, ".launch.off"), "Pipeup, with its corner button hidden");
   await writeComment(page, "Which beta, Ada's or the public one?");
+  // Typed in the extension's own frame: the page heard none of it.
+  expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([]);
 
   // Kept by the extension, not the site.
   expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.includes("pipeup")))).toEqual(

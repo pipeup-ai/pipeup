@@ -29,6 +29,7 @@ import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./them
 import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 import { hasSetting } from "./settings";
+import { boxOf, fieldOf, setFieldHost, type FieldHost } from "./field";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
 const RESOLVE_BUDGET_MS = 40;
@@ -62,6 +63,8 @@ export interface AppOptions {
   host?: Host;
   /** Pipeup's UI is in a closed shadow root, out of the page's scripts' reach (the browser extension). */
   closed?: boolean;
+  /** A host's own stand-in for Pipeup's text fields, typed in where the page can't hear (the browser extension). */
+  field?: FieldHost;
 }
 
 /** What Pipeup tells a host that shows its threads. */
@@ -131,6 +134,7 @@ export function startApp(o: AppOptions): App {
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
   const host = createHost(theme, o.styles, document, o.closed);
+  setFieldHost(o.field ?? null, host.shadow);
   // A look that differs from the page's keeps its see-through parts solid, so each look reads as itself.
   host.layer.classList.toggle("flip", dark !== pageDark);
   const sheet = installPageSheet(document);
@@ -646,7 +650,11 @@ export function startApp(o: AppOptions): App {
       return null;
     },
     readsAt: (x, y) => (ctx.draftEmpty() && !state.pinning ? ctx.quoteAt(x, y) : null),
-    owns: (e) => e.composedPath().includes(host.element),
+    // A key passed in from a host's field (field.ts) stops at the shadow root: it is Pipeup's too.
+    owns: (e) => {
+      const path = e.composedPath();
+      return path.includes(host.element) || path.includes(host.shadow);
+    },
     claim: (e) => void claimed.add(e),
     claimed: (e) => claimed.has(e),
     open,
@@ -925,7 +933,8 @@ export function startApp(o: AppOptions): App {
   /** The reader has words in a Pipeup line, or is in a field of the page. */
   const writing = () => {
     const a = focusedIn();
-    return (a instanceof HTMLTextAreaElement && a.value !== "") || !!document.activeElement?.matches(FIELD);
+    const box = boxOf(a);
+    return (!!box && box.value !== "") || !!document.activeElement?.matches(FIELD);
   };
 
   /**
@@ -1326,12 +1335,7 @@ export function startApp(o: AppOptions): App {
     // The keyboard is up for one of Pipeup's own boxes: its control and messages step out of the way.
     const v = window.visualViewport;
     const a = focusedIn();
-    host.layer.classList.toggle(
-      "kb",
-      !!v &&
-        window.innerHeight - v.height > 150 &&
-        (a instanceof HTMLTextAreaElement || a instanceof HTMLInputElement),
-    );
+    host.layer.classList.toggle("kb", !!v && window.innerHeight - v.height > 150 && !!fieldOf(a));
     const now = inSight().bottom;
     if (now < seenLast - 80) keyboard = true;
     seenLast = now;
@@ -1522,7 +1526,8 @@ export function startApp(o: AppOptions): App {
     if (e === copy) reached = true;
   });
   const guardKeys = (e: KeyboardEvent) => {
-    if (!ourKey(e)) return;
+    // Pipeup's own copy (below) is never copied again.
+    if (e === copy || !ourKey(e)) return;
     e.stopImmediatePropagation();
     if (e.type !== "keydown") return;
     const c = (copy = new KeyboardEvent("keydown", {
@@ -1537,6 +1542,7 @@ export function startApp(o: AppOptions): App {
       metaKey: e.metaKey,
       bubbles: true,
       cancelable: true,
+      composed: false,
     }));
     reached = false;
     e.composedPath()[0]!.dispatchEvent(c);
@@ -1645,6 +1651,7 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(lookFade);
       offChange();
       window.removeEventListener("keydown", onKey);
+      setFieldHost(null, null);
       window.removeEventListener("click", onClick);
       for (const t of ["focusin", "focusout"])
         window.removeEventListener(t, guardFocus as EventListener, true);

@@ -124,3 +124,18 @@ async function picture(windowId, { thread, rect, view }) {
     binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   await chrome.storage.local.set({ [`shot:${thread}`]: `data:image/jpeg;base64,${btoa(binary)}` });
 }
+
+// Passes for the typing frame (typing.html): Pipeup in a tab asks for one as it frames a box, and the frame shows it
+// back once. A page that frames typing.html itself has none, so its frame stays an empty box that does nothing.
+const passes = new Set();
+const TYPING = chrome.runtime.getURL("typing.html");
+chrome.runtime.onMessage.addListener((message, sender, reply) => {
+  if (message?.type === "typing-token" && sender.tab && !sender.url?.startsWith(TYPING)) {
+    const token = crypto.randomUUID();
+    passes.add(token);
+    setTimeout(() => passes.delete(token), 60_000);
+    reply(token);
+  } else if (message?.type === "typing-check" && sender.url?.startsWith(TYPING)) {
+    reply(passes.delete(message.token));
+  }
+});

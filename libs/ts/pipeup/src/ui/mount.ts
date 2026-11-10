@@ -13,6 +13,7 @@ import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
 import type { Appearance } from "./legible";
+import type { FieldHost } from "./field";
 import { setGiven, setting } from "./settings";
 // Last, so the bundles carry the stylesheet after the code: it compresses better there.
 import { STYLES } from "./styles";
@@ -49,6 +50,8 @@ export interface MountOptions {
   keep?: Keep;
   /** Pipeup's UI in a closed shadow root, out of the page's scripts' reach (for hosts apart from the page). */
   closed?: boolean;
+  /** A host's own stand-in for Pipeup's text fields, where the page can't hear what is typed (the browser extension). */
+  field?: FieldHost;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -238,6 +241,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
         : {}),
       ...(o.prefs ? { prefs: o.prefs } : {}),
       ...(o.closed ? { closed: true } : {}),
+      ...(o.field ? { field: o.field } : {}),
     });
   } catch (e) {
     setSlideHook(null);

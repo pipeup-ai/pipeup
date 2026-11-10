@@ -25,8 +25,9 @@ policy all four point to is in [privacy-policy.md](privacy-policy.md).
 
 ## What is known and said in the listings
 
-- **Keys typed into a comment box can be seen by the page**, as on any page: Pipeup's UI is closed to the page's
-  scripts, but key and input events still pass through the page. The listings and the policy say so.
+- **Pipeup's own text boxes are the extension's frame**, so the page hears nothing typed in a comment, reply, edit or
+  the name in a new comment. Not covered yet: the menu's name row when Pipeup's button is shown on pages, and
+  add-ons' own fields (My identity's recovery code); and for a moment as a box opens, until its frame is ready.
 - **In Firefox, withdrawing the data permission later** (about:addons) doesn't turn Share, Live or Save to GitHub off.
 - **Firefox's data declaration** doesn't list website activity, though Live shares where the pointer is.
 - **Other Chromium browsers** (Vivaldi, Opera, Arc) are set up as Chrome by Send to my agent's command; the listings
@@ -80,7 +81,7 @@ Where your comments are kept
 Your comments, the pages you commented on (address and title), the sites where you started Pipeup, your name and signing key, your settings, the add-ons' choices (such as whether you agreed to go live, and your recent emoji) and the pictures are kept by the extension, in this browser. Nothing is written to the site's own storage. There is no account to make. Pipeup has no analytics or telemetry, sends nothing to its makers, and loads no code from the web.
 
 Who else can see them
-• Not the page you are on. Pipeup draws its highlights, comment boxes and menus inside the page but closed to the page's own scripts, so they can't read your comments, your name or the recovery code My identity shows. As with any text box on a web page, the page can see the keys you press while you type in one of Pipeup's boxes on it.
+• Not the page you are on. Pipeup draws its highlights, comment boxes and menus inside the page but closed to the page's own scripts, so they can't read your comments, your name or the recovery code My identity shows. What you type into Pipeup's boxes on a page is typed in the extension's own frame, so the page can't see the words or the keys you press.
 • Whoever you give them to with Copy comments or Save comments.
 • Send to my agent sends the page's comments, with their earlier versions, and the page's full address and title, to the helper program on this computer, which keeps them in ~/.pipeup/browser. Once you have used it, the toolbar menu also asks the helper for agents' replies on pages where Pipeup is on. That request carries only a code made from the page's address.
 • Add-ons that send, once you turn them on:
@@ -730,7 +731,7 @@ Comments can open beside what they are about, or sit in Firefox's sidebar if you
 - When you start a comment, Pipeup also keeps a small picture of the visible page around it, so you can see where it was if the page changes. The picture stays in this browser and is never copied, saved, sent or shared. It includes whatever was on screen next to the comment. Pictures are on by default. Turning them off in the extension's settings deletes all kept pictures, and deleting a comment deletes its picture.
 - Editing or deleting a comment keeps the earlier text in the extension's record of the page. That record, with the earlier text, is included in a saved Pipeup file, in Send to my agent, and in Share and Live if you turn them on.
 - There is no button yet to delete kept comments. Removing the extension removes everything it keeps, but not Send to my agent's folder on your computer.
-- The page's own scripts can't read Pipeup's interface: not the comments shown or typed there, your name, or a recovery code. Nor can they read the extension's storage or set the add-ons' choices. As on any page, the page can still notice keys pressed while you type.
+- The page's own scripts can't read Pipeup's interface: not the comments shown or typed there, your name, or a recovery code. Nor can they read the extension's storage or set the add-ons' choices. What you type into Pipeup's boxes is typed in the extension's own frame, so the page can't see the words or the keys pressed.
 
 **What leaves your browser, and when**
 
@@ -821,7 +822,7 @@ There is no button yet to delete all of this. Removing the extension removes it.
 
 ## What the site can see
 
-The page's own scripts can't read Pipeup's interface (the comments shown or typed there, your name, a recovery code), the extension's storage, or comments kept for other pages, and can't set the add-ons' choices. As on any page, the page can still notice keys pressed while you type. If you leave the sharing address or GitHub repository empty, a page can name its own, and it can name Live's relays.
+The page's own scripts can't read Pipeup's interface (the comments shown or typed there, your name, a recovery code), the extension's storage, or comments kept for other pages, and can't set the add-ons' choices. What you type into Pipeup's boxes is typed in the extension's own frame, so the page can't see the words or the keys pressed. If you leave the sharing address or GitHub repository empty, a page can name its own, and it can name Live's relays.
 
 ## What leaves your browser
 
@@ -1399,3 +1400,5 @@ Contact: [support contact: maintainer to supply]
 - 2026-11-10: Every listing and the privacy policy revised against the new build: the UI closed to the page, add-ons'
   choices kept by the extension, each browser's add-ons, Firefox's question before sending, the setup command per
   browser and release, pictures deleted with their comment. What is still known is said above.
+- 2026-11-10: What is typed into Pipeup's boxes on a page is typed in the extension's own frame; the page can't see the
+  words or the keys. The caveat about keys is replaced.

@@ -223,3 +223,94 @@ test("a page can't say where comments go: Share stays off without the reviewer's
   );
   expect(share).toBe("off");
 });
+
+test("what is typed into Pipeup's comment box never reaches the page, and the comment is kept", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  // The page listens for everything typed anywhere, before Pipeup starts.
+  await page.evaluate(() => {
+    const heard: string[] = ((window as unknown as { heard: string[] }).heard = []);
+    for (const type of ["keydown", "keyup", "keypress", "beforeinput", "input", "paste", "compositionend"])
+      window.addEventListener(type, (e) => heard.push(`${type}:${(e as KeyboardEvent).key ?? ""}`), true);
+  });
+  await started(context, worker, id, page);
+  await page.bringToFront();
+  const at = (await page.locator("#p2").boundingBox())!;
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  // The box is the extension's own frame, with the cursor in it.
+  await expect(page.locator(".draft .line iframe")).toBeVisible();
+  await expect(page.locator(".draft .line textarea")).toBeHidden();
+  await page.keyboard.type("secret plan");
+  await expect(page.locator(".draft .send")).toHaveClass(/show/);
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".draft")).toHaveCount(0);
+  await expect
+    .poll(() =>
+      worker.evaluate(async () =>
+        JSON.stringify(
+          Object.entries(await chrome.storage.local.get(null)).filter(([k]) => k.startsWith("doc:")),
+        ),
+      ),
+    )
+    .toContain("secret plan");
+  expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([]);
+});
+
+test("a page that frames the typing page itself gets a box that does nothing", async ({ context, id }) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await page.evaluate((src) => {
+    const f = Object.assign(document.createElement("iframe"), { src, id: "mine" });
+    document.body.append(f);
+    return new Promise((r) => f.addEventListener("load", r));
+  }, `chrome-extension://${id}/typing.html`);
+  const frame = page.frameLocator("#mine");
+  await page.evaluate(() => {
+    const c = new MessageChannel();
+    (window as unknown as { got: unknown[] }).got = [];
+    c.port1.onmessage = (m) => (window as unknown as { got: unknown[] }).got.push(m.data);
+    (document.getElementById("mine") as HTMLIFrameElement).contentWindow!.postMessage(
+      { pipeup: "typing", token: "made-up", kind: "textarea" },
+      "*",
+      [c.port2],
+    );
+  });
+  await page.waitForTimeout(300);
+  await expect(frame.locator(".box")).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { got: unknown[] }).got)).toEqual([]);
+});
+
+test("in the extension's box, Shift+Enter breaks the line, Esc cancels, and a reply is typed there too", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await started(context, worker, id, page);
+  await page.bringToFront();
+  const at = (await page.locator("#p2").boundingBox())!;
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  const line = page.frameLocator(".draft .line iframe").locator(".box");
+  await expect(line).toBeFocused();
+  await page.keyboard.type("Two");
+  await page.keyboard.press("Shift+Enter");
+  await page.keyboard.type("lines");
+  await expect(line).toHaveValue("Two\nlines");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".pop.show .draft")).toHaveCount(0);
+  // A comment, then a reply in its thread's own box.
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  await expect(page.frameLocator(".draft .line iframe").locator(".box")).toBeFocused();
+  await page.keyboard.type("Is June firm?");
+  await page.keyboard.press("Enter");
+  const reply = page.frameLocator(".pop.show .rbox iframe").locator(".box");
+  await reply.click();
+  await page.keyboard.type("Yes, Lee confirmed.");
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".pop.show")).toContainText("Yes, Lee confirmed.");
+});

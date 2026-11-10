@@ -38,6 +38,156 @@
     get: async (k) => (await storage.get(`addon:${k}`))[`addon:${k}`],
     set: (k, v) => storage.set({ [`addon:${k}`]: v }),
   };
+  /**
+   * Pipeup's text boxes, typed in where the page can't hear: each is shown as a frame of the extension's own page
+   * (typing.html), and Pipeup's own box stays, hidden, holding the words, which come over a private channel. Until the
+   * frame is ready (a moment), Pipeup's own box is used.
+   */
+  const TYPING = chrome.runtime.getURL("typing.html");
+  const typingField = (field, pass) => {
+    const frame = document.createElement("iframe");
+    frame.src = TYPING;
+    frame.setAttribute("title", field.getAttribute("aria-label") ?? "");
+    frame.setAttribute("tabindex", "0");
+    frame.style.cssText =
+      "display:none;border:0;margin:0;padding:0;width:100%;min-width:0;flex:1;height:27px;background:transparent;color-scheme:normal";
+    const proto =
+      field instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype;
+    const value = Object.getOwnPropertyDescriptor(proto, "value");
+    const raw = {
+      focus: proto.focus,
+      blur: proto.blur,
+      setSelectionRange: proto.setSelectionRange,
+    };
+    let port = null;
+    let ready = false;
+    const push = () =>
+      port?.postMessage({
+        type: "set",
+        value: value.get.call(field),
+        start: field.selectionStart,
+        end: field.selectionEnd,
+      });
+    // What Pipeup writes into its box reaches the frame.
+    Object.defineProperty(field, "value", {
+      configurable: true,
+      get: () => value.get.call(field),
+      set: (v) => {
+        value.set.call(field, v);
+        push();
+      },
+    });
+    for (const m of ["setRangeText", "setSelectionRange", "select"]) {
+      const f = proto[m];
+      field[m] = (...args) => {
+        const r = f.apply(field, args);
+        push();
+        return r;
+      };
+    }
+    field.focus = (o) => {
+      if (!ready) return raw.focus.call(field, o);
+      frame.focus({ preventScroll: true });
+      port.postMessage({ type: "focus" });
+    };
+    field.blur = () => {
+      if (!ready) return raw.blur.call(field);
+      port.postMessage({ type: "blur" });
+      frame.blur();
+    };
+    const lookOf = () => {
+      const s = getComputedStyle(field);
+      return {
+        color: s.color,
+        caret: s.caretColor,
+        font: s.font,
+        padding: s.padding,
+        lineHeight: s.lineHeight,
+        textAlign: s.textAlign,
+        placeholder: getComputedStyle(field, "::placeholder").color,
+      };
+    };
+    const attrs = () =>
+      Object.fromEntries(
+        ["aria-label", "placeholder", "dir", "maxlength", "autocomplete", "spellcheck"]
+          .filter((a) => field.hasAttribute(a))
+          .map((a) => [a, field.getAttribute(a)]),
+      );
+    // The @mention list open in Pipeup: the arrows, Enter and Tab are its in the frame too.
+    new MutationObserver(() => {
+      port?.postMessage({ type: "list", open: field.hasAttribute("aria-activedescendant") });
+      port?.postMessage({ type: "attrs", attrs: attrs() });
+    }).observe(field, { attributes: true });
+    // A key from the frame, as Pipeup's handlers read one. A plain event with the key's fields: Firefox lets a
+    // KeyboardEvent made by an extension out of Pipeup's shadow root to the page, whatever it says; this one stays.
+    const key = (m) => {
+      const e = new Event(m.event, { bubbles: true, cancelable: true, composed: false });
+      for (const k of [
+        "key",
+        "code",
+        "location",
+        "repeat",
+        "isComposing",
+        "ctrlKey",
+        "shiftKey",
+        "altKey",
+        "metaKey",
+      ])
+        Object.defineProperty(e, k, { value: m[k] });
+      Object.defineProperty(e, "getModifierState", { value: (k) => !!m.modifiers?.[k] });
+      pass(e);
+    };
+    frame.addEventListener("load", async () => {
+      const token = await chrome.runtime.sendMessage({ type: "typing-token" }).catch(() => null);
+      if (!token || !frame.contentWindow) return;
+      const channel = new MessageChannel();
+      port = channel.port1;
+      port.onmessage = ({ data: m }) => {
+        if (m.type === "ready") {
+          // The frame takes over in one go: the words so far, then the focus, with nothing typed in between lost.
+          const had = (field.getRootNode().activeElement ?? null) === field;
+          ready = true;
+          port.postMessage({ type: "look", look: lookOf() });
+          port.postMessage({
+            type: "set",
+            init: true,
+            value: value.get.call(field),
+            start: field.selectionStart,
+            end: field.selectionEnd,
+          });
+          field.style.display = "none";
+          frame.style.display = "block";
+          if (had) frame.focus({ preventScroll: true });
+        } else if (m.type === "input") {
+          value.set.call(field, m.value);
+          raw.setSelectionRange.call(field, m.start, m.end);
+          pass(new Event("input", { bubbles: true, composed: false }));
+        } else if (m.type === "caret") {
+          raw.setSelectionRange.call(field, m.start, m.end);
+        } else if (m.type === "key") key(m);
+        else if (m.type === "blur") {
+          pass(new Event("blur", { composed: false }));
+          pass(new Event("focusout", { bubbles: true, composed: false }));
+        } else if (m.type === "focus") {
+          port.postMessage({ type: "look", look: lookOf() });
+          pass(new Event("focusin", { bubbles: true, composed: false }));
+        } else if (m.type === "height") frame.style.height = `${Math.max(m.px, 20)}px`;
+      };
+      frame.contentWindow.postMessage(
+        {
+          pipeup: "typing",
+          token,
+          kind: field.localName,
+          attrs: attrs(),
+          look: lookOf(),
+        },
+        new URL(TYPING).origin,
+        [channel.port2],
+      );
+    });
+    return frame;
+  };
+
   // The tests' build leaves the UI open to them (tools/build-extension.mjs --test); the published one never does.
   const closed = true;
 
@@ -199,6 +349,7 @@
       prefs,
       keep: addonKeep,
       closed,
+      field: typingField,
       settings: pageSettings(await settingsNow()),
       ...OPTIONS[mode],
     });

@@ -8,6 +8,7 @@ import { placeBar, touch } from "./layout";
 import { byPage, nodeOf } from "./order";
 import { blockTree, childBlocks, IGNORED, pageLook, parentBlock, pickBlock, row, type Block } from "./pick";
 import { HOLD } from "./shortcut";
+import { onWindowKey } from "./field";
 
 /** Page controls Enter or Space would activate. */
 export const ACTIVATES =
@@ -872,7 +873,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   /** Comment mode has ended: the listener stays only for the keyup of the key that ended it (Esc). */
   let ended = false;
   const onKeyUp = (e: KeyboardEvent) => {
-    if (ended) window.removeEventListener("keyup", onKeyUp, true);
+    if (ended) offKeyUp();
     if (e.key === HOLD && ctx.state.paused) {
       pause(false);
       e.preventDefault();
@@ -886,7 +887,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   };
   // Leaving the window (⌘-Tab, say) loses the key-up: the pause ends with it.
   const onBlur = () => pause(false);
-  window.addEventListener("keyup", onKeyUp, true);
+  const offKeyUp = onWindowKey("keyup", onKeyUp, true);
   window.addEventListener("blur", onBlur);
   window.addEventListener("pointermove", onMove, true);
   window.addEventListener("pointerdown", pressed, true);
@@ -894,7 +895,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
   document.addEventListener("selectionchange", onSelect);
   for (const type of MUTED) window.addEventListener(type, mute, true);
   for (const type of SWALLOWED) window.addEventListener(type, swallow, true);
-  window.addEventListener("keydown", onKey, true);
+  const offKey = onWindowKey("keydown", onKey, true);
 
   return {
     back() {
@@ -971,7 +972,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       stopBar();
       ctx.state.pinning = false;
       ended = true;
-      if (!taken) window.removeEventListener("keyup", onKeyUp, true);
+      if (!taken) offKeyUp();
       window.removeEventListener("blur", onBlur);
       window.removeEventListener("pointermove", onMove, true);
       window.removeEventListener("pointerdown", pressed, true);
@@ -979,7 +980,7 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       document.removeEventListener("selectionchange", onSelect);
       for (const type of MUTED) window.removeEventListener(type, mute, true);
       for (const type of SWALLOWED) window.removeEventListener(type, swallow, true);
-      window.removeEventListener("keydown", onKey, true);
+      offKey();
       // The outline and bar fade out where they are, then leave. Comment mode coming back meanwhile makes
       // its own, so these only ever touch themselves.
       outline.classList.remove("show");
