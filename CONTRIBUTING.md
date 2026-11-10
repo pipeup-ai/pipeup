@@ -11,7 +11,7 @@ server (`services/mailbox`) need Node 22 or later.
 ```sh
 cd libs/ts/pipeup
 npm ci
-npx playwright install chromium
+npx playwright install chromium webkit
 npm run check
 ```
 

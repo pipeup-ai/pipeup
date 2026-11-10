@@ -21,6 +21,10 @@ change the API and the stored comment format.
 - In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.
 - In comment mode, while a thread is open to read, no other block is outlined, and a click on the page only closes it; the next click chooses a block. A thread you just wrote doesn't hold up the next comment.
 
+### Fixed
+
+- In Safari, Delete in a comment's ⋯ menu now works: the menu closed as it was pressed, since Safari doesn't focus a button that is clicked.
+
 
 ## [0.9.1] - 2026-11-01
 

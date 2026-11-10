@@ -25,7 +25,7 @@ jobs:
           cache: npm
           cache-dependency-path: libs/ts/pipeup/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run check
       - name: Upload Playwright report on failure
         if: failure()
