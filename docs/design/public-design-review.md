@@ -28,7 +28,7 @@ The core check passed, including 570 browser tests. The website built successful
 
 ## Required sign-in revision
 
-Status: design and configuration preparation. The deployed initial release still allows anonymous submissions until the authenticated replacement is configured and deployed.
+Status: account enforcement implemented and deployed. The live endpoint rejects unsigned submissions. Managed provider activation awaits completion of the Supabase project setup.
 
 The maintainer confirmed that both owners and reviewers should use common authentication providers and that reviews must not be anonymous. Keep public browsing open. Ask the visitor to sign in before submitting, retain the draft if sign-in is cancelled or a session expires, and require verified account identity on the server. A client-provided name is never proof of identity. Keep the current immutable originals, owner-only inbox, approval decisions and independent public-sharing choices. Existing unsigned records must remain labelled as legacy records rather than being retroactively verified.
 
@@ -38,4 +38,6 @@ Before rollout, connect the owner's authentication project, configure provider a
 
 - 2026-11-10: Revised authentication requirements and provider integration design from the maintainer's clarification.
 
-Preparation checks: the simulated provider-selection, private-submission and owner-decision walkthrough preserved the draft when its session expired, disabled submission while signed out, and reflowed at 390 px and 320 px. These checks are prototype evidence only. The unchanged core check also passed, including 570 browser tests. Supabase is not yet connected, and no real provider sign-in has been configured or deployed for this revision.
+Preparation checks: the simulated provider-selection, private-submission and owner-decision walkthrough preserved the draft when its session expired, disabled submission while signed out, and reflowed at 390 px and 320 px. These checks are prototype evidence only. The unchanged core check also passed, including 570 browser tests. Real provider sign-in has not yet been configured or verified for this revision.
+
+Implementation validation: the canonical package passed all 561 browser-enabled tests without skips. Pipeup’s core check passed, including 570 browser tests. Hosted probes return 401 for unsigned submission, forged dispatch headers and unauthenticated owner reads; explicitly shared feedback remains empty. The new frontend uses the same managed-account controls as the owner inbox, retains drafts and round payloads through sign-in, and keeps legacy unsigned feedback labelled honestly.

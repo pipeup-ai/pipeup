@@ -8,6 +8,7 @@
   var storage = 'designup-review:' + config.project + ':' + config.service;
   var state; try { state = JSON.parse(localStorage.getItem(storage)) || {}; } catch (_) { state = {}; }
   state.pages = state.pages || {}; state.sent = state.sent || {};
+  var auth = window.DAReviewAuth.create(config.service);
   var sending = false, collecting = false, subscribed = false;
   function save() { try { localStorage.setItem(storage, JSON.stringify(state)); } catch (_) { status.textContent = 'This browser cannot save the review draft. Keep this page open until you submit.'; } }
   function node(tag, text, attrs) { var el = document.createElement(tag); if (text !== undefined) el.textContent = text; Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); }); return el; }
@@ -15,20 +16,25 @@
   var dialog = node('dialog', undefined, { class: 'du-review-dialog', 'aria-labelledby': 'du-review-title', 'data-pipeup-ignore': '' });
   dialog.append(node('h2', 'Your review', { id: 'du-review-title' }), node('p', 'Your submitted comments go privately to the design owner. They decide what to implement and whether to share any feedback.'));
   var list = node('div'), nameLabel = node('label', 'Your name (optional)', { for: 'du-review-name' }), name = node('input', undefined, { id: 'du-review-name', autocomplete: 'name', placeholder: 'Guest reviewer', maxlength: '120' });
-  name.value = state.name || '';
+  name.value = state.name || ''; name.hidden = true; nameLabel.hidden = true;
+  var account = node('section');
   var noteLabel = node('label', 'Overall suggestion (optional)', { for: 'du-review-note' }), note = node('textarea', undefined, { id: 'du-review-note', placeholder: 'What would make this design easier to use?', maxlength: '12000' }); note.value = state.note || '';
   var add = node('button', 'Comment on this page', { type: 'button' }), send = node('button', 'Submit review', { type: 'button', class: 'du-primary' }), close = node('button', 'Close', { type: 'button' });
   var acts = node('div', undefined, { class: 'du-review-actions' }); acts.append(send, add, close);
   var status = node('p', '', { role: 'status', 'aria-live': 'polite' });
   var shared = node('details', undefined, { class: 'du-review-shared' }); shared.append(node('summary', 'Feedback the author has shared'));
   var sharedList = node('div'); shared.append(sharedList);
-  dialog.append(list, nameLabel, name, noteLabel, note, acts, status, shared); document.body.append(dock, dialog);
+  dialog.append(account, list, nameLabel, name, noteLabel, note, acts, status, shared); document.body.append(dock, dialog);
   var page = new URL(config.page, config.design).href;
   function fingerprint(t) { return JSON.stringify(t); }
-  function pending() { return Object.values(state.pages).filter(function (p) { return p.threads.length; }); }
+  function pending() {
+    var pages = {};
+    ((state.queuedReview && state.queuedReview.pages) || []).concat(Object.values(state.pages)).forEach(function (p) { var url = new URL(p.page, config.design + 'site/').href; var key = url.split('#')[0]; var entry = pages[key] || (pages[key] = Object.assign({}, p, { page: url, threads: [] })); (p.threads || []).forEach(function (thread) { var i = entry.threads.findIndex(function (t) { return t.id === thread.id; }); if (i < 0) entry.threads.push(thread); else entry.threads[i] = thread; }); });
+    return Object.values(pages).filter(function (p) { return p.threads.length; });
+  }
   function draw() {
     var pages = pending(), count = pages.reduce(function (n, p) { return n + p.threads.length; }, 0) + (note.value.trim() ? 1 : 0);
-    dock.textContent = 'Submit review' + (count ? ' (' + count + ')' : ''); send.disabled = sending || !count;
+    dock.textContent = 'Submit review' + (count ? ' (' + count + ')' : ''); send.disabled = sending || !count || !auth.state().user;
     list.replaceChildren();
     pages.forEach(function (p) { p.threads.forEach(function (t) { var row = node('div', undefined, { class: 'du-review-item' }); row.append(node('small', p.title + (t.where ? ' › ' + t.where : '')), node('p', (t.comments || []).map(function (c) { return c.text; }).join('\n\n'))); list.append(row); }); });
     if (!count) list.append(node('p', 'Comment on a design page, or add an overall suggestion below.', { class: 'du-review-muted' }));
@@ -43,18 +49,19 @@
   }
   async function submit(review) {
     if (sending) return null;
+    if (!auth.state().user) { state.queuedReview = review; save(); await window.DAReviewSubmission.open(); throw new Error('Sign in with a verified account before submitting. Your draft is kept.'); }
     sending = true; send.disabled = true; status.className = ''; status.textContent = 'Submitting privately…';
     try {
-      var content = JSON.stringify({ v: 1, project: config.project, snapshot: config.snapshot, round: review.round || '', reviewer: review.reviewer || 'Guest reviewer', pages: review.pages.map(function (p) { return Object.assign({}, p, { page: new URL(p.page, config.design + 'site/').href }); }) });
-      if (!state.pending || state.pending.content !== content) state.pending = { id: crypto.randomUUID(), content: content };
+      var content = JSON.stringify({ v: 1, project: config.project, snapshot: config.snapshot, round: review.round || (state.queuedReview && state.queuedReview.round) || '', reviewer: auth.state().user.id, pages: review.pages.map(function (p) { return Object.assign({}, p, { page: new URL(p.page, config.design + 'site/').href }); }) });
+      if (!state.pending || state.pending.content !== content || state.pending.account !== auth.state().user.id) state.pending = { id: crypto.randomUUID(), content: content, account: auth.state().user.id };
       save();
       var payload = JSON.parse(content); payload.id = state.pending.id;
-      var response = await fetch(config.service + '/api/reviews', { method: 'POST', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      var response = await auth.request('/api/reviews', { method: 'POST', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       var receipt = await response.json();
       if (!response.ok) throw new Error(receipt.error || 'The review was not submitted.');
       if (receipt.id !== payload.id || !receipt.receivedAt) throw new Error('The service did not confirm receipt.');
       payload.pages.forEach(function (p) { (p.threads || []).forEach(function (t) { state.sent[p.page.split('#')[0] + '\0' + t.id] = fingerprint(t); }); });
-      state.pages = {}; state.note = ''; note.value = ''; delete state.pending; save();
+      state.pages = {}; state.note = ''; note.value = ''; delete state.pending; delete state.queuedReview; delete state.noteBy; delete state.noteId; save();
       status.textContent = 'Review submitted privately. Receipt: ' + receipt.id + '. The owner will decide what to implement.';
       document.dispatchEvent(new CustomEvent('designup-review-submitted', { detail: receipt })); draw(); return receipt;
     } catch (e) { status.className = 'du-review-error'; status.textContent = (e.message || 'The connection failed.') + ' Your draft is still here. Try submitting again.'; throw e; }
@@ -63,10 +70,11 @@
   window.DAReviewSubmission = { submit: submit, open: async function () { await collect(); draw(); if (!dialog.open) dialog.showModal(); } };
   dock.onclick = function () { window.DAReviewSubmission.open(); };
   close.onclick = function () { dialog.close(); dock.focus(); };
+  auth.mount(account, function (value) { if (value.user && window.Pipeup) window.Pipeup.mount().then(function (instance) { if (instance.setName) return instance.setName(value.user.name || value.user.email); }).catch(function () {}); draw(); });
   name.oninput = function () { state.name = name.value; save(); };
   note.oninput = function () { state.note = note.value; save(); draw(); };
   add.onclick = async function () { try { var instance = await window.Pipeup.mount(); await instance.setCommentMode(true); dialog.close(); } catch (_) { status.className = 'du-review-error'; status.textContent = 'Pipeup is not ready yet. You can still submit an overall suggestion.'; } };
-  send.onclick = async function () { await collect(); var pages = pending().map(function (p) { return JSON.parse(JSON.stringify(p)); }); if (note.value.trim()) pages.push({ page: page + location.hash, title: document.title, snapshot: config.snapshot, threads: [{ id: 'overall-' + (state.noteId || (state.noteId = crypto.randomUUID())), element: '', where: 'Overall suggestion', comments: [{ by: name.value.trim() || 'Guest reviewer', text: note.value.trim() }] }] }); try { await submit({ pages: pages, reviewer: name.value.trim() || 'Guest reviewer' }); } catch (_) { /* The dialog shows the failure and keeps its draft. */ } };
+  send.onclick = async function () { await collect(); var pages = pending().map(function (p) { return JSON.parse(JSON.stringify(p)); }); if (note.value.trim()) pages.push({ page: page + location.hash, title: document.title, snapshot: config.snapshot, threads: [{ id: 'overall-' + (state.noteId || (state.noteId = crypto.randomUUID())), element: '', where: 'Overall suggestion', comments: [{ by: state.noteBy || (state.noteBy = (auth.state().user && auth.state().user.name) || 'Reviewer'), text: note.value.trim() }] }] }); try { await submit({ pages: pages, reviewer: (auth.state().user && auth.state().user.name) || 'Reviewer' }); } catch (_) { /* The dialog shows the failure and keeps its draft. */ } };
   shared.ontoggle = async function () { if (!shared.open) return; try { var response = await fetch(config.service + '/api/public', { credentials: 'omit', referrerPolicy: 'no-referrer' }); if (!response.ok) throw new Error(); var data = await response.json(); sharedList.replaceChildren(); data.items.forEach(function (item) { var row = node('div', undefined, { class: 'du-review-item' }); row.append(node('small', item.reviewer + ' · ' + item.title), node('p', item.text)); sharedList.append(row); }); if (!data.items.length) sharedList.append(node('p', 'The author has not shared feedback yet.')); } catch (_) { sharedList.textContent = 'Shared feedback could not be loaded. Your private draft is unchanged.'; } };
   document.addEventListener('visibilitychange', collect); window.addEventListener('hashchange', collect); setInterval(function () { if (!document.hidden && !sending) collect(); }, 3000); collect(); draw();
 })();
