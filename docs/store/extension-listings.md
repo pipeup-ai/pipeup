@@ -18,7 +18,7 @@ policy all four point to is in [privacy-policy.md](privacy-policy.md).
   app's 1024 icon to apps/extension/dist/store. Taken by hand: the browser's right-click menu, Firefox's own questions
   (its prompt to send, Always on for this site) and Safari's own window.
 - **The Safari app:** its own window (what Pipeup is, whether it's on, how to start, Support, Privacy, licences), its
-  icon, macOS 12 and later, the version and build, its category and copyright, and no network access for the app.
+  icon, a window that fits it, macOS 12 and later, the version and build, its category and copyright.
   `APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release` archives it signed for the Mac App Store.
 - **Licences:** each package carries Pipeup's licence and the emoji table's notice (emojibase-data, MIT).
 

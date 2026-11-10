@@ -213,10 +213,14 @@ function safariApp(release) {
   for (const f of ["Style.css", "Script.js"]) cpSync(`${ours}/${f}`, `${app}/Resources/${f}`);
   cpSync(`${ours}/ViewController.swift`, `${app}/ViewController.swift`);
   writeFileSync(`${app}/Resources/Icon.png`, appIcon(192));
+  // The window fits the page: the converter's is 425 × 325, which cuts off the steps and the links.
+  const board = `${app}/Base.lproj/Main.storyboard`;
+  writeFileSync(board, readFileSync(board, "utf8").replace(/width="425" height="325"/g, 'width="480" height="640"'));
   for (const size of [16, 32, 128, 256, 512])
     for (const k of [1, 2]) writeFileSync(`${app}/Assets.xcassets/AppIcon.appiconset/mac-icon-${size}@${k}x.png`, appIcon(size * k));
   // What the store reads from the project: the version and build, the Mac it needs (Safari 17 runs on macOS 12 and
-  // later), the category and copyright; and no network access for the app, which only shows its own page.
+  // later), the category and copyright. The app keeps its outgoing-network entitlement: a sandboxed app's web view
+  // shows nothing without it, even its own page (measured: a blank window).
   const pbx = `${project}/Pipeup/Pipeup.xcodeproj/project.pbxproj`;
   const build = process.env.PIPEUP_BUILD_NUMBER ?? "1";
   writeFileSync(
@@ -229,7 +233,6 @@ function safariApp(release) {
         /INFOPLIST_KEY_NSHumanReadableCopyright = "";/g,
         'INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Pipeup contributors. MIT licence.";',
       )
-      .replace(/ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;/g, "ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;")
       .replace(
         /(\t+)INFOPLIST_KEY_CFBundleDisplayName = Pipeup;/g,
         '$1INFOPLIST_KEY_CFBundleDisplayName = Pipeup;\n$1INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";',
