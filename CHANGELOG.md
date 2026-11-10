@@ -7,6 +7,10 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- **Public design reviews.** The website links to the Pipeup design at `/design/`, where visitors can submit private suggestions for the owner to review before implementation.
+
 ### Fixed
 
 - **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of

@@ -1,0 +1,6 @@
+/* The prototype's own layer (prototype.json › layer): layout only, so the page fills the window and the comment
+   control's corner is the window's corner. Values are sizes and positions; no colour, type, border or shadow. */
+.pu-page { height: 100%; }
+.pu-body { height: 100%; margin: 0; }
+/* the row that holds the comment control and its messages sticks to the window's bottom edge as the page scrolls */
+.pu-corner { position: sticky; inset-block-end: 0; z-index: 10; }
