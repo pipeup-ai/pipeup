@@ -332,3 +332,25 @@ test("in the side panel, a whole card opens its thread, and a comment on a pictu
   await expect(side.locator(".card.open")).toContainText("Make the logo bigger?");
   await expect(side.locator(".card.open").getByRole("textbox", { name: "Reply" })).toBeVisible();
 });
+
+test("the toolbar button's bubble follows the browser's look: light on a dark toolbar, dark on a light one", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  const p = await panel(context, worker, id, page);
+  await expect
+    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
+    .toBe(false);
+  await p.emulateMedia({ colorScheme: "dark" });
+  await expect
+    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
+    .toBe(true);
+  // Each look has its own bubble.
+  const found = await p.evaluate(async () =>
+    Promise.all(["light", "dark"].map(async (look) => (await fetch(`icons/toolbar-${look}-32.png`)).ok)),
+  );
+  expect(found).toEqual([true, true]);
+});

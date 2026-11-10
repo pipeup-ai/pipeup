@@ -149,6 +149,11 @@
       retire();
     }
   };
+  // The browser's look, for the toolbar button's bubble (background.js).
+  const dark = matchMedia("(prefers-color-scheme: dark)");
+  const sayLook = () => send({ type: "look", dark: dark.matches });
+  sayLook();
+  dark.addEventListener("change", sayLook);
   // An orphaned copy takes itself off the page, so the updated extension starts clean when it is pressed again.
   let retired = false;
   function retire() {

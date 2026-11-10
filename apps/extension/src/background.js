@@ -10,6 +10,25 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   void chrome.action.setBadgeTextColor?.({ tabId, color: "#ffffff" });
 });
 
+// The toolbar button's bubble follows the browser's look: dark on a light toolbar, light on a dark one. The background
+// can't see the look, so the extension's pages and Pipeup in tabs say it; the last one heard is kept for the next start.
+// Safari takes its one icon as a template and tints it itself.
+const safari = location.protocol.startsWith("safari");
+const toolbarIcon = (dark) => {
+  const look = dark ? "dark" : "light";
+  return chrome.action.setIcon({
+    path: { 16: `icons/toolbar-${look}-16.png`, 32: `icons/toolbar-${look}-32.png` },
+  });
+};
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== "look" || safari) return;
+  const dark = message.dark === true;
+  void toolbarIcon(dark).catch(() => {});
+  void chrome.storage.local.set({ dark });
+});
+if (!safari)
+  void chrome.storage.local.get("dark").then(({ dark }) => dark && toolbarIcon(true).catch(() => {}));
+
 // The browser's right-click menu: "Comment with Pipeup" on selected words, a picture, a link, or anything on the page.
 // The click lets the extension into that tab, as pressing the toolbar button does.
 const MENU = "pipeup-comment";

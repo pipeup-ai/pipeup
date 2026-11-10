@@ -8,22 +8,35 @@
 //                                           make. Never published.
 //   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode)
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { execFileSync } from "node:child_process";
-import { deflateSync } from "node:zlib";
+import { INK, tile, toolbar } from "./extension-icons.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
 const ADDONS = ["emoji", "voice", "share", "live", "github", "identity"];
 const pipeup = `${root}libs/ts/pipeup/dist/pipeup.esm.js`;
 if (!existsSync(pipeup)) {
-  console.error("build-extension: build Pipeup first (npm run build in libs/ts/pipeup)");
+  console.error(
+    "build-extension: build Pipeup first (npm run build in libs/ts/pipeup)",
+  );
   process.exit(1);
 }
-const { version } = JSON.parse(readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"));
+const { version } = JSON.parse(
+  readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"),
+);
 // Stores take only numbers: a pre-release (0.10.0-beta.1) can't be packed for them.
 if (!/^\d+\.\d+\.\d+$/.test(version))
-  console.warn(`build-extension: ${version} is a pre-release; the stores won't take it`);
+  console.warn(
+    `build-extension: ${version} is a pre-release; the stores won't take it`,
+  );
 
 // One folder per browser, from the same files:
 //
@@ -40,7 +53,10 @@ const TARGETS = {
     delete m.sidebar_action;
     delete m.browser_specific_settings;
     m.version_name = version;
-    m.background = { service_worker: m.background.service_worker, type: m.background.type };
+    m.background = {
+      service_worker: m.background.service_worker,
+      type: m.background.type,
+    };
     return m;
   },
   firefox(m) {
@@ -48,8 +64,16 @@ const TARGETS = {
     delete m.minimum_chrome_version;
     m.permissions = m.permissions.filter((p) => p !== "sidePanel");
     m.background = { scripts: m.background.scripts, type: m.background.type };
+    // Firefox picks the toolbar bubble for its own theme (light icons for dark themes), before any page has said.
+    m.action.theme_icons = [16, 32].map((size) => ({
+      light: `icons/toolbar-dark-${size}.png`,
+      dark: `icons/toolbar-light-${size}.png`,
+      size,
+    }));
     // Firefox's add-ons site asks what an extension collects: nothing.
-    m.browser_specific_settings.gecko.data_collection_permissions = { required: ["none"] };
+    m.browser_specific_settings.gecko.data_collection_permissions = {
+      required: ["none"],
+    };
     return m;
   },
   safari(m) {
@@ -57,11 +81,17 @@ const TARGETS = {
     delete m.side_panel;
     delete m.sidebar_action;
     delete m.minimum_chrome_version;
-    m.permissions = m.permissions.filter((p) => p !== "sidePanel" && p !== "nativeMessaging");
+    m.permissions = m.permissions.filter(
+      (p) => p !== "sidePanel" && p !== "nativeMessaging",
+    );
     m.browser_specific_settings = { safari: { strict_min_version: "17.0" } };
     // Safari's background takes no "type" (the background script imports nothing), and opens settings where it likes.
     m.background = { service_worker: m.background.service_worker };
     delete m.options_ui.open_in_tab;
+    // One black bubble: Safari takes a grayscale toolbar icon as a template and tints it for its toolbar.
+    m.action.default_icon = Object.fromEntries(
+      [16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]),
+    );
     return m;
   },
 };
@@ -82,8 +112,25 @@ for (const [target, shape] of Object.entries(TARGETS)) {
     const file = `${root}libs/ts/addons/${id}/dist/${id}.esm.js`;
     if (existsSync(file)) cpSync(file, `${dir}/addons/${id}.esm.js`);
   }
-  writeFileSync(`${dir}/manifest.json`, JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n");
-  for (const size of [16, 32, 48, 128]) writeFileSync(`${dir}/icons/${size}.png`, icon(size));
+  writeFileSync(
+    `${dir}/manifest.json`,
+    JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n",
+  );
+  for (const size of [16, 32, 48, 128])
+    writeFileSync(`${dir}/icons/${size}.png`, tile(size));
+  // The toolbar button: the bubble alone, dark for light toolbars and light for dark ones (Safari: one template).
+  for (const size of [16, 19, 32, 38])
+    if (target === "safari")
+      writeFileSync(
+        `${dir}/icons/toolbar-${size}.png`,
+        toolbar(size, INK.template),
+      );
+    else
+      for (const look of ["light", "dark"])
+        writeFileSync(
+          `${dir}/icons/toolbar-${look}-${size}.png`,
+          toolbar(size, INK[look]),
+        );
   // The file inside is the release's file, byte for byte: the same hash as on npm.
   inside = sri(readFileSync(`${dir}/pipeup/pipeup.esm.js`));
   if (inside !== sri(readFileSync(pipeup)))
@@ -96,7 +143,9 @@ for (const [target, shape] of Object.entries(TARGETS)) {
 }
 for (const id of ADDONS)
   if (!existsSync(`${root}libs/ts/addons/${id}/dist/${id}.esm.js`))
-    console.warn(`build-extension: the ${id} add-on isn't built; the extension is packed without it`);
+    console.warn(
+      `build-extension: the ${id} add-on isn't built; the extension is packed without it`,
+    );
 
 if (process.argv.includes("--test")) {
   // Every page: the tests can't press the toolbar button, which is what lets the extension see a tab (and take a picture).
@@ -105,7 +154,11 @@ if (process.argv.includes("--test")) {
     rmSync(test, { recursive: true, force: true });
     cpSync(`${root}apps/extension/dist/${target}`, test, { recursive: true });
     const m = JSON.parse(readFileSync(`${test}/manifest.json`, "utf8"));
-    writeFileSync(`${test}/manifest.json`, JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) + "\n");
+    writeFileSync(
+      `${test}/manifest.json`,
+      JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) +
+        "\n",
+    );
   }
 }
 
@@ -122,7 +175,8 @@ if (app) console.log(`  ${app}`);
  * xcodebuild builds it, signed for this Mac only: Safari runs it once Develop → Allow Unsigned Extensions is on.
  */
 function safariApp() {
-  if (process.platform !== "darwin") throw new Error("build-extension: Safari's app is built on a Mac");
+  if (process.platform !== "darwin")
+    throw new Error("build-extension: Safari's app is built on a Mac");
   const project = `${root}apps/extension/dist/safari-app`;
   rmSync(project, { recursive: true, force: true });
   execFileSync(
@@ -164,97 +218,4 @@ function safariApp() {
     { stdio: ["ignore", "ignore", "inherit"] },
   );
   return `${project}/build/Build/Products/Debug/Pipeup.app`;
-}
-
-/**
- * The toolbar icon: Pipeup's own comment glyph (the outlined bubble with a plus, `comment` in src/ui/icons.ts), white on
- * the accent in a rounded square. Drawn here from the glyph's geometry, with four samples a pixel each way, so the
- * extension needs no image tools.
- */
-function icon(n) {
-  const [r, g, b] = [0x53, 0x4a, 0xb7];
-  const px = Buffer.alloc(n * n * 4);
-  const S = 4;
-  // The glyph's 24-unit box, fitted inside the tile with a margin; strokes a little heavier when the icon is small.
-  const margin = 0.14;
-  const unit = (1 - 2 * margin) / 24;
-  const half = (n <= 16 ? 2.6 : n <= 32 ? 2.3 : 2) / 2;
-  const [cx, cy, R] = [12.5, 11.5, 8];
-  // The circle's gap where the tail leaves it: between the tail's two ends, the short way round.
-  const gap = [Math.atan2(18.6 - cy, 8.8 - cx), Math.atan2(15.4 - cy, 5.2 - cx)];
-  const segments = [
-    [8.8, 18.6, 4, 19.8],
-    [4, 19.8, 5.2, 15.4],
-    [12.3, 8.2, 12.3, 14.8],
-    [9, 11.5, 15.6, 11.5],
-  ];
-  const toSegment = (x, y, [x1, y1, x2, y2]) => {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)));
-    return Math.hypot(x - (x1 + t * dx), y - (y1 + t * dy));
-  };
-  const inGlyph = (x, y) => {
-    const a = Math.atan2(y - cy, x - cx);
-    if (Math.abs(Math.hypot(x - cx, y - cy) - R) <= half && !(a > gap[0] && a < gap[1])) return true;
-    return segments.some((sg) => toSegment(x, y, sg) <= half);
-  };
-  const inTile = (x, y) => {
-    const k = 0.22;
-    const qx = Math.min(Math.max(x, k), 1 - k);
-    const qy = Math.min(Math.max(y, k), 1 - k);
-    return (x - qx) ** 2 + (y - qy) ** 2 <= k * k;
-  };
-  for (let py = 0; py < n; py++)
-    for (let qx = 0; qx < n; qx++) {
-      let tile = 0;
-      let white = 0;
-      for (let sy = 0; sy < S; sy++)
-        for (let sx = 0; sx < S; sx++) {
-          const x = (qx + (sx + 0.5) / S) / n;
-          const y = (py + (sy + 0.5) / S) / n;
-          if (!inTile(x, y)) continue;
-          tile++;
-          if (inGlyph((x - margin) / unit, (y - margin) / unit)) white++;
-        }
-      const w = tile ? white / tile : 0;
-      const i = (py * n + qx) * 4;
-      px[i] = Math.round(r + (255 - r) * w);
-      px[i + 1] = Math.round(g + (255 - g) * w);
-      px[i + 2] = Math.round(b + (255 - b) * w);
-      px[i + 3] = Math.round((tile / (S * S)) * 255);
-    }
-  return png(n, px);
-}
-
-function png(n, rgba) {
-  const raw = Buffer.alloc((n * 4 + 1) * n);
-  for (let y = 0; y < n; y++) rgba.copy(raw, y * (n * 4 + 1) + 1, y * n * 4, (y + 1) * n * 4);
-  const chunk = (type, data) => {
-    const len = Buffer.alloc(4);
-    len.writeUInt32BE(data.length);
-    const body = Buffer.concat([Buffer.from(type), data]);
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(crc32(body));
-    return Buffer.concat([len, body, crc]);
-  };
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(n, 0);
-  ihdr.writeUInt32BE(n, 4);
-  ihdr.set([8, 6, 0, 0, 0], 8);
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk("IHDR", ihdr),
-    chunk("IDAT", deflateSync(raw)),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
-}
-
-function crc32(buf) {
-  let c = ~0;
-  for (const byte of buf) {
-    c ^= byte;
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-  }
-  return ~c >>> 0;
 }

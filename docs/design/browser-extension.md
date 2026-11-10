@@ -147,6 +147,11 @@ Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores 
     and a fixed `moz-extension://` id. One Firefox per run, its storage cleared per test: macOS hands a second Firefox
     started straight after to the first. Playwright's own Firefox can't add extensions and can't open tabs over BiDi.
     Safari isn't driven: safaridriver has no extensions.
+- **Icons** (`tools/extension-icons.mjs`): the listed icon is the bubble with its plus, white on the accent. The toolbar
+  button is the bubble alone, no plus and no background, as large as the button allows: Chrome's own greys, dark for
+  light toolbars and light for dark ones. The background can't see the browser's look, so the extension's pages and
+  Pipeup in tabs say it (`prefers-color-scheme`) and `action.setIcon` follows; the last look is kept for the next start.
+  Firefox also gets `theme_icons`; Safari gets one black bubble, which it takes as a template and tints.
 - **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, the release job and store status,
   Send to my agent in Safari (it needs the app to carry the messages), Firefox on Android, Safari on iPhone and iPad.
 
@@ -160,3 +165,4 @@ Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores 
 - 2026-11-09 — The comment box on the page; pinned or popovers.
 - 2026-11-09 — Integrations: right-click, single-page apps, local pages, pictures, saving, Send to my agent, add-ons.
 - 2026-11-10 — Firefox and Safari (Mac) builds, `browser.js`, Firefox tests; see As built.
+- 2026-11-10 — The toolbar button's icon: the bubble alone, following the browser's look.

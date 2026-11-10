@@ -43,3 +43,16 @@ export function agentSetup() {
     ? "npx --yes pipeup@0 browser install --browser firefox"
     : `npx --yes pipeup@0 browser install --extension-id ${chrome.runtime.id}`;
 }
+
+/**
+ * Tells the background whether the browser is dark, so the toolbar button's bubble is light on a dark toolbar and dark
+ * on a light one (Safari tints its template itself). Every page of the extension says so as it opens, and again when it
+ * changes.
+ */
+export function sayLook() {
+  const dark = matchMedia("(prefers-color-scheme: dark)");
+  const say = () => void chrome.runtime.sendMessage({ type: "look", dark: dark.matches }).catch(() => {});
+  say();
+  dark.addEventListener("change", say);
+}
+sayLook();
