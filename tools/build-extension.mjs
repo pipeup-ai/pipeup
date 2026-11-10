@@ -8,35 +8,22 @@
 //                                           make. Never published.
 //   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode)
 import { createHash } from "node:crypto";
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { INK, tile, toolbar } from "./extension-icons.mjs";
+import { INK, listed, toolbar } from "./extension-icons.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
 const ADDONS = ["emoji", "voice", "share", "live", "github", "identity"];
 const pipeup = `${root}libs/ts/pipeup/dist/pipeup.esm.js`;
 if (!existsSync(pipeup)) {
-  console.error(
-    "build-extension: build Pipeup first (npm run build in libs/ts/pipeup)",
-  );
+  console.error("build-extension: build Pipeup first (npm run build in libs/ts/pipeup)");
   process.exit(1);
 }
-const { version } = JSON.parse(
-  readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"),
-);
+const { version } = JSON.parse(readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"));
 // Stores take only numbers: a pre-release (0.10.0-beta.1) can't be packed for them.
 if (!/^\d+\.\d+\.\d+$/.test(version))
-  console.warn(
-    `build-extension: ${version} is a pre-release; the stores won't take it`,
-  );
+  console.warn(`build-extension: ${version} is a pre-release; the stores won't take it`);
 
 // One folder per browser, from the same files:
 //
@@ -81,17 +68,13 @@ const TARGETS = {
     delete m.side_panel;
     delete m.sidebar_action;
     delete m.minimum_chrome_version;
-    m.permissions = m.permissions.filter(
-      (p) => p !== "sidePanel" && p !== "nativeMessaging",
-    );
+    m.permissions = m.permissions.filter((p) => p !== "sidePanel" && p !== "nativeMessaging");
     m.browser_specific_settings = { safari: { strict_min_version: "17.0" } };
     // Safari's background takes no "type" (the background script imports nothing), and opens settings where it likes.
     m.background = { service_worker: m.background.service_worker };
     delete m.options_ui.open_in_tab;
     // One black bubble: Safari takes a grayscale toolbar icon as a template and tints it for its toolbar.
-    m.action.default_icon = Object.fromEntries(
-      [16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]),
-    );
+    m.action.default_icon = Object.fromEntries([16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]));
     return m;
   },
 };
@@ -112,25 +95,14 @@ for (const [target, shape] of Object.entries(TARGETS)) {
     const file = `${root}libs/ts/addons/${id}/dist/${id}.esm.js`;
     if (existsSync(file)) cpSync(file, `${dir}/addons/${id}.esm.js`);
   }
-  writeFileSync(
-    `${dir}/manifest.json`,
-    JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n",
-  );
-  for (const size of [16, 32, 48, 128])
-    writeFileSync(`${dir}/icons/${size}.png`, tile(size));
+  writeFileSync(`${dir}/manifest.json`, JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n");
+  for (const size of [16, 32, 48, 128]) writeFileSync(`${dir}/icons/${size}.png`, listed(size));
   // The toolbar button: the bubble alone, dark for light toolbars and light for dark ones (Safari: one template).
   for (const size of [16, 19, 32, 38])
-    if (target === "safari")
-      writeFileSync(
-        `${dir}/icons/toolbar-${size}.png`,
-        toolbar(size, INK.template),
-      );
+    if (target === "safari") writeFileSync(`${dir}/icons/toolbar-${size}.png`, toolbar(size, INK.template));
     else
       for (const look of ["light", "dark"])
-        writeFileSync(
-          `${dir}/icons/toolbar-${look}-${size}.png`,
-          toolbar(size, INK[look]),
-        );
+        writeFileSync(`${dir}/icons/toolbar-${look}-${size}.png`, toolbar(size, INK[look]));
   // The file inside is the release's file, byte for byte: the same hash as on npm.
   inside = sri(readFileSync(`${dir}/pipeup/pipeup.esm.js`));
   if (inside !== sri(readFileSync(pipeup)))
@@ -143,9 +115,7 @@ for (const [target, shape] of Object.entries(TARGETS)) {
 }
 for (const id of ADDONS)
   if (!existsSync(`${root}libs/ts/addons/${id}/dist/${id}.esm.js`))
-    console.warn(
-      `build-extension: the ${id} add-on isn't built; the extension is packed without it`,
-    );
+    console.warn(`build-extension: the ${id} add-on isn't built; the extension is packed without it`);
 
 if (process.argv.includes("--test")) {
   // Every page: the tests can't press the toolbar button, which is what lets the extension see a tab (and take a picture).
@@ -156,8 +126,7 @@ if (process.argv.includes("--test")) {
     const m = JSON.parse(readFileSync(`${test}/manifest.json`, "utf8"));
     writeFileSync(
       `${test}/manifest.json`,
-      JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) +
-        "\n",
+      JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) + "\n",
     );
   }
 }
@@ -175,8 +144,7 @@ if (app) console.log(`  ${app}`);
  * xcodebuild builds it, signed for this Mac only: Safari runs it once Develop → Allow Unsigned Extensions is on.
  */
 function safariApp() {
-  if (process.platform !== "darwin")
-    throw new Error("build-extension: Safari's app is built on a Mac");
+  if (process.platform !== "darwin") throw new Error("build-extension: Safari's app is built on a Mac");
   const project = `${root}apps/extension/dist/safari-app`;
   rmSync(project, { recursive: true, force: true });
   execFileSync(

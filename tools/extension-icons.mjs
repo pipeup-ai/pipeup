@@ -1,53 +1,42 @@
 // The extension's icons, drawn from Pipeup's own comment glyph (the outlined bubble, `comment` in
 // libs/ts/pipeup/src/ui/icons.ts) with four samples a pixel each way, so the build needs no image tools.
 //
-// - tile(n): the bubble with its plus, white on the accent in a rounded square. Where the extension is listed (the
-//   browser's extensions page, the stores, Safari's settings).
-// - toolbar(n, rgb): the bubble alone, no plus and no background, filling the button. One colour each: dark for light
-//   toolbars, light for dark ones; Safari takes the black one as a template and tints it itself.
+// Everywhere it's the bubble alone, no plus and no background:
+// - listed(n): in Pipeup's violet, where the extension is listed (the browser's extensions page, the stores, Safari's
+//   settings, the toolbar panel's header). A violet that reads on light and dark pages alike.
+// - toolbar(n, rgb): filling the toolbar button, in one grey each: dark for light toolbars, light for dark ones; Safari
+//   takes the black one as a template and tints it itself.
 import { deflateSync } from "node:zlib";
 
-const ACCENT = [0x53, 0x4a, 0xb7];
 /** The toolbar glyph's colours: Chrome's own icon greys, for light and dark toolbars, and black for Safari's template. */
 export const INK = {
   light: [0x47, 0x47, 0x47],
   dark: [0xe3, 0xe3, 0xe3],
   template: [0, 0, 0],
 };
+/** Pipeup's accent, a little lighter, so the bubble reads on a dark extensions page as well as a light one. */
+const VIOLET = [0x6a, 0x60, 0xd6];
 
-// The glyph, in its 24-unit box: a circle with a gap where the tail leaves it, the tail, and the plus.
+// The bubble, in its 24-unit box: a circle with a gap where the tail leaves it, and the tail.
 const [CX, CY, R] = [12.5, 11.5, 8];
 const GAP = [Math.atan2(18.6 - CY, 8.8 - CX), Math.atan2(15.4 - CY, 5.2 - CX)];
 const TAIL = [
   [8.8, 18.6, 4, 19.8],
   [4, 19.8, 5.2, 15.4],
 ];
-const PLUS = [
-  [12.3, 8.2, 12.3, 14.8],
-  [9, 11.5, 15.6, 11.5],
-];
 
 function toSegment(x, y, [x1, y1, x2, y2]) {
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const t = Math.max(
-    0,
-    Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)),
-  );
+  const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)));
   return Math.hypot(x - (x1 + t * dx), y - (y1 + t * dy));
 }
 
-/** Whether a point of the 24-unit box is on the glyph's strokes, `half` units either side of each line. */
-function onGlyph(x, y, half, plus) {
+/** Whether a point of the 24-unit box is on the bubble's strokes, `half` units either side of each line. */
+function onGlyph(x, y, half) {
   const a = Math.atan2(y - CY, x - CX);
-  if (
-    Math.abs(Math.hypot(x - CX, y - CY) - R) <= half &&
-    !(a > GAP[0] && a < GAP[1])
-  )
-    return true;
-  return [...TAIL, ...(plus ? PLUS : [])].some(
-    (s) => toSegment(x, y, s) <= half,
-  );
+  if (Math.abs(Math.hypot(x - CX, y - CY) - R) <= half && !(a > GAP[0] && a < GAP[1])) return true;
+  return TAIL.some((s) => toSegment(x, y, s) <= half);
 }
 
 /** Draws an n×n picture: `cover(x, y)` says, for a point in 0..1, whether it's inside and in what colour. */
@@ -70,56 +59,38 @@ function draw(n, cover) {
           a++;
         }
       const i = (py * n + qx) * 4;
-      if (a)
-        [px[i], px[i + 1], px[i + 2]] = [r / a, g / a, b / a].map(Math.round);
+      if (a) [px[i], px[i + 1], px[i + 2]] = [r / a, g / a, b / a].map(Math.round);
       px[i + 3] = Math.round((a / (S * S)) * 255);
     }
   return png(n, px);
 }
 
-/** The listed icon: the glyph with its plus, white on the accent, in a rounded square. */
-export function tile(n) {
-  const margin = 0.14;
-  const unit = (1 - 2 * margin) / 24;
-  // Strokes a little heavier when the icon is small.
-  const half = (n <= 16 ? 2.6 : n <= 32 ? 2.3 : 2) / 2;
-  const inTile = (x, y) => {
-    const k = 0.22;
-    const qx = Math.min(Math.max(x, k), 1 - k);
-    const qy = Math.min(Math.max(y, k), 1 - k);
-    return (x - qx) ** 2 + (y - qy) ** 2 <= k * k;
-  };
-  return draw(n, (x, y) => {
-    if (!inTile(x, y)) return null;
-    return onGlyph((x - margin) / unit, (y - margin) / unit, half, true)
-      ? [255, 255, 255]
-      : ACCENT;
-  });
+/** The listed icon: the violet bubble, inside the padding the stores ask for (an eighth each side at 128). */
+export function listed(n) {
+  return bubble(n, VIOLET, n >= 48 ? n / 8 : n * 0.04);
 }
 
 /** The toolbar button's icon: the bubble alone, as large as the button allows, in one colour on nothing. */
 export function toolbar(n, ink) {
-  // Strokes as heavy as the browsers' own toolbar icons: about 1.7 pixels at 16, a tenth of the icon above that.
-  const stroke = Math.max(1.7, n * 0.1);
-  // The bubble's extent in the 24-unit box (the tail reaches 4, 19.8), with half a stroke round it and a small margin.
+  return bubble(n, ink, n * 0.04);
+}
+
+function bubble(n, ink, margin) {
+  // Strokes as heavy as the browsers' own toolbar icons: about 1.7 pixels at 16, a tenth of the art above that.
+  const stroke = Math.max(1.7, (n - 2 * margin) * 0.105);
+  // The bubble's extent in the 24-unit box (the tail reaches 4, 19.8), with half a stroke round it.
   const [x0, y0, x1, y1] = [4, 3.5, 20.5, 19.8];
-  const margin = n * 0.04;
   const unit = (n - 2 * margin - stroke) / Math.max(x1 - x0, y1 - y0);
   const half = stroke / 2 / unit;
   const ox = (n - (x1 - x0) * unit) / 2;
   const oy = (n - (y1 - y0) * unit) / 2;
-  return draw(n, (x, y) =>
-    onGlyph(x0 + (x * n - ox) / unit, y0 + (y * n - oy) / unit, half, false)
-      ? ink
-      : null,
-  );
+  return draw(n, (x, y) => (onGlyph(x0 + (x * n - ox) / unit, y0 + (y * n - oy) / unit, half) ? ink : null));
 }
 
 /** An RGBA picture as a PNG file: w wide, h high (square unless said). */
 export function png(w, rgba, h = w) {
   const raw = Buffer.alloc((w * 4 + 1) * h);
-  for (let y = 0; y < h; y++)
-    rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4);
+  for (let y = 0; y < h; y++) rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4);
   const chunk = (type, data) => {
     const len = Buffer.alloc(4);
     len.writeUInt32BE(data.length);
