@@ -16,14 +16,16 @@
   function create(service) {
     service = new URL(service, location.href).origin;
     if (instances[service]) return instances[service];
+    var sessionKey = 'designup-review-session:' + service;
     var config = {}, client, loading = true, user = null, owner = false, error = '', listeners = [];
+    function recovery() { return service === location.origin && new URL(location.href).searchParams.get('recovery') === '1'; }
     function state() { return { user: user, owner: owner, error: error, config: config, loading: loading }; }
     function emit() { listeners.forEach(function (fn) { fn(state()); }); }
     function problem(e) { error = e.message || 'Sign-in is unavailable. Your draft is kept.'; emit(); }
     async function token() { if (!client) return ''; var result = await client.auth.getSession(); if (result.error) throw result.error; return result.data.session ? result.data.session.access_token : ''; }
     async function raw(path, options) {
-      var headers = new Headers(options && options.headers), value = await token();
-      if (service === location.origin && new URL(location.href).searchParams.get('recovery') === '1') headers.set('X-Designup-Recovery', '1'); if (value) headers.set('Authorization', 'Bearer ' + value);
+      var headers = new Headers(options && options.headers), value = recovery() ? '' : await token();
+      if (recovery()) headers.set('X-Designup-Recovery', '1'); if (value) headers.set('Authorization', 'Bearer ' + value);
       return fetch(service + path, Object.assign({}, options, { headers: headers, credentials: service === location.origin ? 'same-origin' : 'omit', cache: 'no-store', referrerPolicy: 'no-referrer' }));
     }
     async function refresh() {
@@ -33,12 +35,13 @@
       user = value.user; owner = value.owner === true; error = ''; emit(); return user;
     }
     var ready = (async function () {
+      if (recovery()) { config = { configured: false, providers: [], email: false }; await refresh(); return; }
       var response = await fetch(service + '/api/auth/config', { credentials: 'omit', referrerPolicy: 'no-referrer' });
       if (!response.ok) throw new Error('Sign-in is temporarily unavailable. Your draft is kept.');
       config = await response.json();
       if (config.configured) {
         var library = await sdk(config.sdk, config.integrity);
-        client = library.createClient(config.url, config.key, { auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+        client = library.createClient(config.url, config.key, { auth: { flowType: 'pkce', storageKey: sessionKey, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
         client.auth.onAuthStateChange(function () { setTimeout(function () { refresh().catch(problem); }, 0); });
       }
       await refresh();
@@ -50,7 +53,7 @@
       } catch (e) { problem(e); }
     }
     async function signOut() {
-      try { if (user && user.provider === 'chatgpt') { location.assign('/signout-with-chatgpt?return_to=%2Fowner'); return; }
+      try { if (user && user.provider === 'chatgpt') { try { localStorage.removeItem(sessionKey); localStorage.removeItem(sessionKey + '-code-verifier'); } catch (_) {} location.assign('/signout-with-chatgpt?return_to=%2Fowner'); return; }
         history.replaceState(null, '', callback());
         if (client) { var result = await client.auth.signOut({ scope: 'local' }); if (result.error) throw result.error; }
         user = null; owner = false; error = ''; emit();
