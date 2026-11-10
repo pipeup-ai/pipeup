@@ -14,8 +14,8 @@ async function writeComment(page: Page, text: string, on = "#p1"): Promise<void>
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
   const at = (await page.locator(on).boundingBox())!;
   await page.mouse.click(at.x + 20, at.y + at.height / 2);
-  const box = page.locator(".draft textarea");
-  await expect(box).toBeFocused();
+  // The box is the extension's own frame once it's ready, with the cursor in it.
+  await expect(page.frameLocator(".draft .line iframe").locator(".box")).toBeFocused();
   await page.keyboard.type(text);
   await page.locator(".draft").getByRole("button", { name: "Comment" }).click();
   // Sent: no box shows (a closed popover fades out and stays in Pipeup's layer, unseen).

@@ -1,0 +1,754 @@
+{
+  "date": "2026-11-10",
+  "source": "e2b6658a",
+  "build": "115eb0b2",
+  "runner": "Playwright, Chromium, 1440 × 900 unless a proof says otherwise",
+  "totals": {
+    "pass": 73,
+    "fail": 0,
+    "untested": 1
+  },
+  "results": [
+    {
+      "id": "AC-add-the-script-1",
+      "journey": "jny-add-pipeup-to-a-page",
+      "step": "add-the-script",
+      "frs": [
+        "FR-024"
+      ],
+      "status": "pass",
+      "shot": "AC-add-the-script-1.jpg"
+    },
+    {
+      "id": "AC-add-the-script-2",
+      "journey": "jny-add-pipeup-to-a-page",
+      "step": "add-the-script",
+      "frs": [
+        "FR-024"
+      ],
+      "status": "pass",
+      "shot": "AC-add-the-script-2.jpg"
+    },
+    {
+      "id": "AC-check-the-page-1",
+      "journey": "jny-add-pipeup-to-a-page",
+      "step": "check-the-page",
+      "frs": [
+        "FR-027"
+      ],
+      "status": "pass",
+      "shot": "AC-check-the-page-1.jpg"
+    },
+    {
+      "id": "AC-check-the-page-2",
+      "journey": "jny-add-pipeup-to-a-page",
+      "step": "check-the-page",
+      "frs": [
+        "FR-027"
+      ],
+      "status": "pass",
+      "shot": "AC-check-the-page-2.jpg"
+    },
+    {
+      "id": "AC-check-the-page-3",
+      "journey": "jny-add-pipeup-to-a-page",
+      "step": "check-the-page",
+      "frs": [
+        "FR-027"
+      ],
+      "status": "pass",
+      "shot": "AC-check-the-page-3.jpg"
+    },
+    {
+      "id": "AC-see-everyones-comments-1",
+      "journey": "jny-collect-feedback",
+      "step": "see-everyones-comments",
+      "frs": [
+        "FR-020"
+      ],
+      "status": "pass",
+      "shot": "AC-see-everyones-comments-1.jpg"
+    },
+    {
+      "id": "AC-see-everyones-comments-2",
+      "journey": "jny-collect-feedback",
+      "step": "see-everyones-comments",
+      "frs": [
+        "FR-020"
+      ],
+      "status": "pass",
+      "shot": "AC-see-everyones-comments-2.jpg"
+    },
+    {
+      "id": "AC-hand-to-agent-1",
+      "journey": "jny-collect-feedback",
+      "step": "hand-to-agent",
+      "frs": [
+        "FR-021"
+      ],
+      "status": "pass",
+      "shot": "AC-hand-to-agent-1.jpg"
+    },
+    {
+      "id": "AC-hand-to-agent-2",
+      "journey": "jny-collect-feedback",
+      "step": "hand-to-agent",
+      "frs": [
+        "FR-021"
+      ],
+      "status": "pass",
+      "shot": "AC-hand-to-agent-2.jpg"
+    },
+    {
+      "id": "AC-reopen-page-1",
+      "journey": "jny-come-back-later",
+      "step": "reopen-page",
+      "frs": [
+        "FR-023"
+      ],
+      "status": "pass",
+      "shot": "AC-reopen-page-1.jpg"
+    },
+    {
+      "id": "AC-reopen-page-2",
+      "journey": "jny-come-back-later",
+      "step": "reopen-page",
+      "frs": [
+        "FR-023"
+      ],
+      "status": "pass",
+      "shot": "AC-reopen-page-2.jpg"
+    },
+    {
+      "id": "AC-hide-comments-1",
+      "journey": "jny-come-back-later",
+      "step": "hide-comments",
+      "frs": [
+        "FR-025"
+      ],
+      "status": "pass",
+      "shot": "AC-hide-comments-1.jpg"
+    },
+    {
+      "id": "AC-hide-comments-2",
+      "journey": "jny-come-back-later",
+      "step": "hide-comments",
+      "frs": [
+        "FR-025"
+      ],
+      "status": "pass",
+      "shot": "AC-hide-comments-2.jpg"
+    },
+    {
+      "id": "AC-content-gone-1",
+      "journey": "jny-come-back-later",
+      "step": "content-gone",
+      "frs": [
+        "FR-026"
+      ],
+      "status": "pass",
+      "shot": "AC-content-gone-1.jpg"
+    },
+    {
+      "id": "AC-content-gone-2",
+      "journey": "jny-come-back-later",
+      "step": "content-gone",
+      "frs": [
+        "FR-026"
+      ],
+      "status": "pass",
+      "shot": "AC-content-gone-2.jpg"
+    },
+    {
+      "id": "AC-all-comments-1",
+      "journey": "jny-go-through-every-comment",
+      "step": "all-comments",
+      "frs": [
+        "FR-010"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-1.jpg"
+    },
+    {
+      "id": "AC-all-comments-2",
+      "journey": "jny-go-through-every-comment",
+      "step": "all-comments",
+      "frs": [
+        "FR-010"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-2.jpg"
+    },
+    {
+      "id": "AC-all-comments-3",
+      "journey": "jny-go-through-every-comment",
+      "step": "all-comments",
+      "frs": [
+        "FR-010"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-3.jpg"
+    },
+    {
+      "id": "AC-all-comments-4",
+      "journey": "jny-go-through-every-comment",
+      "step": "all-comments",
+      "frs": [
+        "FR-010"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-4.jpg"
+    },
+    {
+      "id": "AC-show-resolved-1",
+      "journey": "jny-go-through-every-comment",
+      "step": "show-resolved",
+      "frs": [
+        "FR-015"
+      ],
+      "status": "pass",
+      "shot": "AC-show-resolved-1.jpg"
+    },
+    {
+      "id": "AC-show-resolved-2",
+      "journey": "jny-go-through-every-comment",
+      "step": "show-resolved",
+      "frs": [
+        "FR-015"
+      ],
+      "status": "pass",
+      "shot": "AC-show-resolved-2.jpg"
+    },
+    {
+      "id": "AC-answer-a-thread-1",
+      "journey": "jny-manage-a-thread",
+      "step": "answer-a-thread",
+      "frs": [
+        "FR-009"
+      ],
+      "status": "pass",
+      "shot": "AC-answer-a-thread-1.jpg"
+    },
+    {
+      "id": "AC-answer-a-thread-2",
+      "journey": "jny-manage-a-thread",
+      "step": "answer-a-thread",
+      "frs": [
+        "FR-009"
+      ],
+      "status": "pass",
+      "shot": "AC-answer-a-thread-2.jpg"
+    },
+    {
+      "id": "AC-answer-a-thread-3",
+      "journey": "jny-manage-a-thread",
+      "step": "answer-a-thread",
+      "frs": [
+        "FR-009"
+      ],
+      "status": "pass",
+      "shot": "AC-answer-a-thread-3.jpg"
+    },
+    {
+      "id": "AC-answer-a-thread-4",
+      "journey": "jny-manage-a-thread",
+      "step": "answer-a-thread",
+      "frs": [
+        "FR-009"
+      ],
+      "status": "pass",
+      "shot": "AC-answer-a-thread-4.jpg"
+    },
+    {
+      "id": "AC-delete-a-thread-1",
+      "journey": "jny-manage-a-thread",
+      "step": "delete-a-thread",
+      "frs": [
+        "FR-013"
+      ],
+      "status": "pass",
+      "shot": "AC-delete-a-thread-1.jpg"
+    },
+    {
+      "id": "AC-delete-a-thread-2",
+      "journey": "jny-manage-a-thread",
+      "step": "delete-a-thread",
+      "frs": [
+        "FR-013"
+      ],
+      "status": "pass",
+      "shot": "AC-delete-a-thread-2.jpg"
+    },
+    {
+      "id": "AC-delete-a-thread-3",
+      "journey": "jny-manage-a-thread",
+      "step": "delete-a-thread",
+      "frs": [
+        "FR-013"
+      ],
+      "status": "pass",
+      "shot": "AC-delete-a-thread-3.jpg"
+    },
+    {
+      "id": "AC-resolve-a-thread-1",
+      "journey": "jny-manage-a-thread",
+      "step": "resolve-a-thread",
+      "frs": [
+        "FR-014"
+      ],
+      "status": "pass",
+      "shot": "AC-resolve-a-thread-1.jpg"
+    },
+    {
+      "id": "AC-resolve-a-thread-2",
+      "journey": "jny-manage-a-thread",
+      "step": "resolve-a-thread",
+      "frs": [
+        "FR-014"
+      ],
+      "status": "pass",
+      "shot": "AC-resolve-a-thread-2.jpg"
+    },
+    {
+      "id": "AC-resolve-a-thread-3",
+      "journey": "jny-manage-a-thread",
+      "step": "resolve-a-thread",
+      "frs": [
+        "FR-014"
+      ],
+      "status": "pass",
+      "shot": "AC-resolve-a-thread-3.jpg"
+    },
+    {
+      "id": "AC-open-page-1",
+      "journey": "jny-review-a-document",
+      "step": "open-page",
+      "frs": [
+        "FR-001"
+      ],
+      "status": "pass",
+      "shot": "AC-open-page-1.jpg"
+    },
+    {
+      "id": "AC-open-page-2",
+      "journey": "jny-review-a-document",
+      "step": "open-page",
+      "frs": [
+        "FR-001"
+      ],
+      "status": "pass",
+      "shot": "AC-open-page-2.jpg"
+    },
+    {
+      "id": "AC-pick-a-block-1",
+      "journey": "jny-review-a-document",
+      "step": "pick-a-block",
+      "frs": [
+        "FR-002"
+      ],
+      "status": "pass",
+      "shot": "AC-pick-a-block-1.jpg"
+    },
+    {
+      "id": "AC-pick-a-block-2",
+      "journey": "jny-review-a-document",
+      "step": "pick-a-block",
+      "frs": [
+        "FR-002"
+      ],
+      "status": "pass",
+      "shot": "AC-pick-a-block-2.jpg"
+    },
+    {
+      "id": "AC-pick-a-block-4",
+      "journey": "jny-review-a-document",
+      "step": "pick-a-block",
+      "frs": [
+        "FR-002"
+      ],
+      "status": "pass",
+      "shot": "AC-pick-a-block-4.jpg"
+    },
+    {
+      "id": "AC-pick-a-block-3",
+      "journey": "jny-review-a-document",
+      "step": "pick-a-block",
+      "frs": [
+        "FR-002"
+      ],
+      "status": "pass",
+      "shot": "AC-pick-a-block-3.jpg"
+    },
+    {
+      "id": "AC-write-comment-1",
+      "journey": "jny-review-a-document",
+      "step": "write-comment",
+      "frs": [
+        "FR-003"
+      ],
+      "status": "pass",
+      "shot": "AC-write-comment-1.jpg"
+    },
+    {
+      "id": "AC-write-comment-2",
+      "journey": "jny-review-a-document",
+      "step": "write-comment",
+      "frs": [
+        "FR-003"
+      ],
+      "status": "pass",
+      "shot": "AC-write-comment-2.jpg"
+    },
+    {
+      "id": "AC-write-comment-3",
+      "journey": "jny-review-a-document",
+      "step": "write-comment",
+      "frs": [
+        "FR-003"
+      ],
+      "status": "pass",
+      "shot": "AC-write-comment-3.jpg"
+    },
+    {
+      "id": "AC-read-thread-1",
+      "journey": "jny-review-a-document",
+      "step": "read-thread",
+      "frs": [
+        "FR-004"
+      ],
+      "status": "pass",
+      "shot": "AC-read-thread-1.jpg"
+    },
+    {
+      "id": "AC-read-thread-2",
+      "journey": "jny-review-a-document",
+      "step": "read-thread",
+      "frs": [
+        "FR-004"
+      ],
+      "status": "pass",
+      "shot": "AC-read-thread-2.jpg"
+    },
+    {
+      "id": "AC-read-thread-3",
+      "journey": "jny-review-a-document",
+      "step": "read-thread",
+      "frs": [
+        "FR-004"
+      ],
+      "status": "pass",
+      "shot": "AC-read-thread-3.jpg"
+    },
+    {
+      "id": "AC-select-words-1",
+      "journey": "jny-review-a-document",
+      "step": "select-words",
+      "frs": [
+        "FR-007"
+      ],
+      "status": "pass",
+      "shot": "AC-select-words-1.jpg"
+    },
+    {
+      "id": "AC-select-words-2",
+      "journey": "jny-review-a-document",
+      "step": "select-words",
+      "frs": [
+        "FR-007"
+      ],
+      "status": "pass",
+      "shot": "AC-select-words-2.jpg"
+    },
+    {
+      "id": "AC-select-words-3",
+      "journey": "jny-review-a-document",
+      "step": "select-words",
+      "frs": [
+        "FR-007"
+      ],
+      "status": "pass",
+      "shot": "AC-select-words-3.jpg"
+    },
+    {
+      "id": "AC-drop-a-pin-1",
+      "journey": "jny-review-a-document",
+      "step": "drop-a-pin",
+      "frs": [
+        "FR-008"
+      ],
+      "status": "pass",
+      "shot": "AC-drop-a-pin-1.jpg"
+    },
+    {
+      "id": "AC-drop-a-pin-2",
+      "journey": "jny-review-a-document",
+      "step": "drop-a-pin",
+      "frs": [
+        "FR-008"
+      ],
+      "status": "pass",
+      "shot": "AC-drop-a-pin-2.jpg"
+    },
+    {
+      "id": "AC-drop-a-pin-3",
+      "journey": "jny-review-a-document",
+      "step": "drop-a-pin",
+      "frs": [
+        "FR-008"
+      ],
+      "status": "untested",
+      "reason": "the runner cannot resize the window during a proof; a person drags the window narrower and wider and sees the pin stay under The path"
+    },
+    {
+      "id": "AC-copy-for-ai-1",
+      "journey": "jny-review-a-document",
+      "step": "copy-for-ai",
+      "frs": [
+        "FR-005"
+      ],
+      "status": "pass",
+      "shot": "AC-copy-for-ai-1.jpg"
+    },
+    {
+      "id": "AC-copy-for-ai-2",
+      "journey": "jny-review-a-document",
+      "step": "copy-for-ai",
+      "frs": [
+        "FR-005"
+      ],
+      "status": "pass",
+      "shot": "AC-copy-for-ai-2.jpg"
+    },
+    {
+      "id": "AC-copy-for-ai-3",
+      "journey": "jny-review-a-document",
+      "step": "copy-for-ai",
+      "frs": [
+        "FR-005"
+      ],
+      "status": "pass",
+      "shot": "AC-copy-for-ai-3.jpg"
+    },
+    {
+      "id": "AC-clipboard-blocked-1",
+      "journey": "jny-review-a-document",
+      "step": "clipboard-blocked",
+      "frs": [
+        "FR-006"
+      ],
+      "status": "pass",
+      "shot": "AC-clipboard-blocked-1.jpg"
+    },
+    {
+      "id": "AC-clipboard-blocked-2",
+      "journey": "jny-review-a-document",
+      "step": "clipboard-blocked",
+      "frs": [
+        "FR-006"
+      ],
+      "status": "pass",
+      "shot": "AC-clipboard-blocked-2.jpg"
+    },
+    {
+      "id": "AC-undo-a-cancel-1",
+      "journey": "jny-review-a-document",
+      "step": "undo-a-cancel",
+      "frs": [
+        "FR-012"
+      ],
+      "status": "pass",
+      "shot": "AC-undo-a-cancel-1.jpg"
+    },
+    {
+      "id": "AC-undo-a-cancel-2",
+      "journey": "jny-review-a-document",
+      "step": "undo-a-cancel",
+      "frs": [
+        "FR-012"
+      ],
+      "status": "pass",
+      "shot": "AC-undo-a-cancel-2.jpg"
+    },
+    {
+      "id": "AC-undo-a-cancel-3",
+      "journey": "jny-review-a-document",
+      "step": "undo-a-cancel",
+      "frs": [
+        "FR-012"
+      ],
+      "status": "pass",
+      "shot": "AC-undo-a-cancel-3.jpg"
+    },
+    {
+      "id": "AC-open-deck-1",
+      "journey": "jny-review-a-slide-deck",
+      "step": "open-deck",
+      "frs": [
+        "FR-016"
+      ],
+      "status": "pass",
+      "shot": "AC-open-deck-1.jpg"
+    },
+    {
+      "id": "AC-open-deck-2",
+      "journey": "jny-review-a-slide-deck",
+      "step": "open-deck",
+      "frs": [
+        "FR-016"
+      ],
+      "status": "pass",
+      "shot": "AC-open-deck-2.jpg"
+    },
+    {
+      "id": "AC-pin-on-a-slide-1",
+      "journey": "jny-review-a-slide-deck",
+      "step": "pin-on-a-slide",
+      "frs": [
+        "FR-017"
+      ],
+      "status": "pass",
+      "shot": "AC-pin-on-a-slide-1.jpg"
+    },
+    {
+      "id": "AC-pin-on-a-slide-2",
+      "journey": "jny-review-a-slide-deck",
+      "step": "pin-on-a-slide",
+      "frs": [
+        "FR-017"
+      ],
+      "status": "pass",
+      "shot": "AC-pin-on-a-slide-2.jpg"
+    },
+    {
+      "id": "AC-turn-the-slide-1",
+      "journey": "jny-review-a-slide-deck",
+      "step": "turn-the-slide",
+      "frs": [
+        "FR-018"
+      ],
+      "status": "pass",
+      "shot": "AC-turn-the-slide-1.jpg"
+    },
+    {
+      "id": "AC-turn-the-slide-2",
+      "journey": "jny-review-a-slide-deck",
+      "step": "turn-the-slide",
+      "frs": [
+        "FR-018"
+      ],
+      "status": "pass",
+      "shot": "AC-turn-the-slide-2.jpg"
+    },
+    {
+      "id": "AC-comments-by-slide-1",
+      "journey": "jny-review-a-slide-deck",
+      "step": "comments-by-slide",
+      "frs": [
+        "FR-019"
+      ],
+      "status": "pass",
+      "shot": "AC-comments-by-slide-1.jpg"
+    },
+    {
+      "id": "AC-comments-by-slide-2",
+      "journey": "jny-review-a-slide-deck",
+      "step": "comments-by-slide",
+      "frs": [
+        "FR-019"
+      ],
+      "status": "pass",
+      "shot": "AC-comments-by-slide-2.jpg"
+    },
+    {
+      "id": "AC-open-on-phone-1",
+      "journey": "jny-review-on-a-phone",
+      "step": "open-on-phone",
+      "frs": [
+        "FR-022"
+      ],
+      "status": "pass",
+      "shot": "AC-open-on-phone-1.jpg"
+    },
+    {
+      "id": "AC-open-on-phone-2",
+      "journey": "jny-review-on-a-phone",
+      "step": "open-on-phone",
+      "frs": [
+        "FR-022"
+      ],
+      "status": "pass",
+      "shot": "AC-open-on-phone-2.jpg"
+    },
+    {
+      "id": "AC-tap-to-comment-1",
+      "journey": "jny-review-on-a-phone",
+      "step": "tap-to-comment",
+      "frs": [
+        "FR-028"
+      ],
+      "status": "pass",
+      "shot": "AC-tap-to-comment-1.jpg"
+    },
+    {
+      "id": "AC-tap-to-comment-2",
+      "journey": "jny-review-on-a-phone",
+      "step": "tap-to-comment",
+      "frs": [
+        "FR-028"
+      ],
+      "status": "pass",
+      "shot": "AC-tap-to-comment-2.jpg"
+    },
+    {
+      "id": "AC-all-comments-on-phone-1",
+      "journey": "jny-review-on-a-phone",
+      "step": "all-comments-on-phone",
+      "frs": [
+        "FR-029"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-on-phone-1.jpg"
+    },
+    {
+      "id": "AC-all-comments-on-phone-2",
+      "journey": "jny-review-on-a-phone",
+      "step": "all-comments-on-phone",
+      "frs": [
+        "FR-029"
+      ],
+      "status": "pass",
+      "shot": "AC-all-comments-on-phone-2.jpg"
+    },
+    {
+      "id": "AC-add-your-name-1",
+      "journey": "jny-say-who-you-are",
+      "step": "add-your-name",
+      "frs": [
+        "FR-011"
+      ],
+      "status": "pass",
+      "shot": "AC-add-your-name-1.jpg"
+    },
+    {
+      "id": "AC-add-your-name-2",
+      "journey": "jny-say-who-you-are",
+      "step": "add-your-name",
+      "frs": [
+        "FR-011"
+      ],
+      "status": "pass",
+      "shot": "AC-add-your-name-2.jpg"
+    },
+    {
+      "id": "AC-add-your-name-3",
+      "journey": "jny-say-who-you-are",
+      "step": "add-your-name",
+      "frs": [
+        "FR-011"
+      ],
+      "status": "pass",
+      "shot": "AC-add-your-name-3.jpg"
+    }
+  ],
+  "wording": []
+}

@@ -1,6 +1,6 @@
 # Contributing to Pipeup
 
-Thanks for helping. Pipeup is alpha, so open an issue to discuss anything larger than a bug fix
+Thanks for helping. Open an issue to discuss anything larger than a bug fix
 before you spend time on it.
 
 ## Build and test

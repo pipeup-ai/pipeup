@@ -7,12 +7,17 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-10
+
+Pipeup 1.0: the API and the stored comment format are stable, and Pipeup for browsers comments on any web page from
+Chrome, Edge, Firefox and Safari.
+
 ### Added
 
+- **Public design reviews.** The website links to the Pipeup design at `/design/`, where signed-in visitors can submit private suggestions for the owner to review before implementation.
 - The website has a Privacy page and a Support page for Pipeup for browsers, and a sample page for trying the extension, Share and Live included. Safari's Pipeup comes in a Mac app with a window of its own (what it is, whether it's on in Safari, how to start), its own icon, and support for macOS 12 and later. Each extension package carries its licences.
 - `mount({ field })`: a host can show its own stand-in for Pipeup's text boxes, typed in where the page can't hear. In the browser extension, what is typed into a comment, reply or edit box is typed in the extension's own frame, so the page hears neither the words nor the keys.
 - `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
-
 - `mount({ settings })` gives page settings a host can't write into the page, and `startComment(element or range)` opens the comment box on what it names.
 - `pipeup browser`: agents read comments sent from the browser extension and answer them (`browser read`, `browser reply`, set up once with `browser install`, or `browser install --browser firefox`).
 - `mount({ prefs })`: a host can keep the reviewer's choices (look, Hide comments) somewhere other than the page's localStorage.
@@ -22,9 +27,9 @@ change the API and the stored comment format.
 
 ### Changed
 
+- Pipeup is stable: the API and the stored comment format change only in a new major version. Commands are run as `npx --yes pipeup@1`; `pipeup@0` keeps fetching 0.9.
 - The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture; a page can't choose where Share or Save to GitHub sends (only the reviewer's own address and repository count).
 - Save to GitHub says that GitHub receives the comment's words, name, page title and address when its new-issue page opens; nothing is filed until you submit it.
-
 - In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.
 - In comment mode, while a thread is open to read, no other block is outlined, and a click on the page only closes it; the next click chooses a block. A thread you just wrote doesn't hold up the next comment.
 
@@ -35,6 +40,12 @@ change the API and the stored comment format.
 - In Safari, selected words keep their selection, and their comment icon, when Pipeup moves the focus away.
 - Moving the mouse onto another block takes the outline from the keyboard's block cursor in browsers that don't say how far the pointer moved.
 - A press on a card in All comments opens it even when the list updates between the press and its release (a comment arriving just then lost the click).
+- Public design specification downloads are included in the published snapshot.
+- **Review accounts.** Public design submissions require a verified account. Configured social providers and managed email sign-in support reviewers and owners; account identity never grants owner permissions by itself.
+- **A quick second click in comment mode.** A click that began just as the previous one ended could lose track of
+  how it began, so holding Space during it handed the page a click meant for Pipeup.
+- **⋯ stays where a click finds it.** Pointed at, the comment control shows its ⋯ right beside the comment bubble
+  instead of at the far end of its reach, where longer words (such as an add-on's status) pushed it away.
 
 
 ## [0.9.1] - 2026-11-01
@@ -523,7 +534,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/pipeup-ai/pipeup/compare/v0.8.1...v0.8.2

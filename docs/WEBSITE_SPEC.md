@@ -249,7 +249,7 @@ the rest of the site) and are reached from a **Try it** link on the add-on's car
   to whom (the same sentence as its card), and what it needs (a browser, a second window).
 - **The add-on is the site's own copy**, the same version the card shows, so a try page never changes under a
   visitor. The pre-release copy's try pages use the pre-release add-ons.
-- **Commands that run Pipeup work anywhere an agent does**: on the stable site they are `npx --yes pipeup@0 …`, which
+- **Commands that run Pipeup work anywhere an agent does**: on the stable site they are `npx --yes pipeup@1 …`, which
   never stops to ask and takes any release npm will give (some computers only accept packages a few days old). On the
   pre-release copy every such command names its version (`npx --yes pipeup@0.8.0-beta.4 watch …`), in the pages, their
   Markdown copies, the skills and `llms.txt`, since any stable release wouldn't match the pre-release a page there uses.
@@ -344,6 +344,14 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 ---
 
+## Public design review
+
+The existing website exposes Pipeup's public design at `/design/`, linked quietly from the home page. Anyone may browse its personas, journeys, screens and prototype. Submitting a review requires a signed-in account; anonymous reviews are not accepted. Reviewers and owners can sign in through configured common identity providers. Reviews go privately to the author; they are not public comments by default.
+
+The service verifies the submitting account and records its stable identity with the review; a typed display name never establishes identity or owner access. Sign-in cancellation or session expiry preserves the draft and never sends it. Submission confirms durable receipt and retains a browser draft after a connection failure. The authenticated owner reads suggestions in a separate private inbox, approves or declines them, and can refine implementation wording without replacing the original feedback. Preparing implementation includes only approved suggestions. Sharing any feedback publicly is a separate, explicit owner choice.
+
+The published design snapshot excludes imported private feedback and decisions. It contains no owner credentials. The static website sends submissions to the configured review service and never exposes the private inbox's records through static files.
+
 ## Change log
 
 - 2026-10-06 — First version.
@@ -404,11 +412,13 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-15 — The footer and the home page's Markdown no longer state Pipeup's size: it changes with every release, and it had fallen out of date. The facts line keeps "One file".
 - 2026-10-15 — The footer's facts line goes altogether (One file, No dependencies, Works from disk, Stays on your device): it read as marketing. The footer keeps only its Add-ons and For agents links, on the right.
 - 2026-10-17 — On the pre-release copy, commands that run Pipeup (`npx pipeup …`) name the pre-release's version, so an agent following its skills runs the same release as the page.
-- 2026-10-19 — Commands that run Pipeup are `npx --yes pipeup@0 …` on the stable site (never asking, any release npm will give), and name the pre-release on the pre-release copy (FUNCTIONAL_SPEC 15b).
+- 2026-10-19 — Commands that run Pipeup are `npx --yes pipeup@1 …` on the stable site (never asking, any release npm will give), and name the pre-release on the pre-release copy (FUNCTIONAL_SPEC 15b).
 - 2026-10-24 — A Quick start section on the home page, under the first screen: three steps and the prompt shown in full, with one Copy prompt button. It reuses the "Create comment-enabled HTML" prompt, whose first line now fits an existing page too; every Copy prompt button eases back from "Copied".
 - 2026-10-27 — Each Copy prompt carries a document key of its own, and the prompt and the steps say a key is for one page only ("one copy per page"): reusing one prompt for several pages gave them all one key, so one page's comments showed on another (usability study, 27 October).
 - 2026-10-27 — One front door again (usability study, 27 October; visual spec docs/design/one-front-door-mockups.html). The first screen's two buttons become four numbered steps with one Copy prompt, covering the whole trip from the author's file to reviewers and back, and the sentence under the headline says each person's comments stay in their own browser until they send them. Quick start becomes What your AI does, with a note for reviewers that has its own Copy, and the prompt asks the AI for the new file, a reminder to open it in a browser, and that note. A new The details section gives the two lines to add by hand, what Pipeup sends and does to a page, the skills, and the licence, version and size, which always match the copy the site carries. add-comments.html becomes the reviewer help page, linked from the steps and the note; create-html.html is retired and its address opens the home page's steps. The showcase reads one sentence per scene to screen readers, holds still under focus, the pointer or while the visitor comments, and draws a fingertip on touch screens.
 - 2026-10-27 — The home page fits one screen (visual spec docs/design/one-screen-home-mockups.html): What your AI does and The details become pages of their own (prompt.html, details.html), opened from the first screen's quiet links, and the first screen and The details say the same in fewer words. If copying the prompt isn't allowed, What your AI does opens with its words selected.
 - 2026-10-31 — The home page's prompt (What your AI does), llms.txt and the integrate skill name Agents and Inline as the add-ons authors most often want, added only when the author asks; if they asked for neither, the agent says in one line that both exist. This ends "the Copy prompt stays core only" (2026-10-08) for that one prompt: answering comments with an agent and asking questions in the content are what most authors who make a page want next. The Add-ons page gains an Inline card and page (sends nothing, asks nothing first). Live with the release that ships Inline.
 - 2026-11-01 — The Create prompt, What your AI does, llms.txt and the integrate skill tell agents that a page can have its own Comment button (Pipeup's page API, keeping a way to Pipeup's menu); Inline's page, its prompt and llms.txt say how to match an ask to the page's look while its mark and tint stay. Visual spec: docs/design/compact-asks.html.
+- 2026-11-10: Public design review under `/design/`, private direct submissions, authenticated owner decisions and separate public feedback sharing.
 - 2026-11-10 — Privacy and Support pages, and a page for trying the extension, for the browsers' stores (§3 items 2b, 2c). Agreed with the maintainer as part of preparing the stores.
+- 2026-11-10: Maintainer replaces anonymous review submission with required account sign-in through common providers. Public browsing and private owner moderation remain available; verified identity is required at the submission endpoint.

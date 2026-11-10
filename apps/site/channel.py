@@ -21,10 +21,10 @@ for f in out.rglob("*"):
         if STABLE in text:
             f.write_text(text.replace(STABLE, NEXT))
 
-# 1b. Commands that run Pipeup name this pre-release: `npx --yes pipeup@0` (or a bare `npx pipeup`) fetches npm's
+# 1b. Commands that run Pipeup name this pre-release: `npx --yes pipeup@1` (any major: `pipeup@<major>`) or a bare `npx pipeup` fetches npm's
 #     stable release, which wouldn't match the pre-release a page here uses (the pages, their Markdown copies, the
 #     skills, llms*.txt, and the Add-ons page's prompts in addons.js; never the scripts it serves).
-PIN = re.compile(r"\bnpx (--yes )?pipeup(?:@0)?(?=[\s`<\"'])")
+PIN = re.compile(r"\bnpx (--yes )?pipeup(?:@\d+)?(?=[\s`<\"'])")
 for f in out.rglob("*"):
     if f.suffix in {".html", ".md", ".txt"} or f.name == "addons.js":
         text = f.read_text()

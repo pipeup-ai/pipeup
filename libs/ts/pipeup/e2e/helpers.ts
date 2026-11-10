@@ -99,8 +99,8 @@ export async function settled(locator: Locator): Promise<void> {
 }
 
 /**
- * An element's box, read again while an update is rebuilding it: a card's buttons are made afresh by each update, and
- * one caught between the old and the new has no box.
+ * A locator's box, once it has one. Views rebuild their buttons when they render, so the element found can be
+ * replaced before it is measured (a detached element has no box): measure again until one is in the page.
  */
 export async function boxOf(
   locator: Locator,
@@ -138,11 +138,11 @@ export const control = (page: Page): Locator => page.locator(".launch .mode");
 /** Comment mode is on: the control shows it. */
 const isCommenting = (page: Page) => control(page).evaluate((b) => b.classList.contains("on"));
 
-/** The ⋯ at the end of the control's reach, which opens its menu. */
+/** The ⋯ just left of the control, shown when it is pointed at, which opens its menu. */
 export const moreButton = (page: Page): Locator => page.locator(".launch .mm");
 
 /**
- * Opens the comment control's menu: ⋯ at the end of the control's reach (pointed at), or the panel footer's ⋯ while
+ * Opens the comment control's menu: ⋯ just left of the control (pointed at), or the panel footer's ⋯ while
  * All comments is open.
  */
 export async function openMenu(page: Page): Promise<void> {

@@ -81,7 +81,7 @@ test("the number cross-fades when it changes, and shows 9+ above 9, with the exa
   await expect(page.locator(".launch .ttip")).toContainText("10 open");
 });
 
-test("pointed at, the control reaches left just far enough to show its shortcut and ⋯, after a short delay, and stays put", async ({
+test("pointed at, the control reaches left just far enough to show ⋯ beside the bubble and its shortcut, after a short delay, and stays put", async ({
   page,
 }) => {
   await open(page, "site.html");
@@ -102,6 +102,9 @@ test("pointed at, the control reaches left just far enough to show its shortcut 
     .locator(".launch .mm")
     .evaluate((e) => (e as HTMLElement).offsetWidth + parseFloat(getComputedStyle(e).marginLeft));
   expect(Math.abs(tab.width - before.width - words - more)).toBeLessThan(1.5);
+  // ⋯ sits right beside the bubble, so the words, however long, never push it away from a click.
+  const dots = (await page.locator(".launch .mm").boundingBox())!;
+  expect(dots.x + dots.width).toBe(before.x);
   expect(await tip.evaluate((e) => parseFloat(getComputedStyle(e).transitionDelay))).toBeGreaterThan(0);
   await settled(page.locator(".launch"));
   expect((await control(page).boundingBox())!).toEqual(before);

@@ -7,7 +7,7 @@ told). Visual spec: [local-agents-mockups.html](local-agents-mockups.html). From
 ## The prompt (`addons/agents/src/prompt.ts`)
 
 - `agentCommand(version)`: `npx --yes pipeup@<major>` for a stable page (`@0` today), `npx --yes pipeup@<version>` for a
-  pre-release, with a fallback sentence ("If npm refuses pipeup@0.9.0-beta.1, use pipeup@0"). `--yes` because npx
+  pre-release, with a fallback sentence ("If npm refuses pipeup@0.9.0-beta.1, use pipeup@1"). `--yes` because npx
   otherwise asks "Ok to proceed?", which an agent can't answer; the major version because some computers' npm only
   accepts packages a few days old (`before` / minimum release age), and the replies format has been the same since 0.6.
 - `pageToAnswer(url, file)`: the live link's file; else, from a `file:` URL, the decoded path (a folder's page is
@@ -33,7 +33,7 @@ told). Visual spec: [local-agents-mockups.html](local-agents-mockups.html). From
 ## Surfaces
 
 The apply and integrate skills (and the plugin's copy), `llms.txt`, the Markdown copies, the Add-ons page's prompts and
-the README give `npx --yes pipeup@0 …`. The pre-release site's `channel.py` rewrites that form (and a bare `npx pipeup`)
+the README give `npx --yes pipeup@1 …`. The pre-release site's `channel.py` rewrites that form (and a bare `npx pipeup`)
 to the pre-release's version.
 
 ## Testing

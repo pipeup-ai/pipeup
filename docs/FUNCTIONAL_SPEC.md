@@ -476,8 +476,9 @@ any of them off.
   - In comment mode the glass turns the accent colour.
   - **Pointed at, it reaches left** after a moment, just far enough to show its shortcut (and anything an
     add-on says, such as who else is here, and the exact number when the bubble says 9+), opening and folding evenly; it folds back as soon as the pointer
-    leaves, and while the menu is open. The reach ends with **⋯**, which opens the menu. The control itself never
-    moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
+    leaves, and while the menu is open. **⋯**, which opens the menu, eases in **right beside the comment bubble**, between
+    it and the words, so however far the reach goes it always appears in the same place and a click aimed at it never
+    misses. The control itself never moves. Its name, state and shortcut are read out by screen readers, and the menu shows the shortcut beside Start
     commenting.
 - **While All comments is open, the comment control becomes the panel's footer**: your avatar and name,
   **Comment** with its shortcut and a switch, and **⋯** for the rest of the menu. Closing the panel draws
@@ -490,7 +491,7 @@ any of them off.
   until the menu has closed, then shows for its usual time.
 - **Clicking or tapping it turns comment mode on**, and doing it again turns it off. Comment mode's hint says how
   to stop.
-- **Its menu** opens from the **⋯** at the end of its reach; by touch, from pressing and holding the control (the
+- **Its menu** opens from the **⋯** beside the bubble; by touch, from pressing and holding the control (the
   first time comment mode starts by touch, its hint says so); and from the keyboard, with ↑ or the menu key on the
   focused control. All comments is in the menu. The menu rises above the control. Each item is **one line**; what it
   does is explained in a **tooltip** that eases in after a short delay on hover or keyboard focus,
@@ -2065,7 +2066,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-18 — An agent that keeps a key can sign the replies block it gives in a chat, and a signed paste from an agent the page lists shows as that agent's, like a reply from the replies file; other pasted replies still say pasted by you, and pasted by Sam to others in a shared copy. An agent asks to be listed only when it can sign. A page that shows a new edition in a fixed shell gives each edition its own document identity; an edition attribute is an open question (sections 15, 15b and 19).
 - 2026-10-18 — Built: Copy for my agent with the open comments, Paste my agent's replies, signed pasted replies from a listed agent, "pasted by you" (and by the reviewer's name to others) on the rest, and `pipeup reply --print`. Signed pasted replies are not yet passed on to a shared copy (sections 15b, 15d).
 - 2026-10-19 — Proposed (not built): an agent on the author's computer answers the first time it tries. The commands it is given run anywhere (any release that answers them, never stopping to ask), the prompt names the HTML file that runs Pipeup and where replies go, the reply command refuses a file Pipeup doesn't run on and names the page that does, and the agent command lists the agent on the page after the author's yes (section 15b). Visual spec: docs/design/local-agents-mockups.html.
-- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@0`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
+- 2026-10-19 — Approved, with the recommended answers: commands ask for any release of the page's major version (`pipeup@1`), the agent lists itself after the author's yes, the reply command writes even before the agent is listed, and it ships as 0.8.2 (section 15b).
 - 2026-10-21 — While a reviewer is sending to a shared copy, their Pipeup also passes on the replies, addressed notes and reactions of an agent the page lists, which the agent signed; an answer to a comment the reviewer hasn't shared isn't sent (sections 11, 15b).
 - 2026-10-21 — A page can name the edition it shows (a daily briefing in one shell): comments stay with their edition, the control counts this edition's, earlier editions' threads wait folded in All comments and still open with their snapshot, and Copy for my agent carries this edition's (sections 4, 8, 15, 15b; open question closed).
 - 2026-10-21 — From a reviewer's own page built on 0.8.2: one click or tap on the comment control starts and stops comment mode, and its menu moves to ⋯ at the end of its reach (press and hold by touch, ↑ from the keyboard); selecting words offers a comment outside comment mode too, without turning it on, unless the author turns that off; a page's own code can turn comment mode on and off, set the reviewer's name, hear when either changes and learn why Pipeup didn't start (new §4a); every `<html>` setting can also go on the line that loads Pipeup or an add-on, for hosts that write their own `<html>` (sections 4, 4a, 5, 7). Visual spec: docs/design/one-tap-page-api-mockups.html.
@@ -2079,6 +2080,7 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-10-31 — Built: inline comments (§11b), the inline add-on, with Pipeup's two new abilities for any add-on (drawing inside an element the author marked, and posting what the reviewer sent from the add-on's own box). An ask's answers and the threads on a block that shows its comments in place leave the margin; Copy for AI names an ask's block by its question; `pipeup read` lists each ask with its question, kind and every reviewer's latest answer. They add 1.0 KB to Pipeup (62.7 KB gzip), so its budget rises from 62 to 63 KB (section 16a). Not built yet: dictation and other add-ons' tools in an ask's box (they need Pipeup to lend its box tools to an add-on's own box), and asks added to the page after Pipeup starts.
 - 2026-10-31 — Inline comments (§11b): a reviewer can remove their answer (Remove, asked once more), and changing an answer has one Cancel.
 - 2026-11-01 — Asks are compact (one line for a question and its buttons where it fits, one line after answering); their field looks like a field, grows on its own and has no resize handle; an ask takes the page's font, and the author can set its accent, font and rounding while Pipeup's mark and tint stay (§11b). A page with its own way to start commenting can hide Pipeup's comment control and open Pipeup's menu and All comments from its code (§4a). Visual spec: docs/design/compact-asks.html.
+- 2026-11-03 — When the comment control is pointed at, its ⋯ eases in right beside the comment bubble instead of at the far end of the reach, where longer words could push it away from a click (section 5).
 - 2026-11-09 — Built: re-finding comments (§8). It's gone is a third answer beside Yes and Not here, rather than a
   choice after Not here. It adds 2.0 KB to Pipeup (65.5 KB gzip), 1.5 KB of it in the core that add-ons and the command
   line use (12.2 KB), so the budgets rise to 66 KB and 12.5 KB (section 16a).

@@ -1,0 +1,62 @@
+<!doctype html>
+<html data-da-shared data-pipeup-doc="iOcXT_u7XOnsi1Ln:PGq_UUMPfr-rzlCPIprw9YGpkE-tTZUHbpiJMXLRKz8" lang="en" class="ds-root pu-page">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add Pipeup to a page · Pipeup prototype</title>
+<link rel="stylesheet" href="runtime/ds.css">
+<link rel="stylesheet" href="assets/page.css">
+<script src="runtime/data.js"></script>
+<script defer src="runtime/prototype.js"></script>
+<script defer src="runtime/ds.js"></script>
+<meta name="designup-review" content="{&quot;service&quot;:&quot;https://pipeup-design-reviews.noisyniche8.chatgpt.site&quot;,&quot;project&quot;:&quot;pipeup&quot;,&quot;design&quot;:&quot;https://pipeup-ai.github.io/pipeup/design/&quot;,&quot;page&quot;:&quot;prototype/setup.html&quot;,&quot;snapshot&quot;:&quot;e2b6658a&quot;}">
+<link rel="stylesheet" href="../site/assets/review-submit.css">
+<script src="../site/assets/review-auth.js" defer></script>
+<script src="../site/assets/review-submit.js" defer></script>
+</head>
+<body class="pu-body" data-page="setup">
+<div class="ds-stack ds-stack--screen" data-ref="screen" data-pipeup-id="screen">
+  <main class="ds-stack ds-stack--fill">
+    <div class="ds-section ds-section--tight">
+    <div class="ds-container">
+      <div class="ds-stack ds-stack--loose" data-ref="setup" data-pipeup-id="setup" data-unless="hash:check-the-page" data-if="!hash:check-the-page-error">
+        <div class="ds-stack ds-stack--tight" data-ref="headline" data-pipeup-id="headline"><h1 class="ds-text-display-md">Add Pipeup to a page</h1><p class="ds-text-lede">One script tag, pinned to a version, and a document key that stays the same once people have commented.</p></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="key-block" data-pipeup-id="key-block"><div class="ds-code-block__header"><span class="ds-code-block__title">The html tag</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code>&lt;html data-pipeup-doc="MQQLnEw1V1KQtXotdXeyksEYEB60YVpvSh65pKhcG38"&gt;</code></pre></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="script-block" data-pipeup-id="script-block"><div class="ds-code-block__header"><span class="ds-code-block__title">Just before the end of body</span><button class="ds-code-block__copy" type="button" data-flag="copied"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code>&lt;script
+  src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"
+  integrity="sha384-…"
+  crossorigin="anonymous"
+&gt;&lt;/script&gt;</code></pre></div>
+        <p class="ds-text-body" data-ref="make-a-key" data-pipeup-id="make-a-key">Make a key in any browser console on a page with Pipeup loaded: <code class="ds-text-mono">await Pipeup.newDocumentAttribute()</code></p>
+        <p class="ds-text-muted" data-ref="from-disk" data-pipeup-id="from-disk">One file, no dependencies: put pipeup.min.js next to the page and it works from disk.</p>
+        <p class="ds-text-muted" data-ref="next" data-pipeup-id="next" data-if="flag.copied">Next: <a class="ds-button ds-button--link" href="setup.html#check-the-page">run the check<span class="ds-icon" data-icon="arrow-right"></span></a></p>
+      </div>
+      <div class="ds-stack ds-stack--loose" data-ref="check" data-pipeup-id="check" data-if="hash:check-the-page">
+        <div class="ds-stack ds-stack--tight" data-ref="headline-check" data-pipeup-id="headline-check"><h1 class="ds-text-display-md">Run the check</h1><p class="ds-text-lede">What Pipeup changes or covers on the page, at three widths.</p></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block" data-pipeup-id="command-block"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@0 check page.html</code></pre></div>
+        <div class="ds-code-block ds-code-block--strong" data-ds="code-block" data-ref="report-block" data-pipeup-id="report-block"><div class="ds-code-block__header"><span class="ds-code-block__title">pipeup check</span></div><pre class="ds-code-block__code"><code>page.html
+  390: nothing covered, nothing changed
+  820: nothing covered, nothing changed
+ 1280: nothing covered, nothing changed
+✓ page.html is ready to review</code></pre></div>
+      </div>
+      <div class="ds-stack ds-stack--loose" data-ref="check-failed" data-pipeup-id="check-failed" data-if="hash:check-the-page-error">
+        <div class="ds-stack ds-stack--tight" data-ref="headline-check-failed" data-pipeup-id="headline-check-failed"><h1 class="ds-text-display-md">Run the check</h1><p class="ds-text-lede">What Pipeup changes or covers on the page, at three widths.</p></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block-failed" data-pipeup-id="command-block-failed"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@0 check page.html</code></pre></div>
+        <div class="ds-code-block ds-code-block--strong" data-ds="code-block" data-ref="report-block-failed" data-pipeup-id="report-block-failed"><div class="ds-code-block__header"><span class="ds-code-block__title">pipeup check</span></div><pre class="ds-code-block__code"><code>page.html
+  390: nothing covered, nothing changed
+  820: nothing covered, nothing changed
+ 1280: the tag covers the page's own footer link "Contact"
+       mark it with data-pipeup-ignore, or give the page a reserved gutter
+✗ 1 thing to fix before review</code></pre></div>
+      </div>
+    </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.1/dist/pipeup.min.js" integrity="sha384-A6m3XDf/DuMdxZzBxiaOfI8Oh73SEulupUD+WbjpkccThkVzz5Je66PSeVj5LtGk" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pipeup/agents@0.9.1/dist/agents.min.js" integrity="sha384-XGyYk3WwvxcaMOk/vL/SRy1It8qQROWbKDFaBiB/zppZNkFskQ41lcFGjkZW2PkW" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pipeup/voice@0.9.1/dist/voice.min.js" integrity="sha384-Y7tU5injzCcaZRunW+X89e83ZZP0GndlNqBX2n0x4psJYYEHK+1m/uCbmUyxGWAV" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pipeup/inline@0.9.1/dist/inline.min.js" integrity="sha384-sXx+qQEDv7O5iqSjd7MFdQqK4pDO4PWJkoAOkmu6QmpFpALpp5c5/mHqA15rgRc2" crossorigin="anonymous"></script>
+</body>
+</html>

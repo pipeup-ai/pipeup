@@ -49,7 +49,7 @@ jobs:
           echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run check
 
       # The add-ons and the mailbox server are released with the core, at the same version, from the same tag.
