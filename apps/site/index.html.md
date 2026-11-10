@@ -24,3 +24,5 @@ Adding it yourself? The script tag, licence and size: [The details](https://pipe
 - Making your own add-on: [guide](https://pipeup-ai.github.io/pipeup/addons-guide.html.md). Add one safely: pin it with its integrity hash, list it in `data-pipeup-addons` on `<html>`, and tell the author about a Content-Security-Policy (best effort).
 - Add-ons: [addons.html](https://pipeup-ai.github.io/pipeup/addons.html), a card for each add-on; each has its own page and Markdown copy, listed in [addons.html.md](https://pipeup-ai.github.io/pipeup/addons.html.md).
 - Source: [github.com/pipeup-ai/pipeup](https://github.com/pipeup-ai/pipeup).
+
+- Design and feedback: [review the Pipeup design](https://pipeup-ai.github.io/pipeup/design/). Suggestions are submitted privately to the owner.
