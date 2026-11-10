@@ -9,7 +9,8 @@
     "e2e": "playwright test",
     "check": "node ../../tools/build-extension.mjs --test && web-ext lint -s dist/firefox && npm run e2e",
     "firefox": "npx @puppeteer/browsers install firefox@stable --path node_modules/.cache/firefox",
-    "build:safari": "node ../../tools/build-extension.mjs --safari"
+    "build:safari": "node ../../tools/build-extension.mjs --safari",
+    "store-art": "node ../../tools/build-extension.mjs --test && STORE_ART=1 playwright test e2e/store-art.spec.ts --project=chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

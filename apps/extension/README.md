@@ -83,3 +83,12 @@ cd apps/extension && npm ci && npx playwright install chromium && npm run firefo
 Firefox for them). The tests load test builds (`dist/chromium-test`, `dist/firefox-test`) that may also reach the test
 pages' server, because a test can't press the toolbar button. Safari can't be driven with an extension: try it by hand. **Always on for this site** isn't covered: Chrome asks the reviewer for permission, which a test
 can't answer. Check it by hand.
+
+## For the stores
+
+- **Screenshots and art:** `npm run store-art` writes each store's screenshots and art to `dist/store/`, made from the
+  extension on the site's sample page ([docs/store/extension-listings.md](../../docs/store/extension-listings.md) says
+  which are taken by hand).
+- **Safari's app for the Mac App Store:** `APPLE_TEAM_ID=<team> node tools/build-extension.mjs --safari-release`
+  archives it, signed by that team, to `dist/Pipeup.xcarchive`; upload it from Xcode's Organizer. The app's own window
+  is kept in `safari/` (`PIPEUP_BUILD_NUMBER` sets the build number).

@@ -72,7 +72,7 @@ If this policy changes, the new version will be posted here with a new date, and
 
 ## Contact
 
-[support contact: maintainer to supply], or https://github.com/pipeup-ai/pipeup/issues
+Ask a question or report a problem on [GitHub](https://github.com/pipeup-ai/pipeup/issues), or see [Support](https://pipeup-ai.github.io/pipeup/support.html). A problem with privacy or security can be reported privately through [GitHub's security advisories](https://github.com/pipeup-ai/pipeup/security/advisories/new).
 
 Source code: https://github.com/pipeup-ai/pipeup
 
@@ -81,3 +81,4 @@ Source code: https://github.com/pipeup-ai/pipeup
 - 2026-11-10: First draft, not yet published.
 - 2026-11-10: Revised against the new build: nothing in the site's storage, the UI closed to the page, each browser's add-ons, Firefox's question, pictures deleted with their comment.
 - 2026-11-10: What is typed into Pipeup's boxes is typed in the extension's own frame, out of the page's hearing.
+- 2026-11-10: Contact: GitHub issues, the support page and private security reports. Published at https://pipeup-ai.github.io/pipeup/privacy.html.

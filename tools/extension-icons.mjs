@@ -75,6 +75,33 @@ export function toolbar(n, ink) {
   return bubble(n, ink, n * 0.04);
 }
 
+/**
+ * The Mac app's icon (Safari's Pipeup comes in an app): the violet bubble on a white plate, in the size and rounding
+ * of a Mac app icon (the plate 824 of 1024, its corners about a fifth), with a faint edge so it holds on white.
+ */
+export function appIcon(n) {
+  const [m, r] = [100 / 1024, 185 / 1024];
+  const edge = 1.5 / 1024;
+  const inPlate = (x, y, inset = 0) => {
+    const [a, b] = [m + inset, 1 - m - inset];
+    const cx = Math.min(Math.max(x, a + r), b - r);
+    const cy = Math.min(Math.max(y, a + r), b - r);
+    return x >= a && x <= b && y >= a && y <= b && Math.hypot(x - cx, y - cy) <= r;
+  };
+  // The bubble: half the plate, centred on it.
+  const size = 0.5;
+  const [x0, y0, x1, y1] = [4, 3.5, 20.5, 19.8];
+  const unit = size / Math.max(x1 - x0, y1 - y0);
+  const half = 0.105 * size * 0.5 / unit;
+  const ox = 0.5 - ((x1 - x0) * unit) / 2;
+  const oy = 0.5 - ((y1 - y0) * unit) / 2;
+  return draw(n, (x, y) => {
+    if (!inPlate(x, y)) return null;
+    if (!inPlate(x, y, edge)) return [0xd9, 0xd6, 0xe8];
+    return onGlyph(x0 + (x - ox) / unit, y0 + (y - oy) / unit, half) ? VIOLET : [0xff, 0xff, 0xff];
+  });
+}
+
 function bubble(n, ink, margin) {
   // Strokes as heavy as the browsers' own toolbar icons: about 1.7 pixels at 16, a tenth of the art above that.
   const stroke = Math.max(1.7, (n - 2 * margin) * 0.105);

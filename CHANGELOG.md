@@ -9,6 +9,7 @@ change the API and the stored comment format.
 
 ### Added
 
+- The website has a Privacy page and a Support page for Pipeup for browsers, and a sample page for trying the extension, Share and Live included. Safari's Pipeup comes in a Mac app with a window of its own (what it is, whether it's on in Safari, how to start), its own icon, and support for macOS 12 and later. Each extension package carries its licences.
 - `mount({ field })`: a host can show its own stand-in for Pipeup's text boxes, typed in where the page can't hear. In the browser extension, what is typed into a comment, reply or edit box is typed in the extension's own frame, so the page hears neither the words nor the keys.
 - `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
 

@@ -6,11 +6,14 @@
 //   node tools/build-extension.mjs --test   also dist/chromium-test and dist/firefox-test, for the tests only: they may
 //                                           reach any page without a press on the toolbar button, which a test can't
 //                                           make. Never published.
-//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode)
+//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only
+//   APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release
+//                                           archives Safari's app for the Mac App Store, signed by that team
+//                                           (dist/Pipeup.xcarchive; upload it from Xcode's Organizer)
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { INK, listed, toolbar } from "./extension-icons.mjs";
+import { appIcon, INK, listed, toolbar } from "./extension-icons.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
@@ -92,6 +95,19 @@ const TARGETS = {
   },
 };
 
+const emojibase = `${root}libs/ts/addons/node_modules/emojibase-data`;
+if (!existsSync(`${emojibase}/LICENSE`))
+  throw new Error("build-extension: emojibase-data's licence is missing (npm ci in libs/ts/addons)");
+const notices = [
+  "Pipeup for browsers includes the following third-party material.",
+  "",
+  `emojibase-data ${JSON.parse(readFileSync(`${emojibase}/package.json`, "utf8")).version}: the emoji names, groups and search words in addons/emoji.esm.js`,
+  "https://github.com/milesj/emojibase",
+  "",
+  readFileSync(`${emojibase}/LICENSE`, "utf8").trim(),
+  "",
+].join("\n");
+
 const sri = (b) => `sha384-${createHash("sha384").update(b).digest("base64")}`;
 let inside = "";
 const zips = [];
@@ -111,6 +127,10 @@ for (const [target, shape] of Object.entries(TARGETS)) {
     cpSync(file, `${dir}/addons/${id}.esm.js`);
   }
   writeFileSync(`${dir}/build.json`, JSON.stringify(PACKAGE[target]) + "\n");
+  // The licences: Pipeup's, and the emoji table's (Emoji's names and groups come from emojibase-data, MIT), which the
+  // packed add-on carries with no notice of its own.
+  cpSync(`${root}LICENSE`, `${dir}/LICENSE`);
+  writeFileSync(`${dir}/THIRD-PARTY-NOTICES.txt`, notices);
   writeFileSync(`${dir}/manifest.json`, JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n");
   for (const size of [16, 32, 48, 128]) writeFileSync(`${dir}/icons/${size}.png`, listed(size));
   // The toolbar button: the bubble alone, dark for light toolbars and light for dark ones (Safari: one template).
@@ -149,7 +169,8 @@ if (process.argv.includes("--test")) {
 }
 
 let app = "";
-if (process.argv.includes("--safari")) app = safariApp();
+if (process.argv.includes("--safari-release")) app = safariApp(true);
+else if (process.argv.includes("--safari")) app = safariApp(false);
 
 console.log(`Pipeup extension ${version}: ${root}apps/extension/dist`);
 console.log(`  pipeup/pipeup.esm.js ${inside}`);
@@ -160,8 +181,10 @@ if (app) console.log(`  ${app}`);
  * Safari takes web extensions inside a Mac app. Apple's converter makes the Xcode project around dist/safari, and
  * xcodebuild builds it, signed for this Mac only: Safari runs it once Develop → Allow Unsigned Extensions is on.
  */
-function safariApp() {
+function safariApp(release) {
   if (process.platform !== "darwin") throw new Error("build-extension: Safari's app is built on a Mac");
+  const team = process.env.APPLE_TEAM_ID;
+  if (release && !team) throw new Error("build-extension: --safari-release needs APPLE_TEAM_ID (the developer team)");
   const project = `${root}apps/extension/dist/safari-app`;
   rmSync(project, { recursive: true, force: true });
   execFileSync(
@@ -183,24 +206,63 @@ function safariApp() {
     ],
     { stdio: ["ignore", "ignore", "inherit"] },
   );
-  execFileSync(
-    "xcodebuild",
-    [
-      "-project",
-      `${project}/Pipeup/Pipeup.xcodeproj`,
-      "-scheme",
-      "Pipeup",
-      "-configuration",
-      "Debug",
-      "-derivedDataPath",
-      `${project}/build`,
-      "CODE_SIGN_IDENTITY=-",
-      "CODE_SIGN_STYLE=Manual",
-      "DEVELOPMENT_TEAM=",
-      `MARKETING_VERSION=${manifest.version}`,
-      "build",
-    ],
-    { stdio: ["ignore", "ignore", "inherit"] },
+  // The app's own window and icon, kept in apps/extension/safari, over the converter's stock ones.
+  const app = `${project}/Pipeup/Pipeup`;
+  const ours = `${root}apps/extension/safari`;
+  cpSync(`${ours}/Main.html`, `${app}/Resources/Base.lproj/Main.html`);
+  for (const f of ["Style.css", "Script.js"]) cpSync(`${ours}/${f}`, `${app}/Resources/${f}`);
+  cpSync(`${ours}/ViewController.swift`, `${app}/ViewController.swift`);
+  writeFileSync(`${app}/Resources/Icon.png`, appIcon(192));
+  for (const size of [16, 32, 128, 256, 512])
+    for (const k of [1, 2]) writeFileSync(`${app}/Assets.xcassets/AppIcon.appiconset/mac-icon-${size}@${k}x.png`, appIcon(size * k));
+  // What the store reads from the project: the version and build, the Mac it needs (Safari 17 runs on macOS 12 and
+  // later), the category and copyright; and no network access for the app, which only shows its own page.
+  const pbx = `${project}/Pipeup/Pipeup.xcodeproj/project.pbxproj`;
+  const build = process.env.PIPEUP_BUILD_NUMBER ?? "1";
+  writeFileSync(
+    pbx,
+    readFileSync(pbx, "utf8")
+      .replace(/MACOSX_DEPLOYMENT_TARGET = [\d.]+;/g, "MACOSX_DEPLOYMENT_TARGET = 12.0;")
+      .replace(/MARKETING_VERSION = [^;]+;/g, `MARKETING_VERSION = ${manifest.version};`)
+      .replace(/CURRENT_PROJECT_VERSION = [^;]+;/g, `CURRENT_PROJECT_VERSION = ${build};`)
+      .replace(
+        /INFOPLIST_KEY_NSHumanReadableCopyright = "";/g,
+        'INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Pipeup contributors. MIT licence.";',
+      )
+      .replace(/ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;/g, "ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;")
+      .replace(
+        /(\t+)INFOPLIST_KEY_CFBundleDisplayName = Pipeup;/g,
+        '$1INFOPLIST_KEY_CFBundleDisplayName = Pipeup;\n$1INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";',
+      ),
   );
+  const xcode = (args) => execFileSync("xcodebuild", args, { stdio: ["ignore", "ignore", "inherit"] });
+  const common = ["-project", `${project}/Pipeup/Pipeup.xcodeproj`, "-scheme", "Pipeup"];
+  if (release) {
+    const archive = `${root}apps/extension/dist/Pipeup.xcarchive`;
+    rmSync(archive, { recursive: true, force: true });
+    xcode([
+      ...common,
+      "-configuration",
+      "Release",
+      "-archivePath",
+      archive,
+      `DEVELOPMENT_TEAM=${team}`,
+      "CODE_SIGN_STYLE=Automatic",
+      "-allowProvisioningUpdates",
+      "archive",
+    ]);
+    return archive;
+  }
+  xcode([
+    ...common,
+    "-configuration",
+    "Debug",
+    "-derivedDataPath",
+    `${project}/build`,
+    "CODE_SIGN_IDENTITY=-",
+    "CODE_SIGN_STYLE=Manual",
+    "DEVELOPMENT_TEAM=",
+    "build",
+  ]);
   return `${project}/build/Build/Products/Debug/Pipeup.app`;
 }

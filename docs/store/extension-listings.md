@@ -8,20 +8,29 @@ submitted.** Submitting, the accounts and the release are the maintainer's call.
 The text in each `text` block is ready to paste once the placeholders in square brackets are filled. The privacy
 policy all four point to is in [privacy-policy.md](privacy-policy.md).
 
-## Before anything is submitted
+## Ready
 
-- **A release.** Bump the version off 0.9.1, publish the library (with `pipeup browser`) and the add-ons to npm, tag
-  it, and build every store package from that tag. Send to my agent's setup command names the extension's own version,
-  so it only works once that version is on npm, and the stores' reviewers rebuild from the tag.
-- **The Safari app:** real content in the containing app (how to turn Pipeup on, a guide, privacy and support links,
-  the licences), a Release archive signed by the team, a deployment target below macOS 27, and the version and
-  category keys.
-- **Pages and accounts:** the privacy policy and a support page on the website, a support contact, a test page for
-  Share and Live, and a developer account at each store.
-- **Store art:** screenshots for each store (light look, fictional pages and names), Chrome's 440×280 tile, Edge's
-  300×300 logo and full-size icons for the Mac app.
-- **Checks by hand:** Firefox's question before anything is sent (the automated Firefox can't show it), and the hand
-  checklist (docs/testing/extension-checklist.md) in each browser on the build being sent.
+- **Pages on the site** (live once the site is next published): [Privacy](https://pipeup-ai.github.io/pipeup/privacy.html),
+  [Support](https://pipeup-ai.github.io/pipeup/support.html) and a
+  [page for trying the extension](https://pipeup-ai.github.io/pipeup/extension-test.html) that Share and Live work on.
+- **Screenshots and art:** `npm run store-art` in apps/extension writes each store's screenshots (Chrome and Edge
+  1280×800, Firefox 1600×1200, Safari 2880×1800), Chrome's 440×280 tile, Edge's 300×300 logo, the 128 icon and the Mac
+  app's 1024 icon to apps/extension/dist/store. Taken by hand: the browser's right-click menu, Firefox's own questions
+  (its prompt to send, Always on for this site) and Safari's own window.
+- **The Safari app:** its own window (what Pipeup is, whether it's on, how to start, Support, Privacy, licences), its
+  icon, macOS 12 and later, the version and build, its category and copyright, and no network access for the app.
+  `APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release` archives it signed for the Mac App Store.
+- **Licences:** each package carries Pipeup's licence and the emoji table's notice (emojibase-data, MIT).
+
+## Still yours before submitting
+
+- **The release:** bump the version off 0.9.1, publish the library (with `pipeup browser`) and the add-ons to npm, tag
+  it, and build every store package from that tag (Send to my agent's setup command names the extension's version).
+- **Accounts and contacts:** a developer account at each store; a support email where a form asks for one; Apple's
+  review contact and phone; the publisher name.
+- **Sharing address** for the reviewers' notes, so they can try Share on the test page.
+- **Checks by hand:** the checklist (docs/testing/extension-checklist.md) in Chrome, Firefox and Safari on the build
+  being sent, and the screenshots taken by hand.
 
 ## What is known and said in the listings
 
@@ -33,18 +42,16 @@ policy all four point to is in [privacy-policy.md](privacy-policy.md).
 - **Other Chromium browsers** (Vivaldi, Opera, Arc) are set up as Chrome by Send to my agent's command; the listings
   name only Chrome, Edge and Brave.
 - **Voice in Chrome and Edge** may show the sentences written for Safari; to check in each.
-- **The emoji table's licence** (emojibase, MIT) isn't in the package yet.
 - **The manifest description** still says "any web page" and "until you send them"; a new one is the maintainer's call.
 
 ## Order of submission
 
-1. Now, in parallel: open all four developer accounts. Apple enrolment and Partner Center verification take days, Chrome registration needs a fee and 2-step verification, and AMO needs 2FA. Draft the Chrome listing (it is missing) from the Edge draft.
-2. Then: agree the spec changes (EXTENSION_SPEC sections 2, 5 and 6) and land the code and build changes marked blocker and recommended on a feature branch, with npm run check green.
-3. Then: release the next stable version (library, CLI with `pipeup browser`, add-ons) to npm and tag it. Every store depends on this, and every [release version] placeholder resolves from it.
-4. In parallel with the release: publish the privacy and support pages on the website, a test page with data-pipeup-doc and a sharing address, and make the screenshots and store art per store.
-5. Day one after release: submit Firefox and Chrome. AMO has the longest and least predictable queue (days to over a month, plus a possible source-rebuild round trip), so start it first. Chrome is the reference Chromium listing.
-6. A few days later, or once Chrome passes: submit Edge with the same Chromium zip. A rejection on either Chromium store means a version bump that both must take, so letting Chrome go first avoids two parallel resubmissions. Edge takes up to 7 business days, and any edit restarts its review.
-7. Last: Safari. It needs the per-target build, the containing app and the Xcode project work. Run TestFlight on a clean Mac (prompt wording, Option-Shift-P) while the other reviews run, then submit. Review is usually 24–48 hours, but expect a 4.2 or privacy round on the first try. Use manual release so the maintainer can line it up with the others.
+1. Now: open the four developer accounts (Apple and Microsoft verification take days); merge the extension's pull
+   request into `next` once the hand checklist passes.
+2. Release the next version to npm and tag it; build the packages from the tag; publish the site.
+3. The same day: submit to Firefox (the longest queue) and Chrome.
+4. Once Chrome passes: Edge, with the same package.
+5. Last: Safari, after TestFlight on a clean Mac; choose manual release to line it up with the others.
 
 ## Chrome Web Store
 ### Listing fields
@@ -165,7 +172,7 @@ No, I am not using remote code.
 #### Privacy policy URL (Privacy tab)
 _Required. It must name every destination (the local helper and ~/.pipeup/browser; the sharing server the reviewer sets; the Nostr relays wss://relay.damus.io, wss://nos.lol and wss://relay.primal.net by default, or ones the page names; the STUN servers stun.l.google.com and stun.cloudflare.com; peers; github.com; the browser maker's speech service), cover retention and deletion (no delete-all in the extension; removing it removes the extension's storage, not saved files or ~/.pipeup/browser), the pictures, the signing key, no telemetry, and carry the Limited Use statement._
 ```text
-[privacy policy URL: maintainer to supply — suggested https://pipeup-ai.github.io/pipeup/privacy/]
+https://pipeup-ai.github.io/pipeup/privacy.html
 ```
 #### Payments / in-app purchases (Distribution tab)
 _None_
@@ -297,7 +304,7 @@ Certify (tick)
 _Why:_ Not applicable to Pipeup in any way.
 #### Privacy policy URL
 ```text
-[privacy policy URL: maintainer to supply — suggested https://pipeup-ai.github.io/pipeup/privacy/]
+https://pipeup-ai.github.io/pipeup/privacy.html
 ```
 _Why:_ Required because user data is handled, even if only locally. Include: "The use of information received from Chrome APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements." Cover every destination listed in the description.
 #### Are you using remote code?
@@ -339,7 +346,7 @@ Send to my agent (optional; macOS and Linux)
 It passes the page's comments to a helper program, pipeup browser, on the reviewer's computer over native messaging (host name ai.pipeup.browser). The helper is not in the package. The reviewer installs it with Node.js 20 or later: npx --yes pipeup@[release version] browser install --extension-id <this extension's ID> (in Edge or Brave the command adds --browser edge or --browser brave). The menu and options page show this command with this release's version and the ID filled in. The helper writes the comments to ~/.pipeup/browser/<page id>/. Agents read them with npx --yes pipeup@[release version] browser read, and answer with npx --yes pipeup@[release version] browser reply <page> --thread <id> "<words>". The replies appear in the threads after Send to my agent is pressed again or the menu is next used on that page. Without the helper, Send to my agent shows "not set up yet" and the command, and nothing else is affected. It is not offered on Windows.
 
 Add-ons
-Emoji is on by default and has no network code. Voice, Share, Live, Save to GitHub and My identity are off, and are turned on in the options page. Share and Live work only on pages whose HTML carries a Pipeup document id (data-pipeup-doc), so on example.com they say they need a document identity. To try them, open [test page URL: maintainer to supply] in two windows. Live connects only after the reviewer agrees in its own panel; that choice is kept by the extension, so a page can't make it for them. Save to GitHub needs a repository (set in the settings, or named by the page) and a comment that mentions a gh: person; it then offers Mention on GitHub in Pipeup's menu, which opens a github.com new-issue page with the comment filled in. GitHub receives it when that page opens; nothing is filed until the reviewer submits it there.
+Emoji is on by default and has no network code. Voice, Share, Live, Save to GitHub and My identity are off, and are turned on in the options page. Share and Live work only on pages whose HTML carries a Pipeup document id (data-pipeup-doc), so on example.com they say they need a document identity. To try them, open https://pipeup-ai.github.io/pipeup/extension-test.html in two windows. Live connects only after the reviewer agrees in its own panel; that choice is kept by the extension, so a page can't make it for them. Save to GitHub needs a repository (set in the settings, or named by the page) and a comment that mentions a gh: person; it then offers Mention on GitHub in Pipeup's menu, which opens a github.com new-issue page with the comment filled in. GitHub receives it when that page opens; nothing is filed until the reviewer submits it there.
 
 No remote code
 Everything is packaged. There is no eval, new Function or remote script, and the only dynamic imports are chrome.runtime.getURL files in the package. No analytics or telemetry.
@@ -484,7 +491,7 @@ No, I am not using remote code
 #### Privacy Policy URL (Privacy)
 _Required before submitting. docs/store/privacy-policy.md is a draft, but it predates the current build (it still describes site storage, readable comments and pictures kept after deletion); it must be updated, name Microsoft Edge, and match the description's Your data and Add-ons sections._
 ```text
-[privacy policy URL: maintainer to supply, for example https://pipeup-ai.github.io/pipeup/privacy/edge]
+https://pipeup-ai.github.io/pipeup/privacy.html
 ```
 #### Search terms (Store listing, en)
 _7 terms, each under 30 characters, 18 words in total (limit 21). Not shown to users._
@@ -620,7 +627,7 @@ Yes (certify)
 ```
 #### Privacy Policy URL
 ```text
-[privacy policy URL: maintainer to supply]
+https://pipeup-ai.github.io/pipeup/privacy.html
 ```
 _Why:_ Required. It must refer to Microsoft Edge and cover: nothing goes to the developer, no telemetry; what the extension stores in this browser (comments with history, page list, name and key, settings, add-ons' choices, pictures); that nothing is written into the site's own storage and the page's scripts can't read Pipeup's comments, name or recovery code; what each route sends and to whom (Copy, Save, Send to my agent and its replies check after first use, Share, Live, Voice audio to the browser's speech service, Save to GitHub with what GitHub receives when its page opens); and how to delete (delete a comment and its picture, the Pictures switch, removing the extension, ~/.pipeup/browser). The draft in docs/store/privacy-policy.md needs those corrections first.
 #### Mature content
@@ -839,7 +846,7 @@ The pictures of where comments were made are never sent, copied or shared.
 
 ## Contact
 
-[support contact: maintainer to supply], or https://github.com/pipeup-ai/pipeup/issues
+https://pipeup-ai.github.io/pipeup/support.html, or https://github.com/pipeup-ai/pipeup/issues
 
 Last updated: [date: maintainer to supply]
 ```
@@ -856,7 +863,7 @@ No account needed. To try it:
 3. Click the paragraph, type "Check this sentence" and press Enter. The badge shows 1.
 4. Press Pipeup again: Copy comments > As Markdown, or Save comments (.md). The options page lists the page under Comments you've made.
 5. Right-click a word > Comment with Pipeup opens a comment box on it.
-Share and Live work only on pages whose HTML sets data-pipeup-doc; test page: [test page: maintainer to supply]. Share, Live, Save to GitHub and Send to my agent call permissions.request({data_collection}) first; declined, they stay off. Voice is not in the Firefox package.
+Share and Live work only on pages whose HTML sets data-pipeup-doc; test page: https://pipeup-ai.github.io/pipeup/extension-test.html. Share, Live, Save to GitHub and Send to my agent call permissions.request({data_collection}) first; declined, they stay off. Voice is not in the Firefox package.
 
 Permissions:
 - activeTab + scripting: inject start.js into the tab the user pressed Pipeup on. The menu checks for a built-in Pipeup. UI is in a closed shadow root; comment text is rendered as text only. Add-on state: storage.local only.
@@ -1100,7 +1107,7 @@ Apple's standard EULA
 #### Privacy Policy URL
 _Returns 404 today and must be published first. It must cover: what the extension keeps, all in its own storage in Safari on this Mac (comments with their history, the list of pages, display name and signing key, per-site choices, settings, and add-ons' choices such as Voice's settings and Emoji's recent emoji and skin tone); that nothing is written to the site's own storage and the page's scripts can't read comments, names or recovery codes; that Save to GitHub puts the comment's words, the person's GitHub name, the user's name, the page title and its address in a github.com address, which GitHub receives when its new-issue page opens, and that nothing is filed until the user submits it there; that Voice uses Apple's speech recognition; that edited and deleted words stay in the history and in saved Pipeup files; how to delete everything (remove the app); that no data reaches the developer; and a contact. It must also be linked from inside the app._
 ```text
-https://pipeup-ai.github.io/pipeup/privacy/
+https://pipeup-ai.github.io/pipeup/privacy.html
 ```
 #### Privacy Choices URL
 ```text
@@ -1159,7 +1166,7 @@ annotate,feedback,review,markup,notes,web page,website,proofread,design review,c
 #### Support URL
 _Not published yet. It needs [support contact: maintainer to supply] (an email address, plus a postal address and phone number where local law requires them) and a link to https://github.com/pipeup-ai/pipeup/issues._
 ```text
-https://pipeup-ai.github.io/pipeup/support/
+https://pipeup-ai.github.io/pipeup/support.html
 ```
 #### Marketing URL
 _The website names other browsers, which App Review may see. Consider a Safari-only landing page, or accept the small risk._
@@ -1299,7 +1306,7 @@ Publish only after the privacy policy is live and says the same as these answers
 _Why:_ Only the Account Holder, Admin or App Manager can edit.
 #### Privacy Policy URL
 ```text
-https://pipeup-ai.github.io/pipeup/privacy/ (to be published)
+https://pipeup-ai.github.io/pipeup/privacy.html (to be published)
 ```
 #### Privacy Choices URL
 ```text
@@ -1346,7 +1353,7 @@ cd ../addons && npm ci && npm run build
 cd ../../.. && node tools/build-extension.mjs --safari
 The build prints the SRI hash of pipeup/pipeup.esm.js, to compare with the one for pipeup@[release version] on npm.
 
-Contact: [support contact: maintainer to supply]
+Contact: https://pipeup-ai.github.io/pipeup/support.html
 ```
 ### Screenshots
 | # | Shows | Size | Caption |
@@ -1365,8 +1372,8 @@ Contact: [support contact: maintainer to supply]
 - Release archive with team signing: DEVELOPMENT_TEAM set and App Store distribution signing, then archive a Release build. The build script builds Debug, signed for this Mac only.
 - Deployment target below macOS 27: the app inherits macOS 27.0 from the converter; the extension asks for Safari 17, which needs about macOS 13 or 14 (unverified). Also set LSApplicationCategoryType productivity, ITSAppUsesNonExemptEncryption NO and NSHumanReadableCopyright, and remove the unused network and user-selected-file entitlements. Keep these settings in source control, because build-extension.mjs regenerates the project with --force.
 - A containing app with real content (guideline 4.2 / 4.4): how to turn it on, a short guide, links to privacy and support, the version, the MIT licence and the emojibase MIT notice.
-- Privacy policy published at https://pipeup-ai.github.io/pipeup/privacy/ (404 today), covering every point in the Privacy Policy URL note and linked from inside the app.
-- Support page at https://pipeup-ai.github.io/pipeup/support/ with [support contact: maintainer to supply] (an email address, plus a postal address and phone where local law requires them) and a link to GitHub Issues.
+- Privacy policy published at https://pipeup-ai.github.io/pipeup/privacy.html (404 today), covering every point in the Privacy Policy URL note and linked from inside the app.
+- Support page at https://pipeup-ai.github.io/pipeup/support.html with [support contact: maintainer to supply] (an email address, plus a postal address and phone where local law requires them) and a link to GitHub Issues.
 - App Review contact: name, email, and phone in +country-code format.
 - DSA trader status: declare non-trader or trader. This is a legal call. A trader's address, phone and email are published in the EU.
 - Art: app icons drawn at full size rather than scaled up from 128 px, and the 7 screenshots at 2880×1800 in Safari, light look, on fictional pages, once the containing app is done.
@@ -1402,3 +1409,5 @@ Contact: [support contact: maintainer to supply]
   browser and release, pictures deleted with their comment. What is still known is said above.
 - 2026-11-10: What is typed into Pipeup's boxes on a page is typed in the extension's own frame; the page can't see the
   words or the keys. The caveat about keys is replaced.
+- 2026-11-10: The Privacy, Support and test pages are on the site; the listings point at them. Screenshots and art are
+  made by `npm run store-art` in apps/extension; the Safari app has its own window, icon and store settings.

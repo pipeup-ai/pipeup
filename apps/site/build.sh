@@ -52,6 +52,8 @@ cp -R "$root"/apps/agent-skills/pipeup-* "$out/skills/"
 python3 "$site/build-try.py" "$out"
 python3 "$site/build-guide.py" "$out"
 python3 "$site/build-addons.py" "$out"
+python3 "$site/build-pages.py" "$out"
+cp "$site/extension-test.html" "$out/"
 python3 "$site/inject-sri.py" "$out"
 
 # llms-full.txt: the short guide followed by every skill.
