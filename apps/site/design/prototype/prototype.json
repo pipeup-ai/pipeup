@@ -1,0 +1,48 @@
+{
+  "title": "Pipeup",
+  "home": "review.html",
+  "routes": {
+    "jny-review-a-document/open-page": "review.html#open-page",
+    "jny-review-a-document/pick-a-block": "review.html#pick-a-block",
+    "jny-review-a-document/write-comment": "review.html#write-comment",
+    "jny-review-a-document/read-thread": "review.html#read-thread",
+    "jny-review-a-document/select-words": "review.html#select-words",
+    "jny-review-a-document/drop-a-pin": "review.html#drop-a-pin",
+    "jny-review-a-document/copy-for-ai": "review.html#copy-for-ai",
+    "jny-review-a-document/clipboard-blocked": "review.html#clipboard-blocked",
+    "jny-review-a-document/undo-a-cancel": "review.html#undo-a-cancel",
+    "jny-manage-a-thread/answer-a-thread": "review.html#answer-a-thread",
+    "jny-manage-a-thread/delete-a-thread": "review.html#delete-a-thread",
+    "jny-manage-a-thread/resolve-a-thread": "review.html#resolve-a-thread",
+    "jny-go-through-every-comment/all-comments": "review.html#all-comments",
+    "jny-go-through-every-comment/show-resolved": "review.html#show-resolved",
+    "jny-say-who-you-are/add-your-name": "review.html#add-your-name",
+    "jny-review-a-slide-deck/open-deck": "slides.html#open-deck",
+    "jny-review-a-slide-deck/pin-on-a-slide": "slides.html#pin-on-a-slide",
+    "jny-review-a-slide-deck/turn-the-slide": "slides.html#turn-the-slide",
+    "jny-review-a-slide-deck/comments-by-slide": "slides.html#comments-by-slide",
+    "jny-collect-feedback/see-everyones-comments": "author.html#see-everyones-comments",
+    "jny-collect-feedback/hand-to-agent": "author.html#hand-to-agent",
+    "jny-review-on-a-phone/open-on-phone": "review.html#open-on-phone",
+    "jny-review-on-a-phone/tap-to-comment": "review.html#tap-to-comment",
+    "jny-review-on-a-phone/all-comments-on-phone": "review.html#all-comments-on-phone",
+    "jny-come-back-later/reopen-page": "review.html#reopen-page",
+    "jny-come-back-later/hide-comments": "review.html#hide-comments",
+    "jny-come-back-later/content-gone": "review.html#content-gone",
+    "jny-add-pipeup-to-a-page/add-the-script": "setup.html",
+    "jny-add-pipeup-to-a-page/check-the-page": "setup.html#check-the-page"
+  },
+  "outside": [],
+  "clock": "2026-10-28T10:47",
+  "questions": [
+    "The check's failing report (check-the-page, error state) is at setup.html#check-the-page-error: the prototype cannot run a real check, so the bar's map reaches the pass and the view holds the failure."
+  ],
+  "source": "e2b6658a",
+  "built": "2026-11-10",
+  "layer": {
+    "css": [
+      "assets/page.css"
+    ],
+    "prefix": "pu-"
+  }
+}

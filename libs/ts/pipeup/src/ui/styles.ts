@@ -266,7 +266,8 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}
 .launch:has(.mm[aria-expanded=true]) .ttip{grid-template-columns:minmax(0,0fr);opacity:0}
-/* ⋯ at the end of the reach opens the menu: it folds with the reach, and opens with it on hover or keyboard focus. */
+/* ⋯ opens the menu: just left of the bubble, so however far the reach goes it eases in at the same place, beside the
+bubble, which never moves. It folds with the reach, and opens with it on hover or keyboard focus. */
 .launch .mm{display:grid;place-items:center;width:0;height:24px;margin-left:0;border-radius:6px;overflow:hidden;opacity:0;color:inherit;transition:width var(--out) var(--ei),margin var(--out) var(--ei),opacity var(--out) var(--ei),background-color .2s var(--eo)}
 .launch:is(:hover,:has(.mm:focus-visible)) .mm{width:26px;margin-left:4px;opacity:1;transition:width var(--mv) var(--eo) .4s,margin var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s,background-color .2s var(--eo)}
 .launch:has(.mm:focus-visible) .mm{transition-delay:0s}

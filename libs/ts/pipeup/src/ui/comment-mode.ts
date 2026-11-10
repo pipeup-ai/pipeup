@@ -422,13 +422,21 @@ export function createCommentMode(ctx: Ctx): CommentMode {
    * began, whenever Space is let go: the page gets a whole click, or Pipeup does, never half of one each.
    */
   let press: boolean | null = null;
+  /** Counts presses, so the end of one press never clears the next (a second press can come before it runs). */
+  let presses = 0;
   const quiet = () => press ?? ctx.state.paused;
   const pressed = () => {
     byKeys = false;
     press = ctx.state.paused;
+    presses++;
   };
   // The click comes just after the button is let go, in the same task.
-  const lifted = () => setTimeout(() => (press = null));
+  const lifted = () => {
+    const of = presses;
+    setTimeout(() => {
+      if (presses === of) press = null;
+    });
+  };
 
   /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
   const reading = () => !!ctx.state.active && !ctx.state.sent;

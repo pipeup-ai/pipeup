@@ -344,6 +344,14 @@ an add-on from another company, and that the reviewer is asked first as with any
 
 ---
 
+## Public design review
+
+The existing website exposes Pipeup's public design at `/design/`, linked quietly from the home page. Anyone may browse its personas, journeys, screens and prototype and submit suggestions without a reviewer account. Reviews go privately to the author; they are not public comments by default.
+
+Submission confirms durable receipt and retains a browser draft after a connection failure. The authenticated owner reads suggestions in a separate private inbox, approves or declines them, and can refine implementation wording without replacing the original feedback. Preparing implementation includes only approved suggestions. Sharing any feedback publicly is a separate, explicit owner choice.
+
+The published design snapshot excludes imported private feedback and decisions. It contains no owner credentials. The static website sends submissions to the configured review service and never exposes the private inbox's records through static files.
+
 ## Change log
 
 - 2026-10-06 — First version.
@@ -411,4 +419,5 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-27 — The home page fits one screen (visual spec docs/design/one-screen-home-mockups.html): What your AI does and The details become pages of their own (prompt.html, details.html), opened from the first screen's quiet links, and the first screen and The details say the same in fewer words. If copying the prompt isn't allowed, What your AI does opens with its words selected.
 - 2026-10-31 — The home page's prompt (What your AI does), llms.txt and the integrate skill name Agents and Inline as the add-ons authors most often want, added only when the author asks; if they asked for neither, the agent says in one line that both exist. This ends "the Copy prompt stays core only" (2026-10-08) for that one prompt: answering comments with an agent and asking questions in the content are what most authors who make a page want next. The Add-ons page gains an Inline card and page (sends nothing, asks nothing first). Live with the release that ships Inline.
 - 2026-11-01 — The Create prompt, What your AI does, llms.txt and the integrate skill tell agents that a page can have its own Comment button (Pipeup's page API, keeping a way to Pipeup's menu); Inline's page, its prompt and llms.txt say how to match an ask to the page's look while its mark and tint stay. Visual spec: docs/design/compact-asks.html.
+- 2026-11-10: Public design review under `/design/`, private direct submissions, authenticated owner decisions and separate public feedback sharing.
 - 2026-11-10 — Privacy and Support pages, and a page for trying the extension, for the browsers' stores (§3 items 2b, 2c). Agreed with the maintainer as part of preparing the stores.
