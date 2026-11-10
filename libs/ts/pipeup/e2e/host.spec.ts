@@ -134,3 +134,54 @@ test("a host can keep Pipeup's UI from the page's scripts, and keep add-ons' cho
     dbs: [],
   });
 });
+
+test("a host's stand-in for Pipeup's box: keys passed in work as typed ones and never reach the page @safari", async ({
+  page,
+}) => {
+  await page.goto(fixture("doc.html"));
+  await page.evaluate(async () => {
+    const w = window as any;
+    w.heard = [];
+    for (const t of ["keydown", "keyup", "input", "focusout"])
+      window.addEventListener(t, (e) => w.heard.push(`${t}:${(e as KeyboardEvent).key ?? ""}`), true);
+    w.fields = [];
+    w.pu = await w.Pipeup.mount({
+      closed: true,
+      field: (f: HTMLTextAreaElement, pass: (e: Event) => void) => {
+        w.fields.push({ f, pass });
+        return document.createElement("span");
+      },
+    });
+    await w.pu.startComment(document.querySelector("#p2"));
+  });
+  // As the extension's frame does: the words, then Enter, as plain events carrying the key's fields.
+  const sent = await page.evaluate(async () => {
+    const w = window as any;
+    const { f, pass } = w.fields.find((x: any) => x.f instanceof HTMLTextAreaElement);
+    const key = (type: string, k: string) => {
+      const e = new Event(type, { bubbles: true, cancelable: true, composed: false });
+      for (const [n, v] of Object.entries({
+        key: k,
+        code: "",
+        isComposing: false,
+        shiftKey: false,
+        ctrlKey: false,
+        altKey: false,
+        metaKey: false,
+        repeat: false,
+        location: 0,
+      }))
+        Object.defineProperty(e, n, { value: v });
+      Object.defineProperty(e, "getModifierState", { value: () => false });
+      pass(e);
+    };
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(f, "Typed elsewhere");
+    pass(new Event("input", { bubbles: true, composed: false }));
+    key("keydown", "Enter");
+    key("keyup", "Enter");
+    await new Promise((r) => setTimeout(r, 300));
+    return w.pu.document.threads().map((t: any) => t.root.text);
+  });
+  expect(sent).toEqual(["Typed elsewhere"]);
+  expect(await page.evaluate(() => (window as any).heard)).toEqual([]);
+});

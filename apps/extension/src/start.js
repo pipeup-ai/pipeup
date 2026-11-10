@@ -44,6 +44,18 @@
    * frame is ready (a moment), Pipeup's own box is used.
    */
   const TYPING = chrome.runtime.getURL("typing.html");
+  // Where the frame's first message goes. A browser that gives extension pages no origin of their own (it reads
+  // "null") is sent it with "*": the channel is trusted only once the extension's background vouches for the frame
+  // (below), so a page that swapped the frame for its own gets nothing but an unused channel.
+  const typingOrigin = new URL(TYPING).origin === "null" ? "*" : new URL(TYPING).origin;
+  /** Frames the background has seen show their pass: token → resolve. */
+  const vouched = new Map();
+  chrome.runtime.onMessage.addListener((m) => {
+    if (m?.type === "typing-ok" && vouched.has(m.token)) {
+      vouched.get(m.token)(true);
+      vouched.delete(m.token);
+    }
+  });
   const typingField = (field, pass) => {
     const frame = document.createElement("iframe");
     frame.src = TYPING;
@@ -142,8 +154,15 @@
       if (!token || !frame.contentWindow) return;
       const channel = new MessageChannel();
       port = channel.port1;
-      port.onmessage = ({ data: m }) => {
+      const vouch = new Promise((resolve) => {
+        vouched.set(token, resolve);
+        setTimeout(() => resolve(false), 5000);
+      });
+      port.onmessage = async ({ data: m }) => {
+        // Nothing from the frame counts until the background has vouched for it, and it has said it's ready.
+        if (!ready && m.type !== "ready") return;
         if (m.type === "ready") {
+          if (ready || !(await vouch)) return;
           // The frame takes over in one go: the words so far, then the focus, with nothing typed in between lost.
           const had = (field.getRootNode().activeElement ?? null) === field;
           ready = true;
@@ -181,7 +200,7 @@
           attrs: attrs(),
           look: lookOf(),
         },
-        new URL(TYPING).origin,
+        typingOrigin,
         [channel.port2],
       );
     });

@@ -136,6 +136,12 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     setTimeout(() => passes.delete(token), 60_000);
     reply(token);
   } else if (message?.type === "typing-check" && sender.url?.startsWith(TYPING)) {
-    reply(passes.delete(message.token));
+    const ok = passes.delete(message.token);
+    reply(ok);
+    // Pipeup in the tab trusts the frame's channel only once this says so.
+    if (ok && sender.tab?.id !== undefined)
+      void chrome.tabs
+        .sendMessage(sender.tab.id, { type: "typing-ok", token: message.token })
+        .catch(() => {});
   }
 });
