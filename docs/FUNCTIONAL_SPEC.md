@@ -1747,7 +1747,8 @@ agent's replies.
   agents' replies into their threads, each once, the next time Pipeup's menu is opened on the page; they show as the
   agent's, like any reply an agent wrote.
 - `pipeup browser install --extension-id <id>` sets this up once, for the reviewer's browser (Chrome, Edge, Chromium or
-  Brave, on macOS and Linux). Until then, Send to my agent says the command to run.
+  Brave, on macOS and Linux); `pipeup browser install --browser firefox` does it for Firefox, which needs no id. Until
+  then, Send to my agent says the command to run.
 
 ## 16. Distribution
 
@@ -2087,3 +2088,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — One thing at a time in comment mode (section 5; visual spec docs/design/one-thing-at-a-time.html): while a thread is open to read, no other block is outlined, and a click on the page only closes it; a thread just written doesn't hold up the next comment.
 - 2026-11-09 — Space in an empty comment or reply box doesn't type a space; holding it pauses comment mode, as on the page (section 5).
 - 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.
+- 2026-11-10 — `pipeup browser install --browser firefox` sets up Send to my agent for Firefox (section 15g).

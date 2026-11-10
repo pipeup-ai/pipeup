@@ -44,14 +44,16 @@
             As a Pipeup file<small>to open again</small>
           </button>
         </div>
-        <button id="agent" class="item" type="button">
-          <span>Send to my agent</span><small id="agent-said">on this computer</small>
-        </button>
-        <p id="agent-help" class="help" hidden>
-          Set up once, in a terminal:
-          <code id="agent-cmd"></code>
-          <button id="agent-copy" class="btn-link" type="button">Copy</button>
-        </p>
+        <div id="agent-group">
+          <button id="agent" class="item" type="button">
+            <span>Send to my agent</span><small id="agent-said">on this computer</small>
+          </button>
+          <p id="agent-help" class="help" hidden>
+            Set up once, in a terminal:
+            <code id="agent-cmd"></code>
+            <button id="agent-copy" class="btn-link" type="button">Copy</button>
+          </p>
+        </div>
         <button id="extras" class="item" type="button" hidden>
           <span>More from add-ons</span><small>›</small>
         </button>
@@ -61,7 +63,7 @@
         <button id="all" class="item" type="button">
           <span>Comments</span><span id="count" class="n">0</span>
         </button>
-        <label class="item" for="pinned">
+        <label id="pin-row" class="item" for="pinned">
           <span>Keep comments beside the page</span>
           <input id="pinned" type="checkbox" role="switch" />
         </label>

@@ -77,5 +77,15 @@ describe("the extension's link to agents on this computer", () => {
     const manifest = JSON.parse(readFileSync(join(home, place, "ai.pipeup.browser.json"), "utf8"));
     expect(manifest.allowed_origins).toEqual([`chrome-extension://${id}/`]);
     expect(readFileSync(manifest.path, "utf8")).toContain(process.execPath);
+
+    // Firefox: no id to give, since Pipeup's is the same everywhere.
+    execFileSync(process.execPath, [cli, "browser", "install", "--browser", "firefox"], { env });
+    const fox =
+      process.platform === "darwin"
+        ? "Library/Application Support/Mozilla/NativeMessagingHosts"
+        : ".mozilla/native-messaging-hosts";
+    const foxManifest = JSON.parse(readFileSync(join(home, fox, "ai.pipeup.browser.json"), "utf8"));
+    expect(foxManifest.allowed_extensions).toEqual(["extension@pipeup.ai"]);
+    expect(foxManifest.allowed_origins).toBeUndefined();
   });
 });

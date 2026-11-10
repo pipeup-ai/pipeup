@@ -92,7 +92,7 @@ jobs:
         working-directory: libs/ts/addons
       - run: npm ci
         working-directory: apps/extension
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium && npm run firefox
         working-directory: apps/extension
       - run: ../../libs/ts/pipeup/node_modules/.bin/prettier --check .
         working-directory: apps/extension

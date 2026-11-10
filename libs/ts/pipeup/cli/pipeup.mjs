@@ -68,8 +68,9 @@ pipeup reply --print (--doc <document id> | --page <file.html>) --thread <id> "<
   for an agent that can't write next to the page. Copy for my agent gives the document id. Nothing is written.
 
 pipeup browser install --extension-id <id> [--browser chrome|edge|chromium|brave]
-  Lets the Pipeup browser extension send comments to agents on this computer (macOS and Linux). Run it once; the id is
-  on Pipeup's card in chrome://extensions.
+pipeup browser install --browser firefox
+  Lets the Pipeup browser extension send comments to agents on this computer (macOS and Linux). Run it once; in Chrome
+  and its kin the id is on Pipeup's card in chrome://extensions; Firefox needs none.
 
 pipeup browser [read <page>]
   Lists the pages whose comments were sent from the browser (Send to my agent), newest first; read prints one page's

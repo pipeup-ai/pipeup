@@ -1,4 +1,5 @@
 // Every page with comments made through the extension, newest first. Words come from other pages: text only.
+import { agentSetup, canReachAgents } from "./browser.js";
 const all = await chrome.storage.local.get(null);
 const pages = Object.entries(all)
   .filter(([k]) => k.startsWith("page:"))
@@ -102,5 +103,5 @@ for (const a of ADDONS) {
   addonList.append(row);
 }
 
-document.getElementById("agent-cmd").textContent =
-  `npx --yes pipeup@0 browser install --extension-id ${chrome.runtime.id}`;
+document.getElementById("agent-cmd").textContent = agentSetup();
+document.getElementById("agent-section").hidden = !canReachAgents;

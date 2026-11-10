@@ -1,6 +1,7 @@
 // The browser's side panel: Pipeup's comments for the tab in front. Pipeup, running in the tab, sends the threads and
 // what happens on the page (a thread opened there); this panel draws them and sends back what the
 // reviewer does. Words come from other people: they are set as text, never as HTML.
+import { closeSide } from "./browser.js";
 import { formatAgo, nameOf } from "./pipeup/pipeup.esm.js";
 
 const $ = (id) => document.getElementById(id);
@@ -79,6 +80,8 @@ const showPin = (pinned) => $("pin").setAttribute("aria-pressed", String(!!pinne
 showPin((await settings()).pinned);
 $("pin").addEventListener("click", async () => {
   const pinned = $("pin").getAttribute("aria-pressed") !== "true";
+  // Firefox closes its sidebar only in answer to a press, so unpinning closes it here, before anything is awaited.
+  if (!pinned && !named) closeSide();
   await chrome.storage.local.set({ settings: { ...(await settings()), pinned } });
 });
 chrome.storage.onChanged.addListener((changes, area) => {
@@ -86,7 +89,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
   const was = !!changes.settings.oldValue?.pinned;
   const now = !!changes.settings.newValue?.pinned;
   showPin(now);
-  if (was && !now && !named) window.close();
+  if (was && !now && !named) closeSide();
 });
 window.addEventListener("pagehide", () => {
   if (named) return;

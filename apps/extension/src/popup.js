@@ -1,5 +1,7 @@
 // The toolbar panel: Pipeup's menu. It reads the tab's state each time it opens: on, off, built in, or a page
 // extensions can't reach. With Pipeup on, every row of Pipeup's own menu is here, drawn by the extension.
+import { agentSetup, canPin, canReachAgents, openSide } from "./browser.js";
+
 const $ = (id) => document.getElementById(id);
 // The tab it acts on: the active tab, or one named in the address (how the tests open it in a tab of its own).
 const named = Number(new URLSearchParams(location.search).get("tab"));
@@ -106,7 +108,10 @@ async function show() {
     $("theme-now").textContent = LOOK_WORDS[state.look] ?? "Automatic";
     $("who-name").textContent = state.name || "Add your name";
     $("who-hint").textContent = state.name ? "Edit name" : "Add name";
-    $("pinned").checked = !!(await settings()).pinned;
+    $("pinned").checked = canPin && !!(await settings()).pinned;
+    // Safari has no panel beside the page, nor a way to reach agents on this computer: those rows aren't offered.
+    $("pin-row").hidden = !canPin;
+    $("agent-group").hidden = !canReachAgents;
     $("extras").hidden = !state.extras;
   }
   $("always").checked = await always();
@@ -122,7 +127,7 @@ async function done() {
 
 /** Opens the browser's side panel for this tab, where the comments are. Only allowed in answer to a press here. */
 function openComments() {
-  return chrome.sidePanel?.open({ tabId: tab.id }).catch(() => {});
+  return openSide(tab.id);
 }
 
 async function start() {
@@ -212,7 +217,7 @@ $("agent").addEventListener("click", async () => {
   if (!sent) return;
   const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
   if (!answer?.ok) {
-    $("agent-cmd").textContent = `npx --yes pipeup@0 browser install --extension-id ${chrome.runtime.id}`;
+    $("agent-cmd").textContent = agentSetup();
     $("agent-help").hidden = false;
     $("agent-said").textContent = "not set up yet";
     return;

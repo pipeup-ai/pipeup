@@ -135,16 +135,18 @@
     </p>
     <div id="addons"></div>
 
-    <h2>Send to my agent</h2>
-    <p class="lede">
-      Sends a page's comments to agents on this computer; their replies come back into the threads. Set it up
-      once, in a terminal:
-    </p>
-    <pre class="cmd"><code id="agent-cmd"></code></pre>
-    <p class="lede">
-      Agents then read with <code>npx --yes pipeup@0 browser read</code> and answer with
-      <code>npx --yes pipeup@0 browser reply</code>.
-    </p>
+    <section id="agent-section">
+      <h2>Send to my agent</h2>
+      <p class="lede">
+        Sends a page's comments to agents on this computer; their replies come back into the threads. Set it
+        up once, in a terminal:
+      </p>
+      <pre class="cmd"><code id="agent-cmd"></code></pre>
+      <p class="lede">
+        Agents then read with <code>npx --yes pipeup@0 browser read</code> and answer with
+        <code>npx --yes pipeup@0 browser reply</code>.
+      </p>
+    </section>
     <script type="module" src="comments.js"></script>
   </body>
 </html>

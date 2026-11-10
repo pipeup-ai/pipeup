@@ -1,6 +1,6 @@
 # Pipeup for browsers (extension)
 
-Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons and pictures to come. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
+Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores to come. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
 [EXTENSION_SPEC.md](../EXTENSION_SPEC.md). Targets `next`.
 
 ## Shape
@@ -128,7 +128,27 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
     `data-pipeup-github-repo` from the extension's settings. Save to GitHub needs no sign-in (it opens GitHub's own
     new-issue page), so item 7 needed no OAuth.
   - The side panel hears when a comment's place changes (checked every 1.5 s), not only when comments change.
-- **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, add-ons, Firefox packaging and `web-ext lint`, the release job and store status, Safari, pictures.
+- **Firefox and Safari:**
+  - The build writes one folder per browser from the same source: `dist/chromium` (no `sidebar_action` or
+    `browser_specific_settings`; `background.service_worker`), `dist/firefox` (no `side_panel` or `sidePanel`;
+    `background.scripts` as an event page; `gecko.data_collection_permissions: none`; Firefox 128+, for
+    `optional_host_permissions`) and `dist/safari` (no side panel, sidebar or `nativeMessaging`; a service worker without
+    `type`, since Safari takes none). Everything uses `chrome.*`, which all three answer to.
+  - `src/browser.js` holds what differs at run time: the panel beside the page (`chrome.sidePanel`, or Firefox's
+    `browser.sidebarAction`, opened and closed in answer to a press; neither in Safari, so the pin isn't offered), and
+    Send to my agent (not in Safari, which lets an extension talk only to the app it comes in; its setup command names
+    Firefox there, whose extension id is the same everywhere: `pipeup browser install --browser firefox` writes
+    Mozilla's host file with `allowed_extensions`).
+  - Safari: `--safari` runs `xcrun safari-web-extension-converter` (macOS only, `ai.pipeup.Pipeup`) into
+    `dist/safari-app` and `xcodebuild` with an ad-hoc signature, for Safari's Allow Unsigned Extensions. The Xcode
+    project is generated, not kept.
+  - Tests: `web-ext lint` on the Firefox build, and `e2e/firefox.spec.ts` in a released Firefox (`npm run firefox`)
+    driven by Puppeteer over WebDriver BiDi, with `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS` so it can open the extension's pages
+    and a fixed `moz-extension://` id. One Firefox per run, its storage cleared per test: macOS hands a second Firefox
+    started straight after to the first. Playwright's own Firefox can't add extensions and can't open tabs over BiDi.
+    Safari isn't driven: safaridriver has no extensions.
+- **Not yet:** reactions and @mentions in the side panel, add-ons' rows in the menu, the release job and store status,
+  Send to my agent in Safari (it needs the app to carry the messages), Firefox on Android, Safari on iPhone and iPad.
 
 ## Change log
 
@@ -139,3 +159,4 @@ Status: **built for local testing in Chrome**; stores, Firefox, Safari, add-ons 
 - 2026-11-09 — Pipeup in the browser: the menu in the toolbar panel, the comments in the side panel, `ui: "host"` in Pipeup.
 - 2026-11-09 — The comment box on the page; pinned or popovers.
 - 2026-11-09 — Integrations: right-click, single-page apps, local pages, pictures, saving, Send to my agent, add-ons.
+- 2026-11-10 — Firefox and Safari (Mac) builds, `browser.js`, Firefox tests; see As built.

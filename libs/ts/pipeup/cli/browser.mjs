@@ -7,8 +7,10 @@ import { homedir, platform } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** The name the extension asks Chrome for. */
+/** The name the extension asks the browser for. */
 export const HOST = "ai.pipeup.browser";
+/** The extension's id in Firefox, which (unlike Chrome's) is the same on every computer. */
+export const FIREFOX_ID = "extension@pipeup.ai";
 /** Where pages sent from the browser are kept. */
 export const inbox = () => process.env.PIPEUP_BROWSER_DIR || join(homedir(), ".pipeup", "browser");
 /** A document id as a folder name: Pipeup's ids are letters, digits, "-", "_" and ":" (kept as "_"). */
@@ -27,21 +29,25 @@ const PLACES = {
     chromium: "Library/Application Support/Chromium/NativeMessagingHosts",
     edge: "Library/Application Support/Microsoft Edge/NativeMessagingHosts",
     brave: "Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts",
+    firefox: "Library/Application Support/Mozilla/NativeMessagingHosts",
   },
   linux: {
     chrome: ".config/google-chrome/NativeMessagingHosts",
     chromium: ".config/chromium/NativeMessagingHosts",
     edge: ".config/microsoft-edge/NativeMessagingHosts",
     brave: ".config/BraveSoftware/Brave-Browser/NativeMessagingHosts",
+    firefox: ".mozilla/native-messaging-hosts",
   },
 };
 
 /**
  * Lets the extension reach this computer's agents: writes a small launcher (with this Node's own path, since a
- * browser starts programs without the terminal's PATH) and the browser's host file, allowing only `extensionId`.
+ * browser starts programs without the terminal's PATH) and the browser's host file, allowing only Pipeup's extension:
+ * `extensionId` in Chrome and its kin (each computer's copy has its own), Pipeup's fixed id in Firefox.
  */
 export async function install({ extensionId, browser = "chrome" }) {
-  if (!/^[a-p]{32}$/.test(extensionId ?? ""))
+  const firefox = browser === "firefox";
+  if (!firefox && !/^[a-p]{32}$/.test(extensionId ?? ""))
     throw new Error(
       "give the extension's id: chrome://extensions shows it on Pipeup's card (32 letters a to p)",
     );
@@ -60,7 +66,9 @@ export async function install({ extensionId, browser = "chrome" }) {
     description: "Pipeup: comments from the browser for agents on this computer",
     path: launcher,
     type: "stdio",
-    allowed_origins: [`chrome-extension://${extensionId}/`],
+    ...(firefox
+      ? { allowed_extensions: [FIREFOX_ID] }
+      : { allowed_origins: [`chrome-extension://${extensionId}/`] }),
   };
   await writeFile(file, JSON.stringify(manifest, null, 2) + "\n");
   return { file, launcher };

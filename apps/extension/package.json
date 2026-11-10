@@ -7,9 +7,13 @@
   "scripts": {
     "build": "node ../../tools/build-extension.mjs",
     "e2e": "playwright test",
-    "check": "node ../../tools/build-extension.mjs --test && npm run e2e"
+    "check": "node ../../tools/build-extension.mjs --test && web-ext lint -s dist/firefox && npm run e2e",
+    "firefox": "npx @puppeteer/browsers install firefox@stable --path node_modules/.cache/firefox",
+    "build:safari": "node ../../tools/build-extension.mjs --safari"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "puppeteer-core": "^24.43.1",
+    "web-ext": "^8.10.0"
   }
 }

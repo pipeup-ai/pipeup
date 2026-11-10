@@ -14,6 +14,10 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   Zen, Floorp, LibreWolf and others; Firefox on Android).
 - **Then:** Safari on Mac, iPhone and iPad.
 - Each installs from that browser's own store.
+- Where a browser can't do something, the extension leaves it out rather than offering it broken:
+  - **Safari** has no panel beside the page: comments always open on the page, and **Keep comments beside the page**
+    isn't offered.
+  - **Send to my agent** is offered in Chrome, Edge and Firefox; not yet in Safari.
 
 ## 3. Turning Pipeup on
 
@@ -112,3 +116,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — After the extension is reloaded or updated, Pipeup on open pages takes itself off them.
 - 2026-11-09 — Side panel: a click anywhere on a thread opens it; a thread on something without words says what it is and its name.
 - 2026-11-09 — The right-click menu, Comments opening Pipeup's own panel when unpinned, single-page apps, Always on for local pages, pictures (shown on lost comments in the side panel), Save comments, Send to my agent, and add-ons with their settings (§4a, §5).
+- 2026-11-10 — Built for local testing in Firefox and in Safari on a Mac. What Safari can't do is left out: comments aren't pinned beside the page there, and Send to my agent isn't offered (§2).
