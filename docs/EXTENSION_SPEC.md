@@ -10,14 +10,19 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 
 ## 2. Browsers
 
-- **First:** Chrome, Edge and Firefox, and the browsers that install from their stores (Brave, Vivaldi, Opera, Arc,
-  Zen, Floorp, LibreWolf and others; Firefox on Android).
-- **Then:** Safari on Mac, iPhone and iPad.
+- **First:** Chrome, Edge and Firefox on computers, and the browsers that install from their stores (Brave, Vivaldi,
+  Opera, Arc, Zen, Floorp, LibreWolf and others).
+- **Then:** Safari on Mac; later Firefox on Android, and Safari on iPhone and iPad.
 - Each installs from that browser's own store.
 - Where a browser can't do something, the extension leaves it out rather than offering it broken:
   - **Safari** has no panel beside the page: comments always open on the page, and **Keep comments beside the page**
     isn't offered.
-  - **Send to my agent** is offered in Chrome, Edge and Firefox; not yet in Safari.
+  - **Send to my agent** is offered in Chrome, Edge and Firefox on Mac and Linux; not yet in Safari or on Windows,
+    where it isn't shown.
+  - **Voice** is offered only where the browser can turn speech into text (not Firefox).
+  - **Safari** doesn't offer **Share** or **Live** (they show other people's comments, which Apple's store requires ways
+    to report and block for), and takes no pictures of where comments were made (§5), since it has nowhere to show
+    them.
 
 ## 3. Turning Pipeup on
 
@@ -73,34 +78,48 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - **Save comments**, in the toolbar menu: **As a Markdown file** (for people and AIs) or **As a Pipeup file** (to open
   again), saved where the browser saves downloads.
 - **Send to my agent**, in the toolbar menu: the page's comments go to agents on this computer, and their replies come
-  back into the threads (functional spec §15g). Until it is set up, it says the one command to run.
+  back into the threads (functional spec §15g). Until it is set up, it says the one command to run, which sets it up
+  for the browser it is in (Chrome, Edge or Firefox) from the release the extension is.
 - **Add-ons**, turned on in the extension's settings: Emoji (on by default), Voice, Share (with a sharing address),
   Live, Save to GitHub (with a repository; GitHub asks the reviewer to sign in on its own page, so the extension holds
   no GitHub sign-in) and My identity. Their menu rows are in Pipeup's own menu, reached from **More from add-ons**.
 
 ## 5. Where comments are kept
 
-- In the browser, **by the extension**, by page address. The site can't read or remove them, and the extension writes
-  nothing into the site's own storage.
+- In the browser, **by the extension**, by page address. The site can't read or remove them, nor anything else Pipeup
+  shows on the page (the reviewer's name, add-ons' panels, a recovery code).
+- The extension writes nothing into the site's own storage. Add-ons' choices are kept by the extension too (whether
+  Live is on and that the reviewer agreed to it, Share's and Voice's choices, Emoji's recent emoji), so a page can't
+  read them or set them in advance.
 - **Comments you've made** lists every page the reviewer has commented on, newest first, and opens any of them.
 - When a comment is made, the extension keeps a **small picture of where it was** (where the browser lets it see the
   tab: after a press on Pipeup or its right-click menu), in that browser only. A Lost comment
   (functional spec §8) shows it to the reviewer who made it, marked "only in this browser". The picture is never sent
   with the comment, shared or copied for AI. Pictures are on by default; the reviewer can turn them off, which also
-  removes the ones kept.
+  removes the ones kept. Deleting a comment removes its picture.
 - A page's scripts can't reach the extension's Pipeup. Agents get comments as they do today: Copy for AI, Share, or the
   agents' mailbox.
 
 ## 6. Privacy
 
-- The extension sends nothing anywhere and loads no code from the web. Only add-ons the reviewer turns on send, as they
-  say. No analytics or telemetry.
+- No account, no server of Pipeup's own, no analytics or telemetry, and no code loaded from the web.
+- On its own the extension sends nothing. Comments leave the browser only when the reviewer copies or saves them, or:
+  - **Send to my agent**, when pressed: the page's comments go to agent programs on this computer, nowhere else.
+  - **Add-ons the reviewer turns on**, each as it says when turned on: **Share** sends comments to the sharing address
+    the reviewer gave; **Live** shares the reviewer's presence on the page with others there, only after the reviewer
+    agrees in Live's own panel; **Save to GitHub** opens a GitHub page holding the comment, which GitHub receives when
+    the page opens (nothing is filed until the reviewer submits it there); **Voice** uses the browser's own speech
+    service, which may send what is said to the browser's maker.
+- Where the browser asks people to agree to what an extension sends (Firefox), it asks before Send to my agent is
+  first used, and before Share, Live or Save to GitHub is first turned on; declined, that feature stays off.
+- The store listings and the privacy policy say the same as this section ([store/privacy-policy.md](store/privacy-policy.md)).
 
 ## 7. Releases
 
 - Every Pipeup release is also an extension release, with the **same version** and the **same Pipeup files** as npm.
 - Each store reviews each release; until a store has, it offers the previous version. The maintainer can see, per
   store, whether a release is live or waiting for review.
+- Each store's package is built from the release's tag, so a store's reviewer can rebuild it from the source.
 - Stores get stable releases only. Pre-releases may later go to separate testing listings.
 
 ## Change log
@@ -117,3 +136,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — Side panel: a click anywhere on a thread opens it; a thread on something without words says what it is and its name.
 - 2026-11-09 — The right-click menu, Comments opening Pipeup's own panel when unpinned, single-page apps, Always on for local pages, pictures (shown on lost comments in the side panel), Save comments, Send to my agent, and add-ons with their settings (§4a, §5).
 - 2026-11-10 — Built for local testing in Firefox and in Safari on a Mac. What Safari can't do is left out: comments aren't pinned beside the page there, and Send to my agent isn't offered (§2).
+- 2026-11-10 — Ready for the stores, agreed with the maintainer after checking the store drafts against the code: what each browser leaves out (§2: Send to my agent not on Windows; Voice not in Firefox; Share, Live and pictures not in Safari; Firefox on Android and Safari on iPhone and iPad later); Send to my agent's command fits the browser and release (§4a); nothing Pipeup shows can be read by the site, add-ons' choices are kept by the extension, and deleting a comment removes its picture (§5); what leaves the browser, and when, said in full, with the browser asked first where it asks (§6); packages built from the release's tag (§7).
