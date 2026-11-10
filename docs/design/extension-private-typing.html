@@ -1,0 +1,217 @@
+<title>Private Typing</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: one reading column; the two paths drawn side by side, stacking on a phone. Light look only. */
+:root {
+  --paper: #fbfaff;
+  --ink: #23213a;
+  --muted: #6a6788;
+  --line: #dcd8ee;
+  --violet: #534ab7;
+  --violet-soft: #ece9fb;
+  --leak: #b4442f;
+  --leak-soft: #fbece8;
+  --safe: #2f7d4a;
+  --safe-soft: #e7f4ec;
+  --page: #ffffff;
+  --display: "Source Serif 4", Georgia, serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font: 17px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 64px;
+}
+main { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; }
+h1, h2 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.1rem; line-height: 1.15; }
+h2 { font-size: 1.35rem; }
+p { margin: 0; max-width: 65ch; }
+.eyebrow { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.lede { font-size: 1.15rem; color: var(--ink); }
+section { display: flex; flex-direction: column; gap: 14px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 720px) { .pair { grid-template-columns: 1fr; } }
+.panel { border: 1px solid var(--line); border-radius: 10px; background: var(--page); padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel h3 { margin: 0; font-size: 1rem; }
+.tag { font-size: .78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.leak .tag { color: var(--leak); } .safe .tag { color: var(--safe); }
+svg { width: 100%; height: auto; display: block; }
+svg text { font-family: var(--body); }
+.mock { position: relative; background: #f6f6f8; border-radius: 8px; padding: 18px 14px 22px; overflow: hidden; }
+.mock .para { color: #3a3a46; font-size: .95rem; line-height: 1.5; }
+.mock mark { background: #e6e2fb; color: inherit; border-radius: 2px; }
+.box { margin-top: 12px; background: #fff; border: 1px solid #d8d5e8; border-radius: 10px; box-shadow: 0 6px 18px rgba(35,33,58,.10); padding: 10px 12px; font-size: .92rem; position: relative; }
+.box .field { min-height: 30px; padding: 4px 2px; color: var(--ink); position: relative; }
+.box .field .caret { display: inline-block; width: 1px; height: 1.05em; background: var(--ink); vertical-align: -2px; margin-left: 1px; }
+.box .bts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+.box .bts span { font-size: .82rem; padding: 4px 10px; border-radius: 6px; }
+.box .bts .c { color: var(--muted); }
+.box .bts .s { background: var(--violet); color: #fff; }
+.framed { outline: 2px dashed var(--safe); outline-offset: 2px; border-radius: 4px; }
+.note { font-size: .8rem; color: var(--safe); margin-top: 4px; }
+.hears { font-family: var(--mono); font-size: .82rem; border-radius: 6px; padding: 8px 10px; }
+.leak .hears { background: var(--leak-soft); color: var(--leak); }
+.safe .hears { background: var(--safe-soft); color: var(--safe); }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.scroll { overflow-x: auto; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+td.no { color: var(--safe); font-weight: 600; } td.yes { color: var(--leak); font-weight: 600; }
+blockquote { margin: 0; border-left: 3px solid var(--violet); background: var(--violet-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; max-width: 70ch; }
+ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; max-width: 65ch; }
+code { font-family: var(--mono); font-size: .88em; }
+.ask { border: 1px solid var(--violet); border-radius: 10px; padding: 16px; background: var(--page); }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <span class="eyebrow">Pipeup for browsers · proposal for review · 10 November 2026</span>
+    <h1>Typing a comment without the page listening</h1>
+    <p class="lede">Nothing you see changes. What changes is where your keys go: into the extension's own frame, which
+      the page can't hear, instead of through the page.</p>
+  </header>
+
+  <section>
+    <h2>Where the keys go</h2>
+    <div class="pair">
+      <div class="panel leak">
+        <span class="tag">Today</span>
+        <svg viewBox="0 0 400 230" role="img" aria-label="Today: keys pass from the comment box up through the page, where the page's listener hears them">
+          <rect x="10" y="10" width="380" height="210" rx="10" fill="#ffffff" stroke="#dcd8ee"/>
+          <text x="24" y="32" font-size="13" fill="#6a6788">The page (example.com)</text>
+          <rect x="34" y="48" width="220" height="110" rx="8" fill="#ece9fb" stroke="#534ab7"/>
+          <text x="48" y="70" font-size="13" fill="#534ab7" font-weight="600">Pipeup (closed to scripts)</text>
+          <rect x="52" y="86" width="184" height="52" rx="6" fill="#ffffff" stroke="#d8d5e8"/>
+          <text x="64" y="117" font-size="14" fill="#23213a">Comment box</text>
+          <rect x="280" y="160" width="96" height="44" rx="6" fill="#fbece8" stroke="#b4442f"/>
+          <text x="292" y="180" font-size="12" fill="#b4442f" font-weight="600">Page's script</text>
+          <text x="292" y="196" font-size="12" fill="#b4442f">hears "secret"</text>
+          <path d="M236 112 C 300 112, 328 120, 328 156" fill="none" stroke="#b4442f" stroke-width="2" marker-end="url(#a1)"/>
+          <text x="262" y="104" font-size="12" fill="#b4442f">s e c r e t</text>
+          <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#b4442f"/></marker></defs>
+          <text x="24" y="190" font-size="12" fill="#6a6788">Every key event passes out</text>
+          <text x="24" y="206" font-size="12" fill="#6a6788">through the page's document.</text>
+        </svg>
+        <div class="hears">keydown s · input "s" · keydown e · input "e" · …</div>
+      </div>
+      <div class="panel safe">
+        <span class="tag">Proposed</span>
+        <svg viewBox="0 0 400 230" role="img" aria-label="Proposed: keys stay in the extension's frame and reach Pipeup over a private channel; the page hears only that the box has the focus">
+          <rect x="10" y="10" width="380" height="210" rx="10" fill="#ffffff" stroke="#dcd8ee"/>
+          <text x="24" y="32" font-size="13" fill="#6a6788">The page (example.com)</text>
+          <rect x="34" y="48" width="220" height="110" rx="8" fill="#ece9fb" stroke="#534ab7"/>
+          <text x="48" y="70" font-size="13" fill="#534ab7" font-weight="600">Pipeup (closed to scripts)</text>
+          <rect x="52" y="86" width="184" height="52" rx="6" fill="#ffffff" stroke="#2f7d4a" stroke-dasharray="5 4" stroke-width="2"/>
+          <text x="64" y="110" font-size="14" fill="#23213a">Comment box</text>
+          <text x="64" y="128" font-size="11" fill="#2f7d4a">the extension's own frame</text>
+          <rect x="280" y="160" width="96" height="44" rx="6" fill="#e7f4ec" stroke="#2f7d4a"/>
+          <text x="292" y="180" font-size="12" fill="#2f7d4a" font-weight="600">Page's script</text>
+          <text x="292" y="196" font-size="12" fill="#2f7d4a">hears "focus"</text>
+          <path d="M144 86 C 144 74, 200 74, 214 78" fill="none" stroke="#534ab7" stroke-width="2" marker-end="url(#a2)"/>
+          <text x="150" y="66" font-size="11" fill="#534ab7">words, over a private channel</text>
+          <path d="M236 128 C 296 136, 318 142, 322 156" fill="none" stroke="#2f7d4a" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a3)"/>
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#534ab7"/></marker>
+            <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#2f7d4a"/></marker>
+          </defs>
+          <text x="24" y="190" font-size="12" fill="#6a6788">Keys are pressed in another</text>
+          <text x="24" y="206" font-size="12" fill="#6a6788">document; they never enter the page.</text>
+        </svg>
+        <div class="hears">focus · blur</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the reviewer sees</h2>
+    <p>The same box, in the same place, in both. The dashed line on the right is drawn here only to show where the
+      frame is; the reviewer doesn't see it.</p>
+    <div class="pair">
+      <div class="panel">
+        <span class="tag" style="color:var(--muted)">Today</span>
+        <div class="mock">
+          <div class="para">The Lumen beta opens to <mark>everyone in June</mark>, with the public release after the
+            summer.</div>
+          <div class="box">
+            <div class="field">Which beta, Ada's or the public one?<span class="caret"></span></div>
+            <div class="bts"><span class="c">Cancel</span><span class="s">Comment</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="tag" style="color:var(--safe)">Proposed</span>
+        <div class="mock">
+          <div class="para">The Lumen beta opens to <mark>everyone in June</mark>, with the public release after the
+            summer.</div>
+          <div class="box">
+            <div class="field framed">Which beta, Ada's or the public one?<span class="caret"></span></div>
+            <div class="bts"><span class="c">Cancel</span><span class="s">Comment</span></div>
+          </div>
+          <div class="note">The writing line is the extension's frame. Cancel and Comment stay Pipeup's.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the page can notice</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>While Sam writes a comment</th><th>Today</th><th>Proposed</th></tr></thead>
+        <tbody>
+          <tr><td>The words in the box</td><td class="no">No</td><td class="no">No</td></tr>
+          <tr><td>Each key pressed</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Words pasted into the box</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>Words dictated with Voice</td><td class="yes">Yes, as they're typed in</td><td class="no">No</td></tr>
+          <tr><td>An emoji or @mention chosen</td><td class="yes">Yes</td><td class="no">No</td></tr>
+          <tr><td>That Pipeup's box has the focus</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proposed spec wording</h2>
+    <p>Added to <code>EXTENSION_SPEC.md</code> §5, where comments are kept:</p>
+    <blockquote><strong>What the reviewer types into Pipeup on a page can't be seen by the page:</strong> not the words
+      of a comment, reply or edit, nor the keys pressed, nor what is pasted or dictated there. Typing looks and works as
+      it does on a page with Pipeup built in: @mentions, add-ons' buttons in the box (Emoji, Voice), Enter to send,
+      Shift+Enter for a new line, Esc to cancel, undo, and the browser's spelling and input methods. The page sees only
+      that Pipeup's box has the focus.</blockquote>
+  </section>
+
+  <section>
+    <h2>What stays the same</h2>
+    <ul>
+      <li>How the box looks, grows with the words, and where it opens.</li>
+      <li>@mentions, Emoji and Voice in the box; Enter, Shift+Enter, Esc, undo, Tab in and out.</li>
+      <li>Spelling, Japanese and Chinese input, words written right to left.</li>
+      <li>Pages with Pipeup built in: no frame, nothing changes there.</li>
+      <li>The side panel and the toolbar panel: typing there never touched the page.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How we'd know it works</h2>
+    <ul>
+      <li>A test types in every kind of box (new comment, reply, edit) and checks the page's own listeners heard no key,
+        input, paste or composition event.</li>
+      <li>One test for each key Pipeup acts on, so none is lost on the way.</li>
+      <li>A page that frames the extension's typing page itself gets a box that does nothing.</li>
+      <li>The hand checklist gains steps for input methods and dictation in Chrome, Firefox and Safari.</li>
+    </ul>
+    <p>The design note, with how it's built and the risks: <code>docs/design/extension-private-typing.md</code>.</p>
+  </section>
+
+  <section class="ask">
+    <h2>For you to decide</h2>
+    <p>Agree the spec wording above, and the extension-framed box as the way to meet it. Once agreed it's built on the
+      extension branch, and the listings and privacy policy drop the sentence about keys.</p>
+  </section>
+</main>

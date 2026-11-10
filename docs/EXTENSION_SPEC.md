@@ -88,6 +88,11 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 
 - In the browser, **by the extension**, by page address. The site can't read or remove them, nor anything else Pipeup
   shows on the page (the reviewer's name, add-ons' panels, a recovery code).
+- **What the reviewer types into Pipeup on a page can't be seen by the page:** not the words of a comment, reply or
+  edit, nor the keys pressed, nor what is pasted or dictated there. Typing looks and works as it does on a page with
+  Pipeup built in: @mentions, add-ons' buttons in the box (Emoji, Voice), Enter to send, Shift+Enter for a new line,
+  Esc to cancel, undo, and the browser's spelling and input methods. The page sees only that Pipeup's box has the
+  focus.
 - The extension writes nothing into the site's own storage. Add-ons' choices are kept by the extension too (whether
   Live is on and that the reviewer agreed to it, Share's and Voice's choices, Emoji's recent emoji), so a page can't
   read them or set them in advance.
@@ -137,3 +142,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-09 — The right-click menu, Comments opening Pipeup's own panel when unpinned, single-page apps, Always on for local pages, pictures (shown on lost comments in the side panel), Save comments, Send to my agent, and add-ons with their settings (§4a, §5).
 - 2026-11-10 — Built for local testing in Firefox and in Safari on a Mac. What Safari can't do is left out: comments aren't pinned beside the page there, and Send to my agent isn't offered (§2).
 - 2026-11-10 — Ready for the stores, agreed with the maintainer after checking the store drafts against the code: what each browser leaves out (§2: Send to my agent not on Windows; Voice not in Firefox; Share, Live and pictures not in Safari; Firefox on Android and Safari on iPhone and iPad later); Send to my agent's command fits the browser and release (§4a); nothing Pipeup shows can be read by the site, add-ons' choices are kept by the extension, and deleting a comment removes its picture (§5); what leaves the browser, and when, said in full, with the browser asked first where it asks (§6); packages built from the release's tag (§7).
+- 2026-11-10 — Proposed, for review: what the reviewer types into Pipeup on a page can't be seen by the page, keys included (§5). Design: docs/design/extension-private-typing.md.
