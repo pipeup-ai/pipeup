@@ -9,7 +9,33 @@ change the API and the stored comment format.
 
 ### Added
 
+- The website has a Privacy page and a Support page for Pipeup for browsers, and a sample page for trying the extension, Share and Live included. Safari's Pipeup comes in a Mac app with a window of its own (what it is, whether it's on in Safari, how to start), its own icon, and support for macOS 12 and later. Each extension package carries its licences.
+- `mount({ field })`: a host can show its own stand-in for Pipeup's text boxes, typed in where the page can't hear. In the browser extension, what is typed into a comment, reply or edit box is typed in the extension's own frame, so the page hears neither the words nor the keys.
+- `mount({ closed: true })` puts Pipeup's UI in a closed shadow root, out of the page's scripts' reach, and `mount({ keep })` gives add-ons a store of the host's own (`host.keep`), so their choices stay out of the site's storage. The browser extension uses both.
+
+- `mount({ settings })` gives page settings a host can't write into the page, and `startComment(element or range)` opens the comment box on what it names.
+- `pipeup browser`: agents read comments sent from the browser extension and answer them (`browser read`, `browser reply`, set up once with `browser install`, or `browser install --browser firefox`).
+- `mount({ prefs })`: a host can keep the reviewer's choices (look, Hide comments) somewhere other than the page's localStorage.
+- `mount({ ui: "host" })`: a host shows Pipeup's threads itself; Pipeup opens none on the page and says `on("open")` when one is opened there. New comments are still written on the page. New on the instance: `commentsAs("ai" | "text")`, `look`/`setLook()`, `hidden`/`setHidden()` and `openThread(id)`.
+- Pipeup for browsers, an extension that adds Pipeup to any page from the toolbar, for local testing in Chrome, Firefox and Safari on a Mac (`apps/extension`). It has a right-click Comment with Pipeup, follows single-page apps, can be always on for local pages, keeps a private picture of where each comment was made, saves comments as a file, sends them to agents on this computer, and carries Emoji, Voice, Share, Live, Save to GitHub and My identity. Pipeup's menu is the toolbar panel; new comments are written beside what they're about, and comments open as popovers or, pinned, in the browser's side panel. Safari has no panel beside the page, so comments always open on the page there, and Send to my agent isn't in Safari yet. Not in any store yet.
 - Comments follow what they were on when a site changes. A comment on something clicked keeps what kind of thing it was, its name and the headings it sat under, so it follows that thing when content is added or reordered instead of landing on a neighbour. When Pipeup found it by looking alike, the thread asks "Is this the right place?" (Yes, Not here, It's gone), once, for everyone. A comment whose place is gone says what it was, and anyone can show where it belongs. Copy for AI says the same.
+
+### Changed
+
+- The browser extension is ready for the stores: the page can't read Pipeup's UI or add-ons' choices (Live's consent can't be set by a page); Firefox asks before Share, Live, Save to GitHub or Send to my agent first sends anything, and needs Firefox 140; Firefox leaves out Voice, and Safari leaves out Share, Live and pictures; Send to my agent's setup command names this release and the browser (Edge and Brave included), and isn't offered on Windows; deleting a comment deletes its picture; a page can't choose where Share or Save to GitHub sends (only the reviewer's own address and repository count).
+- Save to GitHub says that GitHub receives the comment's words, name, page title and address when its new-issue page opens; nothing is filed until you submit it.
+
+- In comment mode, Space in an empty comment or reply box no longer types a space: holding it pauses comment mode, as it does on the page. Once the box has words, Space types as usual.
+- In comment mode, while a thread is open to read, no other block is outlined, and a click on the page only closes it; the next click chooses a block. A thread you just wrote doesn't hold up the next comment.
+
+### Fixed
+
+- In Safari, Delete in a comment's ⋯ menu now works: the menu closed as it was pressed, since Safari doesn't focus a button that is clicked.
+- In Safari, a button of Pipeup's that is pressed takes the focus, as in other browsers, so a menu opened with the mouse can be moved through with the arrow keys and a second press on the control closes it.
+- In Safari, selected words keep their selection, and their comment icon, when Pipeup moves the focus away.
+- Moving the mouse onto another block takes the outline from the keyboard's block cursor in browsers that don't say how far the pointer moved.
+- A press on a card in All comments opens it even when the list updates between the press and its release (a comment arriving just then lost the click).
+
 
 ## [0.9.1] - 2026-11-01
 

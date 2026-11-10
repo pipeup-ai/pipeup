@@ -1202,19 +1202,21 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     expect(await cursorOn(page)).toBeNull();
   });
 
-  test("the mouse moving onto another block takes the outline from the cursor; Tab carries on from there", async ({
-    page,
-  }) => {
-    await open(page, "doc.html");
-    await shortcut(page);
-    await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
-    const p2 = (await page.locator("#p2").boundingBox())!;
-    await page.mouse.move(p2.x + 20, p2.y + 5);
-    await page.mouse.move(p2.x + 40, p2.y + 8);
-    await expect.poll(() => cursorOn(page)).toBeNull();
-    await page.keyboard.press("Tab");
-    await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 4 of 8" });
-  });
+  test(
+    "the mouse moving onto another block takes the outline from the cursor; Tab carries on from there",
+    { tag: "@safari" },
+    async ({ page }) => {
+      await open(page, "doc.html");
+      await shortcut(page);
+      await expect.poll(() => cursorOn(page)).toMatchObject({ block: "h1" });
+      const p2 = (await page.locator("#p2").boundingBox())!;
+      await page.mouse.move(p2.x + 20, p2.y + 5);
+      await page.mouse.move(p2.x + 40, p2.y + 8);
+      await expect.poll(() => cursorOn(page)).toBeNull();
+      await page.keyboard.press("Tab");
+      await expect.poll(() => cursorOn(page)).toMatchObject({ label: "Bar, 4 of 8" });
+    },
+  );
 
   test("blocks below the fold of a scrolling pane and inside inline component tags are still stops", async ({
     page,

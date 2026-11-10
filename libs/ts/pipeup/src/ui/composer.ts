@@ -2,6 +2,7 @@ import { h } from "./dom";
 import { filterPeople, locate, mentionToken, type Person } from "./mentions";
 import type { Mention } from "../model/types";
 import { draw } from "./icons";
+import { offerField } from "./field";
 
 export interface ComposerOptions {
   /** Something quiet at the start of the button row, left of Cancel: the draft's "stays in this browser" glyph. */
@@ -106,6 +107,8 @@ export function composer(o: ComposerOptions): Composer {
   slot.hidden = true;
   const line = h("div", { class: "line" }, input, slot);
   const element = h("div", { class: "row" }, line, h("div", { class: "bts" }, o.lead ?? null, cancel, send));
+  // A host may write in a box of its own in this one's place (the extension's frame, which the page can't hear).
+  offerField(input);
   const kind = o.kind ?? "comment";
   let busy = false;
   const ends = new Set<() => void>();

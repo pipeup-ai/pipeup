@@ -107,6 +107,15 @@ visitor how to add it. Functional requirements only.
    Beside them, a box, **For your page**, with the two lines (the key on `<html>` and the pinned script line) and its
    own **Copy**: each copy carries a fresh key, it says "Copied" the same way, and the words are selected if copying
    isn't allowed. Its Copy sits above the code, never over it.
+2b. **Privacy** (`privacy.html`) and **Support** (`support.html`), pages of their own for Pipeup for browsers, which
+   the browsers' stores link to. Privacy is the extension's privacy policy, word for word, and its date; Support says
+   how to start, answers the common questions and says where to report a problem (GitHub) and how to report a privacy
+   or security problem privately. Each has the site's header and footer, reads as plain text, and has a Markdown copy.
+   Neither carries Pipeup.
+2c. **A page for trying the extension** (`extension-test.html`): a short sample document with words, a picture and a
+   table, a line at the top saying what to press, and a Pipeup document id, so the extension's Share and Live work on
+   it. It doesn't load Pipeup (the extension steps aside on a page that does) and asks search engines not to list it.
+
 3. **The reviewer help page**, `add-comments.html`, for people who were sent a page. It is linked from the first
    screen's third step, the note for reviewers and the reviewer prompt; it is not a door on the home page. It has the
    site's header and footer (the logo leads home; there is no separate back link) and its own Markdown copy. Its
@@ -402,3 +411,4 @@ an add-on from another company, and that the reviewer is asked first as with any
 - 2026-10-27 — The home page fits one screen (visual spec docs/design/one-screen-home-mockups.html): What your AI does and The details become pages of their own (prompt.html, details.html), opened from the first screen's quiet links, and the first screen and The details say the same in fewer words. If copying the prompt isn't allowed, What your AI does opens with its words selected.
 - 2026-10-31 — The home page's prompt (What your AI does), llms.txt and the integrate skill name Agents and Inline as the add-ons authors most often want, added only when the author asks; if they asked for neither, the agent says in one line that both exist. This ends "the Copy prompt stays core only" (2026-10-08) for that one prompt: answering comments with an agent and asking questions in the content are what most authors who make a page want next. The Add-ons page gains an Inline card and page (sends nothing, asks nothing first). Live with the release that ships Inline.
 - 2026-11-01 — The Create prompt, What your AI does, llms.txt and the integrate skill tell agents that a page can have its own Comment button (Pipeup's page API, keeping a way to Pipeup's menu); Inline's page, its prompt and llms.txt say how to match an ask to the page's look while its mark and tint stay. Visual spec: docs/design/compact-asks.html.
+- 2026-11-10 — Privacy and Support pages, and a page for trying the extension, for the browsers' stores (§3 items 2b, 2c). Agreed with the maintainer as part of preparing the stores.

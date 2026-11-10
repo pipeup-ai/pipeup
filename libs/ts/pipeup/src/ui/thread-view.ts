@@ -204,18 +204,37 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   // Leaving the card (focus going elsewhere) closes its ⋯ menu. Checked once focus has settled, so moving between
   // its choices, or the card rebuilding itself and putting focus back, doesn't count as leaving.
   // The quick row of reactions closes the same way, and so with the thread.
+  // Safari doesn't focus a button that is clicked: pressing a menu's choice there looks like focus leaving, so a press
+  // that starts in the card waits for its click before anything counts as leaving.
+  let pressing = false;
+  const leftYet = () => {
+    if (
+      !pressing &&
+      (menuFor || quickOpen.size) &&
+      !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement)
+    ) {
+      menuFor = confirm = "";
+      quickOpen.clear();
+      update(current);
+    }
+  };
+  element.addEventListener("pointerdown", () => {
+    pressing = true;
+    const release = () => {
+      removeEventListener("pointerup", release, true);
+      removeEventListener("pointercancel", release, true);
+      // After the click that follows, which may put focus back in the card.
+      setTimeout(() => {
+        pressing = false;
+        leftYet();
+      });
+    };
+    addEventListener("pointerup", release, true);
+    addEventListener("pointercancel", release, true);
+  });
   element.addEventListener("focusout", (e) => {
     if (element.contains(e.relatedTarget as Node | null)) return;
-    setTimeout(() => {
-      if (
-        (menuFor || quickOpen.size) &&
-        !element.contains((element.getRootNode() as Document | ShadowRoot).activeElement)
-      ) {
-        menuFor = confirm = "";
-        quickOpen.clear();
-        update(current);
-      }
-    });
+    setTimeout(leftYet);
   });
 
   function update(t: Thread, next: Partial<ThreadViewOptions> = {}): void {

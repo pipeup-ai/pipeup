@@ -281,38 +281,40 @@ test("a comment being written moves into the panel when it opens, and back when 
   await expect(page.locator(".th textarea[aria-label=Comment]")).toHaveValue("Half a thought");
 });
 
-test("a card shows who and how long ago; its actions show on hover; ⋯ edits and deletes your own comment", async ({
-  page,
-}) => {
-  await open(page, "doc.html", { name: "Sam" });
-  await showComments(page);
-  await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  const th = page.locator(".th");
-  await expect(th.locator(".root .who")).toHaveText("Sam");
-  await expect(th.locator(".root .ago")).toHaveText("just now");
-  await expect(th.locator(".root .ago")).toHaveAttribute("title", /\d/);
-  const acts = th.locator(".root .acts");
-  await page.mouse.move(5, 700);
-  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
-  await th.hover();
-  await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
-  // Edit: the words go back in a box with Cancel and Save.
-  await th.locator(".root").getByRole("button", { name: "More" }).click();
-  await th.getByRole("menuitem", { name: "Edit" }).click();
-  const edit = th.locator(".root .edit textarea");
-  await expect(edit).toBeFocused();
-  await expect(edit).toHaveValue("Is 20% realistic?");
-  await edit.fill("Is 20% realistic for Q3?");
-  await page.keyboard.press("Enter");
-  await expect(th.locator(".root > .tx")).toHaveText("Is 20% realistic for Q3? (edited)");
-  // Delete asks once more.
-  await th.locator(".root").getByRole("button", { name: "More" }).click();
-  await th.getByRole("menuitem", { name: "Delete" }).click();
-  await expect(th.getByRole("menuitem", { name: "Delete for everyone" })).toBeVisible();
-  await confirmDelete(th);
-  await expect(page.locator(".toast.show")).toContainText("Deleted");
-  await settled(page.locator(".toast.show"));
-});
+test(
+  "a card shows who and how long ago; its actions show on hover; ⋯ edits and deletes your own comment",
+  { tag: "@safari" },
+  async ({ page }) => {
+    await open(page, "doc.html", { name: "Sam" });
+    await showComments(page);
+    await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+    const th = page.locator(".th");
+    await expect(th.locator(".root .who")).toHaveText("Sam");
+    await expect(th.locator(".root .ago")).toHaveText("just now");
+    await expect(th.locator(".root .ago")).toHaveAttribute("title", /\d/);
+    const acts = th.locator(".root .acts");
+    await page.mouse.move(5, 700);
+    await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("0");
+    await th.hover();
+    await expect.poll(() => acts.evaluate((e) => getComputedStyle(e).opacity)).toBe("1");
+    // Edit: the words go back in a box with Cancel and Save.
+    await th.locator(".root").getByRole("button", { name: "More" }).click();
+    await th.getByRole("menuitem", { name: "Edit" }).click();
+    const edit = th.locator(".root .edit textarea");
+    await expect(edit).toBeFocused();
+    await expect(edit).toHaveValue("Is 20% realistic?");
+    await edit.fill("Is 20% realistic for Q3?");
+    await page.keyboard.press("Enter");
+    await expect(th.locator(".root > .tx")).toHaveText("Is 20% realistic for Q3? (edited)");
+    // Delete asks once more.
+    await th.locator(".root").getByRole("button", { name: "More" }).click();
+    await th.getByRole("menuitem", { name: "Delete" }).click();
+    await expect(th.getByRole("menuitem", { name: "Delete for everyone" })).toBeVisible();
+    await confirmDelete(th);
+    await expect(page.locator(".toast.show")).toContainText("Deleted");
+    await settled(page.locator(".toast.show"));
+  },
+);
 
 test("the footer's ⋯ menu shows on top of the panel", async ({ page }) => {
   await open(page, "doc.html", { name: "Sam" });
@@ -346,29 +348,31 @@ test("an open card shows the words it's about once, and its top line closes it",
   await expect(panel(page).locator(".cd.open")).toHaveCount(0);
 });
 
-test("a deleted comment goes away; deleting a thread's first comment removes the thread", async ({
-  page,
-}) => {
-  await open(page, "doc.html", { name: "Sam" });
-  await showComments(page);
-  const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
-  await page.evaluate((id) => (window as any).pu.document.reply(id, "Second thoughts"), id);
-  const th = page.locator(".th");
-  await th.locator(".root .tx").first().click();
-  const reply = th.locator(".rps .it");
-  await expect(reply).toHaveCount(1);
-  await reply.getByRole("button", { name: "More" }).click();
-  await th.getByRole("menuitem", { name: "Delete" }).click();
-  await confirmDelete(th);
-  await expect(th.locator(".rps .it")).toHaveCount(0);
-  await expect(th).not.toContainText("Deleted");
-  await th.locator(".root").getByRole("button", { name: "More" }).click();
-  await th.getByRole("menuitem", { name: "Delete" }).click();
-  await confirmDelete(th);
-  await expect(page.locator(".th")).toHaveCount(0);
-  // Nothing is counted any more: the control's bubble fades back to the comment icon.
-  await expect(page.locator(".launch .mode")).not.toHaveClass(/\bhas\b/);
-});
+test(
+  "a deleted comment goes away; deleting a thread's first comment removes the thread",
+  { tag: "@safari" },
+  async ({ page }) => {
+    await open(page, "doc.html", { name: "Sam" });
+    await showComments(page);
+    const id = await seedText(page, "#p1", "20% lift", "Is 20% realistic?");
+    await page.evaluate((id) => (window as any).pu.document.reply(id, "Second thoughts"), id);
+    const th = page.locator(".th");
+    await th.locator(".root .tx").first().click();
+    const reply = th.locator(".rps .it");
+    await expect(reply).toHaveCount(1);
+    await reply.getByRole("button", { name: "More" }).click();
+    await th.getByRole("menuitem", { name: "Delete" }).click();
+    await confirmDelete(th);
+    await expect(th.locator(".rps .it")).toHaveCount(0);
+    await expect(th).not.toContainText("Deleted");
+    await th.locator(".root").getByRole("button", { name: "More" }).click();
+    await th.getByRole("menuitem", { name: "Delete" }).click();
+    await confirmDelete(th);
+    await expect(page.locator(".th")).toHaveCount(0);
+    // Nothing is counted any more: the control's bubble fades back to the comment icon.
+    await expect(page.locator(".launch .mode")).not.toHaveClass(/\bhas\b/);
+  },
+);
 
 test("the pulse on a thread's content follows it while opening it from the panel scrolls the page", async ({
   page,

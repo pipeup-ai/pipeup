@@ -387,9 +387,18 @@ test("an ask is compact: one line, a field that grows with no resize handle, and
   // After answering: one line, your answer with Change and Remove.
   await name.getByRole("button", { name: "Send" }).click();
   await expect(name).toContainText("You said A name that runs on.");
-  const said = (await name.locator(".mine").boundingBox())!;
-  const change = (await name.getByRole("button", { name: "Change" }).boundingBox())!;
-  expect(Math.abs(said.y + said.height / 2 - (change.y + change.height / 2))).toBeLessThan(6);
+  // The answered line eases in where the field was: measured once it is there.
+  const mine = name.locator(".mine");
+  const changeButton = name.getByRole("button", { name: "Change" });
+  await expect(mine).toBeVisible();
+  await expect(changeButton).toBeVisible();
+  await expect
+    .poll(async () => {
+      const said = await mine.boundingBox();
+      const change = await changeButton.boundingBox();
+      return said && change ? Math.abs(said.y + said.height / 2 - (change.y + change.height / 2)) : 99;
+    })
+    .toBeLessThan(6);
   expect((await name.locator(".box").boundingBox())!.height).toBeLessThan(80);
 });
 

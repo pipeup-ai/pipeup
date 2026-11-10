@@ -62,7 +62,7 @@ async function run(host: AddonHost, secret: Uint8Array<ArrayBuffer>, html: HTMLE
   const lad = ladder(docId, await roomFor(docId, secret, share));
   const relays = relayList(read("data-pipeup-live-relays"));
   const auto = read("data-pipeup-live") === "auto";
-  const st = await settings("live", { memory: host.ephemeral });
+  const st = await settings("live", { memory: host.ephemeral, keep: host.keep });
   const rec = (await st.get<{ on?: boolean; seen?: boolean }>(docId)) ?? {};
   // `seen`: this reviewer was told, in a panel, who sees their address. Nothing connects before that.
   let seen = !!rec.seen;

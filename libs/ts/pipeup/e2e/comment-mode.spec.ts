@@ -438,6 +438,9 @@ test("in comment mode a highlight previews and opens its thread, and shows nothi
   await expect(page.locator(".pop.show .draft")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator(".pop.show")).toHaveCount(0);
+  // The pointer leaves the highlight, so its preview (back now the thread is closed) isn't over the button.
+  await page.mouse.move(5, 790);
+  await expect(page.locator(".tip.show")).toHaveCount(0);
   // While a comment with words in it is being written, a highlight neither previews nor takes the click:
   // the same rule for both.
   await page.locator("#go").click();
@@ -608,4 +611,36 @@ test("after the layout switches to bubbles in comment mode, a click on a highlig
   await expect(page.locator(".pop.show .draft")).toHaveCount(0);
   expect(await page.evaluate(() => (window as any).__picked)).toBe(0);
   await commenting(page);
+});
+
+test("Space in an empty comment box doesn't type: holding it pauses comment mode; with words, it types", async ({
+  page,
+}) => {
+  await open(page, "doc.html");
+  await page.evaluate(() =>
+    (window as unknown as { pu: { setCommentMode(on: boolean): Promise<void> } }).pu.setCommentMode(true),
+  );
+  await commenting(page, true);
+  const p1 = (await page.locator("#p1").boundingBox())!;
+  await page.mouse.click(p1.x + 30, p1.y + p1.height / 2);
+  const box = page.locator(".pop.show .draft textarea, .th.on .draft textarea").first();
+  await expect(box).toBeFocused();
+  // A tap: no leading space.
+  await page.keyboard.press(HOLD_KEY);
+  await expect(box).toHaveValue("");
+  // Held: comment mode pauses, as it does on the page, and comes back when let go.
+  // While held, a click is the page's: the empty box doesn't move to the block clicked, as it would otherwise.
+  const before = (await box.boundingBox())!;
+  await page.keyboard.down(HOLD_KEY);
+  const p3 = (await page.locator("#p3").boundingBox())!;
+  await page.mouse.click(p3.x + 30, p3.y + p3.height / 2);
+  await page.keyboard.up(HOLD_KEY);
+  expect((await box.boundingBox())!.y).toBeCloseTo(before.y, 0);
+  await expect(box).toHaveValue("");
+  // Once there are words, Space is a space.
+  await box.focus();
+  await page.keyboard.type("Which beta");
+  await page.keyboard.press(HOLD_KEY);
+  await page.keyboard.type("team?");
+  await expect(box).toHaveValue("Which beta team?");
 });

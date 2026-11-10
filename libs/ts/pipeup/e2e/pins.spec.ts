@@ -112,6 +112,7 @@ test("Option-click where no block is picked pins the whole commentable area", as
   expect(Math.abs(ghost.y - y)).toBeLessThan(2);
   await page.locator(".pop.show .draft").getByRole("textbox", { name: "Comment" }).fill("Too much space");
   await page.keyboard.press("Enter");
+  await expect.poll(() => page.evaluate(() => (window as any).pu.document.threads().length)).toBe(1);
   const anchor = await page.evaluate(() => (window as any).pu.document.threads()[0].anchor);
   expect(anchor.path).toBe("");
   expect(anchor.id).toBeUndefined();

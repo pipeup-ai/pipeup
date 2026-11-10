@@ -29,6 +29,7 @@ import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./them
 import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
 import type { ThreadActions } from "./thread-view";
 import { hasSetting } from "./settings";
+import { boxOf, fieldOf, setFieldHost, type FieldHost } from "./field";
 
 /** Each resolve pass may spend this long on approximate matching before deferring the rest. */
 const RESOLVE_BUDGET_MS = 40;
@@ -53,10 +54,32 @@ export interface AppOptions {
   onRender?(): void;
   /** Pipeup's stylesheet (passed in so the bundles can carry it last, where it compresses best). */
   styles: string;
+  /** Where the reviewer's choices for this page are kept (look, Hide comments). Default: the page's localStorage. */
+  prefs?: Prefs;
+  /**
+   * A host shows Pipeup's threads itself (the browser extension's side panel): Pipeup opens none on the page, and tells
+   * the host when one is opened there. New comments are still written on the page, beside what they're about.
+   */
+  host?: Host;
+  /** Pipeup's UI is in a closed shadow root, out of the page's scripts' reach (the browser extension). */
+  closed?: boolean;
+  /** A host's own stand-in for Pipeup's text fields, typed in where the page can't hear (the browser extension). */
+  field?: FieldHost;
 }
+
+/** What Pipeup tells a host that shows its threads. */
+export interface Host {
+  /** A thread was opened on the page (its highlight clicked, or just written). */
+  open(id: string): void;
+}
+
+/** A place for the reviewer's small choices, read as Pipeup starts: localStorage, or the host's own. */
+export type Prefs = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 export interface App {
   readonly ctx: Ctx;
+  /** Goes to a thread's place: scrolls it into view and marks it, as choosing it in All comments does. */
+  goTo(id: string): void;
   /** How Pipeup looks and why: its look, who chose it, and what the page's styles do to it. */
   appearance(): Appearance;
   destroy(): void;
@@ -82,12 +105,13 @@ const message = (e: unknown) =>
   e instanceof Error ? e.message.replace(/^pipeup: /, "") : "Something went wrong";
 
 export function startApp(o: AppOptions): App {
+  const prefs = o.prefs ?? localStorage;
   // One place decides light or dark: the author's data-pipeup-theme, else what the page shows behind Pipeup.
   // The reviewer's own choice beats the author's, which beats what the page shows.
   const LOOK_KEY = "pipeup:look";
   let choice: LookChoice = "auto";
   try {
-    const kept = localStorage.getItem(LOOK_KEY);
+    const kept = prefs.getItem(LOOK_KEY);
     if (kept === "light" || kept === "dark") choice = kept;
   } catch {
     /* no storage: Automatic */
@@ -109,7 +133,8 @@ export function startApp(o: AppOptions): App {
   };
   dark = lookNow() === "dark";
   const theme = readTheme(o.root, dark ? "dark" : "light");
-  const host = createHost(theme, o.styles);
+  const host = createHost(theme, o.styles, document, o.closed);
+  setFieldHost(o.field ?? null, host.shadow);
   // A look that differs from the page's keeps its see-through parts solid, so each look reads as itself.
   host.layer.classList.toggle("flip", dark !== pageDark);
   const sheet = installPageSheet(document);
@@ -123,7 +148,7 @@ export function startApp(o: AppOptions): App {
   const HIDE_KEY = `pipeup:hide:${o.doc.id}`;
   let hide = false;
   try {
-    hide = localStorage.getItem(HIDE_KEY) === "1";
+    hide = prefs.getItem(HIDE_KEY) === "1";
   } catch {
     /* no storage: comments show */
   }
@@ -135,7 +160,7 @@ export function startApp(o: AppOptions): App {
     // Comments show unless the reviewer chose Hide comments for this page.
     hide,
     hidden: hide,
-    mode: chooseMode(o.root),
+    mode: o.host ? "bubbles" : chooseMode(o.root),
     draft: null,
     commenting: false,
     paused: false,
@@ -144,6 +169,7 @@ export function startApp(o: AppOptions): App {
     menu: false,
     pinning: false,
     picking: null,
+    sent: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   /** What the message's Undo does while it shows, also on ⌘Z or Ctrl+Z (the block cursor has no Tab stop for it). */
@@ -199,8 +225,8 @@ export function startApp(o: AppOptions): App {
     // The first time by touch, it also says where the menu went: pressing and holding the control.
     let first = false;
     try {
-      first = localStorage.getItem(HELD_KEY) === null;
-      if (first) localStorage.setItem(HELD_KEY, "1");
+      first = prefs.getItem(HELD_KEY) === null;
+      if (first) prefs.setItem(HELD_KEY, "1");
     } catch {
       /* no storage: said once per visit */
       first = !heldSaid;
@@ -537,8 +563,8 @@ export function startApp(o: AppOptions): App {
     setLook(next) {
       choice = next;
       try {
-        if (next === "auto") localStorage.removeItem(LOOK_KEY);
-        else localStorage.setItem(LOOK_KEY, next);
+        if (next === "auto") prefs.removeItem(LOOK_KEY);
+        else prefs.setItem(LOOK_KEY, next);
       } catch {
         /* kept for this page only */
       }
@@ -570,8 +596,8 @@ export function startApp(o: AppOptions): App {
     setHide: (on) => {
       state.hide = on;
       try {
-        if (on) localStorage.setItem(HIDE_KEY, "1");
-        else localStorage.removeItem(HIDE_KEY);
+        if (on) prefs.setItem(HIDE_KEY, "1");
+        else prefs.removeItem(HIDE_KEY);
       } catch {
         /* for this visit only */
       }
@@ -624,7 +650,11 @@ export function startApp(o: AppOptions): App {
       return null;
     },
     readsAt: (x, y) => (ctx.draftEmpty() && !state.pinning ? ctx.quoteAt(x, y) : null),
-    owns: (e) => e.composedPath().includes(host.element),
+    // A key passed in from a host's field (field.ts) stops at the shadow root: it is Pipeup's too.
+    owns: (e) => {
+      const path = e.composedPath();
+      return path.includes(host.element) || path.includes(host.shadow);
+    },
     claim: (e) => void claimed.add(e),
     claimed: (e) => claimed.has(e),
     open,
@@ -903,7 +933,8 @@ export function startApp(o: AppOptions): App {
   /** The reader has words in a Pipeup line, or is in a field of the page. */
   const writing = () => {
     const a = focusedIn();
-    return (a instanceof HTMLTextAreaElement && a.value !== "") || !!document.activeElement?.matches(FIELD);
+    const box = boxOf(a);
+    return (!!box && box.value !== "") || !!document.activeElement?.matches(FIELD);
   };
 
   /**
@@ -979,6 +1010,15 @@ export function startApp(o: AppOptions): App {
   }
 
   function open(id: string | null, sent = false): void {
+    // A host shows the thread; the page marks it.
+    if (o.host && id) {
+      if (state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
+      state.draft = null;
+      state.hot = id;
+      render();
+      pulse(id);
+      return o.host.open(id);
+    }
     // Words being written are never dropped: another thread waits, and the reviewer goes back to them.
     if (id && state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
     // While All comments is open, a thread opens there (a click on its highlight, bubble or column thread).
@@ -992,6 +1032,7 @@ export function startApp(o: AppOptions): App {
     // What is being written in the closing thread's reply line waits for it.
     keepReplies();
     state.active = id;
+    state.sent = !!id && sent;
     if (id) {
       state.draft = null;
       pulse(id);
@@ -1294,12 +1335,7 @@ export function startApp(o: AppOptions): App {
     // The keyboard is up for one of Pipeup's own boxes: its control and messages step out of the way.
     const v = window.visualViewport;
     const a = focusedIn();
-    host.layer.classList.toggle(
-      "kb",
-      !!v &&
-        window.innerHeight - v.height > 150 &&
-        (a instanceof HTMLTextAreaElement || a instanceof HTMLInputElement),
-    );
+    host.layer.classList.toggle("kb", !!v && window.innerHeight - v.height > 150 && !!fieldOf(a));
     const now = inSight().bottom;
     if (now < seenLast - 80) keyboard = true;
     seenLast = now;
@@ -1327,7 +1363,7 @@ export function startApp(o: AppOptions): App {
       shapeTimer = window.setTimeout(inView, 200);
     }
     host.layer.style.setProperty("--pu-pop", `${popover()}px`);
-    const mode = chooseMode(o.root, state.mode === "column");
+    const mode = o.host ? "bubbles" : chooseMode(o.root, state.mode === "column");
     if (mode !== state.mode) {
       state.mode = mode;
       buildViews();
@@ -1490,7 +1526,8 @@ export function startApp(o: AppOptions): App {
     if (e === copy) reached = true;
   });
   const guardKeys = (e: KeyboardEvent) => {
-    if (!ourKey(e)) return;
+    // Pipeup's own copy (below) is never copied again.
+    if (e === copy || !ourKey(e)) return;
     e.stopImmediatePropagation();
     if (e.type !== "keydown") return;
     const c = (copy = new KeyboardEvent("keydown", {
@@ -1505,6 +1542,7 @@ export function startApp(o: AppOptions): App {
       metaKey: e.metaKey,
       bubbles: true,
       cancelable: true,
+      composed: false,
     }));
     reached = false;
     e.composedPath()[0]!.dispatchEvent(c);
@@ -1587,6 +1625,12 @@ export function startApp(o: AppOptions): App {
   return {
     ctx,
     appearance: () => appearance,
+    goTo(id) {
+      const r = resolved.get(id);
+      const el = r?.element ?? r?.range?.startContainer.parentElement;
+      el?.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
+      hot(id);
+    },
     destroy() {
       destroyed = true;
       cancelAnimationFrame(raf);
@@ -1607,6 +1651,7 @@ export function startApp(o: AppOptions): App {
       window.clearTimeout(lookFade);
       offChange();
       window.removeEventListener("keydown", onKey);
+      setFieldHost(null, null);
       window.removeEventListener("click", onClick);
       for (const t of ["focusin", "focusout"])
         window.removeEventListener(t, guardFocus as EventListener, true);

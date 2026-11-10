@@ -3,12 +3,17 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { addons, attachAddons, drainQueue, firstCore } from "./addons";
-import { startApp } from "./app";
+import { addons, attachAddons, drainQueue, firstCore, type Keep } from "./addons";
+import { describeElement, describeRange } from "../anchor/describe";
+import { labelOf } from "../anchor/locate";
+import { startApp, type Prefs } from "./app";
+import type { LookChoice } from "./context";
+import { copyAll, type CopyAs } from "../export/format";
 import { setSlideHook, type SlideHook } from "./here";
 import { BUILT, VERSION } from "../core";
 import { agentComments, type AgentComments } from "../export/agent";
 import type { Appearance } from "./legible";
+import type { FieldHost } from "./field";
 import { setGiven, setting } from "./settings";
 // Last, so the bundles carry the stylesheet after the code: it compresses better there.
 import { STYLES } from "./styles";
@@ -32,6 +37,21 @@ export interface MountOptions {
   select?: string;
   /** "off": the page has its own way to start commenting, so Pipeup's control is hidden, as `data-pipeup-control`. */
   control?: string;
+  /** Where the reviewer's choices (look, Hide comments) are kept, read as Pipeup starts. Default: localStorage. */
+  prefs?: Prefs;
+  /**
+   * "host": whatever adds Pipeup shows its threads (the browser extension's side panel). Pipeup opens none on the page,
+   * and says when one is opened there ("open"); new comments are still written on the page.
+   */
+  ui?: string;
+  /** More page settings, as `data-pipeup-…` attributes would give them (for hosts that can't write the page's own). */
+  settings?: Record<string, string>;
+  /** Where add-ons keep their choices (`host.keep`). Default: none; each add-on keeps them in the page's own storage. */
+  keep?: Keep;
+  /** Pipeup's UI in a closed shadow root, out of the page's scripts' reach (for hosts apart from the page). */
+  closed?: boolean;
+  /** A host's own stand-in for Pipeup's text fields, where the page can't hear what is typed (the browser extension). */
+  field?: FieldHost;
 }
 
 /** What the page's code hears: comment mode and the reviewer's name ("" until they give one). */
@@ -71,6 +91,20 @@ export interface PipeupInstance {
   openAllComments(): Promise<void>;
   /** Calls `fn` whenever comment mode or the name changes, however it changed; returns a function that stops it. */
   on(event: "change", fn: (state: PipeupState) => void): () => void;
+  /** With `ui: "host"`: a thread was opened on the page (its highlight clicked, or just written). */
+  on(event: "open", fn: (id: string) => void): () => void;
+  /** The open comments (`all`: and resolved ones), as Copy comments makes them: Markdown for AI, or plain text. */
+  commentsAs(as: CopyAs, options?: { all?: boolean }): string;
+  /** The reviewer's look: "auto" follows the author, then the page. Kept like their other choices. */
+  readonly look: LookChoice;
+  setLook(look: LookChoice): Promise<void>;
+  /** Hide comments is on. */
+  readonly hidden: boolean;
+  setHidden(on: boolean): Promise<void>;
+  /** Goes to a thread's place on the page: scrolls it into view and marks it; with Pipeup's own panel, opens it. */
+  openThread(id: string): Promise<void>;
+  /** Opens the comment box on an element or on words (a Range), as choosing it in comment mode does. */
+  startComment(target: Element | Range): Promise<void>;
 }
 
 let current: Promise<PipeupInstance> | null = null;
@@ -105,6 +139,7 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 
 async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Promise<PipeupInstance> {
   setGiven({
+    ...Object.fromEntries(Object.entries(o.settings ?? {}).filter(([k]) => k.startsWith("data-pipeup-"))),
     "data-pipeup-doc": o.doc,
     "data-pipeup-layout": o.layout,
     "data-pipeup-theme": o.theme,
@@ -145,7 +180,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     await kept.saveProfile(profile);
   }
   // Ask the browser not to clear what Pipeup keeps (best effort): a cleared browser would start the reviewer over.
-  void navigator.storage?.persist?.().catch(() => {});
+  // A host that keeps the comments itself keeps them out of the site's storage, so the site's is left alone.
+  if (!o.store) void navigator.storage?.persist?.().catch(() => {});
   const doc = await PipeupDocument.open({
     doc: id,
     key,
@@ -157,6 +193,8 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
   setSlideHook(o.slides ?? null);
   // The page's code hears comment mode and the name changing, once per change, after Pipeup has drawn it.
   const heard = new Set<(state: PipeupState) => void>();
+  /** A host's listeners for "open". */
+  const opened = new Set<(id: string) => void>();
   let said = "";
   const tell = () =>
     queueMicrotask(() => {
@@ -187,6 +225,23 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       root: o.root ?? document.body,
       onName: saveName,
       onRender: tell,
+      ...(o.ui === "host"
+        ? {
+            host: {
+              open: (id) => {
+                for (const fn of [...opened])
+                  try {
+                    fn(id);
+                  } catch (e) {
+                    globalThis.reportError?.(e);
+                  }
+              },
+            },
+          }
+        : {}),
+      ...(o.prefs ? { prefs: o.prefs } : {}),
+      ...(o.closed ? { closed: true } : {}),
+      ...(o.field ? { field: o.field } : {}),
     });
   } catch (e) {
     setSlideHook(null);
@@ -204,6 +259,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     doc,
     root: o.root ?? document.body,
     ephemeral,
+    ...(o.keep ? { keep: o.keep } : {}),
     version: VERSION,
     onIdentity: async (identity) => {
       profile = { ...profile, identity };
@@ -262,15 +318,58 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
       await saveName(name);
       started.ctx.render();
     },
-    on: (event, fn) => {
-      if (event !== "change" || typeof fn !== "function") return () => {};
-      heard.add(fn);
-      return () => heard.delete(fn);
+    on: ((event: string, fn: never) => {
+      if (typeof fn !== "function") return () => {};
+      const set: Set<unknown> | null = event === "change" ? heard : event === "open" ? opened : null;
+      if (!set) return () => {};
+      set.add(fn);
+      return () => set.delete(fn);
+    }) as PipeupInstance["on"],
+    commentsAs: (as, { all = false } = {}) =>
+      copyAll(started.ctx.menu.all(), as === "text" ? "text" : "ai", {
+        title: document.title,
+        url: location.href,
+        exportedAt: new Date(),
+        all,
+      }),
+    get look() {
+      return started.ctx.menu.look();
+    },
+    setLook: async (look) => {
+      if (!unmounted && (look === "auto" || look === "light" || look === "dark"))
+        started.ctx.menu.setLook(look);
+    },
+    get hidden() {
+      return started.ctx.state.hide;
+    },
+    setHidden: async (on) => {
+      if (!unmounted) started.ctx.menu.setHide(Boolean(on));
+    },
+    startComment: async (target) => {
+      if (unmounted) return;
+      const ctx = started.ctx;
+      if (ctx.state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
+      const root = o.root ?? document.body;
+      const words = target instanceof Range;
+      ctx.startDraft({
+        anchor: words
+          ? describeRange(target, root, ctx.here.view(target.commonAncestorContainer))
+          : describeElement(target, root, undefined, ctx.here.view(target)),
+        label: words ? `“${target.toString().replace(/\s+/g, " ").trim().slice(0, 60)}”` : labelOf(target),
+        ranges: words ? [target] : [],
+        resolved: { state: "attached", element: words ? null : target, range: words ? target : null },
+      });
+    },
+    openThread: async (id) => {
+      if (unmounted) return;
+      if (o.ui === "host") started.goTo(String(id));
+      else started.ctx.open(String(id));
     },
     unmount: () => {
       if (unmounted) return;
       unmounted = true;
       heard.clear();
+      opened.clear();
       setGiven(null);
       window.removeEventListener("pagehide", onHide);
       window.clearTimeout(agentsWarning);

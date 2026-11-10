@@ -7,6 +7,7 @@ import { commentMarks, markAgain, threadMarks, threadNotes } from "./notes";
 import { setComposerSource, SOURCE_CHANGED, type ComposerTool } from "./composer";
 import type { Ctx } from "./context";
 import { h } from "./dom";
+import { boxOf } from "./field";
 import type { ViewState } from "./here";
 import { draw } from "./icons";
 import { describeElement } from "../anchor/describe";
@@ -198,6 +199,12 @@ export interface PostOptions {
   remove?: string;
 }
 
+/** Small values kept by whatever adds Pipeup (the browser extension's own storage), out of the site's reach. */
+export interface Keep {
+  get(key: string): Promise<unknown>;
+  set(key: string, value: unknown): Promise<void>;
+}
+
 export interface AddonHost {
   readonly api: number;
   /** The core's version, for diagnostics only. */
@@ -207,6 +214,11 @@ export interface AddonHost {
   readonly root: Element;
   /** This browser can't keep comments (they are held in memory). */
   readonly ephemeral: boolean;
+  /**
+   * Where this add-on keeps its choices when whatever added Pipeup keeps them (the browser extension), so the site can
+   * neither read nor set them. Absent on a page that loads Pipeup itself.
+   */
+  readonly keep?: Keep;
   /** Aborted at teardown: pass it to fetch, timers and sockets. */
   readonly signal: AbortSignal;
   has(c: Capability): boolean;
@@ -317,6 +329,8 @@ export class Surface {
   private uiKey = "";
   /** Where each add-on draws in the page: marked element → its <pipeup-place>. */
   private readonly places = new Map<string, Map<Element, HTMLElement>>();
+  /** Each place's shadow root (closed, as Pipeup's own, when the host keeps Pipeup from the page). */
+  private readonly placeRoots = new WeakMap<HTMLElement, ShadowRoot>();
   private aside: Off | null = null;
   private looked = false;
   /** Where the reviewer's latest press or key happened: `post` is only for what they sent from the add-on's own UI. */
@@ -476,7 +490,7 @@ export class Surface {
   /** A reviewer is writing: a Pipeup line has words or focus. */
   private isWriting(): boolean {
     return (
-      this.shadow.activeElement instanceof HTMLTextAreaElement ||
+      !!boxOf(this.shadow.activeElement) ||
       [...this.ctx.layer.querySelectorAll("textarea")].some((t) => t.value.trim() !== "")
     );
   }
@@ -567,10 +581,7 @@ export class Surface {
       allOpen: state.listing,
       dark: this.ctx.layer.classList.contains("dark"),
       view: this.ctx.here.view(),
-      writing:
-        a instanceof HTMLTextAreaElement
-          ? (a.closest<HTMLElement>("[data-thread]")?.dataset.thread ?? "")
-          : null,
+      writing: boxOf(a) ? (boxOf(a)!.closest<HTMLElement>("[data-thread]")?.dataset.thread ?? "") : null,
     };
   }
 
@@ -585,7 +596,7 @@ export class Surface {
   place(id: string, el: Element): ShadowRoot {
     const mine = this.places.get(id) ?? this.places.set(id, new Map()).get(id)!;
     const had = mine.get(el);
-    if (had) return had.shadowRoot!;
+    if (had) return this.placeRoots.get(had)!;
     if (
       !(el instanceof Element) ||
       !el.matches(MARKS) ||
@@ -596,7 +607,8 @@ export class Surface {
     const doc = el.ownerDocument;
     this.aside ??= this.pageSheet(doc, ASIDE);
     const box = doc.createElement("pipeup-place");
-    const root = box.attachShadow({ mode: "open" });
+    const root = box.attachShadow({ mode: this.shadow.mode });
+    this.placeRoots.set(box, root);
     const look =
       ":host{all:initial;display:block;font:14px/1.5 var(--pu-font,system-ui,sans-serif);color:var(--pu-text)}";
     const Sheet = doc.defaultView?.CSSStyleSheet;
@@ -816,6 +828,7 @@ interface Live {
   doc: PipeupDocument;
   root: Element;
   ephemeral: boolean;
+  keep?: Keep;
   version: string;
   active: boolean;
   /** Keeps another identity for this browser, used from the next load. */
@@ -955,6 +968,14 @@ async function startOne(entry: Entry, l: Live): Promise<void> {
     document: view,
     root: l.root,
     ephemeral: l.ephemeral,
+    ...(l.keep
+      ? {
+          keep: {
+            get: (k: string) => l.keep!.get(`${id}:${k}`),
+            set: (k: string, v: unknown) => l.keep!.set(`${id}:${k}`, v),
+          },
+        }
+      : {}),
     signal: ac.signal,
     has: (c) => CAPABILITIES.includes(c),
     off: (reason) => {

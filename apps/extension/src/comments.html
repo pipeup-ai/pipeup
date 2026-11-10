@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Comments you've made · Pipeup</title>
+    <link rel="stylesheet" href="popup.css" />
+    <style>
+      body {
+        width: auto;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 40px 16px 80px;
+      }
+      h1 {
+        font-size: 24px;
+        color: var(--strong);
+        margin: 0 0 6px;
+      }
+      .lede {
+        color: var(--muted);
+        margin: 0 0 24px;
+      }
+      ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px solid var(--line);
+      }
+      li {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      li div {
+        min-width: 0;
+      }
+      li a {
+        color: var(--strong);
+        font-weight: 600;
+        text-decoration: none;
+      }
+      li a:hover {
+        color: var(--accent);
+      }
+      li small {
+        display: block;
+        color: var(--faint);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      h2 {
+        font-size: 17px;
+        color: var(--strong);
+        margin: 40px 0 12px;
+      }
+      .setting {
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .setting small {
+        max-width: 56ch;
+        margin-top: 2px;
+      }
+      .cmd {
+        overflow-x: auto;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+        font:
+          12.5px ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        color: var(--strong);
+      }
+      .field {
+        display: block;
+        width: 100%;
+        max-width: 360px;
+        height: 30px;
+        margin-top: 6px;
+        padding: 0 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        color: var(--strong);
+        font: inherit;
+      }
+      li span {
+        flex: none;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Comments you've made</h1>
+    <p class="lede">
+      Every page you've commented on with the extension, newest first. They're kept in this browser.
+    </p>
+    <ol id="pages"></ol>
+    <p id="none" hidden>No comments yet. Open a page, press Pipeup in the toolbar, and comment.</p>
+    <h2>Settings</h2>
+    <div class="row setting">
+      <label for="show-button">
+        Show Pipeup's button on pages
+        <small
+          >The comment button in the corner of each page, as on pages with Pipeup built in. Off, the toolbar
+          button is the way in. Takes effect the next time Pipeup starts on a page.</small
+        >
+      </label>
+      <input id="show-button" type="checkbox" role="switch" />
+    </div>
+    <div class="row setting">
+      <label for="pictures">
+        Keep a picture of where each comment was made
+        <small
+          >A small picture, so a comment whose place has gone still shows what it was about. Kept in this
+          browser only, never sent, shared or copied. Turning this off deletes the pictures kept.</small
+        >
+      </label>
+      <input id="pictures" type="checkbox" role="switch" />
+    </div>
+
+    <h2>Add-ons</h2>
+    <p class="lede">
+      What each one sends, and where, is said in Pipeup's menu once it's on. Changes take effect the next time
+      Pipeup starts on a page.
+    </p>
+    <div id="addons"></div>
+
+    <section id="agent-section">
+      <h2>Send to my agent</h2>
+      <p class="lede">
+        Sends a page's comments to agents on this computer; their replies come back into the threads. Set it
+        up once, in a terminal:
+      </p>
+      <pre class="cmd"><code id="agent-cmd"></code></pre>
+      <p class="lede">
+        Agents then read with <code id="agent-read">npx --yes pipeup browser read</code> and answer with
+        <code id="agent-reply">npx --yes pipeup browser reply</code>.
+      </p>
+    </section>
+    <script type="module" src="comments.js"></script>
+  </body>
+</html>

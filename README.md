@@ -101,6 +101,7 @@ Each says what it will do; `init` asks before it changes the file and leaves eve
 | `services/mailbox` | `@pipeup/mailbox`: the reference server for the shared-copy mailbox contract, and its checker |
 | `apps/site` | The website, its Try pages, `llms.txt` and the build script (`apps/site/build.sh`) |
 | `apps/agent-skills` | Agent skills: integrate, summarise and apply |
+| `apps/extension` | Pipeup for browsers: the extension, for local testing in Chrome (`tools/build-extension.mjs`) |
 | `docs` | Functional spec, website spec, architecture and release process |
 | `.github` | CI, Pages deployment, releases, issue and PR templates |
 

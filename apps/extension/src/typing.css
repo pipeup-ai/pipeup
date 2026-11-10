@@ -1,0 +1,25 @@
+/* Pipeup's text box, typed in where the page can't hear it. Its look comes from Pipeup's own box (typing.js). */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.box {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  font: inherit;
+  color: inherit;
+}
+.box::placeholder {
+  color: var(--placeholder, GrayText);
+  opacity: 1;
+}

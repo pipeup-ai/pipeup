@@ -98,6 +98,18 @@ export async function settled(locator: Locator): Promise<void> {
     .toBe(0);
 }
 
+/**
+ * An element's box, read again while an update is rebuilding it: a card's buttons are made afresh by each update, and
+ * one caught between the old and the new has no box.
+ */
+export async function boxOf(
+  locator: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  let box: Awaited<ReturnType<Locator["boundingBox"]>> = null;
+  await expect.poll(async () => (box = await locator.boundingBox())).not.toBeNull();
+  return box!;
+}
+
 /** What has keyboard focus inside Pipeup's shadow root (empty strings when nothing does). */
 export async function focusInPipeup(
   page: Page,

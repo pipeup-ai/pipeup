@@ -74,17 +74,19 @@ test("an item that closes the menu gives focus back to the control", async ({ pa
   expect((await focusInPipeup(page)).cls).toContain("mode");
 });
 
-test("a click on the control while the menu is open only closes it, and focus stays on the control", async ({
-  page,
-}) => {
-  await open(page, "doc.html");
-  const count = page.locator(".launch .mode");
-  await openMenu(page);
-  await count.click();
-  await expect(page.locator(".menu.show")).toHaveCount(0);
-  await expect(count).not.toHaveClass(/\bon\b/);
-  expect((await focusInPipeup(page)).cls).toContain("mode");
-});
+test(
+  "a click on the control while the menu is open only closes it, and focus stays on the control",
+  { tag: "@safari" },
+  async ({ page }) => {
+    await open(page, "doc.html");
+    const count = page.locator(".launch .mode");
+    await openMenu(page);
+    await count.click();
+    await expect(page.locator(".menu.show")).toHaveCount(0);
+    await expect(count).not.toHaveClass(/\bon\b/);
+    expect((await focusInPipeup(page)).cls).toContain("mode");
+  },
+);
 
 test("after editing the name, focus returns to the identity row", async ({ page }) => {
   await open(page, "doc.html", { name: "Sam" });
