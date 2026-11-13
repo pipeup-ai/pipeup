@@ -69,6 +69,9 @@ python3 "$site/inject-core.py" "$out"
 # Public design snapshot: exported from Designup with private feedback omitted.
 [[ -f "$site/design/index.html" ]] || { echo "missing apps/site/design/: export the public design first" >&2; exit 1; }
 cp -R "$site/design" "$out/design"
+# Product-owned visual entry over the generated workspace; preserve hashed assets for old reviews.
+cp -R "$site/visual-review" "$out/design/visual"
+mv "$out/design/visual/index.html" "$out/design/index.html"
 
 if [[ $channel == next ]]; then
   python3 "$site/channel.py" "$out" "$(node -p 'require(process.argv[1]).version' "$lib/package.json")"

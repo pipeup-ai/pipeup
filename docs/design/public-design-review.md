@@ -41,3 +41,10 @@ Before rollout, connect the owner's authentication project, configure provider a
 Preparation checks: the simulated provider-selection, private-submission and owner-decision walkthrough preserved the draft when its session expired, disabled submission while signed out, and reflowed at 390 px and 320 px. These checks are prototype evidence only. The unchanged core check also passed, including 570 browser tests. Real provider sign-in has not yet been configured or verified for this revision.
 
 Implementation validation: the canonical package passed all 561 browser-enabled tests without skips. Pipeup’s core check passed, including 570 browser tests. Hosted probes return 401 for unsigned submission, forged dispatch headers and unauthenticated owner reads; explicitly shared feedback remains empty. The new frontend uses the same managed-account controls as the owner inbox, retains drafts and round payloads through sign-in, and keeps legacy unsigned feedback labelled honestly.
+
+## Visual review entry
+
+Lead with the field-report annotation, the central promise of Pipeup. Follow with slide context, then touch discoverability. Use a curated sequence rather than a popularity score. Keep the image visible while choosing a mark, writing and confirming receipt. Keep old content-addressed assets so past suggestions retain context. Overlay this product-specific entry during the website build; keep the generated Designup export intact.
+
+- 2026-11-13: Approved field-review composition, selection order and use of existing authentication and moderation.
+Certification is per asset, explicit and immutable. Start counting only after the reviewer starts a review; pause on blur, hidden page or after 30 seconds without interaction. Send only bounded aggregates with the signed submission. The server supplies identity and receipt time. A certificate alone is never an implementation suggestion or public feedback.
