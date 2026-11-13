@@ -48,3 +48,5 @@ Lead with the field-report annotation, the central promise of Pipeup. Follow wit
 
 - 2026-11-13: Approved field-review composition, selection order and use of existing authentication and moderation.
 Certification is per asset, explicit and immutable. Start counting only after the reviewer starts a review; pause on blur, hidden page or after 30 seconds without interaction. Send only bounded aggregates with the signed submission. The server supplies identity and receipt time. A certificate alone is never an implementation suggestion or public feedback.
+
+- 2026-11-14: Capture the running document, slide deck and touch interface directly. Link to each source so visitors can repeat the interaction. Historical assets remain resolvable for existing receipts.

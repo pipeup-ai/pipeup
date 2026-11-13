@@ -7,7 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
-- The public design review opens on a visual decision. Select a pin on a document, slide or phone layout to send private feedback in context.
+- The public design review opens on a visual decision. Open the live product or select a pin on a browser capture of the published document, slide deck or touch interface to send private feedback in context.
 
 ## [1.0.0] - 2026-11-10
 
