@@ -422,3 +422,6 @@ The published design snapshot excludes imported private feedback and decisions. 
 - 2026-11-10: Public design review under `/design/`, private direct submissions, authenticated owner decisions and separate public feedback sharing.
 - 2026-11-10 — Privacy and Support pages, and a page for trying the extension, for the browsers' stores (§3 items 2b, 2c). Agreed with the maintainer as part of preparing the stores.
 - 2026-11-10: Maintainer replaces anonymous review submission with required account sign-in through common providers. Public browsing and private owner moderation remain available; verified identity is required at the submission endpoint.
+
+- 2026-11-13: The public design review starts with the most important visual decisions: document annotation, slide context and phone commenting. A reviewer selects a marked detail, drafts privately, then signs in and sends. The owner can see the original image and mark while deciding. The full workspace remains linked.
+- 2026-11-13: A signed-in visitor may certify a visual asset with or without a suggestion. Before sending, show the exact asset, the private activity summary and the attestation. The owner sees who certified which version, the server receipt time, estimated active time and distinct marked details visited. No background reporting or keystroke history.

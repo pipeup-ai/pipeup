@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- The public design review opens on a visual decision. Select a pin on a document, slide or phone layout to send private feedback in context.
+
 ## [1.0.0] - 2026-11-10
 
 Pipeup 1.0: the API and the stored comment format are stable, and Pipeup for browsers comments on any web page from
