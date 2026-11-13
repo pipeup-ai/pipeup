@@ -1,64 +1,66 @@
-// Editorial order: an exact visual anchor, a slide comment, then touch discovery.
-// File names are immutable content hashes. Pin coordinates are percentages of the whole image.
+// Captures of published pages, 2026-11-14. Keep prior hashed files for existing certificates.
 export const scenes = [
   {
-    "id": "field-report",
-    "kind": "Field report",
-    "title": "Review a document",
-    "question": "Where would you pin a suggestion about the October water level?",
-    "alt": "Field report with a pen-and-ink elevation of the timber footbridge and its October high-water line.",
+    "id": "document",
+    "kind": "Document",
+    "title": "Review the live document",
+    "question": "Can you find how to start a comment?",
+    "alt": "Published Pipeup document, showing the instructions and the comment control.",
+    "source": "../try/document.html",
     "pins": [
       {
-        "label": "Timber deck",
-        "x": 49,
-        "y": 50
+        "label": "Start instructions",
+        "x": 34,
+        "y": 45
       },
       {
-        "label": "High-water mark",
-        "x": 81,
-        "y": 63.3
+        "label": "Comment control",
+        "x": 98.7,
+        "y": 97.8
       }
     ],
-    "file": "381b48944fb16dbb777acd75230273bca113236183b6c5176ea484d308827ae3.svg"
+    "file": "38297ed5bab1fa38fe097a983798ab772ea4ae1a1995ad7f6f5ba5514e18fe5f.jpg"
   },
   {
-    "id": "slide-deck",
+    "id": "slides",
     "kind": "Slide deck",
-    "title": "Review a slide",
-    "question": "Can you tell which part of the slide the comment belongs to?",
-    "alt": "Slide two of three, “Raise the deck before spring”, beside its open comment box.",
+    "title": "Review slide navigation",
+    "question": "Can you tell where you are in the deck?",
+    "alt": "Published deck after advancing to slide 2 of 5, headed Hand the file to your AI agent.",
+    "source": "../try/slides.html",
     "pins": [
       {
-        "label": "Deck proposal",
-        "x": 50.5,
-        "y": 28.5
+        "label": "Step label",
+        "x": 18.6,
+        "y": 26
       },
       {
-        "label": "Comment box",
-        "x": 80.2,
-        "y": 27.6
+        "label": "Slide counter",
+        "x": 50,
+        "y": 94.4
       }
     ],
-    "file": "9435e3ce1e9d490e22d37c340f102f8f8ee4fc05038397bb16e439841462fadc.jpg"
+    "file": "3e725a3bfca537b2faeeeb6bf3f296c23cc3088832592cb06cb7e3d4863a3016.jpg"
   },
   {
-    "id": "phone",
+    "id": "mobile",
     "kind": "Phone",
-    "title": "Review on a phone",
-    "question": "Where would you tap to start a comment while reading?",
-    "alt": "Mobile field report with the “Autumn at the footbridge” heading and a comment button in the lower right.",
+    "title": "Review touch commenting",
+    "question": "Can you start and finish comment mode by touch?",
+    "alt": "Published document at phone width, after tapping the comment button.",
+    "source": "../try/document.html",
     "pins": [
       {
-        "label": "Report heading",
-        "x": 67,
-        "y": 18.5
+        "label": "Start instructions",
+        "x": 43,
+        "y": 41.3
       },
       {
-        "label": "Comment button",
-        "x": 94,
-        "y": 97.4
+        "label": "Touch instructions",
+        "x": 34,
+        "y": 95.5
       }
     ],
-    "file": "7332021e788f9c3172f9d390b144f0578dd3d4a359367a100bd156d985bc7b76.jpg"
+    "file": "32ccf41021fefef0fbad48b69589694fe573a04f804ae75dc1950190b780d77f.jpg"
   }
 ];

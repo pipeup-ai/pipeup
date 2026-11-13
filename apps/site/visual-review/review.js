@@ -22,8 +22,8 @@ setInterval(update,1000);
 function paint(){
  const d=draft(),i=pin(),spot=scene.pins[i],w=$('work'),f=$('finish');
  draw(scene,i,(s,j)=>select(s,s!==scene?(state.drafts[s.file]?.pin??0):j),busy);
- $('index').textContent='FIELD STUDY  /  0'+(scenes.indexOf(scene)+1)+' OF 03';$('title').textContent=scene.title;
- $('kind').textContent=scene.kind.toUpperCase()+' REVIEW';$('prompt').textContent=scene.question;
+ $('index').textContent='PUBLISHED PRODUCT  /  0'+(scenes.indexOf(scene)+1)+' OF 03';$('title').textContent=scene.title;
+ $('live-page').href=scene.source;$('kind').textContent=scene.kind.toUpperCase()+' REVIEW';$('prompt').textContent=scene.question;
  $('context').textContent='0'+(i+1)+' / '+spot.label;w.replaceChildren();f.replaceChildren();$('status').textContent='';
  $('account').hidden=!d||!!d.receipt;
  if(!d){w.append(el('p','Review this asset, then certify it with or without a suggestion.'),el('p','Only when you send: your account, asset version, estimated active time and marked details visited go privately to the owner.'));
