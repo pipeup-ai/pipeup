@@ -1,5 +1,6 @@
 import {scenes} from './scenes.js';
 import {el,button,draw} from './canvas.js';
+import {hasExport,exportReview} from './export.js';
 import {activity} from './activity.js';
 const $=id=>document.getElementById(id), key='pipeup:visual-review:v1';
 const service='https://pipeup-design-reviews.noisyniche8.chatgpt.site';
@@ -17,8 +18,9 @@ function trackable(){const d=draft();return d && !d.pending && !d.receipt ? d:nu
 const clock=activity(trackable,save);
 function select(s,i){if(busy)return;clock.pause();scene=s;state.scene=s.id;const d=draft();if(d&&!d.pending&&!d.receipt){d.pin=i;d.seen[i]=true}state.pin=i;checked=false;history.replaceState(null,'','#'+s.id+'/'+(pin()+1));save();paint();clock.touch()}
 function stats(d){return Math.floor(d.ms/1000)+'s estimated active · '+Object.keys(d.seen).length+' of '+scene.pins.length+' details visited · '+(d.noteCount??countNotes(d))+' suggestions'}
-function update(){const d=draft();if($('metrics')&&d)$('metrics').textContent=stats(d);if($('submit'))$('submit').disabled=busy||!user||!storageOK||(!checked&&!d?.pending)||(d?.pending&&d.pending.reviewer!==user?.id)}
+function update(){if($('export'))$('export').disabled=busy||!hasExport(state);const d=draft();if($('metrics')&&d)$('metrics').textContent=stats(d);if($('submit'))$('submit').disabled=busy||!user||!storageOK||(!checked&&!d?.pending)||(d?.pending&&d.pending.reviewer!==user?.id)}
 setInterval(update,1000);
+function exportAction(host){const b=button('Export review',()=>{exportReview(state);save();$('status').textContent='Review file exported. Attach it to your email or chat to share it.'});b.id='export';b.disabled=busy||!hasExport(state);host.append(b)}
 function paint(){
  const d=draft(),i=pin(),spot=scene.pins[i],w=$('work'),f=$('finish');
  draw(scene,i,(s,j)=>select(s,s!==scene?(state.drafts[s.file]?.pin??0):j),busy);
@@ -27,13 +29,13 @@ function paint(){
  $('context').textContent='0'+(i+1)+' / '+spot.label;w.replaceChildren();f.replaceChildren();$('status').textContent='';
  $('account').hidden=!d||!!d.receipt;
  if(!d){w.append(el('p','Review this asset, then certify it with or without a suggestion.'),el('p','Only when you send: your account, asset version, estimated active time and marked details visited go privately to the owner.'));
-   w.append(button('Start reviewing',()=>{state.drafts[scene.file]={pin:i,seen:{[i]:true},ms:0,notes:{}};save();paint();clock.touch()},'primary'));return}
+   w.append(button('Start reviewing',()=>{state.drafts[scene.file]={pin:i,seen:{[i]:true},ms:0,notes:{}};save();paint();clock.touch()},'primary'));if(hasExport(state))exportAction(f);return}
  if(d.receipt){w.append(el('h2','Review certified'),el('p',d.who+' · '+new Date(d.receipt.receivedAt).toLocaleString()),el('p',stats(d)),el('small','Private receipt · '+d.receipt.id));
-   const next=scenes.find(s=>!state.drafts[s.file]?.receipt);if(next)f.append(button('Review '+next.kind.toLowerCase()+' →',()=>select(next,0),'primary'));return}
+   const next=scenes.find(s=>!state.drafts[s.file]?.receipt);if(next)f.append(button('Review '+next.kind.toLowerCase()+' →',()=>select(next,0),'primary'));if(hasExport(state))exportAction(f);return}
  const lab=el('label','Suggestion for this detail (optional)');lab.htmlFor='note';const note=el('textarea');note.id='note';note.maxLength=12000;note.value=d.notes[i]||'';note.readOnly=!!d.pending;note.oninput=()=>{d.notes[i]=note.value;checked=false;if($('certify'))$('certify').checked=false;save();update()};w.append(lab,note);
  const m=el('p',stats(d));m.id='metrics';m.className='stats';w.append(m);
  const l=el('label');l.className='attest';const c=el('input');c.type='checkbox';c.id='certify';c.checked=checked||!!d.pending;c.disabled=!!d.pending;c.onchange=()=>{checked=c.checked;update()};l.append(c,' I reviewed this version of the asset.');f.append(l);
- const b=button(d.pending?'Retry private submission':'Certify and send privately',send,'primary');b.id='submit';f.append(b);update();
+ const b=button(d.pending?'Retry private submission':'Certify and send privately',send,'primary');b.id='submit';f.append(b);exportAction(f);update();
  if(d.pending)$('status').textContent='A submission is awaiting its receipt. Retry with the same account.';
 }
 async function send(){
@@ -45,7 +47,7 @@ async function send(){
  }
  save();if(!storageOK)return;busy=true;paint();$('status').textContent='Sending privately…';
  try{const res=await auth.request('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d.pending)});const result=await res.json();if(!res.ok)throw Error(result.error||'Submission failed.');
-   if(result.id!==d.pending.id||!result.receivedAt)throw Error('Receipt unavailable.');d.receipt=result;delete d.pending;d.noteCount=countNotes(d);d.notes={};save();busy=false;checked=false;paint()
+   if(result.id!==d.pending.id||!result.receivedAt)throw Error('Receipt unavailable.');d.receipt=result;delete d.pending;d.noteCount=countNotes(d);save();busy=false;checked=false;paint()
  }catch(e){busy=false;paint();$('status').textContent=e.message+' Your review is kept.'}
 }
 if(!draft()&&hash[0]===scene.id&&scene.pins[Number(hash[1])-1])state.pin=Number(hash[1])-1;
