@@ -50,3 +50,4 @@ Lead with the field-report annotation, the central promise of Pipeup. Follow wit
 Certification is per asset, explicit and immutable. Start counting only after the reviewer starts a review; pause on blur, hidden page or after 30 seconds without interaction. Send only bounded aggregates with the signed submission. The server supplies identity and receipt time. A certificate alone is never an implementation suggestion or public feedback.
 
 - 2026-11-14: Capture the running document, slide deck and touch interface directly. Link to each source so visitors can repeat the interaction. Historical assets remain resolvable for existing receipts.
+- 2026-11-14: Export review downloads one Markdown file for the current browser session's noted assets. Keep the export ID stable across edits and retain notes after a receipt so they can still be exported. Do not treat the file as a signed account, human certification, or server receipt.
