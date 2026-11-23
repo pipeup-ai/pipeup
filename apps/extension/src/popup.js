@@ -1,14 +1,17 @@
 // The toolbar panel: Pipeup's menu. It reads the tab's state each time it opens: on, off, built in, or a page
 // extensions can't reach. With Pipeup on, every row of Pipeup's own menu is here, drawn by the extension.
-import { agentSetup, agreeToSend, canPin, canReachAgents, openSide } from "./browser.js";
+import { agentSetup, agreeToSend, browserName, canPin, canReachAgents, openSide } from "./browser.js";
 
 const $ = (id) => document.getElementById(id);
 // The tab it acts on: the active tab, or one named in the address (how the tests open it in a tab of its own).
 const named = Number(new URLSearchParams(location.search).get("tab"));
 const [active] = named ? [] : await chrome.tabs.query({ active: true, currentWindow: true });
 const tab = named ? await chrome.tabs.get(named) : active;
+// Safari gives no address for a page the extension can't reach (a file opened from this computer among them).
+const known = !!tab?.url;
 const url = new URL(tab?.url || "about:blank");
 const web = url.protocol === "http:" || url.protocol === "https:";
+const file = url.protocol === "file:";
 // Pages served from this computer, where agents mostly build: one switch covers every port.
 const LOCAL = ["http://localhost/*", "http://127.0.0.1/*", "http://[::1]/*"];
 const local = web && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
@@ -17,8 +20,26 @@ const scriptId = `always ${origin}`;
 const LOOKS = ["auto", "light", "dark"];
 const LOOK_WORDS = { auto: "Automatic", light: "Light", dark: "Dark" };
 
-$("where").textContent = web ? url.host + url.pathname.replace(/\/$/, "") : url.protocol.replace(":", "");
+$("where").textContent = web
+  ? url.host + url.pathname.replace(/\/$/, "")
+  : file
+    ? decodeURIComponent(url.pathname.split("/").pop() || "A file on this computer")
+    : known
+      ? url.protocol.replace(":", "")
+      : "This page";
 $("always-label").textContent = `Always on for ${url.host}`;
+// Why Pipeup can't run here, when it can't: the browser's own pages, or a file opened from this computer, which
+// browsers keep closed to extensions too (Chrome has a switch for it; Safari and Firefox don't).
+const OPEN_FILE = "To comment on it, open it through a local server, or with pipeup browser.";
+const FILE_SWITCH =
+  browserName === "firefox" || browserName === "safari"
+    ? ""
+    : " Or, on the browser's extensions page, turn on Allow access to file URLs for Pipeup, then press Pipeup again.";
+$("blocked").textContent = file
+  ? `This is a file on this computer, and browsers keep files closed to extensions. ${OPEN_FILE}${FILE_SWITCH}`
+  : known
+    ? "Pipeup can't run here. Browsers keep their own pages, like settings, the new tab page and their stores, closed to extensions."
+    : `Pipeup can't run here. Browsers keep their own pages, like settings, the new tab page and their stores, closed to extensions, and so are files opened from this computer. ${OPEN_FILE}`;
 
 /** Says something to the tab's Pipeup and returns its answer, or null when it isn't there (yet). */
 async function tell(type, fields = {}) {
