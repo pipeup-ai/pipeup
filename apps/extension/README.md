@@ -51,8 +51,10 @@ offered), and **Send to my agent** isn't offered yet: Safari lets an extension t
 
 - `src/manifest.json`: the extension's name and what it may do. It asks for no access to sites when installed: a press
   on the toolbar button reaches that one tab, and **Always on for this site** asks the browser for that site only.
-- `src/popup.*`: the toolbar panel, which is Pipeup's menu: who you are, Copy comments, Theme, Comments, Hide comments,
-  Start commenting, Always on for this site, Turn off on this page. Off, it offers Comment on this page.
+- `src/popup.*`: the toolbar panel, which is Pipeup's menu, the one menu in the extension: who you are, Your comments
+  on this page, Copy comments (one press), Save as a file, Send to my agent, Commenting, and More (Theme, Hide
+  comments, Keep comments beside the page, Always on, the add-ons' rows, Turn off on this page, Settings). Off, it
+  offers Comment on this page and one sentence. Pipeup runs with `pageMenu: "off"`, so its own ⋯ isn't on the page.
 - `src/panel.*`: the browser's side panel, with every comment: the list, threads, replies, Resolve. Pinned (its pin, or
   **Keep comments beside the page**), threads opened on the page show there (Pipeup runs with `ui: "host"`); unpinned,
   they open as popovers on the page (`layout: "bubbles"`). New comments are always written on the page, in a box with
@@ -67,8 +69,8 @@ offered), and **Send to my agent** isn't offered yet: Safari lets an extension t
   once with `npx --yes pipeup@1 browser install --extension-id <id>` (Chrome and its kin) or `--browser firefox`.
 - `src/browser.js`: what differs between browsers (the panel beside the page, reaching agents), in one place. The build
   gives each browser a manifest without the others' keys.
-- `src/comments.*`: **Comments you've made**, every page with comments, newest first, and the extension's one setting
-  (also its options page).
+- `src/comments.*`: **Settings** (also the options page), opening on **Comments you've made**, every page with comments,
+  newest first; then the extension's settings, then the add-ons behind one line.
 - `pipeup/pipeup.esm.js`: copied unchanged from `libs/ts/pipeup/dist` by the build, so it is npm's file byte for byte
   (the build prints its hash).
 

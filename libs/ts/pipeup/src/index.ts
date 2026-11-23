@@ -2,6 +2,7 @@ export * from "./core";
 export {
   comments,
   mount,
+  type HostMenuRow,
   type MountError,
   type MountErrorCode,
   type MountOptions,

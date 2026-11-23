@@ -158,9 +158,9 @@ test("the stores' screenshots and art", async ({ context, worker, id }) => {
   const thread = await page.screenshot();
   await page.keyboard.press("Escape");
 
-  // The toolbar menu, with Copy comments open.
+  // The toolbar menu: the six rows and More, with Save as a file open.
   await popup.reload();
-  await popup.getByRole("button", { name: /^Copy comments/ }).click();
+  await popup.getByRole("button", { name: /^Save as a file/ }).click();
   await popup.waitForTimeout(500);
   const menu = await popup.screenshot({ fullPage: true });
 
@@ -223,7 +223,7 @@ test("the stores' screenshots and art", async ({ context, worker, id }) => {
       name: "settings",
       caption: "Every page you've commented on, and the add-ons",
       page: options,
-      address: "Pipeup · Comments you've made",
+      address: "Pipeup · Settings",
     },
     {
       name: "mac-app",

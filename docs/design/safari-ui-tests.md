@@ -14,7 +14,7 @@ As someone who has never commented on a web page:
 2. Presses **Pipeup** in the toolbar. If Safari asks for the site first, allows it for one day.
 3. Presses **Comment on this page**.
 4. Clicks the first paragraph, types one sentence and presses Return.
-5. Opens the toolbar menu again and checks that **Comments** counts one.
+5. Opens the toolbar menu again and checks that **Your comments on this page** counts one.
 
 It saves a screenshot of the screen after each step (`apps/extension/dist/safari-ui-test/NN-step.png`), and, when a
 step can't find what it expects, Safari's accessibility tree beside it (`NN-step.txt`), so the step can be read without
@@ -43,3 +43,4 @@ re-running.
 ## Change log
 
 - 2026-11-23 — First version: the scaffold and the first-run test.
+- 2026-11-23 — The menu's rows renamed with the one-menu change (docs/design/one-menu.md): the count is read from Your comments on this page.

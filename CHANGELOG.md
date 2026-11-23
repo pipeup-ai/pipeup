@@ -7,6 +7,9 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
+- **Pipeup for browsers: one menu, built for the job.** Before the first comment, the toolbar menu is one action, Comment on this page, and one sentence. With Pipeup on it has six rows (your name, Your comments on this page with the count, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting with its shortcut) and More, which opens in place to Theme, Hide comments, Keep comments beside the page, Always on, the add-ons' rows, Turn off on this page and Settings. No status line, no footer; Pipeup's own "…" menu isn't shown on the page; after the first comment one line says where it went and what comes next; Settings opens on Comments you've made, with the add-ons behind one line. For hosts: `mount({ pageMenu: "off" })`, `addonRows()`, `selectAddonRow(key)` and `note(text)`.
+
 - Export review downloads your marked feedback as Markdown to share by email or chat.
 
 - The public design review opens on a visual decision. Open the live product or select a pin on a browser capture of the published document, slide deck or touch interface to send private feedback in context.

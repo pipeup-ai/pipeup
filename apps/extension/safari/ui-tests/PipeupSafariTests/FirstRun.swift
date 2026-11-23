@@ -1,5 +1,5 @@
 // The newcomer's first run in Safari: open the sample page, press Pipeup in the toolbar, comment on this page, write one
-// comment, see it counted. Design note: docs/design/safari-ui-tests.md.
+// comment, see it counted (Your comments on this page). Design note: docs/design/safari-ui-tests.md.
 //
 // Screenshots and accessibility trees are attachments in the result bundle; tools/safari-ui-test.mjs exports them. The
 // runner is sandboxed and gets no environment from xcodebuild, so the page's address is fixed here.
@@ -120,12 +120,15 @@ final class FirstRunTests: XCTestCase {
     // 5. The menu counts it.
     button.click()
     // The menu's rows are buttons with a title (Safari gives the popup's buttons no label).
-    let count = safari.buttons.matching(NSPredicate(format: "title BEGINSWITH 'Comments'")).firstMatch
+    let count = safari.buttons.matching(NSPredicate(format: "title BEGINSWITH 'Your comments on this page'")).firstMatch
     expect(count, "comments-row")
     shot("menu-with-comment")
     dump("menu-with-comment")
     // Comments stay in this browser between runs, so earlier runs' comments count too.
     let n = Int(count.title.split(separator: " ").last ?? "") ?? 0
-    XCTAssertGreaterThanOrEqual(n, 1, "The Comments row reads “\(count.title)”")
+    XCTAssertGreaterThanOrEqual(n, 1, "The Your comments on this page row reads “\(count.title)”")
+    // Six rows and More, no footer: nothing in the menu is called Comments you've made or Start commenting.
+    XCTAssertFalse(safari.buttons["Start commenting"].exists, "Start commenting is now the Commenting switch")
+    XCTAssertFalse(safari.links["Comments you've made"].exists, "Comments you've made is in Settings, under More")
   }
 }

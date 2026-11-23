@@ -3,7 +3,7 @@ import { PipeupDocument } from "../document";
 import { IndexedDbStore } from "../storage/indexeddb";
 import { loadOrCreateProfile, MemoryStore, type OpStore, type Profile } from "../storage/store";
 import { fingerprint } from "../util/encoding";
-import { addons, attachAddons, drainQueue, firstCore, type Keep } from "./addons";
+import { addons, attachAddons, drainQueue, firstCore, type Keep, type MenuItem } from "./addons";
 import { describeElement, describeRange } from "../anchor/describe";
 import { labelOf } from "../anchor/locate";
 import { startApp, type Prefs } from "./app";
@@ -37,6 +37,11 @@ export interface MountOptions {
   select?: string;
   /** "off": the page has its own way to start commenting, so Pipeup's control is hidden, as `data-pipeup-control`. */
   control?: string;
+  /**
+   * "off": the host draws Pipeup's menu itself (the browser extension's toolbar menu), so Pipeup's own ⋯ isn't shown on
+   * the page, as `data-pipeup-menu`. The add-ons' rows are the host's to show (`addonRows`).
+   */
+  pageMenu?: string;
   /** Where the reviewer's choices (look, Hide comments) are kept, read as Pipeup starts. Default: localStorage. */
   prefs?: Prefs;
   /**
@@ -105,7 +110,52 @@ export interface PipeupInstance {
   openThread(id: string): Promise<void>;
   /** Opens the comment box on an element or on words (a Range), as choosing it in comment mode does. */
   startComment(target: Element | Range): Promise<void>;
+  /** Says one line to the reviewer on the page, as Pipeup's own notices are said (for a host with news of its own). */
+  note(text: string): void;
+  /** The add-ons' rows in Pipeup's menu, for a host that draws the menu itself (`pageMenu: "off"`). */
+  addonRows(): HostMenuRow[];
+  /** Presses one of those rows, by its `key`; resolves once the add-on has acted. */
+  selectAddonRow(key: number): Promise<void>;
 }
+
+/** An add-on's row in Pipeup's menu, as a host draws it: words only, never markup. */
+export interface HostMenuRow {
+  /** Names the row for `selectAddonRow`, for as long as the add-on is on. */
+  key: number;
+  label: string;
+  /** What the row does, for a tooltip or description. */
+  hint: string;
+  /** Present: a switch, on or off. */
+  checked?: boolean;
+  /** Short end text, such as "3", or "". */
+  count: string;
+}
+
+/** An add-on's own getters can fail; its row then shows nothing rather than breaking the host's menu. */
+const word = (fn: (() => string) | undefined): string => {
+  try {
+    return fn ? fn() : "";
+  } catch (e) {
+    globalThis.reportError?.(e);
+    return "";
+  }
+};
+const hostMenuRows = (items: readonly MenuItem[]): HostMenuRow[] =>
+  items.map((item, key) => {
+    let checked: boolean | undefined;
+    try {
+      checked = item.checked?.();
+    } catch (e) {
+      globalThis.reportError?.(e);
+    }
+    return {
+      key,
+      label: word(item.label),
+      hint: word(item.hint),
+      ...(checked === undefined ? {} : { checked }),
+      count: word(item.count),
+    };
+  });
 
 let current: Promise<PipeupInstance> | null = null;
 const STORE_OPEN_TIMEOUT_MS = 4000;
@@ -145,6 +195,7 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     "data-pipeup-theme": o.theme,
     "data-pipeup-select": o.select,
     "data-pipeup-control": o.control,
+    "data-pipeup-menu": o.pageMenu,
   });
   const attr = setting("data-pipeup-doc");
   const { id, key } = attr
@@ -344,6 +395,15 @@ async function start(o: MountOptions, self: () => Promise<PipeupInstance>): Prom
     },
     setHidden: async (on) => {
       if (!unmounted) started.ctx.menu.setHide(Boolean(on));
+    },
+    // Named clear of the UI's mangled internals (scripts/mangle.mjs): never `say`, `menu` or `menuRows`.
+    note: (text) => {
+      if (!unmounted) started.ctx.toast(String(text));
+    },
+    addonRows: () => (unmounted ? [] : hostMenuRows(started.ctx.addons.menuRows)),
+    selectAddonRow: async (key) => {
+      const item = unmounted ? undefined : started.ctx.addons.menuRows[key];
+      if (item) await item.select();
     },
     startComment: async (target) => {
       if (unmounted) return;

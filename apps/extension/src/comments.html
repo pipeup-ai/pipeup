@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Comments you've made · Pipeup</title>
+    <title>Settings · Pipeup</title>
     <link rel="stylesheet" href="popup.css" />
     <style>
       body {
@@ -97,17 +97,70 @@
         color: var(--muted);
         font-size: 13px;
       }
+      /* The add-ons, behind one line until asked for. */
+      .line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 12px 0;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: none;
+        color: var(--strong);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .line {
+        margin-top: 40px;
+      }
+      .line small {
+        display: block;
+        color: var(--faint);
+        font-size: 12px;
+      }
+      .line .chev {
+        color: var(--faint);
+        transition: transform 0.24s ease;
+      }
+      .line[aria-expanded="true"] .chev {
+        transform: rotate(90deg);
+      }
+      #addons-box .sub-rows {
+        padding-left: 0;
+      }
+      #addons-box .setting:first-child {
+        border-top: 0;
+      }
+      .keys small {
+        display: block;
+        color: var(--faint);
+        font-size: 12px;
+      }
+      .keys {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
     </style>
   </head>
   <body>
-    <h1>Comments you've made</h1>
-    <p class="lede">
-      Every page you've commented on with the extension, newest first. They're kept in this browser.
-    </p>
-    <ol id="pages"></ol>
+    <h1>Settings</h1>
+    <p class="lede">Pipeup for browsers. Everything here is kept in this browser.</p>
+    <h2 id="made">Comments you've made</h2>
+    <p class="lede">Every page you've commented on with the extension, newest first. Each opens that page.</p>
+    <ol id="pages" aria-labelledby="made"></ol>
     <p id="none" hidden>No comments yet. Open a page, press Pipeup in the toolbar, and comment.</p>
-    <h2>Settings</h2>
-    <div class="row setting">
+    <h2>The extension</h2>
+    <div class="setting keys">
+      <span>Turn Pipeup on for the page you're on<small>From the keyboard, on any page</small></span>
+      <kbd>⇧⌥P</kbd>
+    </div>
+    <div class="row setting" style="border-top: 0">
       <label for="show-button">
         Show Pipeup's button on pages
         <small
@@ -128,12 +181,18 @@
       <input id="pictures" type="checkbox" role="switch" />
     </div>
 
-    <h2>Add-ons</h2>
-    <p class="lede">
-      What each one sends, and where, is said in Pipeup's menu once it's on. Changes take effect the next time
-      Pipeup starts on a page.
-    </p>
-    <div id="addons"></div>
+    <button id="addons-line" class="line" type="button" aria-expanded="false" aria-controls="addons-box">
+      <span>Add-ons<small id="addons-said"></small></span><span class="chev" aria-hidden="true">›</span>
+    </button>
+    <div id="addons-box" class="sub" inert>
+      <div class="sub-rows">
+        <p class="lede" style="margin-top: 12px">
+          Each add-on's own rows are under More in the toolbar menu once it's on. Changes take effect the next
+          time Pipeup starts on a page.
+        </p>
+        <div id="addons"></div>
+      </div>
+    </div>
 
     <section id="agent-section">
       <h2>Send to my agent</h2>

@@ -70,6 +70,9 @@ export function createLauncher(ctx: Ctx): View {
   // The page has its own way to start commenting (§4a): Pipeup's control steps aside; its menu and panel stay.
   const pageOwned = setting("data-pipeup-control") === "off";
   if (pageOwned) launch.classList.add("off");
+  // The host draws Pipeup's menu itself (the browser extension's toolbar menu): no ⋯ on the page, by the control or in
+  // the panel's bar, which keeps the name and the Comment switch.
+  const hostMenu = setting("data-pipeup-menu") === "off";
   /** Where focus goes back to when the page's own control opened the menu or the panel. */
   let returnTo: HTMLElement | null = null;
   const focusBack = () => {
@@ -211,6 +214,10 @@ export function createLauncher(ctx: Ctx): View {
   const wireDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   wireDot.setAttribute("r", "4");
   wire.append(wirePath, wireDot);
+  if (hostMenu) {
+    dots.remove();
+    more.remove();
+  }
   // Closed, the menu and panels are out of the keyboard's reach.
   menu.inert = all.inert = true;
   // The panel comes last: open, it covers the control (its own close button and Esc take its place).
