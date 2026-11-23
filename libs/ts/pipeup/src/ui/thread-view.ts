@@ -86,24 +86,16 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
   const o = { ...options };
   const card = o.variant === "card";
   let id = first.id;
-  const line = h(
-    "div",
-    { class: "rbox always" },
-    h(
-      "div",
-      {},
-      composer({
-        label: "Reply",
-        placeholder: "Reply or add others with @",
-        kind: "reply",
-        thread: () => id,
-        people: () => actions.people(),
-        onSend: (text, mentions) => actions.reply(id, text, mentions),
-        // Words go first (with Undo), and the thread stays open; an empty line closes it.
-        onCancel: (words) => (words ? actions.drop(id, words) : actions.close()),
-      }).element,
-    ),
-  );
+  const reply = composer({
+    label: "Reply",
+    kind: "reply",
+    thread: () => id,
+    people: () => actions.people(),
+    onSend: (text, mentions) => actions.reply(id, text, mentions),
+    // Words go first (with Undo), and the thread stays open; an empty line closes it.
+    onCancel: (words) => (words ? actions.drop(id, words) : actions.close()),
+  });
+  const line = h("div", { class: "rbox always" }, h("div", {}, reply.element));
   const inner = h("div", {});
   const note = h(
     "span",
@@ -249,6 +241,8 @@ export function threadView(first: Thread, actions: ThreadActions, options: Threa
 
   function rebuild(t: Thread, next: Partial<ThreadViewOptions>): void {
     Object.assign(o, next);
+    // The reply line says "Reply" until there is someone to add with @ (§7); read each time the card is drawn.
+    reply.input.placeholder = actions.people().length ? "Reply or add others with @" : "Reply";
     const wasShown = shownMenu;
     shownMenu = menuFor;
     id = t.id;

@@ -32,8 +32,9 @@ Apple's UI testing, with a screenshot of each step; the rest of this list is by 
 | # | Do | Expect | Chrome | Firefox | Safari |
 |---|---|---|---|---|---|
 | 1 | Look at the toolbar | Pipeup's bubble, readable on the toolbar in the light and the dark look. | | | |
-| 2 | On example.com, press it | A panel with the page's address, one main action, **Comment on this page**, and one sentence under it (click anything to comment; comments stay in this browser until you copy, save or send them). No switch, shortcut or link. Nothing is on the page yet. (Safari asks for the site first.) | | | |
-| 3 | Press **Comment on this page** | Comment mode is on: moving over the page outlines blocks. No Pipeup button in the page's corner. | | | |
+| 2 | On example.com, press it | A panel with the page's address, one main action, **Comment on this page**, and one sentence under it ("Click anything on the page to comment on it."). No switch, shortcut or link. Nothing is on the page yet. (Safari asks for the site first.) | | | |
+| 3 | Press **Comment on this page** | Comment mode is on: moving over the page outlines blocks. No Pipeup button in the page's corner. The first time in this browser, the hint beside the corner says only "Click anything to comment · Esc when you're done" (no button named); later starts show no hint. | | | |
+| 3a | In comment mode, press any key; then click a link or button; then open a thread | Each once, the first time, in the hint's place: "Tab moves between blocks", "Hold Space to use the page", "Option-click (Alt-click) to pin". Not again in this browser. | | | |
 | 4 | On the long article, press **Shift+Alt+P** | Pipeup turns on there too. | | | |
 | 5 | Press the toolbar button on the settings or new-tab page | The panel says Pipeup can't run there, and why. | | | |
 | 6 | Press it on the page with Pipeup built in | The extension steps aside and says the page has its own Pipeup. Only one Pipeup is on the page. | | | |
@@ -42,8 +43,8 @@ Apple's UI testing, with a screenshot of each step; the rest of this list is by 
 
 | # | Do | Expect | Chrome | Firefox | Safari |
 |---|---|---|---|---|---|
-| 7 | In comment mode, click a paragraph | A box opens beside it with the cursor in it. | | | |
-| 8 | Type "First comment", press **Enter** | The comment is kept; its thread shows; the toolbar button counts 1. The first time in this browser, one line on the page: "Saved in this browser. Press Pipeup in the toolbar when you're ready to send them." It isn't said again for later comments. | | | |
+| 7 | In comment mode, click a paragraph | A box opens beside it with the cursor in it. Its line says "Comment" (not "Comment or add others with @": nobody else has commented yet). | | | |
+| 8 | Type "First comment", press **Enter** | The comment is kept and its box closes: the marker stays on the paragraph, no thread or reply box opens, the next block isn't lit; the toolbar button counts 1. The first time in this browser, one line on the page: "Saved in this browser. Press Pipeup in the toolbar to copy, save or send them." It isn't said again for later comments. Clicking the marker opens the thread with its reply line ("Reply"). | | | |
 | 9 | Select a few words with the mouse | A comment icon appears by the selection. Press it: the box opens on those words. Send it: the words are highlighted. | | | |
 | 10 | Right-click a picture → **Comment with Pipeup** | The box opens on the picture. | | | |
 | 11 | On a tab where Pipeup is off, select words, right-click → **Comment with Pipeup** | Pipeup turns on and the box opens on the words. | | | |
@@ -69,8 +70,8 @@ Apple's UI testing, with a screenshot of each step; the rest of this list is by 
 
 | # | Do | Expect | Chrome | Firefox | Safari |
 |---|---|---|---|---|---|
-| 22 | Open the toolbar panel with Pipeup on | Pipeup's menu, six rows and More: your name (or your animal) with Add your name, **Your comments on this page** (with the count), **Copy comments** (to paste anywhere), **Save as a file**, **Send to my agent** (not in Safari), **Commenting** with ⇧⌥C, **More**. No status line, no footer. | | | |
-| 22a | Press **More** | It opens in place, easing: Theme, Hide comments, Keep comments beside the page (not in Safari), Always on for this site, any add-on rows, then Turn off on this page and Settings. **‹**, **Esc** or **←** folds it back, focus on More. | | | |
+| 22 | Open the toolbar panel with Pipeup on | Pipeup's menu, five rows and More: your name (or your animal) with Add your name, **Your comments on this page** (with the count), **Copy comments** (to paste anywhere), **Save as a file**, **Commenting** with ⇧⌥C, **More**. **Send to my agent** is in the top level, after Save as a file, only once it is set up (not in Safari). No status line, no footer. | | | |
+| 22a | Press **More** | It opens in place, easing: Theme, Hide comments, Keep comments beside the page (not in Safari), Always on for this site, **Send to an AI agent on this computer · Set up once** (not in Safari, and only until it is set up), any add-on rows, then Turn off on this page and Settings. **‹**, **Esc** or **←** folds it back, focus on More. | | | |
 | 23 | Change the name to **Ada** in place | New comments are Ada's. | | | |
 | 24 | **Theme** → Dark, then Light | All of Pipeup's UI on the page changes, completely, with no light pieces left in the dark look or dark ones in the light. | | | |
 | 25 | **Hide comments**, then show them | Highlights, pins and threads leave and come back. | | | |
@@ -84,8 +85,8 @@ Apple's UI testing, with a screenshot of each step; the rest of this list is by 
 |---|---|---|---|---|---|
 | 29 | **Copy comments** (one press), paste into a text editor | Every comment with what it's on, as readable text that is also Markdown; the row says how many threads were copied. | | | |
 | 30 | **Save as a file → A Markdown file**, then **A Pipeup file** | Two files in the browser's downloads; the row folds back after each. | | | |
-| 31 | **Send to my agent** before setting up | It says the one command to run. After running it, comments reach `pipeup browser` and a reply comes back into the thread. | | | — |
-| 32 | **More → Settings** | A page that opens on **Comments you've made**: every page commented on, newest first, each opens. Then the extension's settings (with the ⇧⌥P shortcut), then one Add-ons line that opens to them. | | | |
+| 31 | **More → Send to an AI agent on this computer** before setting up | It opens to the one command to run. After running it and pressing the row again, comments reach `pipeup browser`; **Send to my agent** moves to the menu's top level, after Save as a file, and once a reply has come back into the thread its hint names that agent. | | | — |
+| 32 | **More → Settings** | A short page (about a hundred words) that opens on **Comments you've made**: every page commented on, newest first, each opens. Then **Keyboard** (⇧⌥P, ⇧⌥C on one line each), then two settings with one sentence each (Show Pipeup's own button in the page's corner; Keep a small picture of where each comment was), then one **Add-ons** line and one **Send to an AI agent on this computer** line (not in Safari), each opening to its content. | | | |
 
 ## F. Sites
 

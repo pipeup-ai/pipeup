@@ -157,7 +157,7 @@ test("Save as a file gives a Markdown file and a Pipeup file", async ({ context,
   await file.delete();
 });
 
-test("Send to my agent says how to set it up when this computer isn't set up yet", async ({
+test("until it is set up, Send to an AI agent is under More and opens to the one command to run", async ({
   context,
   worker,
   id,
@@ -165,12 +165,52 @@ test("Send to my agent says how to set it up when this computer isn't set up yet
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await started(context, worker, id, page);
-  await p.getByRole("button", { name: /Send to my agent/ }).click();
+  await expect(p.getByRole("button", { name: /Send to my agent/ })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
+  await p.getByRole("button", { name: /Send to an AI agent on this computer/ }).click();
   // From the release this extension is, for this browser (Chromium: Chrome's host file).
   const version = await worker.evaluate(() => chrome.runtime.getManifest().version);
   await expect(p.locator("#agent-cmd")).toHaveText(
     `npx --yes pipeup@${version} browser install --extension-id ${id}`,
   );
+  await expect(p.locator("#agent-setup-said")).toHaveText("Not set up yet");
+  // The settings say the same, behind one line.
+  const settings = await context.newPage();
+  await settings.goto(`chrome-extension://${id}/comments.html`);
+  await expect(settings.locator("#agent-said")).toHaveText("Not set up");
+  await expect(settings.locator("#agent-cmd")).toBeHidden();
+  await settings.getByRole("button", { name: /Send to an AI agent/ }).click();
+  await expect(settings.locator("#agent-cmd")).toHaveText(
+    `npx --yes pipeup@${version} browser install --extension-id ${id}`,
+  );
+});
+
+test("once set up, Send to my agent is in the menu's top level, naming the agent that last answered", async ({
+  context,
+  worker,
+  id,
+}) => {
+  await worker.evaluate(() => chrome.storage.local.set({ agentUsed: true }));
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  let p = await started(context, worker, id, page);
+  await expect(p.locator("#on > .item:visible, #on > div > .item:visible")).toHaveText([
+    /Add your name/,
+    /Your comments on this page/,
+    /Copy comments/,
+    /Save as a file/,
+    /Send to my agent/,
+    /Commenting/,
+    /More/,
+  ]);
+  await expect(p.locator("#agent-said")).toHaveText("on this computer");
+  await p.close();
+  await worker.evaluate(() => chrome.storage.local.set({ agentName: "Claude Code" }));
+  p = await panel(context, worker, id, page);
+  await expect(p.locator("#agent-said")).toHaveText("Claude Code");
+  const settings = await context.newPage();
+  await settings.goto(`chrome-extension://${id}/comments.html`);
+  await expect(settings.locator("#agent-said")).toHaveText("Claude Code");
 });
 
 test("add-ons: Emoji is on by default, and the others are turned on in the extension's settings", async ({
@@ -264,7 +304,7 @@ test("what is typed into Pipeup's comment box never reaches the page, and the co
   await page.keyboard.type("secret plan");
   await expect(page.locator(".draft .send")).toHaveClass(/show/);
   await page.keyboard.press("Enter");
-  await expect(page.locator(".draft")).toHaveCount(0);
+  await expect(page.locator(".pop.show .draft")).toHaveCount(0);
   await expect
     .poll(() =>
       worker.evaluate(async () =>
@@ -325,6 +365,9 @@ test("in the extension's box, Shift+Enter breaks the line, Esc cancels, and a re
   await expect(page.frameLocator(".draft .line iframe").locator(".box")).toBeFocused();
   await page.keyboard.type("Is June firm?");
   await page.keyboard.press("Enter");
+  // Sent, the comment closes; its marker opens the thread, whose reply line is the extension's box too.
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await page.locator("[data-thread]").first().click();
   const reply = page.frameLocator(".pop.show .rbox iframe").locator(".box");
   await reply.click();
   await page.keyboard.type("Yes, Lee confirmed.");

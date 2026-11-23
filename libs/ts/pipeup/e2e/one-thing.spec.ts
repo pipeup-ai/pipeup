@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { leaveReply, open, quoteSpot, seedText, showComments } from "./helpers";
+import { open, quoteSpot, seedText, showComments } from "./helpers";
 
 test("in comment mode, a thread open to read offers no other block, and a click on the page only closes it", async ({
   page,
@@ -27,7 +27,7 @@ test("in comment mode, a thread open to read offers no other block, and a click 
   await expect(page.locator(".pop.show .draft textarea")).toBeFocused();
 });
 
-test("in comment mode, a thread just written shows, and the next click goes on to the next block", async ({
+test("in comment mode, a comment just written closes, its marker stays, and the next click goes on to the next block", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 800, height: 800 });
@@ -37,9 +37,9 @@ test("in comment mode, a thread just written shows, and the next click goes on t
   await page.mouse.click(p1.x + 30, p1.y + p1.height / 2);
   await page.keyboard.type("First");
   await page.keyboard.press("Enter");
-  await expect(page.locator(".pop.show", { hasText: "First" })).toBeVisible();
-  // Sending leaves the cursor in the new thread's reply line; out of it, the next click goes on.
-  await leaveReply(page);
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(page.locator("[data-thread]").first()).toBeVisible();
+  // Nothing is open, so the next click goes straight on.
   const h1 = (await page.locator("h1").boundingBox())!;
   await page.mouse.click(h1.x + 30, h1.y + h1.height / 2);
   await expect(page.locator(".pop.show .draft textarea")).toBeFocused();

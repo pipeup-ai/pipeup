@@ -96,10 +96,8 @@ test("the first comment needs no name; the draft says who you are and takes a na
   await expect(draft.locator(".nf")).toHaveAttribute("inert", "");
   await expect(draft.locator(".say")).toHaveText(`You're ${me} · add your name`);
   await expect(draft.locator(".hdr .me .av")).toHaveAttribute("data-animal", me);
-  await expect(draft.getByRole("textbox", { name: "Comment" })).toHaveAttribute(
-    "placeholder",
-    "Comment or add others with @",
-  );
+  // Nobody else has commented and the page lists no one: "Comment" alone (§5).
+  await expect(draft.getByRole("textbox", { name: "Comment" })).toHaveAttribute("placeholder", "Comment");
   await expect(draft.locator(".send")).toHaveText("Comment");
 
   await draft.getByRole("button", { name: "add your name" }).click();

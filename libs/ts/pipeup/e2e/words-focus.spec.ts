@@ -520,6 +520,9 @@ test("Esc while an input method is composing cancels the composition, never the 
   await expect(draftLine(page)).toHaveValue("Words ");
   await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
   await page.keyboard.press("Enter");
+  // Sent, the comment closes and the cursor is back on its block; Shift+Enter opens the thread.
+  await expect(draftLine(page)).toHaveCount(0);
+  await page.keyboard.press("Shift+Enter");
   const th = page.locator(".th.on, .pop.show .thread").first();
   await expect(th).toHaveCount(1);
   await th.locator(".rbox textarea").focus();

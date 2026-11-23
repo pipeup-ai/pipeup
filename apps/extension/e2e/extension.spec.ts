@@ -93,6 +93,27 @@ test("comments are kept by the extension, not the site, and come back after a re
   await expect(side.locator(".card", { hasText: "Which beta" })).toBeVisible();
 });
 
+test("after the first comment, one line says where it went, with the menu's own verbs; the box has closed", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await (
+    await panel(context, worker, id, page)
+  )
+    .getByRole("button", { name: "Comment on this page" })
+    .click();
+  await writeComment(page, "Say which week in May.");
+  await expect(page.locator(".toast.show")).toHaveText(
+    "Saved in this browser. Press Pipeup in the toolbar to copy, save or send them.",
+  );
+  // Closed once sent: no reply line; the marker is there.
+  await expect(page.locator(".pop.show, .th.on").getByRole("textbox", { name: "Reply" })).toHaveCount(0);
+  await expect(page.locator("[data-thread]").first()).toBeVisible();
+});
+
 test("Settings opens on Comments you've made: the pages commented on", async ({ context, worker, id }) => {
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
@@ -153,21 +174,18 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await panel(context, worker, id, page);
-  // Off: one action and one sentence, nothing else.
-  await expect(p.locator("#off .note")).toContainText(
-    "Comments stay in this browser until you copy, save or send",
-  );
+  // Off: one action and one sentence (what clicking does; where comments stay is said after the first comment).
+  await expect(p.locator("#off .note")).toHaveText("Click anything on the page to comment on it.");
   await expect(p.getByRole("switch")).toHaveCount(0);
   await p.getByRole("button", { name: "Comment on this page" }).click();
   await expect(page.locator(".launch .mode.on")).toBeAttached();
-  // On: the six rows and More; no status line, no footer.
+  // On: the rows and More; no status line, no footer. Send to my agent waits under More until it is set up.
   await expect(p.locator("#status, footer")).toHaveCount(0);
   await expect(p.locator("#on > .item:visible, #on > div > .item:visible")).toHaveText([
     /Add your name/,
     /Your comments on this page/,
     /Copy comments/,
     /Save as a file/,
-    /Send to my agent/,
     /Commenting/,
     /More/,
   ]);
@@ -231,7 +249,9 @@ test("unpinned, threads open as popovers on the page, and Comments lists them al
     .getByRole("button", { name: "Comment on this page" })
     .click();
   await writeComment(page, "Which beta?");
-  // Written: it opens beside the paragraph, as a popover, and the page keeps its width.
+  // Written: it closes (§7); its marker opens it beside the paragraph, as a popover, and the page keeps its width.
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await page.locator("[data-thread]").first().click();
   await expect(page.locator(".pop.show", { hasText: "Which beta?" })).toBeVisible();
   const side = await sidePanel(context, worker, id, page);
   await expect(side.locator(".card", { hasText: "Which beta?" })).toBeVisible();
@@ -273,7 +293,10 @@ test("pinned, a thread opened on the page shows in the side panel, and replies a
     )
     .toBe("pinned");
   await writeComment(page, "Which beta?");
-  // Written on the page; the thread shows in the side panel, not on the page.
+  // Written on the page, it closes; its marker opens the thread in the side panel, not on the page.
+  await expect(side.locator(".card", { hasText: "Which beta?" })).toBeVisible();
+  await expect(side.locator(".card.open")).toHaveCount(0);
+  await page.locator("[data-thread]").first().click();
   const card = side.locator(".card.open");
   await expect(card).toContainText("Which beta?");
   await expect(page.locator(".pop.show .th")).toHaveCount(0);
@@ -321,7 +344,7 @@ test("the toolbar button shows comment mode: green, saying on when there are no 
 test("Show Pipeup's button on pages brings the corner button back", async ({ context, worker, id }) => {
   const settings = await context.newPage();
   await settings.goto(`chrome-extension://${id}/comments.html`);
-  await settings.getByRole("switch", { name: /Show Pipeup's button on pages/ }).check();
+  await settings.getByRole("switch", { name: /Show Pipeup's own button/ }).check();
   await expect
     .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("settings")).settings))
     .toEqual({
