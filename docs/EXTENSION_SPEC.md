@@ -31,11 +31,27 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
   asks the browser's permission for that site only.
 - The toolbar button's panel shows the page's address. Off, it offers one main action, **Comment on this page**, which
-  adds Pipeup and starts comment mode, since that is why the reviewer pressed it.
-- With Pipeup on, the toolbar panel is **Pipeup's menu**, drawn by the extension: where comments go, who you are (the
-  name edited in place), **Copy comments** (As Markdown, As text), **Theme**, **Comments** (with the open count),
-  **Hide comments**, **Keep comments beside the page** and **Start commenting**, then **Always on for this site** and
-  **Turn off on this page**.
+  adds Pipeup and starts comment mode, since that is why the reviewer pressed it, and one sentence saying what will
+  happen and where comments stay (clicking anything on the page comments on it; comments stay in this browser until
+  the reviewer copies, saves or sends them). Nothing else: no switches, shortcuts or links before the first comment.
+- With Pipeup on, the toolbar panel is **Pipeup's menu**, the one menu in the extension, built for the reviewer's job
+  (comment, then get the comments to whoever asked) rather than the feature list. In order:
+  - who you are (the name, edited in place);
+  - **Your comments on this page**, with the count, which opens them (§4a);
+  - **Copy comments**, one press: the comments as readable text a person can paste into a message or an AI chat, which
+    is also Markdown (functional spec §7a), described as "to paste anywhere", never by format;
+  - **Save as a file**, which opens to its two kinds (§4a);
+  - **Send to my agent**, where it is offered (§2);
+  - **Commenting**, a switch with its shortcut, the one row that says whether comment mode is on;
+  - **More**, which opens to everything that is a preference or a way out: **Theme**, **Hide comments**, **Keep comments
+    beside the page** (where offered), **Always on for this site** (or for local pages), the add-ons' rows, **Turn off on
+    this page**, and **Settings**.
+  The menu has no status line and no footer: there is one **Comments** row, one shortcut, and the ways to make Pipeup go
+  away are under More.
+- In the extension, Pipeup's own menu on the page isn't shown: the panel Pipeup opens on the page keeps the name and
+  the Comment switch in its bar, and nothing that the toolbar menu already offers.
+- After the reviewer's **first comment** in this browser, one line says, once, where it went and what comes next
+  ("Saved in this browser. Press Pipeup in the toolbar when you're ready to send them").
 - **A new comment is written on the page**, in a box beside what it's about, with the cursor in it (the browser can't
   move the cursor into its side panel).
 - Comments can be **pinned** beside the page, in the browser's **side panel** (Chrome and Edge's side panel; Firefox's
@@ -69,20 +85,20 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - **Right-click menu:** **Comment with Pipeup** on selected words, a picture, a link or anything on a page adds Pipeup if
   it isn't on, and opens the comment box on what was right-clicked (words selected; the picture; the link; else what
   was right-clicked, or comment mode when Pipeup wasn't on yet).
-- **Comments** in the toolbar menu opens Pipeup's own panel on the page when comments aren't pinned, and the side panel
-  when they are.
+- **Your comments on this page** in the toolbar menu opens Pipeup's own panel on the page when comments aren't pinned,
+  and the side panel when they are.
 - **Single-page apps:** when a site changes page without loading one (its address changes), Pipeup follows: the new
   address's comments show, in the same comment mode.
 - **Pages on this computer:** on a page from localhost or 127.0.0.1, the toolbar menu offers **Always on for local
   pages** (every port), in place of Always on for this site.
-- **Save comments**, in the toolbar menu: **As a Markdown file** (for people and AIs) or **As a Pipeup file** (to open
+- **Save as a file**, in the toolbar menu: **A Markdown file** (for people and AIs) or **A Pipeup file** (to open
   again), saved where the browser saves downloads.
 - **Send to my agent**, in the toolbar menu: the page's comments go to agents on this computer, and their replies come
   back into the threads (functional spec §15g). Until it is set up, it says the one command to run, which sets it up
   for the browser it is in (Chrome, Edge or Firefox) from the release the extension is.
 - **Add-ons**, turned on in the extension's settings: Emoji (on by default), Voice, Share (with a sharing address),
   Live, Save to GitHub (with a repository; GitHub asks the reviewer to sign in on its own page, so the extension holds
-  no GitHub sign-in) and My identity. Their menu rows are in Pipeup's own menu, reached from **More from add-ons**.
+  no GitHub sign-in) and My identity. Their menu rows are under **More** in the toolbar menu.
 
 ## 5. Where comments are kept
 
@@ -96,7 +112,9 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - The extension writes nothing into the site's own storage. Add-ons' choices are kept by the extension too (whether
   Live is on and that the reviewer agreed to it, Share's and Voice's choices, Emoji's recent emoji), so a page can't
   read them or set them in advance.
-- **Comments you've made** lists every page the reviewer has commented on, newest first, and opens any of them.
+- **Settings** (reached from More) opens on **Comments you've made**, every page the reviewer has commented on, newest
+  first, each opening that page; the extension's settings and the add-ons follow, the add-ons behind one line until
+  the reviewer asks for them.
 - When a comment is made, the extension keeps a **small picture of where it was** (where the browser lets it see the
   tab: after a press on Pipeup or its right-click menu), in that browser only. A Lost comment
   (functional spec §8) shows it to the reviewer who made it, marked "only in this browser". The picture is never sent
@@ -143,3 +161,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-10 — Built for local testing in Firefox and in Safari on a Mac. What Safari can't do is left out: comments aren't pinned beside the page there, and Send to my agent isn't offered (§2).
 - 2026-11-10 — Ready for the stores, agreed with the maintainer after checking the store drafts against the code: what each browser leaves out (§2: Send to my agent not on Windows; Voice not in Firefox; Share, Live and pictures not in Safari; Firefox on Android and Safari on iPhone and iPad later); Send to my agent's command fits the browser and release (§4a); nothing Pipeup shows can be read by the site, add-ons' choices are kept by the extension, and deleting a comment removes its picture (§5); what leaves the browser, and when, said in full, with the browser asked first where it asks (§6); packages built from the release's tag (§7).
 - 2026-11-10 — Agreed with the maintainer: what the reviewer types into Pipeup on a page can't be seen by the page, keys included (§5). Design: docs/design/extension-private-typing.md.
+- 2026-11-23 — Proposed, for review (visual spec docs/design/extension-menu.html): one menu, built for the job. Before the first comment, one action and one sentence; with Pipeup on, six rows (name, Your comments on this page, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting) and More for preferences and ways out; no status line or footer; Pipeup's own menu isn't shown on the page; a one-time line after the first comment; Comments you've made becomes the first part of Settings (§3, §4a, §5). From the newcomer's first run in Safari and Chromium (23 November 2026).

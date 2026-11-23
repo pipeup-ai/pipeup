@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>One Menu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Pipeup design page: one reading column, light only like the other mock-ups; the menus are drawn in CSS at their real size, before beside after. */
+:root{
+  --bg:#ffffff; --paper:#f7f6f3; --ink:#2f3437; --strong:#111111; --muted:#6a6a64; --line:#e3e1ea;
+  --accent:#534ab7; --accent-soft:#eeedf9; --mark:#b4541f;
+  --serif:"Source Serif 4",Georgia,serif; --sans:Inter,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);
+  padding-block:0 4rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:880px;margin:0 auto}
+h1,h2,h3{font-family:var(--serif);color:var(--strong);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:2.4rem;font-weight:600;margin-top:3rem}
+h2{font-size:1.5rem;font-weight:600;margin-top:3.5rem;padding-top:1.5rem;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;font-weight:600;margin-top:0}
+p{max-width:65ch;margin:.8rem 0}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.meta{font-size:.85rem;color:var(--muted)}
+.verdict{background:var(--paper);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.verdict p{max-width:none;margin:.4rem 0}
+ul.plain,ol.plain{padding-left:1.2rem;max-width:68ch}
+ul.plain li,ol.plain li{margin:.45rem 0}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem;align-items:start;margin:1.5rem 0}
+.pair>div{min-width:0}
+.cap{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 .6rem}
+.cap.after{color:var(--accent)}
+/* The menus, at the size the extension draws them (320 px wide). */
+.menu{width:320px;max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:.9rem;box-shadow:0 8px 28px rgba(47,52,55,.08);overflow:hidden}
+.menu .head{display:flex;gap:.6rem;align-items:center;padding:.8rem 1rem .6rem}
+.menu .head .bubble{width:20px;height:20px;border-radius:50% 50% 50% 4px;border:2px solid var(--accent);box-sizing:border-box}
+.menu .head b{display:block;color:var(--strong);font-size:.92rem}
+.menu .head small{color:var(--muted);font-size:.78rem}
+.menu .row{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.55rem 1rem;color:var(--strong)}
+.menu .row small{color:var(--muted);font-size:.8rem;white-space:nowrap}
+.menu .row .n{background:var(--accent);color:#fff;border-radius:999px;font-size:.72rem;padding:0 .45rem;line-height:1.4rem;min-width:1.4rem;text-align:center}
+.menu .main{display:block;margin:.4rem 1rem .5rem;padding:.6rem;background:var(--accent);color:#fff;border-radius:8px;text-align:center;font-weight:600}
+.menu .note{padding:0 1rem .7rem;color:var(--muted);font-size:.82rem;line-height:1.45}
+.menu .status{padding:.3rem 1rem .5rem;color:var(--muted);font-size:.8rem}
+.menu hr{border:0;border-top:1px solid var(--line);margin:.35rem 0}
+.menu .sw{width:30px;height:18px;border-radius:9px;background:#d9d7d2;position:relative;flex:none}
+.menu .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.menu .sw.on{background:var(--accent)}
+.menu .sw.on::after{left:14px}
+.menu .foot{display:flex;justify-content:space-between;padding:.6rem 1rem .8rem;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line)}
+.menu .foot a{color:var(--accent);text-decoration:none}
+.menu kbd{font:inherit;font-size:.78rem;color:var(--muted)}
+.menu .row.sub{padding-left:1.8rem;color:var(--ink)}
+.gone{color:var(--mark)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;margin:1rem 0}
+th,td{text-align:left;vertical-align:top;padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--strong);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
+.wrap{overflow-x:auto}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin:1.5rem 0}
+.flow>div{background:var(--paper);border-radius:10px;padding:1rem 1.1rem;min-width:0}
+.flow .who{font-family:var(--serif);font-style:italic;color:var(--strong);margin:.3rem 0 .6rem}
+.flow p{font-size:.92rem;margin:.3rem 0}
+.flow .step{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.toast{display:inline-block;background:var(--strong);color:#fff;border-radius:8px;padding:.5rem .8rem;font-size:.88rem;margin:.6rem 0}
+a{color:var(--accent)}
+@media (max-width:640px){h1{font-size:1.9rem}}
+@media (prefers-reduced-motion:no-preference){a{transition:color .2s ease}}
+</style>
+</head>
+<body>
+<main>
+<h1>One menu, built for the job</h1>
+<p class="lede">The extension's toolbar menu, redrawn for someone whose job is to comment and then get the comments to whoever asked. For review before 1.1.0.</p>
+<p class="meta">23 November 2026 · Spec: <a href="../EXTENSION_SPEC.md">EXTENSION_SPEC.md</a> §3, §4a, §5 (change log, 2026-11-23) · From the newcomer's first run in Safari (driven by the UI test) and Chromium · Light mode only, like every design page.</p>
+
+<div class="verdict">
+<p><b>What changes.</b> Before the first comment: one button and one sentence, where today there is a button, a switch, a shortcut and a link to an empty list. Once Pipeup is on: six rows and More, where today there are eleven rows, a status line and a footer. Copy is one press. Everything that is a preference or a way out moves under More. The second menu on the page goes. Nothing is removed from the product; it moves.</p>
+<p><b>What stays the same.</b> Comment on this page as the one way in. What each row does. Pipeup itself on the page. Which rows each browser gets (Safari still has no pin and no Send to my agent).</p>
+</div>
+
+<h2>The newcomer's path, after the change</h2>
+<div class="flow">
+<div><span class="step">1 · First press</span><p class="who">"Oh. One button, and it says what will happen."</p><p>The menu says: click anything on the page to comment on it, and comments stay in this browser until you copy or send them. No questions before the first comment.</p></div>
+<div><span class="step">2 · First comment</span><p class="who">"Saved. And it tells me where to go next."</p><p>After Return, once only, one line:</p><span class="toast">Saved in this browser. Press Pipeup in the toolbar when you're ready to send them.</span></div>
+<div><span class="step">3 · Back to the menu</span><p class="who">"Copy comments. That's the one."</p><p>Six rows, one of them bold. Copy is a single press; the text pastes into a message, an email or an AI chat. More holds the rest.</p></div>
+</div>
+
+<h2>Before the first comment</h2>
+<div class="pair">
+<div><p class="cap">Today</p>
+<div class="menu">
+<div class="head"><span class="bubble"></span><div><b>Pipeup</b><small>localhost:8792/extension-test.html</small></div></div>
+<span class="main">Comment on this page</span>
+<div class="row"><span>Always on for local pages<br><small>localhost and 127.0.0.1, any port</small></span><span class="sw"></span></div>
+<div class="foot"><span>Shortcut <kbd>⇧⌥P</kbd></span><a>Comments you've made</a></div>
+</div>
+<p class="meta">A settings question, a shortcut and a link to a list with nothing in it, all before the first comment.</p></div>
+<div><p class="cap after">Proposed</p>
+<div class="menu">
+<div class="head"><span class="bubble"></span><div><b>Pipeup</b><small>localhost:8792/extension-test.html</small></div></div>
+<span class="main">Comment on this page</span>
+<div class="note">Click anything on the page to comment on it. Comments stay in this browser until you copy, save or send them.</div>
+</div>
+<p class="meta">One action, one sentence. Always on and the shortcut are under More once Pipeup is on; the list of pages is in Settings.</p></div>
+</div>
+
+<h2>Once Pipeup is on</h2>
+<div class="pair">
+<div><p class="cap">Today (Chrome; Safari hides two rows)</p>
+<div class="menu">
+<div class="head"><span class="bubble"></span><div><b>Pipeup</b><small>localhost:8792/extension-test.html</small></div></div>
+<div class="status">Comments stay in this browser until you send them</div>
+<div class="row"><span>Add your name</span><small>Add name</small></div>
+<div class="row"><span>Copy comments</span><small>›</small></div>
+<div class="row"><span>Save comments</span><small>›</small></div>
+<div class="row"><span>Send to my agent</span><small>on this computer</small></div>
+<div class="row"><span>Theme</span><small>Automatic</small></div>
+<div class="row"><span>Comments</span><span class="n">1</span></div>
+<div class="row"><span>Keep comments beside the page</span><span class="sw"></span></div>
+<div class="row"><span>Hide comments</span><span class="sw"></span></div>
+<div class="row"><span>Start commenting</span><span><kbd>⇧⌥C</kbd> <span class="sw on" style="display:inline-block;vertical-align:middle"></span></span></div>
+<hr>
+<div class="row"><span>Always on for local pages<br><small>localhost and 127.0.0.1, any port</small></span><span class="sw"></span></div>
+<div class="row"><span>Turn off on this page</span></div>
+<div class="foot"><span>Shortcut <kbd>⇧⌥P</kbd></span><a>Comments you've made</a></div>
+</div>
+<p class="meta">Eleven rows, a status line that promises "send" when nothing is called that, two shortcuts, two things called Comments, three ways to make Pipeup go away.</p></div>
+<div><p class="cap after">Proposed</p>
+<div class="menu">
+<div class="head"><span class="bubble"></span><div><b>Pipeup</b><small>localhost:8792/extension-test.html</small></div></div>
+<div class="row"><span>Green Owl</span><small>Add your name</small></div>
+<div class="row"><span>Your comments on this page</span><span class="n">1</span></div>
+<hr>
+<div class="row"><span><b>Copy comments</b></span><small>to paste anywhere</small></div>
+<div class="row"><span>Save as a file</span><small>›</small></div>
+<div class="row"><span>Send to my agent</span><small>on this computer</small></div>
+<hr>
+<div class="row"><span>Commenting</span><span><kbd>⇧⌥C</kbd> <span class="sw on" style="display:inline-block;vertical-align:middle"></span></span></div>
+<div class="row"><span>More</span><small>›</small></div>
+</div>
+<p class="meta">Six rows and More. In Safari, five: no Send to my agent. The name shows the animal name Pipeup gave, with the invitation to change it beside it.</p></div>
+</div>
+
+<h3>More, opened</h3>
+<div class="pair">
+<div>
+<div class="menu">
+<div class="row"><span>More</span><small>‹</small></div>
+<div class="row sub"><span>Theme</span><small>Automatic</small></div>
+<div class="row sub"><span>Hide comments</span><span class="sw"></span></div>
+<div class="row sub"><span>Keep comments beside the page</span><span class="sw"></span></div>
+<div class="row sub"><span>Always on for this site</span><span class="sw"></span></div>
+<div class="row sub"><span>Emoji, Voice…</span><small>add-ons' rows</small></div>
+<hr>
+<div class="row sub"><span>Turn off on this page</span></div>
+<div class="row sub"><span>Settings</span><small>›</small></div>
+</div>
+</div>
+<div><p>More opens in place, the way Copy comments opens today, and folds back with ‹, Esc or ←. It holds everything a person sets once or rarely: the look, hiding, pinning, Always on (for local pages on a localhost page), the add-ons' own rows, the way out, and Settings.</p>
+<p>Settings opens the page that today is called "Comments you've made". It keeps that list first, under that name, then the extension's settings, then one line for add-ons that opens to them.</p></div>
+</div>
+
+<h3>Save as a file, opened</h3>
+<div class="pair">
+<div>
+<div class="menu">
+<div class="row"><span>Save as a file</span><small>‹</small></div>
+<div class="row sub"><span>A Markdown file</span><small>for people and AIs</small></div>
+<div class="row sub"><span>A Pipeup file</span><small>to open again</small></div>
+</div>
+</div>
+<div><p>Unchanged in what it does. Copy loses its submenu: one press copies the readable text, which is also the Markdown an AI can act on. "As text" goes; the Markdown reads as text when pasted.</p></div>
+</div>
+
+<h2>On the page: one menu fewer</h2>
+<p>In Safari, Your comments on this page opens Pipeup's own panel on the page. That panel's bar has a "…" that opens a second menu with the same rows as the toolbar menu. In the extension that "…" goes: the bar keeps the name and the Comment switch. Each thread keeps its own "…" (Edit, Delete, Resolve), which is about that comment, not about Pipeup.</p>
+
+<h2>Wording</h2>
+<div class="wrap"><table>
+<tr><th>Today</th><th>Proposed</th><th>Why</th></tr>
+<tr><td>Comments stay in this browser until you send them (status line)</td><td>The sentence under Comment on this page, first visit only</td><td>Said once, when it answers a question; nothing in the menu is called Send, so "copy, save or send".</td></tr>
+<tr><td>Comments · 1</td><td>Your comments on this page · 1</td><td>Tells it apart from Comments you've made, and says whose and where.</td></tr>
+<tr><td>Copy comments › As Markdown (for an AI) · As text</td><td>Copy comments · to paste anywhere</td><td>One press, explained by what the person does with it, not the format.</td></tr>
+<tr><td>Save comments › As a Markdown file · As a Pipeup file</td><td>Save as a file › A Markdown file · A Pipeup file</td><td>Says it makes a file; the kinds read as nouns.</td></tr>
+<tr><td>Start commenting (switch)</td><td>Commenting (switch)</td><td>A switch that reads "Start" looks like a button; on, it reads wrong.</td></tr>
+<tr><td>Comments you've made (footer link)</td><td>Settings, under More, opening on Comments you've made</td><td>The page is four things; its door says one of them.</td></tr>
+<tr><td>Shortcut ⇧⌥P (footer)</td><td>In Settings</td><td>A newcomer meets one shortcut, on the Commenting row.</td></tr>
+</table></div>
+
+<h2>Not in this change</h2>
+<ul class="plain">
+<li>The comment-mode hint on the page, which lists five instructions on the first visit. That is Pipeup's own (functional spec), and gets its own proposal: one sentence the first time, the rest later, one at a time.</li>
+<li>What happens on the page after Return (a reply field opens, the next block lights up). Also Pipeup's own.</li>
+<li>Safari's permission dialog, which Pipeup can't change.</li>
+</ul>
+
+<h2>Open questions for the maintainer</h2>
+<ol class="plain">
+<li>Should <b>Keep comments beside the page</b> stay at the top level in Chrome and Firefox, where the side panel is the main way to read comments? The sketch puts it under More because it is set once per site.</li>
+<li>Is <b>Send to my agent</b> the right third row, or should it come first where an agent is set up, with Copy second?</li>
+<li>The one-time line after the first comment: on the page by the comment, or as a change in the toolbar button's badge? The sketch says on the page.</li>
+</ol>
+</main>
+</body>
+</html>
