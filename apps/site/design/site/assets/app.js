@@ -2738,14 +2738,14 @@
     var text = el("textarea", { readonly: "", rows: "12", "aria-label": "Your review, as it will be sent", id: "round-review-text" });
     preview.appendChild(text);
     var acts = el("div", { class: "sendacts" });
-    var copyBtn = el("button", { class: "btn dark", type: "button", "data-send-copy": "" });
+    var copyBtn = el("button", { class: "btn", type: "button", "data-send-copy": "" });
     copyBtn.appendChild(svgIcon("s-copy"));
     copyBtn.appendChild(el("span", null, "Copy my review"));
-    var saveBtn = el("button", { class: "btn", type: "button", "data-send-save": "" });
+    var saveBtn = el("button", { class: "btn dark", type: "button", "data-send-save": "" });
     saveBtn.appendChild(svgIcon("s-save"));
-    saveBtn.appendChild(el("span", null, "Save as a file instead"));
-    acts.appendChild(copyBtn);
+    saveBtn.appendChild(el("span", null, "Export review"));
     acts.appendChild(saveBtn);
+    acts.appendChild(copyBtn);
     var status = el("p", { class: "note sendstatus", role: "status" });
     [headLine, nameForm, list, asksLine, acts, status, preview].forEach(function (x) { panel.appendChild(x); });
 
@@ -2858,7 +2858,7 @@
       doc.body.appendChild(a);
       a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-      status.textContent = "Saved as " + a.download + ". " + sentTo() + " Attach the file to your message.";
+      status.textContent = "Exported " + a.download + ". Nothing was sent. " + sentTo() + " Attach the file to your message.";
       status.setAttribute("data-done", "");
     });
     function connectSubmission() {
