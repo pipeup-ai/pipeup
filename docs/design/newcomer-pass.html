@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newcomer's second pass</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+  /* Layout: one column of findings, each a before (the real screen) beside an after (drawn). Light look only. */
+  :root {
+    --bg: #fbfaf7; --ink: #1d1b2e; --muted: #5d5a6c; --faint: #8b889a; --line: #e4e2ea;
+    --accent: #5b4fcf; --accent-soft: #ecebfb; --card: #ffffff; --warn: #a14b1d; --warn-soft: #fbeee6;
+    --display: "Source Serif 4", Georgia, serif; --text: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ui: -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
+  }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--text); margin: 0;
+    padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 980px; margin: 0 auto; display: grid; gap: 56px; }
+  h1 { font: 600 34px/1.15 var(--display); margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em; }
+  h2 { font: 600 22px/1.25 var(--display); margin: 0 0 6px; text-wrap: balance; }
+  h3 { font: 600 15px/1.3 var(--text); margin: 0 0 8px; }
+  p { max-width: 66ch; margin: 0 0 10px; }
+  .lede { color: var(--muted); font-size: 16px; }
+  .eyebrow { font: 500 12px/1 var(--text); letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+  .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .strip figure { margin: 0; min-width: 0; }
+  .strip img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; display: block; }
+  .strip figcaption { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+  .strip figcaption b { color: var(--ink); font-weight: 600; }
+  .finding { display: grid; gap: 14px; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; align-items: start; }
+  .pair > div { min-width: 0; }
+  .pair img { width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; background: #fff; }
+  .label { font-size: 12.5px; color: var(--faint); margin-bottom: 6px; }
+  .why { color: var(--muted); }
+  .count { display: inline-block; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 999px; padding: 2px 10px; margin-left: 6px; }
+  /* Drawn screens */
+  .menu { width: 340px; max-width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 10px; font-family: var(--ui); font-size: 14px; box-shadow: 0 8px 28px rgba(40,30,90,.08); overflow: hidden; }
+  .menu .head { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .menu .head b { display: block; font-size: 14px; }
+  .menu .head span { font-size: 12.5px; color: var(--muted); }
+  .menu .icon { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid var(--accent); box-sizing: border-box; }
+  .menu .big { margin: 14px; padding: 10px; background: var(--accent); color: #fff; text-align: center; border-radius: 8px; font-weight: 600; }
+  .menu .note { margin: 0 14px 16px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; }
+  .row small { color: var(--muted); font-size: 12.5px; }
+  .row .n { background: var(--accent); color: #fff; border-radius: 999px; min-width: 20px; height: 20px; display: grid; place-items: center; font-size: 12px; }
+  .row.sub { padding-left: 32px; }
+  .row.open { background: #f3f2f9; }
+  .menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+  .sw { width: 34px; height: 20px; border-radius: 999px; background: #d9d8e1; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .sw.on { background: var(--accent); } .sw.on::after { left: 16px; }
+  kbd { font: 12px var(--ui); color: var(--muted); }
+  .chev { color: var(--faint); }
+  .toast { display: inline-block; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; font: 13px/1.45 var(--display); color: var(--ink); box-shadow: 0 6px 18px rgba(40,30,90,.08); max-width: 320px; }
+  .box { width: 400px; max-width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-family: var(--display); font-size: 13.5px; box-shadow: 0 8px 28px rgba(40,30,90,.08); }
+  .box .who { font-size: 13px; margin-bottom: 8px; } .box .who b { font-weight: 600; } .box .who span { color: var(--muted); }
+  .box .field { border: 1.5px solid var(--accent); border-radius: 999px; padding: 7px 12px; color: var(--faint); }
+  .box .acts { display: flex; justify-content: flex-end; gap: 14px; margin-top: 8px; font-size: 13px; }
+  .box .acts b { color: var(--accent); font-weight: 600; } .box .acts span { background: #eceaf3; color: var(--muted); padding: 2px 10px; border-radius: 999px; }
+  .marker { display: inline-block; width: 14px; height: 14px; border-radius: 50% 50% 50% 0; background: var(--accent); transform: rotate(-45deg); margin-right: 8px; vertical-align: -2px; }
+  .page { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; font-family: var(--display); position: relative; min-height: 150px; }
+  .page .para { border: 1.5px solid var(--accent); background: #efedfa; border-radius: 4px; padding: 6px 8px; font-size: 14.5px; line-height: 1.45; position: relative; }
+  .page .para .marker { position: absolute; right: -8px; top: -8px; margin: 0; }
+  .page .corner { position: absolute; right: 14px; bottom: 14px; }
+  .settings { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; font-family: var(--ui); font-size: 13.5px; max-width: 520px; }
+  .settings h4 { margin: 0 0 4px; font-size: 18px; }
+  .settings .s { padding: 10px 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+  .settings .s small { display: block; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .settings .h { font-weight: 600; margin-top: 22px; }
+  table { border-collapse: collapse; width: 100%; max-width: 640px; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+  td.num { text-align: right; }
+  .keep { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+  .keep ul, .ask ul { margin: 6px 0 0; padding-left: 20px; } li { margin: 4px 0; }
+  .ask { background: var(--warn-soft); border-radius: 10px; padding: 16px 20px; color: #4a2a17; }
+  .ask h3 { color: var(--warn); }
+  .tag { font-size: 12px; color: var(--warn); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  code { font: 12.5px ui-monospace, Menlo, monospace; background: #f1f0f6; padding: 1px 5px; border-radius: 4px; }
+  @media (max-width: 720px) { .strip { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <div class="eyebrow">Pipeup for browsers · after the one-menu build (PR 149) · 23 November 2026</div>
+    <h1>The newcomer's first run, second pass</h1>
+    <p class="lede">The one menu did its job: before the first comment there is one button and one sentence, and after it, seven rows. What a newcomer now meets is mostly on the page itself, where the hint, the comment box and the moment after Return still speak to an expert. Six changes, each with the words it would remove.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">What a newcomer sees, in order (taken from the build)</div>
+    <div class="strip">
+      <figure><img src="newcomer-pass/1-popup-off.png" alt="The toolbar menu before Pipeup is on: Comment on this page and one sentence"><figcaption><b>1 · Press Pipeup.</b> One button, one sentence. Good.</figcaption></figure>
+      <figure><img src="newcomer-pass/2-page-comment-mode.png" alt="The page in comment mode with a four-part hint in the corner"><figcaption><b>2 · Comment mode.</b> A hint with four instructions, three of them for experts.</figcaption></figure>
+      <figure><img src="newcomer-pass/3-comment-box.png" alt="The comment box on a paragraph"><figcaption><b>3 · The box.</b> “Comment or add others with @”, before there is anyone to add.</figcaption></figure>
+      <figure><img src="newcomer-pass/4-after-first-comment.png" alt="After Return: the thread stays open with a reply field, and a line in the corner"><figcaption><b>4 · After Return.</b> A reply box to yourself, and the one-time line.</figcaption></figure>
+      <figure><img src="newcomer-pass/5-popup-on.png" alt="The toolbar menu with Pipeup on: seven rows"><figcaption><b>5 · Pipeup again.</b> Seven rows. Good, with one stranger among them.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>1. The hint on the page says four things; a newcomer needs two <span class="count">30 words → 8</span></h2>
+    <p class="why">Tab, Option-click to pin and Hold Space are for the second week. “This button” names Pipeup's corner button, which the extension hides, so the sentence points at nothing. The hint is Pipeup's own (the library), shown on the first visit.</p>
+    <div class="pair">
+      <div><div class="label">Now</div><div class="toast">Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold Space to use the page · This button, ⇧⌥C or Esc to finish</div></div>
+      <div><div class="label">Proposed · the first visit</div><div class="toast">Click anything to comment · Esc when you're done</div>
+        <p class="why" style="margin-top:10px">The other three appear once, each the first time it would have helped: Tab's line the first time the keyboard is used in comment mode, Space's the first time a link or button is clicked while commenting, pinning's the first time a thread is opened. In the extension “This button” is dropped; on a page with Pipeup built in it stays.</p></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>2. After Return, a reply box to yourself <span class="count">14 words → 0</span></h2>
+    <p class="why">The thread stays open with “Reply or add others with @”, Cancel and Reply. A newcomer reads it as “something more is expected”. Nothing is: the comment is in. The design note listed this as not in the change; it is the biggest remaining stumble.</p>
+    <div class="pair">
+      <div><div class="label">Now</div><img src="newcomer-pass/4-crop.png" alt="The paragraph with its marker and, below it, an open thread with a reply field"></div>
+      <div><div class="label">Proposed</div>
+        <div class="page">
+          <div class="para">We launch in the second week of May, after the beta with Ada's team. The beta runs for three weeks and ends with a short survey.<span class="marker"></span></div>
+          <p style="font: 13.5px/1.45 var(--display); color: var(--muted); margin: 10px 0 0">Pricing changes follow in June. Current customers keep their price until their next renewal.</p>
+          <div class="corner"><span class="toast">Saved in this browser. Press Pipeup in the toolbar to copy, save or send them.</span></div>
+        </div>
+        <p class="why" style="margin-top:10px">The box closes, the marker stays, the next block is not lit. Clicking the marker opens the thread with Reply, as it does today.</p></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>3. The same reassurance twice, with different verbs <span class="count">30 words → 14</span></h2>
+    <p class="why">Before the first comment the menu says comments “stay in this browser until you copy, save or send them”; after it, the page says “Saved in this browser. Press Pipeup in the toolbar when you're ready to send them.” Say it once, after the first comment, when it is true, and with the menu's own verbs (“send” alone names a row most people don't have).</p>
+    <div class="pair">
+      <div><div class="label">Menu, off · proposed</div>
+        <div class="menu"><div class="head"><span class="icon"></span><div><b>Pipeup</b><span>lumen.example/launch-plan</span></div></div>
+          <div class="big">Comment on this page</div>
+          <div class="note">Click anything on the page to comment on it.</div></div></div>
+      <div><div class="label">After the first comment · proposed (once per browser)</div>
+        <div class="toast">Saved in this browser. Press Pipeup in the toolbar to copy, save or send them.</div></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>4. “Send to my agent · on this computer” is a stranger in the newcomer's menu</h2>
+    <p class="why">It is offered to everyone in Chrome, Edge and Firefox, set up or not. A newcomer has no agent and no idea what one is; the hint doesn't help. The spec's open question went the other way (move it up once set up); the newcomer's answer is to keep it out of sight until it is set up, then give it the top level.</p>
+    <div class="pair">
+      <div><div class="label">Not set up · proposed</div>
+        <div class="menu">
+          <div class="row"><span>Green Fox</span><small>Add your name</small></div>
+          <div class="row"><span>Your comments on this page</span><span class="n">1</span></div><hr>
+          <div class="row"><b>Copy comments</b><small>to paste anywhere</small></div>
+          <div class="row"><span>Save as a file</span><span class="chev">›</span></div><hr>
+          <div class="row"><span>Commenting</span><span><kbd>⇧⌥C</kbd> <span class="sw on" style="display:inline-block;vertical-align:middle"></span></span></div>
+          <div class="row open"><span>More</span><span class="chev">‹</span></div>
+          <div class="row sub"><span>Theme</span><small>Automatic</small></div>
+          <div class="row sub"><span>Hide comments</span><span class="sw"></span></div>
+          <div class="row sub"><span>Keep comments beside the page</span><span class="sw"></span></div>
+          <div class="row sub"><span>Always on for lumen.example<br><small>Pipeup starts whenever you open it</small></span><span class="sw"></span></div>
+          <div class="row sub"><span>Send to an AI agent on this computer<br><small>Set up once</small></span><span class="chev">›</span></div><hr>
+          <div class="row sub"><span>Turn off on this page</span></div>
+          <div class="row sub"><span>Settings</span><span class="chev">›</span></div>
+        </div></div>
+      <div><div class="label">Set up · proposed</div>
+        <div class="menu">
+          <div class="row"><span>Green Fox</span><small>Add your name</small></div>
+          <div class="row"><span>Your comments on this page</span><span class="n">1</span></div><hr>
+          <div class="row"><b>Copy comments</b><small>to paste anywhere</small></div>
+          <div class="row"><span>Save as a file</span><span class="chev">›</span></div>
+          <div class="row"><span>Send to my agent</span><small>Claude Code</small></div><hr>
+          <div class="row"><span>Commenting</span><span><kbd>⇧⌥C</kbd> <span class="sw on" style="display:inline-block;vertical-align:middle"></span></span></div>
+          <div class="row"><span>More</span><span class="chev">›</span></div>
+        </div>
+        <p class="why" style="margin-top:10px">Five rows before the first fold for a newcomer. Once set up, the row says which agent answered last, or “on this computer” until one has.</p></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>5. The box asks for “others” before there are any <span class="count">6 words → 1</span></h2>
+    <p class="why">“Comment or add others with @” and “Reply or add others with @” teach @mentions to someone commenting alone on a page nobody else has touched. The placeholder says “Comment” until there is someone to add (another name on this page, or a name list from the host); then it says the longer one.</p>
+    <div class="pair">
+      <div><div class="label">Now</div>
+        <div class="box"><div class="who"><b>You're Green Fox</b> <span>· add your name</span></div><div class="field">Comment or add others with @</div><div class="acts"><b>Cancel</b><span>Comment</span></div></div></div>
+      <div><div class="label">Proposed · nobody else yet</div>
+        <div class="box"><div class="who"><b>You're Green Fox</b> <span>· add your name</span></div><div class="field">Comment</div><div class="acts"><b>Cancel</b><span>Comment</span></div></div></div>
+    </div>
+  </section>
+
+  <section class="finding">
+    <h2>6. Settings reads like a manual <span class="count">217 words → about 110</span></h2>
+    <p class="why">Each setting carries three sentences; a shortcut is listed as a setting; the agent set-up, two shell commands, is open on the page for everyone. One sentence each, the shortcuts on one line, and the agent set-up behind one line as the add-ons already are.</p>
+    <div class="pair">
+      <div><div class="label">Now</div><img src="newcomer-pass/8-settings.png" alt="The settings page as built: four sections with explanatory paragraphs and two shell commands"></div>
+      <div><div class="label">Proposed</div>
+        <div class="settings">
+          <h4>Settings</h4>
+          <small style="color:var(--muted)">Everything here is kept in this browser.</small>
+          <div class="h">Comments you've made</div>
+          <div class="s"><div>Lumen launch plan · a page to try Pipeup for browsers<small>lumen.example/launch-plan</small></div><small>1 comment · 23 Nov</small></div>
+          <div class="h">Keyboard</div>
+          <div class="s"><div>Turn Pipeup on<small>Any page</small></div><kbd>⇧⌥P</kbd></div>
+          <div class="s"><div>Comment mode<small>With Pipeup on</small></div><kbd>⇧⌥C</kbd></div>
+          <div class="h">Pipeup on pages</div>
+          <div class="s"><div>Show Pipeup's own button in the page's corner<small>Instead of the toolbar button. From the next page Pipeup starts on.</small></div><span class="sw"></span></div>
+          <div class="s"><div>Keep a small picture of where each comment was<small>Only in this browser; never sent or copied. Off deletes them.</small></div><span class="sw on"></span></div>
+          <div class="s"><div>Add-ons<small>Emoji on; Voice, Share, Live, Save to GitHub, My identity off</small></div><span class="chev">›</span></div>
+          <div class="s"><div>Send to an AI agent on this computer<small>Not set up</small></div><span class="chev">›</span></div>
+        </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Words a newcomer reads, by screen</h2>
+    <table>
+      <thead><tr><th>Screen</th><th class="num">Now</th><th class="num">Proposed</th></tr></thead>
+      <tbody>
+        <tr><td>Menu, before the first comment</td><td class="num">30</td><td class="num">13</td></tr>
+        <tr><td>The hint on the page</td><td class="num">30</td><td class="num">8</td></tr>
+        <tr><td>The comment box</td><td class="num">14</td><td class="num">9</td></tr>
+        <tr><td>After Return (thread + line)</td><td class="num">46</td><td class="num">14</td></tr>
+        <tr><td>Menu, Pipeup on (top level)</td><td class="num">35</td><td class="num">28</td></tr>
+        <tr><td>Settings</td><td class="num">217</td><td class="num">≈110</td></tr>
+      </tbody>
+    </table>
+    <p class="why" style="margin-top:10px">Counted from the build's own screens (Chromium, a fresh profile, the sample page). The menu with More open and the side panel are unchanged.</p>
+  </section>
+
+  <section class="keep">
+    <h3>What stays as built</h3>
+    <ul>
+      <li>The off state: one button. Keeping one sentence under it (what clicking does) is the one piece of text a newcomer needs before the page.</li>
+      <li>The seven rows and More, with Copy comments bold and first among the ways out. Nothing to cut there.</li>
+      <li>The animal name (“Green Fox”) with Add your name beside it, in the box and the menu. It reads as a placeholder, which it is.</li>
+      <li>The one-time line's place and timing: beside where the control would be, after the first comment.</li>
+    </ul>
+  </section>
+
+  <section class="keep">
+    <h3>Agreed with the maintainer, 23 November 2026</h3>
+    <ul>
+      <li>All six, as drawn. The expert hints (Tab, Space, pin) are shown once each when first useful; after Return the box closes and the marker stays; Send to my agent sits under More until it is set up.</li>
+      <li>Items 1, 2 and 5 are in the library (<code>libs/ts/pipeup</code>) and change every host; 3, 4 and 6 are the extension's own. Specs: FUNCTIONAL_SPEC §4a, §5, §7 and EXTENSION_SPEC §3, §4a, §5 (change logs, 2026-11-23). To be built for 1.1.0 on top of the one menu.</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
