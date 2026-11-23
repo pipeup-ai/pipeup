@@ -5,7 +5,8 @@ About 25 minutes a browser. Record ✅ / ❌ (or — where a browser doesn't off
 each ❌ as an issue that names the step and the browser.
 
 The automated tests cover Chrome and Firefox with the extension loaded, and Pipeup itself in Chromium and
-WebKit. Nothing can drive Safari with an extension in it, so in Safari this list is the only check.
+WebKit. In Safari, `npm run safari-test` in apps/extension runs the first run (A2, A3 and B's first comment) with
+Apple's UI testing, with a screenshot of each step; the rest of this list is by hand there.
 
 ## Set up
 
