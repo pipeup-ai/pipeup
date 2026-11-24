@@ -1,5 +1,6 @@
 import { expect, PAGES, panel, sidePanel, tabOf, test } from "./fixtures";
 import type { Page } from "@playwright/test";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
  * Comment mode, a click on the paragraph, the words and Comment: as a reviewer writes one with the extension. The box
@@ -37,9 +38,11 @@ test("Comment on this page adds Pipeup and starts comment mode, with no button o
   await expect(page.locator(".launch.off")).toBeAttached();
   await expect(page.locator(".launch .mode")).toBeHidden();
   await expect(page.locator(".launch .mode.on")).toBeAttached();
-  await expect(p.getByRole("button", { name: "Turn off on this page" })).toBeVisible();
-  await expect(p.getByRole("switch", { name: /Start commenting/ })).toBeChecked();
+  await expect(p.getByRole("switch", { name: /Commenting/ })).toBeChecked();
   await expect(p.locator("#count")).toHaveText("0");
+  // Turn off on this page, under More: Pipeup leaves the page.
+  await expect(p.getByRole("button", { name: "Turn off on this page" })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
   await p.getByRole("button", { name: "Turn off on this page" }).click();
   await expect(page.locator("pipeup-root")).toHaveCount(0);
   await expect(p.getByRole("button", { name: "Comment on this page" })).toBeVisible();
@@ -90,7 +93,7 @@ test("comments are kept by the extension, not the site, and come back after a re
   await expect(side.locator(".card", { hasText: "Which beta" })).toBeVisible();
 });
 
-test("Comments you've made lists the pages commented on", async ({ context, worker, id }) => {
+test("Settings opens on Comments you've made: the pages commented on", async ({ context, worker, id }) => {
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   await (
@@ -101,6 +104,7 @@ test("Comments you've made lists the pages commented on", async ({ context, work
   await writeComment(page, "Say which week in May.");
   const list = await context.newPage();
   await list.goto(`chrome-extension://${id}/comments.html`);
+  await expect(list.getByRole("heading", { level: 2 }).first()).toHaveText("Comments you've made");
   await expect(list.locator("li")).toHaveCount(1);
   await expect(list.locator("li a")).toHaveText("Lumen launch plan");
   await expect(list.locator("li span")).toContainText("1 comment");
@@ -127,6 +131,20 @@ test("on a browser page it says Pipeup can't run there", async ({ context, worke
   await expect(p.getByRole("button", { name: "Comment on this page" })).toBeHidden();
 });
 
+test("on a file opened from this computer it says how to open it instead", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(pathToFileURL(fileURLToPath(new URL("pages/plain.html", import.meta.url))).href);
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#blocked")).toContainText("file on this computer");
+  await expect(p.locator("#blocked")).toContainText("pipeup browser");
+  await expect(p.locator("#where")).toHaveText("plain.html");
+  await expect(p.getByRole("button", { name: "Comment on this page" })).toBeHidden();
+});
+
 test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and comment mode", async ({
   context,
   worker,
@@ -135,18 +153,36 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await panel(context, worker, id, page);
+  // Off: one action and one sentence, nothing else.
+  await expect(p.locator("#off .note")).toContainText(
+    "Comments stay in this browser until you copy, save or send",
+  );
+  await expect(p.getByRole("switch")).toHaveCount(0);
   await p.getByRole("button", { name: "Comment on this page" }).click();
   await expect(page.locator(".launch .mode.on")).toBeAttached();
-  await expect(p.locator("#status")).toHaveText("Comments stay in this browser until you send them");
+  // On: the six rows and More; no status line, no footer.
+  await expect(p.locator("#status, footer")).toHaveCount(0);
+  await expect(p.locator("#on > .item:visible, #on > div > .item:visible")).toHaveText([
+    /Add your name/,
+    /Your comments on this page/,
+    /Copy comments/,
+    /Save as a file/,
+    /Send to my agent/,
+    /Commenting/,
+    /More/,
+  ]);
 
-  // Who you are: the row becomes a name field in place.
+  // Who you are: the animal Pipeup gave, and the row becomes a name field in place.
+  await expect(p.locator("#who-name")).not.toHaveText(/^(You|)$/);
   await p.getByRole("button", { name: /Add your name/ }).click();
   await p.getByRole("textbox", { name: "Your name" }).fill("Sam");
   await p.keyboard.press("Enter");
   await expect(p.getByRole("button", { name: /Sam/ })).toBeVisible();
   expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
 
-  // Theme: each press moves on, and the page's Pipeup follows.
+  // Theme, under More: each press moves on, and the page's Pipeup follows.
+  await expect(p.getByRole("button", { name: /Theme/ })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
   await p.getByRole("button", { name: /Theme/ }).click();
   await expect(p.locator("#theme-now")).toHaveText("Light");
   await p.getByRole("button", { name: /Theme/ }).click();
@@ -159,20 +195,26 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
     .poll(() => p.evaluate(() => (document.getElementById("hide") as HTMLInputElement).checked))
     .toBe(true);
 
-  // Copy comments, as Markdown for an AI (what goes to the clipboard is caught here).
+  // More folds back with Esc, and focus comes back to its row.
+  await p.getByRole("switch", { name: "Hide comments" }).focus();
+  await p.keyboard.press("Escape");
+  await expect(p.getByRole("button", { name: /Theme/ })).toBeHidden();
+  await expect(p.getByRole("button", { name: "More" })).toBeFocused();
+
+  // Copy comments, one press: the readable text, which is also Markdown (what goes to the clipboard is caught here).
   await p.evaluate(() => {
     const w = window as unknown as { copied: string };
     navigator.clipboard.writeText = async (t: string) => void (w.copied = t);
   });
+  await expect(p.locator("#copied")).toHaveText("to paste anywhere");
   await p.getByRole("button", { name: /Copy comments/ }).click();
-  await p.getByRole("button", { name: /As Markdown/ }).click();
   await expect(p.locator("#copied")).toHaveText("Copied 0 threads");
   expect(await p.evaluate(() => (window as unknown as { copied: string }).copied)).toContain(
     "# Comments on Lumen launch plan",
   );
 
-  // Start commenting turns comment mode off and on.
-  await p.getByRole("switch", { name: /Start commenting/ }).click();
+  // Commenting turns comment mode off and on.
+  await p.getByRole("switch", { name: /Commenting/ }).click();
   await expect(page.locator(".launch .mode.on")).toHaveCount(0);
 });
 
@@ -243,8 +285,9 @@ test("pinned, a thread opened on the page shows in the side panel, and replies a
   await expect(side.locator(".card", { hasText: "Which beta?" })).toHaveCount(0);
   await side.getByRole("button", { name: "✓ Resolved" }).click();
   await expect(side.locator(".card.resolved", { hasText: "Which beta?" })).toBeVisible();
-  // The toolbar panel's switch says so too.
+  // The toolbar panel's switch, under More, says so too.
   await p.reload();
+  await p.getByRole("button", { name: "More" }).click();
   await expect(p.getByRole("switch", { name: "Keep comments beside the page" })).toBeChecked();
 });
 
@@ -369,6 +412,6 @@ test("a site's script whose name only contains “pipeup” isn't Pipeup built i
   await expect(page.locator("pipeup-root")).toHaveCount(1);
   // Reopened, the panel is Pipeup's menu: the extension's own Pipeup is never mistaken for the page's.
   const again = await panel(context, worker, id, page);
-  await expect(again.getByRole("button", { name: "Turn off on this page" })).toBeVisible();
+  await expect(again.getByRole("switch", { name: /Commenting/ })).toBeVisible();
   await expect(again.locator("#built-in")).toBeHidden();
 });

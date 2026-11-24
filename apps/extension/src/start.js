@@ -317,12 +317,13 @@
 
   // How Pipeup shows on the page. Pinned: threads in the browser's side panel (Pipeup opens none on the page). Not
   // pinned: threads open as popovers beside what they're about. Either way new comments are written on the page, with
-  // the cursor in the box, and Pipeup's corner button stays off the page unless the reviewer wants it back.
+  // the cursor in the box, and Pipeup's corner button and its menu stay off the page (the toolbar menu is the one menu)
+  // unless the reviewer wants the button back.
   const modeOf = (settings) => (settings?.showButton ? "button" : settings?.pinned ? "pinned" : "popovers");
   const OPTIONS = {
     button: {},
-    pinned: { ui: "host", control: "off" },
-    popovers: { control: "off", layout: "bubbles" },
+    pinned: { ui: "host", control: "off", pageMenu: "off" },
+    popovers: { control: "off", pageMenu: "off", layout: "bubbles" },
   };
   /** The extension was reloaded or updated: this copy can't reach it any more (its own `chrome.runtime` is gone). */
   const orphaned = () => !chrome.runtime?.id;
@@ -442,6 +443,7 @@
     for (const t of mine) known.add(t.id);
     for (const t of mine) {
       if (t.root.author !== pu.document.me || Date.now() - t.root.at > 10_000) continue;
+      void firstComment();
       const r = Pipeup.resolveAnchor(t.anchor, document.body);
       const box = (r.range ?? r.element)?.getBoundingClientRect();
       if (!box || !box.width) continue;
@@ -452,6 +454,14 @@
         view: { width: innerWidth, height: innerHeight },
       });
     }
+  }
+
+  // After the reviewer's first comment in this browser, one line, once: where it went and what comes next.
+  async function firstComment() {
+    const { firstCommentSaid } = await storage.get("firstCommentSaid");
+    if (firstCommentSaid || !pu) return;
+    await storage.set({ firstCommentSaid: true });
+    pu.note("Saved in this browser. Press Pipeup in the toolbar when you're ready to send them.");
   }
 
   // What was right-clicked last, for the browser menu's "Comment on this".
@@ -507,12 +517,12 @@
       count: state.count(),
       commenting: !!pu.commentMode,
       name: pu.name ?? "",
+      // The animal Pipeup gave, shown until there is a name.
+      animal: Pipeup.animalName(pu.document.me),
       look: pu.look ?? "auto",
       hidden: !!pu.hidden,
-      // Add-ons whose rows are in Pipeup's own menu (Emoji and Voice work inside the comment box instead).
-      extras: !!globalThis.Pipeup?.addons?.().some(
-        (a) => ["share", "live", "github", "identity"].includes(a.id) && a.state === "on",
-      ),
+      // The add-ons' rows (Share, Live and the rest; Emoji and Voice work inside the comment box instead), for More.
+      rows: pu.addonRows(),
     }),
     // The toolbar panel's rows.
     act: async ({ action, value }) => {
@@ -521,7 +531,7 @@
       else if (action === "look") await pu.setLook(value);
       else if (action === "hide") await pu.setHidden(value);
       else if (action === "all") await pu.openAllComments();
-      else if (action === "menu") await pu.openMenu();
+      else if (action === "row") await pu.selectAddonRow(Number(value));
       else if (action === "copy") return pu.commentsAs(value);
       return null;
     },

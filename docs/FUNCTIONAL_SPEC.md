@@ -143,6 +143,10 @@ Pipeup without reaching inside it.
   one is opened there (its place clicked, or just written); new comments are still written on the page, beside what
   they're about. It can draw Pipeup's menu from what the page's code can already ask and do, copy the comments as Copy
   comments does, set the reviewer's look and Hide comments, and go to a thread's place.
+- A host that draws Pipeup's menu itself can **keep Pipeup's own menu off the page**: the ⋯ by the control and in All
+  comments' bar isn't shown (the bar keeps the name and the Comment switch), and the add-ons' rows are the host's to
+  show and press, as words only. Such a host can also **say one line to the reviewer** on the page, as Pipeup's own
+  notices are said.
 - None of this reaches inside Pipeup's own interface, and none of it can read, write or change a comment.
 
 ## 5. Starting a comment
@@ -2091,3 +2095,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — Space in an empty comment or reply box doesn't type a space; holding it pauses comment mode, as on the page (section 5).
 - 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.
 - 2026-11-10 — `pipeup browser install --browser firefox` sets up Send to my agent for Firefox (section 15g).
+- 2026-11-23 — For the browser extension's one menu (extension spec, 2026-11-23): a host can keep Pipeup's own menu off the page, show and press the add-ons' rows itself, and say one line to the reviewer (section 4a). Design: docs/design/one-menu.md.

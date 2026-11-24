@@ -46,12 +46,19 @@ test("Comment with Pipeup on selected words or a picture opens the box on them",
   await expect(page.locator(".pop.show .draft textarea")).toBeVisible();
 });
 
-test("unpinned, Comments opens Pipeup's own panel on the page", async ({ context, worker, id }) => {
+test("unpinned, Your comments on this page opens Pipeup's own panel on the page, without its menu", async ({
+  context,
+  worker,
+  id,
+}) => {
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await started(context, worker, id, page);
-  await p.getByRole("button", { name: /^Comments/ }).click();
+  await p.getByRole("button", { name: /^Your comments on this page/ }).click();
   await expect(page.locator(".all.show")).toHaveCount(1);
+  // The panel's bar keeps the name and the Comment switch; the ⋯ that opened a second menu is gone.
+  await expect(page.locator(".all .pf .fs")).toBeVisible();
+  await expect(page.locator(".all .pf .ib, .launch .mm")).toHaveCount(0);
 });
 
 test("on a single-page app, Pipeup follows the page: each address has its own comments", async ({
@@ -79,6 +86,8 @@ test("on a page from this computer, the menu offers Always on for local pages", 
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await started(context, worker, id, page);
+  await expect(p.getByRole("switch", { name: /Always on for local pages/ })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
   await expect(p.getByRole("switch", { name: /Always on for local pages/ })).toBeVisible();
   await expect(p.locator("#always-row")).toBeHidden();
 });
@@ -124,22 +133,25 @@ test("a picture of where a new comment was is kept, and shown when the comment's
     .toBe(0);
 });
 
-test("Save comments gives a Markdown file and a Pipeup file", async ({ context, worker, id }) => {
+test("Save as a file gives a Markdown file and a Pipeup file", async ({ context, worker, id }) => {
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await started(context, worker, id, page);
-  await p.getByRole("button", { name: /Save comments/ }).click();
+  await expect(p.getByRole("button", { name: /A Markdown file/ })).toBeHidden();
+  await p.getByRole("button", { name: /Save as a file/ }).click();
   const [md] = await Promise.all([
     p.waitForEvent("download"),
-    p.getByRole("button", { name: /As a Markdown file/ }).click(),
+    p.getByRole("button", { name: /A Markdown file/ }).click(),
   ]);
   expect(md.suggestedFilename()).toBe("Lumen launch plan.md");
   expect(await md.path().then((f) => readFileSync(f, "utf8"))).toContain("# Comments on Lumen launch plan");
   await md.delete();
-  await p.getByRole("button", { name: /Save comments/ }).click();
+  // Saved, it folds back; it opens again for the other kind.
+  await expect(p.getByRole("button", { name: /A Pipeup file/ })).toBeHidden();
+  await p.getByRole("button", { name: /Save as a file/ }).click();
   const [file] = await Promise.all([
     p.waitForEvent("download"),
-    p.getByRole("button", { name: /As a Pipeup file/ }).click(),
+    p.getByRole("button", { name: /A Pipeup file/ }).click(),
   ]);
   expect(file.suggestedFilename()).toBe("Lumen launch plan.pipeup.json");
   await file.delete();
@@ -168,8 +180,13 @@ test("add-ons: Emoji is on by default, and the others are turned on in the exten
 }) => {
   const settings = await context.newPage();
   await settings.goto(`chrome-extension://${id}/comments.html`);
+  // The add-ons are behind one line, which says which are on.
+  await expect(settings.locator("#addons-said")).toHaveText(/^Emoji on; /);
+  await expect(settings.getByRole("switch", { name: /^Emoji/ })).toBeHidden();
+  await settings.getByRole("button", { name: /^Add-ons/ }).click();
   await expect(settings.getByRole("switch", { name: /^Emoji/ })).toBeChecked();
   await settings.getByRole("switch", { name: /^Save to GitHub/ }).check();
+  await expect(settings.locator("#addons-said")).toHaveText(/^Emoji, Save to GitHub on; /);
   await settings.getByRole("textbox", { name: /Repository for issues/ }).fill("lumen/plans");
   await settings.getByRole("textbox", { name: /Repository for issues/ }).blur();
   await expect

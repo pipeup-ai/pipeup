@@ -1,4 +1,5 @@
-// Every page with comments made through the extension, newest first. Words come from other pages: text only.
+// Settings: every page with comments made through the extension, newest first; the extension's settings; the add-ons,
+// behind one line until asked for. Words come from other pages: text only.
 import { agentSetup, agreeToSend, build, canReachAgents } from "./browser.js";
 const all = await chrome.storage.local.get(null);
 const pages = Object.entries(all)
@@ -109,6 +110,25 @@ for (const a of ADDONS.filter((x) => build.addons.includes(x.id))) {
   row.append(label, box);
   addonList.append(row);
 }
+
+// The add-ons' line says which are on; it opens to them.
+const said = () => {
+  const on = ADDONS.filter((a) => build.addons.includes(a.id) && (all.settings?.addons?.[a.id] ?? !!a.on));
+  const off = ADDONS.filter((a) => build.addons.includes(a.id) && !on.includes(a));
+  const names = (list) => list.map((a) => a.name).join(", ");
+  document.getElementById("addons-said").textContent =
+    (on.length ? `${names(on)} on` : "none on") + (off.length ? `; ${names(off)} off` : "");
+};
+said();
+addonList.addEventListener("change", () => setTimeout(said, 0));
+const line = document.getElementById("addons-line");
+line.addEventListener("click", () => {
+  const open = line.getAttribute("aria-expanded") !== "true";
+  line.setAttribute("aria-expanded", String(open));
+  const box = document.getElementById("addons-box");
+  box.classList.toggle("open", open);
+  box.inert = !open;
+});
 
 document.getElementById("agent-cmd").textContent = agentSetup();
 // Agents read and answer with the same release as this extension.
