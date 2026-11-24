@@ -98,6 +98,7 @@ const settings = async () => (await chrome.storage.local.get("settings")).settin
 let state = null;
 async function show() {
   state = web ? await probe() : null;
+  void warnOfAsking();
   $("blocked").hidden = !!state;
   $("built-in").hidden = !state?.builtIn;
   $("off").hidden = !state || state.on || state.builtIn;
@@ -143,14 +144,27 @@ async function start() {
 }
 
 // Comment on this page adds Pipeup and starts comment mode: that's why the reviewer pressed it. Pinned, the comments
-// open beside the page too.
+// open beside the page too. The background does the adding, so the panel closing (Safari closes it to ask whether
+// Pipeup may see the site) doesn't lose the press.
 $("start").addEventListener("click", async () => {
   const side = (await settings()).pinned ? openComments() : null;
-  await start();
-  await ask("mode", true);
+  const begun = chrome.runtime.sendMessage({ type: "start", tabId: tab.id }).catch(() => null);
+  await Promise.race([begun, new Promise((r) => setTimeout(r, 3000))]);
   await side;
   await done();
 });
+
+/**
+ * Safari grants nothing on a toolbar press: the first time, it asks in words whether Pipeup may see websites. Said
+ * here before the press, once, so the question isn't a surprise; after Always Allow on Every Website it never asks again.
+ */
+async function warnOfAsking() {
+  const asks =
+    browserName === "safari" &&
+    web &&
+    !(await chrome.permissions.contains({ origins: ["<all_urls>"] }).catch(() => true));
+  $("asks").hidden = !asks;
+}
 
 $("commenting").addEventListener("change", async (e) => {
   const side = e.target.checked && state?.hosted ? openComments() : null;
