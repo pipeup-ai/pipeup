@@ -66,7 +66,11 @@ async function startCommenting(tabId) {
     }
   }
   if (!(await started(tabId))) return;
-  await chrome.tabs.sendMessage(tabId, { to: "page", type: "act", action: "mode", value: true }, { frameId: 0 });
+  await chrome.tabs.sendMessage(
+    tabId,
+    { to: "page", type: "act", action: "mode", value: true },
+    { frameId: 0 },
+  );
 }
 
 // The browser's right-click menu: "Comment with Pipeup" on selected words, a picture, a link, or anything on the page.
