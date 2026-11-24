@@ -8,6 +8,7 @@ change the API and the stored comment format.
 ## [Unreleased]
 
 - Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
+- Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
 
 - Export review downloads your marked feedback as Markdown to share by email or chat.
 
