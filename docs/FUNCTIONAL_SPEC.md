@@ -179,7 +179,7 @@ any of them off.
   of the page do what the page expects, and Pipeup does nothing with them.
 - **Holding Space pauses comment mode** for as long as it is held, on every platform. The outline and the
   picking cursor go and the page works as normal, so a reviewer can click through it to reach what they
-  want to comment on. Letting go brings comment mode back as it was. Comment mode's hint says so. Space is
+  want to comment on. Letting go brings comment mode back as it was. The hint says so the first time it would have helped. Space is
   the key because it changes nothing about a click (⌘, Ctrl, Shift and Option all make a click on a link do
   something else, such as open a new tab or download it). While Space is held the page doesn't hear it, so it
   doesn't scroll or turn a slide. In Pipeup's own comment or reply box while it is empty, Space doesn't type (a
@@ -187,6 +187,13 @@ any of them off.
   keeps its usual job where it has one: typing in a field, and a link,
   button or other control reached from the keyboard (one that only has focus because it was clicked doesn't
   keep it). On the block cursor, Enter comments and Space pauses.
+- **Comment mode's hint says two things** the first time comment mode starts in a browser: click anything to
+  comment, and Esc when you're done (and, where Pipeup's own control is shown, that the control stops it too). The
+  rest is said **once each, the first time it would have helped**, in the same place and for the same time: Tab
+  between blocks the first time a key is pressed in comment mode; Hold Space to use the page the first time a link,
+  button or field is clicked in comment mode; Option-click (Alt-click) to pin the first time a thread is opened on
+  the page. A browser remembers which it has shown. A host that keeps Pipeup's control off the page (§4a) gets a hint
+  that names no button.
 - **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
   tab) and never counts it as a click elsewhere, and a click that started while paused finishes paused even if
   Space is let go first (one that started unpaused stays Pipeup's). Enter in a page's field after such a click
@@ -219,8 +226,9 @@ any of them off.
   open, so blocks are always offered.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
-- Writing a comment: the box starts with who you are, then a line that says **"Comment or add others
-  with @"**. **Cancel** and **Comment** buttons sit beneath it while you write. **Enter** also sends,
+- Writing a comment: the box starts with who you are, then a line that says **"Comment"**, or **"Comment or add
+  others with @"** once there is someone to add (another person has commented on the page, or its author listed
+  people, §10a). **Cancel** and **Comment** buttons sit beneath it while you write. **Enter** also sends,
   **Shift+Enter** starts a new line and **Esc** cancels. Comment stays grey until there are words.
 - **Typed words are never lost unless the reviewer chooses it.** Clicking or tapping elsewhere, moving to
   another block, opening All comments, resizing the window and the slide changing all keep what is typed in a
@@ -289,7 +297,7 @@ any of them off.
   Comment) and then on to the next or previous block. The naming bar, bubbles and the comment control are not
   stops on the way, and Tab never leaves a comment box for the page.
   Tab never reaches the page's own links and fields in comment mode; turning comment mode off gives them
-  back. The mouse hint says Tab moves between blocks.
+  back. The hint says Tab moves between blocks the first time a key is pressed in comment mode.
 - Moving the mouse onto another block while the block cursor is out hands the outline to the mouse; the
   next Tab carries on from the block under it.
 - While the block cursor is in use: **Tab** and **Shift+Tab** move between blocks at the same level as
@@ -435,10 +443,11 @@ any of them off.
   when a thread open on the page moves into the panel. Esc in a reply box with words throws them away first (with
   Undo), in All comments as anywhere; the next Esc closes the thread. Opening All comments while writing a comment
   moves the box into the panel with the caret still in it. After Copy thread, focus stays on the comment's ⋯.
-- An open thread always ends with a **reply box** ("Reply or add others with @"), with **Cancel** and
-  **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
-  opens as a thread once sent, with the cursor in its reply line — or, when the keyboard's block cursor
-  is in use, with focus back on the block cursor.
+- An open thread always ends with a **reply box** ("Reply", or "Reply or add others with @" once there is someone
+  to add, as the comment box), with **Cancel** and **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
+  **closes once sent**: its marker stays on the block and nothing else opens, so the reviewer can go straight on to
+  the next thing (the marker opens the thread, with its reply box, as any marker does). With the keyboard's block
+  cursor in use, focus goes back to the block cursor.
 - Every thread can be opened from the keyboard: bubbles and threads at rest in the column are buttons,
   reached with Tab in the order they sit on the page, and text threads through All comments. Closing a
   thread with Esc gives focus back to what opened it (its bubble, its place in the column, its row in
@@ -2096,3 +2105,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.
 - 2026-11-10 — `pipeup browser install --browser firefox` sets up Send to my agent for Firefox (section 15g).
 - 2026-11-23 — For the browser extension's one menu (extension spec, 2026-11-23): a host can keep Pipeup's own menu off the page, show and press the add-ons' rows itself, and say one line to the reviewer (section 4a). Design: docs/design/one-menu.md.
+- 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run: comment mode's hint says two things on the first visit and the rest once each when first useful, and names no button for a host that keeps Pipeup's control off the page (§5, §4a); the comment and reply boxes say "Comment" and "Reply" until there is someone to add with @ (§5, §7); a new comment closes once sent, its marker staying (§7).
