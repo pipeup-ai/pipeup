@@ -84,6 +84,8 @@ export function createColumn(ctx: Ctx): View {
   ctx.layer.append(col);
   const items = new Map<string, Item>();
   let draft: { el: HTMLElement; box: DraftBox; of: Draft } | null = null;
+  /** The box's last place, for the thread that takes it (null: no box just left). */
+  let from: number | null = null;
   const sizes = new ResizeObserver(() => restack());
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 
@@ -168,12 +170,15 @@ export function createColumn(ctx: Ctx): View {
       if (!el) continue;
       if (el.classList.contains("wait")) {
         if (!pos.has(id) && el !== draft?.el) continue;
-        // First placement: appear in place (fading in), don't glide in from the top.
+        // First placement: appear in place (fading in), don't glide in from the top. A sent comment's thread appears
+        // where its box was, then glides to its place.
         el.style.transition = "none";
-        el.style.transform = `translateY(${Math.round(pos.get(id) ?? 0)}px)`;
+        el.style.transform = `translateY(${Math.round(from ?? pos.get(id) ?? 0)}px)`;
+        from = null;
         void el.offsetWidth;
         el.style.transition = "";
         el.classList.remove("wait");
+        moveTo(el, pos.get(id));
         continue;
       }
       moveTo(el, pos.get(id));
@@ -228,6 +233,8 @@ export function createColumn(ctx: Ctx): View {
     // While All comments is open, a new comment is written there instead.
     const d = ctx.state.listing ? null : ctx.state.draft;
     if (draft && draft.of !== d) {
+      // Where the box was: the thread it became (sent) appears there and glides to its place, so nothing jumps.
+      from = draft.of.sending ? parseFloat(draft.el.style.transform.slice(11)) || 0 : null;
       leave(draft.el);
       draft = null;
       if (!d) ctx.registerDraft(null);

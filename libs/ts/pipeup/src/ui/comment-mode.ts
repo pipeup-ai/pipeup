@@ -438,8 +438,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     });
   };
 
-  /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
-  const reading = () => !!ctx.state.active && !ctx.state.sent;
+  /** A thread is open to read (a comment just sent closes, §7, so it never holds up the next one). */
+  const reading = () => !!ctx.state.active;
   const onMove = (e: PointerEvent) => {
     const step = lastAt ? Math.abs(e.clientX - lastAt.x) + Math.abs(e.clientY - lastAt.y) : 0;
     lastAt = { x: e.clientX, y: e.clientY };
@@ -506,12 +506,26 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     e.preventDefault();
     e.stopPropagation();
     // A click that closes the open menu does only that (whichever of the two hears it first).
-    if (e.type === "click" && !ctx.state.menu && !ctx.claimed(e)) onPick(e as MouseEvent);
+    if (e.type === "click" && !ctx.state.menu && !ctx.claimed(e)) {
+      const control = (e.target as Element).closest?.(CONTROL);
+      onPick(e as MouseEvent);
+      // The first link, button or field clicked in comment mode: how to use the page instead (said once, §5).
+      if (control) ctx.hint("space");
+    }
   };
 
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
   // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
+    keyDown(e);
+    // The first key pressed in comment mode (not Esc, Space or a modifier alone, and not while typing words or in the
+    // menu): Tab moves between blocks, said once (§5). After the key's own work, which may put the showing hint away.
+    const at = e.composedPath()[0];
+    const typing = at instanceof Element && at.matches("input,textarea,[contenteditable]");
+    if (!typing && !ctx.state.menu && e.key !== "Escape" && e.key !== HOLD && !e.getModifierState(e.key))
+      ctx.hint("keys");
+  };
+  const keyDown = (e: KeyboardEvent) => {
     if (e.key !== HOLD) byKeys = true;
     // Once paused, Space stays Pipeup's until it is let go, even on a control the click has just focused.
     if (holds(e) || (e.key === HOLD && ctx.state.paused)) {

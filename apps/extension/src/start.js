@@ -461,7 +461,7 @@
     const { firstCommentSaid } = await storage.get("firstCommentSaid");
     if (firstCommentSaid || !pu) return;
     await storage.set({ firstCommentSaid: true });
-    pu.note("Saved in this browser. Press Pipeup in the toolbar when you're ready to send them.");
+    pu.note("Saved in this browser. Press Pipeup in the toolbar to copy, save or send them.");
   }
 
   // What was right-clicked last, for the browser menu's "Comment on this".

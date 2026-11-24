@@ -5,10 +5,11 @@ import { UnsavedChangeError, type PipeupDocument } from "../document";
 import { copyAll, copyThread, type ExportItem } from "../export/format";
 import { animalName, isAiName, isPasted, nameOf } from "../model/animals";
 import type { Comment, Mention, Thread } from "../model/types";
-import type { Ctx, Draft, LookChoice, MenuActions, UiState, View } from "./context";
+import type { Ctx, Draft, HintKind, LookChoice, MenuActions, UiState, View } from "./context";
 import { fit, h } from "./dom";
 import type { DraftBox } from "./draft-view";
-import { HOLD_LABEL, isShortcut, SHORTCUT_LABEL } from "./shortcut";
+import { HOLD_LABEL, isShortcut } from "./shortcut";
+import { setting } from "./settings";
 import { Surface } from "./addons";
 import { createBubbles } from "./bubbles";
 import { createCommentMode, KEYS_HINT, type CommentMode } from "./comment-mode";
@@ -69,7 +70,7 @@ export interface AppOptions {
 
 /** What Pipeup tells a host that shows its threads. */
 export interface Host {
-  /** A thread was opened on the page (its highlight clicked, or just written). */
+  /** A thread was opened on the page (its highlight clicked; a comment just sent closes instead, §7). */
   open(id: string): void;
 }
 
@@ -169,7 +170,6 @@ export function startApp(o: AppOptions): App {
     menu: false,
     pinning: false,
     picking: null,
-    sent: false,
   };
   const toastEl = h("div", { class: "toast", role: "status", "aria-live": "polite" });
   /** What the message's Undo does while it shows, also on ⌘Z or Ctrl+Z (the block cursor has no Tab stop for it). */
@@ -217,21 +217,24 @@ export function startApp(o: AppOptions): App {
   const tapping = () => state.commenting && !state.listing && touch();
   /** A tap has opened a comment box on this page: the hint's words have done their job, and only Done stays. */
   let taught = false;
-  /** Comment mode's touch hint has said, once, that pressing and holding the control opens the menu. */
-  const HELD_KEY = "pipeup:held";
-  let heldSaid = false;
+  /** What has been said once in this browser (`pipeup:held`, `pipeup:hint:…`): this visit's, where it has no storage. */
+  const said = new Set<string>();
+  /** Whether `key` is being said for the first time in this browser (then remembered), or this visit without storage. */
+  function once(key: string): boolean {
+    let first = !said.has(key);
+    said.add(key);
+    try {
+      if (prefs.getItem(key)) first = false;
+      else prefs.setItem(key, "1");
+    } catch {
+      /* no storage: said once per visit */
+    }
+    return first;
+  }
   function tapHint(): void {
     if (!tapping() || state.menu) return;
     // The first time by touch, it also says where the menu went: pressing and holding the control.
-    let first = false;
-    try {
-      first = prefs.getItem(HELD_KEY) === null;
-      if (first) prefs.setItem(HELD_KEY, "1");
-    } catch {
-      /* no storage: said once per visit */
-      first = !heldSaid;
-    }
-    heldSaid = true;
+    const first = once("pipeup:held");
     toast(
       first
         ? "Tap what you want to comment on · Press and hold this button for more"
@@ -246,6 +249,20 @@ export function startApp(o: AppOptions): App {
     );
     toastEl.classList.add("tap");
     learnt();
+  }
+  /**
+   * Comment mode's hints, each said once per browser (§5), by what they teach: the first visit's (`start`, naming
+   * Pipeup's control only where it is shown, §4a), then Tab, Space and pinning the first time each would have helped.
+   */
+  const HINTS: Record<HintKind, string> = {
+    start: `Click anything to comment · ${setting("data-pipeup-control") === "off" ? "" : "This button or "}Esc when you're done`,
+    keys: "Tab moves between blocks",
+    space: `Hold ${HOLD_LABEL} to use the page`,
+    pin: "Option-click (Alt-click) to pin",
+  };
+  /** Says one of comment mode's hints the first time in this browser. */
+  function hintOnce(kind: HintKind): void {
+    if (once(`pipeup:hint:${kind}`)) toast(HINTS[kind], HINT_MS, true);
   }
   /** By touch, once a tap has opened a comment box, the hint's words fold away (screen readers no longer hear them). */
   function learnt(): void {
@@ -702,6 +719,7 @@ export function startApp(o: AppOptions): App {
     toast,
     say,
     hideHint,
+    hint: hintOnce,
     taps: () => listenForTaps(),
     report,
     pulse,
@@ -957,7 +975,6 @@ export function startApp(o: AppOptions): App {
    */
   const held = () => !!state.draft && !ctx.draftEmpty();
 
-  /** Opens thread `id` (null: closes the open one); `sent`: it is the comment just sent from the open draft. */
   /** After words that name people who chose to be reached by email, offers to open the reviewer's own mail to tell them. */
   function tell(mentions: Mention[] | undefined, text: string): void {
     const reach = o.doc.contacts();
@@ -1009,7 +1026,8 @@ export function startApp(o: AppOptions): App {
     });
   }
 
-  function open(id: string | null, sent = false): void {
+  /** Opens thread `id` (null: closes the open one). */
+  function open(id: string | null): void {
     // A host shows the thread; the page marks it.
     if (o.host && id) {
       if (state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
@@ -1024,7 +1042,7 @@ export function startApp(o: AppOptions): App {
     // While All comments is open, a thread opens there (a click on its highlight, bubble or column thread).
     if (id && state.listing && list) return list(id);
     if (state.active === id && !state.draft) return id ? focusReply(id) : undefined;
-    const busy = !sent && writing();
+    const busy = writing();
     // Read before the views change: a column thread's button goes inert as its thread opens.
     const from = focusedIn();
     // A thread read from All comments on a narrow screen has closed: the comments go with it.
@@ -1032,7 +1050,6 @@ export function startApp(o: AppOptions): App {
     // What is being written in the closing thread's reply line waits for it.
     keepReplies();
     state.active = id;
-    state.sent = !!id && sent;
     if (id) {
       state.draft = null;
       pulse(id);
@@ -1042,11 +1059,24 @@ export function startApp(o: AppOptions): App {
     render();
     if (id) {
       putReply(id);
-      // With the block cursor in use, focus goes back to it, on the same block, instead of the reply line.
-      if (sent && modeView?.cursor()) modeView.refocus();
       // On a touch screen the reply line waits to be tapped: the keyboard doesn't cover a thread opened to read it.
-      else focusReply(id, busy || touch(), from);
+      focusReply(id, busy || touch(), from);
+      // The first thread opened in comment mode: how to put a comment at a point (said once, §5).
+      if (state.commenting) hintOnce("pin");
     }
+  }
+
+  /**
+   * The comment just sent closes (§7): its marker stays on its block and nothing else opens, so the reviewer goes
+   * straight on. With the block cursor in use, focus goes back to it; otherwise to the Comment control, as after Cancel.
+   */
+  function sent(id: string): void {
+    state.draft = null;
+    state.active = null;
+    resolveAll(new Set([id]));
+    render();
+    if (modeView?.cursor()) modeView.refocus();
+    else host.layer.querySelector<HTMLElement>(".launch .mode")?.focus({ preventScroll: true });
   }
 
   function hot(id: string | null): void {
@@ -1116,15 +1146,8 @@ export function startApp(o: AppOptions): App {
     if (keys) modeView.resume();
     // The hint waits for the menu to close (frame); by touch it says how to use comment mode by touch.
     if (state.picking) hintLater = () => toast(PICK_HINT, HINT_MS, true);
-    else if (!keys)
-      hintLater = touch()
-        ? tapHint
-        : () =>
-            toast(
-              `Click anything to comment, or Tab between blocks · Option-click (Alt-click) to pin · Hold ${HOLD_LABEL} to use the page · This button, ${SHORTCUT_LABEL} or Esc to finish`,
-              HINT_MS,
-              true,
-            );
+    // With the mouse, the first time in this browser: two things, and the rest once each when first useful (§5).
+    else if (!keys) hintLater = touch() ? tapHint : () => hintOnce("start");
     else if (modeView.cursor()) hintLater = () => toast(KEYS_HINT, KEYS_HINT_MS, true, true);
     else toast("Nothing here to comment on");
   }
@@ -1172,14 +1195,10 @@ export function startApp(o: AppOptions): App {
       const id = await o.doc.comment(d.anchor, text, mentions);
       say("Comment added");
       tell(mentions, text);
-      state.draft = null;
-      resolveAll(new Set([id]));
-      open(id, true);
+      sent(id);
     } catch (e) {
       if (e instanceof UnsavedChangeError) {
-        state.draft = null;
-        resolveAll(new Set([e.id]));
-        open(e.id, true);
+        sent(e.id);
         toast(UNSAVED_NOTE);
         return;
       }

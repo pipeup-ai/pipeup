@@ -279,7 +279,7 @@ test("a draft with no naming bar keeps its label, as one left open after leaving
 test("the comment-mode hint fades after about four seconds", async ({ page }) => {
   await open(page, "controls.html", { name: "Sam" });
   await toggleCommenting(page);
-  await expect(page.locator(".toast.show")).toContainText("Esc to finish");
+  await expect(page.locator(".toast.show")).toContainText("Esc when you're done");
   await page.waitForTimeout(3000);
   await expect(page.locator(".toast.show")).toHaveCount(1);
   await page.waitForTimeout(1500);
@@ -290,8 +290,9 @@ test("the comment-mode hint goes as soon as a block is clicked, and doesn't retu
   await open(page, "controls.html", { name: "Sam" });
   await toggleCommenting(page);
   await page.mouse.move(5, 790);
-  await expect(page.locator(".toast.show")).toContainText("Esc to finish");
-  await page.locator("#go").click();
+  await expect(page.locator(".toast.show")).toContainText("Esc when you're done");
+  // A heading, not a control: the click opens a box and no other hint takes the hint's place.
+  await page.locator("#title").click();
   await expect(page.locator(".toast.show")).toHaveCount(0, { timeout: 300 });
   await page.waitForTimeout(500);
   await expect(page.locator(".toast.show")).toHaveCount(0);

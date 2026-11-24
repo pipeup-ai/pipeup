@@ -17,10 +17,7 @@
       <!-- Off: one action and one sentence, nothing else before the first comment. -->
       <section id="off" hidden>
         <button id="start" class="main" type="button">Comment on this page</button>
-        <p class="note">
-          Click anything on the page to comment on it. Comments stay in this browser until you copy, save or
-          send them.
-        </p>
+        <p class="note">Click anything on the page to comment on it.</p>
       </section>
       <!-- On: Pipeup's menu, built for the job: comment, then get the comments to whoever asked. -->
       <section id="on" class="rows" hidden>
@@ -51,16 +48,10 @@
             </button>
           </div>
         </div>
-        <div id="agent-group">
-          <button id="agent" class="item" type="button">
-            <span>Send to my agent</span><small id="agent-said">on this computer</small>
-          </button>
-          <p id="agent-help" class="help" hidden>
-            Set up once, in a terminal:
-            <code id="agent-cmd"></code>
-            <button id="agent-copy" class="btn-link" type="button">Copy</button>
-          </p>
-        </div>
+        <!-- Send to my agent, once it is set up (until then its row is under More). -->
+        <button id="agent" class="item" type="button" hidden>
+          <span>Send to my agent</span><small id="agent-said">on this computer</small>
+        </button>
         <hr />
         <label class="item" for="commenting">
           <span>Commenting</span>
@@ -94,6 +85,16 @@
               >
               <input id="always" type="checkbox" role="switch" />
             </label>
+            <!-- Send to an AI agent, until it is set up: the row opens to the one command. -->
+            <button id="agent-setup" class="item tall" type="button" hidden>
+              <span>Send to an AI agent on this computer<small id="agent-setup-said">Set up once</small></span
+              ><small class="chev">›</small>
+            </button>
+            <p id="agent-help" class="help" hidden>
+              Set up once, in a terminal:
+              <code id="agent-cmd"></code>
+              <button id="agent-copy" class="btn-link" type="button">Copy</button>
+            </p>
             <!-- The add-ons' own rows (Share, Live and the rest), as Pipeup's menu would show them. -->
             <div id="extras"></div>
             <hr />

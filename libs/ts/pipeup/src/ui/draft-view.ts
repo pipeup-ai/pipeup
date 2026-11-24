@@ -58,7 +58,8 @@ export function renderDraft(o: DraftOptions): DraftBox {
   );
   const comp = composer({
     label: "Comment",
-    placeholder: "Comment or add others with @",
+    // "Comment" until there is someone to add with @ (§5).
+    placeholder: o.people?.().length ? "Comment or add others with @" : "Comment",
     kind: "comment",
     onSend: o.onSend,
     onCancel: o.onCancel,

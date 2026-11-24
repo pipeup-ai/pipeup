@@ -94,7 +94,7 @@ test("comment mode's hint waits until the menu has closed, then shows beside the
   await expect(page.locator(".toast.show")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await expect(page.locator(".menu.show")).toHaveCount(0);
-  await expect(page.locator(".toast.show")).toContainText("Hold Space to use the page");
+  await expect(page.locator(".toast.show")).toContainText("Click anything to comment");
 });
 
 test("comment mode from the keyboard says how to pause", async ({ page }) => {

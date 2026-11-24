@@ -168,7 +168,12 @@ async function show() {
     $("pinned").checked = canPin && !!(await settings()).pinned;
     // Safari has no panel beside the page, nor a way to reach agents on this computer: those rows aren't offered.
     $("pin-row").hidden = !canPin;
-    $("agent-group").hidden = !canReachAgents;
+    // Send to my agent is in the top level once it is set up (a send has reached an agent), naming the agent that
+    // last answered; until then it is under More, as a row to set up once.
+    const { agentUsed, agentName } = await chrome.storage.local.get(["agentUsed", "agentName"]);
+    $("agent").hidden = !canReachAgents || !agentUsed;
+    $("agent-setup").hidden = !canReachAgents || !!agentUsed;
+    $("agent-said").textContent = agentName || "on this computer";
     $("always-row").hidden = local;
     $("local-row").hidden = !local;
     $("local").checked =
@@ -257,27 +262,38 @@ async function agentReplies() {
   const back = await chrome.runtime
     .sendNativeMessage(HOST, { type: "replies", doc: sent.doc })
     .catch(() => null);
-  return back?.ok && back.replies.length ? ((await tell("agentReplies", { replies: back.replies })) ?? 0) : 0;
+  if (!back?.ok || !back.replies.length) return 0;
+  // The agent that last answered names the row from now on.
+  const agent = back.replies.at(-1)?.agent;
+  if (agent) await chrome.storage.local.set({ agentName: String(agent) });
+  return (await tell("agentReplies", { replies: back.replies })) ?? 0;
 }
-$("agent").addEventListener("click", async () => {
+/** Sends to the agent, from either row: set up, it says so and the row moves to the top level; else the one command. */
+async function sendToAgent(said) {
   // Firefox asks first; the question is put in answer to this press, before anything is awaited.
   if (!(await agreeToSend())) {
-    $("agent-said").textContent = "not sent: Firefox wasn't allowed to";
+    said.textContent = "not sent: Firefox wasn't allowed to";
     return;
   }
   const sent = await tell("agentSend");
   if (!sent) return;
   const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
   if (!answer?.ok) {
+    // The command is under More, with the set-up row: opened, in case the press came from the top level.
     $("agent-cmd").textContent = agentSetup();
     $("agent-help").hidden = false;
-    $("agent-said").textContent = "not set up yet";
+    said.textContent = "Not set up yet";
+    fold("more", true);
     return;
   }
-  $("agent-said").textContent = "Sent";
+  said.textContent = "Sent";
   await chrome.storage.local.set({ agentUsed: true });
   await agentReplies();
-});
+  await show();
+  $("agent-said").textContent = "Sent";
+}
+$("agent").addEventListener("click", () => sendToAgent($("agent-said")));
+$("agent-setup").addEventListener("click", () => sendToAgent($("agent-setup-said")));
 $("agent-copy").addEventListener(
   "click",
   () => void navigator.clipboard.writeText($("agent-cmd").textContent),

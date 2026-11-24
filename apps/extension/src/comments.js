@@ -1,5 +1,6 @@
-// Settings: every page with comments made through the extension, newest first; the extension's settings; the add-ons,
-// behind one line until asked for. Words come from other pages: text only.
+// Settings, in about a hundred words: every page with comments made through the extension, newest first; the keyboard;
+// the extension's two settings; then the add-ons and the agent's set-up, each behind one line until asked for. Words
+// come from other pages: text only.
 import { agentSetup, agreeToSend, build, canReachAgents } from "./browser.js";
 const all = await chrome.storage.local.get(null);
 const pages = Object.entries(all)
@@ -46,7 +47,7 @@ show.addEventListener("change", () => void save({ showButton: show.checked }));
 
 // Pictures: on unless turned off; turning them off deletes the ones kept. A browser with nowhere to show them (Safari)
 // takes none, and doesn't offer the switch.
-document.getElementById("pictures").closest(".row").hidden = !build.pictures;
+document.getElementById("pictures-row").hidden = !build.pictures;
 const pictures = document.getElementById("pictures");
 pictures.checked = all.settings?.pictures !== false;
 pictures.addEventListener("change", async () => {
@@ -106,7 +107,7 @@ for (const a of ADDONS.filter((x) => build.addons.includes(x.id))) {
     field.addEventListener("change", () => void save({ [a.field.key]: field.value.trim() }));
     label.append(field);
   }
-  const row = Object.assign(document.createElement("div"), { className: "row setting" });
+  const row = Object.assign(document.createElement("div"), { className: "setting" });
   row.append(label, box);
   addonList.append(row);
 }
@@ -121,18 +122,22 @@ const said = () => {
 };
 said();
 addonList.addEventListener("change", () => setTimeout(said, 0));
-const line = document.getElementById("addons-line");
-line.addEventListener("click", () => {
-  const open = line.getAttribute("aria-expanded") !== "true";
-  line.setAttribute("aria-expanded", String(open));
-  const box = document.getElementById("addons-box");
-  box.classList.toggle("open", open);
-  box.inert = !open;
-});
+// Each line opens to what is behind it, easing, and folds back.
+for (const [lineId, boxId] of [
+  ["addons-line", "addons-box"],
+  ["agent-line", "agent-box"],
+]) {
+  const line = document.getElementById(lineId);
+  line.addEventListener("click", () => {
+    const open = line.getAttribute("aria-expanded") !== "true";
+    line.setAttribute("aria-expanded", String(open));
+    const box = document.getElementById(boxId);
+    box.classList.toggle("open", open);
+    box.inert = !open;
+  });
+}
 
+// Send to an AI agent: not set up, set up, or named after the agent that last answered.
 document.getElementById("agent-cmd").textContent = agentSetup();
-// Agents read and answer with the same release as this extension.
-const release = `npx --yes pipeup@${chrome.runtime.getManifest().version} browser`;
-document.getElementById("agent-read").textContent = `${release} read`;
-document.getElementById("agent-reply").textContent = `${release} reply`;
+document.getElementById("agent-said").textContent = all.agentUsed ? all.agentName || "Set up" : "Not set up";
 document.getElementById("agent-section").hidden = !canReachAgents;

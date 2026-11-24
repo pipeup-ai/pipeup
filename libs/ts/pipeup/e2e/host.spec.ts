@@ -25,7 +25,7 @@ test("with a host, a click on a highlight tells the host and opens nothing on th
   await expect(page.locator(".pop.show, .col .th, .all.show")).toHaveCount(0);
 });
 
-test("with a host, a new comment is written on the page with the cursor in its box, and the host is told", async ({
+test("with a host, a new comment is written on the page with the cursor in its box; sent, it closes and nothing opens", async ({
   page,
 }) => {
   await hosted(page);
@@ -36,8 +36,9 @@ test("with a host, a new comment is written on the page with the cursor in its b
   await expect(box).toBeFocused();
   await box.fill("Say which week.");
   await page.locator(".draft").getByRole("button", { name: "Comment" }).click();
-  await expect.poll(() => heard(page)).toEqual([["open", expect.any(String)]]);
-  // The host shows the thread: none opens on the page.
+  await expect(page.locator(".pop.show .draft, .th.on .draft")).toHaveCount(0);
+  // A new comment closes once sent (§7): the host isn't asked to open it, and nothing opens on the page.
+  expect(await heard(page)).toEqual([]);
   await expect(page.locator(".pop.show .th, .col .th")).toHaveCount(0);
 });
 
