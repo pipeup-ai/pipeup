@@ -1,5 +1,6 @@
 import { expect, PAGES, panel, sidePanel, tabOf, test } from "./fixtures";
 import type { Page } from "@playwright/test";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 /**
  * Comment mode, a click on the paragraph, the words and Comment: as a reviewer writes one with the extension. The box
@@ -124,6 +125,20 @@ test("on a browser page it says Pipeup can't run there", async ({ context, worke
   await page.goto("chrome://version");
   const p = await panel(context, worker, id, page);
   await expect(p.locator("#blocked")).toBeVisible();
+  await expect(p.getByRole("button", { name: "Comment on this page" })).toBeHidden();
+});
+
+test("on a file opened from this computer it says how to open it instead", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(pathToFileURL(fileURLToPath(new URL("pages/plain.html", import.meta.url))).href);
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#blocked")).toContainText("file on this computer");
+  await expect(p.locator("#blocked")).toContainText("pipeup browser");
+  await expect(p.locator("#where")).toHaveText("plain.html");
   await expect(p.getByRole("button", { name: "Comment on this page" })).toBeHidden();
 });
 
