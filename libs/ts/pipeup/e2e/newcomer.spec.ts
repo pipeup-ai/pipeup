@@ -52,18 +52,36 @@ test("Hold Space is said once, the first time a link, button or field is clicked
   await expect(hint(page)).toHaveCount(0);
 });
 
-test("Option-click to pin is said once, the first time a thread is opened in comment mode", async ({
+test("Option-click to pin is said once, the first time a comment box opens on a picture", async ({
   page,
 }) => {
   await open(page, "doc.html", { name: "Sam" });
-  const id = await seedElement(page, "#p1", "Is this the plan?");
-  await showComments(page);
-  await page.evaluate((id) => (window as any).pu.openThread(id), id);
-  await expect(hint(page)).toHaveText("Option-click (Alt-click) to pin");
+  await page.evaluate(() => {
+    const img = document.createElement("img");
+    img.id = "pic";
+    img.width = 240;
+    img.height = 160;
+    img.alt = "Lumen logo";
+    img.src =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='160'%3E%3Crect width='240' height='160' fill='%23534ab7'/%3E%3C/svg%3E";
+    document.querySelector("#p1")!.after(img);
+  });
+  await toggleCommenting(page);
+  await commenting(page);
+  // A paragraph says nothing about pinning.
+  const p2 = (await page.locator("#p2").boundingBox())!;
+  await page.mouse.click(p2.x + 30, p2.y + p2.height / 2);
+  await expect(page.locator(".draft textarea")).toBeFocused();
+  await expect(hint(page).filter({ hasText: "to pin" })).toHaveCount(0);
+  // The picture does, once.
+  const pic = (await page.locator("#pic").boundingBox())!;
+  await page.mouse.click(pic.x + 40, pic.y + 40);
+  await expect(hint(page)).toHaveText("Option-click (Alt-click) to pin a spot");
   await page.keyboard.press("Escape");
-  await page.evaluate((id) => (window as any).pu.openThread(id), id);
+  await page.mouse.click(p2.x + 30, p2.y + p2.height / 2);
+  await page.mouse.click(pic.x + 40, pic.y + 40);
   await page.waitForTimeout(300);
-  await expect(hint(page)).toHaveCount(0);
+  await expect(hint(page).filter({ hasText: "to pin" })).toHaveCount(0);
 });
 
 test("the box says Comment, and a reply line Reply, until there is someone to add with @", async ({

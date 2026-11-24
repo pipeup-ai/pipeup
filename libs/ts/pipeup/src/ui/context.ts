@@ -115,7 +115,10 @@ export interface Ctx {
   claim(e: Event): void;
   /** A view already handled this event. */
   claimed(e: Event): boolean;
-  open(id: string | null): void;
+  /** `rest`: opened with a pointer, so a thread holding only the reader's own words opens to read (§7). */
+  open(id: string | null, rest?: boolean): void;
+  /** Words are half-written in the open thread's reply line. */
+  replying(): boolean;
   /** Puts the cursor in thread `id`'s reply line, unless the reader is typing elsewhere. */
   focusReply(id: string): void;
   /** What is written in reply lines waits for their threads (before a thread closes or its card is rebuilt). */

@@ -248,3 +248,30 @@ export async function seedView(
     { selector, text, view },
   );
 }
+
+/** Adds a reply by another person (a fresh identity) to the first thread: a thread with somebody to answer. */
+export async function replyFrom(page: Page, name: string, words: string): Promise<void> {
+  await page.evaluate(
+    async ([name, words]) => {
+      const w = window as any;
+      const pu = w.pu;
+      const thread = pu.document.threads()[0];
+      const who = await w.Pipeup.createIdentity();
+      const body: any = {
+        v: 1,
+        kind: "reply",
+        doc: pu.document.id,
+        thread: thread.id,
+        target: thread.root.id,
+        text: words,
+        author: who.publicKey,
+        name,
+        clock: 1000,
+        at: Date.now(),
+      };
+      const id = await w.Pipeup.computeOpId(body);
+      await pu.document.merge([await w.Pipeup.signOp({ ...body, id }, who)], "test");
+    },
+    [name, words] as const,
+  );
+}

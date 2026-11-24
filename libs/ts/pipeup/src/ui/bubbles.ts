@@ -136,7 +136,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     window.clearTimeout(leaving);
     // The pointer is about to leave with the preview: drop the hover so nothing returns after Esc.
     settle(null);
-    ctx.open(id);
+    ctx.open(id, true);
   });
 
   function bubbleFor(t: Thread): HTMLButtonElement {
@@ -428,7 +428,7 @@ export function createBubbles(ctx: Ctx, opts: { popovers: boolean }): View {
     if (!found) return;
     ctx.claim(e);
     showTip(null);
-    ctx.open(found.id);
+    ctx.open(found.id, e.detail > 0);
   };
 
   window.addEventListener("pointermove", onMove, { capture: true, passive: true });
