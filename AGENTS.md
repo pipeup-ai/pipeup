@@ -24,6 +24,22 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
   disappears abruptly.
 - Use fictional names (Sam, Ada, Lee…) in code, tests and docs; never real people's names or addresses.
 
+## Driving Safari
+
+The person's Safari is theirs, not a test fixture. A test run once left its toolbar without an address field, and
+putting that back cost an afternoon. So:
+
+- Drive Safari only through the project's own UI test (`npm run safari-test` in apps/extension), and only when the
+  maintainer asks for a run. Never send clicks or keys to Safari any other way (no AppleScript, no scripted
+  events, no computer-use clicks), and never reach into Safari's settings or profile.
+- The test never types to reach a page: pages open through the system (LaunchServices). It sends keys only while Safari
+  is the app in front, and fails instead when it isn't. It touches nothing in the toolbar but Pipeup's button, and it
+  checks the address field is still there before and after.
+- Opening Safari's **Customize Toolbar…** from a test is off limits, as is dragging anything in the toolbar.
+- If a run does leave Safari changed, say so at once and repair it yourself with
+  `open -a Terminal tools/safari-toolbar-reset.command`, which puts the default toolbar back. Don't hand the person a
+  list of steps to undo what the tools did.
+
 ## Workflow
 
 - **Spec first.** Before coding a change in behaviour, update the functional spec

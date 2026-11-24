@@ -6,7 +6,8 @@ your Apple account, your password or a legal answer.
 
 ## A. Check it in Safari (about 25 minutes, before anything else)
 
-Nothing can drive Safari with an extension in it, so this is the only test of the extension in Safari itself.
+`npm run safari-test` in apps/extension drives the newcomer's first run in Safari itself (see
+[docs/design/safari-ui-tests.md](../design/safari-ui-tests.md)); the rest of the checklist is still by hand.
 
 1. Build and open the app: `node tools/build-extension.mjs --safari`, then open
    `apps/extension/dist/safari-app/build/Build/Products/Debug/Pipeup.app`. Its window says whether Pipeup is on.
@@ -77,3 +78,4 @@ Nothing can drive Safari with an extension in it, so this is the only test of th
 - 2026-11-10: First version.
 - 2026-11-10: The app is created in App Store Connect as Pipeup: Commenting for HTML; build 0.9.1 (1) uploaded for
   TestFlight from Xcode's Organizer.
+- 2026-11-23: Section A points at the Safari UI test for the first run.
