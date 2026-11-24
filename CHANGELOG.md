@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
+
 - Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
 - **Pipeup for browsers: one menu, built for the job.** Before the first comment, the toolbar menu is one action, Comment on this page, and one sentence. With Pipeup on it has six rows (your name, Your comments on this page with the count, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting with its shortcut) and More, which opens in place to Theme, Hide comments, Keep comments beside the page, Always on, the add-ons' rows, Turn off on this page and Settings. No status line, no footer; Pipeup's own "…" menu isn't shown on the page; after the first comment one line says where it went and what comes next; Settings opens on Comments you've made, with the add-ons behind one line. For hosts: `mount({ pageMenu: "off" })`, `addonRows()`, `selectAddonRow(key)` and `note(text)`.
 

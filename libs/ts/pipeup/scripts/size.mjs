@@ -46,10 +46,13 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // thread and choosing a new place (+2.0 KB, +1.5 KB of it in the core, which add-ons and the command line use to find
 // comments; docs/design/refind-comments.md).
 // Then 67 KB for what a host such as the browser extension needs (prefs, ui: "host", settings, startComment and the
-// menu's calls; docs/design/browser-extension.md), with the maintainer's agreement to go up to 70 KB.
+// menu's calls; docs/design/browser-extension.md), with the maintainer's agreement to go up to 70 KB. Then 67.5 KB
+// for the newcomer's third pass (+0.3 KB; docs/design/states-pass.md): a commented block that previews and opens like
+// its marker, one click while a thread is open, a thread of your own words that opens to read, the pin hint on a
+// picture, and an Undo that goes when you move on.
 const BUDGETS = {
-  "dist/pipeup.min.js": 67 * 1024,
-  "dist/pipeup.esm.js": 67 * 1024,
+  "dist/pipeup.min.js": 67.5 * 1024,
+  "dist/pipeup.esm.js": 67.5 * 1024,
   "dist/pipeup.core.js": 12.5 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

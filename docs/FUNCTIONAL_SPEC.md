@@ -191,8 +191,9 @@ any of them off.
   comment, and Esc when you're done (and, where Pipeup's own control is shown, that the control stops it too). The
   rest is said **once each, the first time it would have helped**, in the same place and for the same time: Tab
   between blocks the first time a key is pressed in comment mode; Hold Space to use the page the first time a link,
-  button or field is clicked in comment mode; Option-click (Alt-click) to pin the first time a thread is opened on
-  the page. A browser remembers which it has shown. A host that keeps Pipeup's control off the page (§4a) gets a hint
+  button or field is clicked in comment mode; Option-click (Alt-click) to pin a spot the first time a comment box
+  opens on a picture (an image, drawing, video or canvas) or on a block taller than half the window, where "this
+  block" isn't precise enough. A browser remembers which it has shown. A host that keeps Pipeup's control off the page (§4a) gets a hint
   that names no button.
 - **A click made while Space is held is the page's alone.** Pipeup never undoes what it did (such as switching a
   tab) and never counts it as a click elsewhere, and a click that started while paused finishes paused even if
@@ -218,12 +219,17 @@ any of them off.
   pointer goes: the selection's comment icon is the only offer. Block outlines come back once the
   selection is cleared or its comment is started or cancelled. Double- or triple-clicking words selects them
   without choosing the block they are in, and Esc with words selected clears the selection first.
-- **One thing at a time.** While a thread is open to read in comment mode, no block is outlined or named on hover, and
-  a click on the page closes the thread and does nothing else (a reply being written in it is kept for when it opens
-  again); the next click chooses a block. A thread just written shows but doesn't hold up the next comment: the next
-  click goes on to the next block. While a comment has words, blocks aren't offered either, and a click goes back to
-  it. An empty comment box still moves to the block clicked. When a host shows the threads (§4a), the page has none
-  open, so blocks are always offered.
+- **One thing open at a time, one click.** While a thread is open to read in comment mode, blocks are still outlined
+  on hover, and a click on one closes the thread and opens the comment box there in one go; a click on nothing in
+  particular only closes the thread. A reply half-written in the thread is never dropped: the click goes back to it,
+  and Pipeup says to finish or cancel it first. A thread just written doesn't hold up the next comment either. While
+  a comment has words, blocks aren't offered, and a click goes back to it. An empty comment box still moves to the
+  block clicked. When a host shows the threads (§4a), the page has none open, so blocks are always offered.
+- **A block with a comment of its own reads like its marker** in comment mode: hovering it previews the comment (its
+  first line and who wrote it) as hovering the marker does, and a click opens the thread to read instead of a second
+  box. A second thought goes in the thread, where a reader finds it with the first; a separate comment on the same
+  block is made on an exact spot (Option-click, or Pin) or on selected words. Comments on words already work this
+  way; a pin keeps its own marker.
 - Areas the author marked to ignore (navigation chrome, slide controls) are never targets and keep
   working in comment mode.
 - Writing a comment: the box starts with who you are, then a line that says **"Comment"**, or **"Comment or add
@@ -235,7 +241,9 @@ any of them off.
   comment or reply box. Only **Cancel**, or **Esc** in the box itself, throws words away, and then a message
   offers **Undo** for a few seconds, which brings the box back where it was with the words in it. **⌘Z** (Ctrl+Z)
   takes the Undo too, from anywhere but a field with words in it, so it can be reached from the block cursor;
-  once the message has faded, its Undo is gone. Esc while an input method is still composing (Japanese, Chinese,
+  once the message has faded, its Undo is gone, and it goes early as soon as the reviewer has moved on (a comment or
+  reply sent, a thread opened), so the screen never says "discarded" over a comment just sent; starting another box
+  keeps it. Esc while an input method is still composing (Japanese, Chinese,
   Korean) only cancels the composition. On a deck, Tab or a click on nothing in particular leaves a waiting box
   where it is, on its own slide.
 - **A name is never required.** A reviewer can comment straight away. At the top of the comment box,
@@ -444,7 +452,7 @@ any of them off.
   Undo), in All comments as anywhere; the next Esc closes the thread. Opening All comments while writing a comment
   moves the box into the panel with the caret still in it. After Copy thread, focus stays on the comment's ⋯.
 - An open thread always ends with a **reply box** ("Reply", or "Reply or add others with @" once there is someone
-  to add, as the comment box), with **Cancel** and **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away; Esc still closes the thread. On touch screens the reply box waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
+  to add, as the comment box), with **Cancel** and **Reply** beneath it while you write. **Opening a thread puts the cursor in its reply box**, so the reader can type a reply straight away, unless the thread holds only the reader's own words and was opened with a pointer: then there is nobody to answer, and the reply line rests (one quiet line, no buttons) until it is clicked or typed into. From the keyboard the cursor always lands in the reply box. Esc still closes the thread. On touch screens the reply box always waits to be tapped, so the keyboard doesn't cover a thread opened just to read it. A new comment
   **closes once sent**: its marker stays on the block and nothing else opens, so the reviewer can go straight on to
   the next thing (the marker opens the thread, with its reply box, as any marker does). With the keyboard's block
   cursor in use, focus goes back to the block cursor.
@@ -2105,4 +2113,5 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-09 — For the browser extension: a host can give page settings and open the comment box on an element or words (section 4a); `pipeup browser` reads and answers comments sent from the extension (new section 15g). Pipeup's budget rises to 67 KB (66.0 KB gzip; section 16a), within the 70 KB the maintainer allowed for this work.
 - 2026-11-10 — `pipeup browser install --browser firefox` sets up Send to my agent for Firefox (section 15g).
 - 2026-11-23 — For the browser extension's one menu (extension spec, 2026-11-23): a host can keep Pipeup's own menu off the page, show and press the add-ons' rows itself, and say one line to the reviewer (section 4a). Design: docs/design/one-menu.md.
+- 2026-11-24 — From a third newcomer's run, on the states after the first comment (visual spec docs/design/states-pass.html): in comment mode a block with a comment previews on hover and opens on click like its marker; a click on a block while a thread is open closes it and opens the box in one go, and blocks stay outlined meanwhile (part of 2026-11-09 reversed); a thread of only the reader's own words opened with a pointer rests instead of focusing its reply line; the pin hint is said on the first box over a picture or a tall block, not on opening a thread; an Undo offer goes once the reviewer has moved on (§5, §7).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run: comment mode's hint says two things on the first visit and the rest once each when first useful, and names no button for a host that keeps Pipeup's control off the page (§5, §4a); the comment and reply boxes say "Comment" and "Reply" until there is someone to add with @ (§5, §7); a new comment closes once sent, its marker staying (§7).

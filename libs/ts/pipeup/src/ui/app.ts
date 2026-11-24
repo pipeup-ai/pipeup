@@ -20,7 +20,7 @@ import { createSelection } from "./select";
 import { copyText } from "./files";
 import { createLauncher } from "./launcher";
 import { createHere } from "./here";
-import { IGNORED } from "./pick";
+import { IGNORED, pageLook, pickBlock } from "./pick";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, lightWords, paintHighlights } from "./highlights";
 import { createHost } from "./host";
@@ -28,7 +28,7 @@ import { reveal } from "./notes";
 import { inspect, warning, type Appearance } from "./legible";
 import { applyTheme, authorLook, pageIsDark, readTheme, type Look } from "./theme";
 import { listedAgents, myRefs, names, peopleFor, unseenMentions } from "./mentions";
-import type { ThreadActions } from "./thread-view";
+import { replies, type ThreadActions } from "./thread-view";
 import { hasSetting } from "./settings";
 import { boxOf, fieldOf, setFieldHost, type FieldHost } from "./field";
 
@@ -258,7 +258,7 @@ export function startApp(o: AppOptions): App {
     start: `Click anything to comment · ${setting("data-pipeup-control") === "off" ? "" : "This button or "}Esc when you're done`,
     keys: "Tab moves between blocks",
     space: `Hold ${HOLD_LABEL} to use the page`,
-    pin: "Option-click (Alt-click) to pin",
+    pin: "Option-click (Alt-click) to pin a spot",
   };
   /** Says one of comment mode's hints the first time in this browser. */
   function hintOnce(kind: HintKind): void {
@@ -343,6 +343,13 @@ export function startApp(o: AppOptions): App {
   /** Words were thrown away (Cancel or Esc): `undo` brings them back, for a few seconds. */
   const offer = (text: string, undo: () => void) =>
     toast(text, UNDO_MS, false, false, { label: "Undo", run: undo, undo: true });
+  /** The reviewer has moved on (a comment or reply sent, a thread opened): an Undo still offered goes (§5). */
+  function movedOn(): void {
+    if (!undoing) return;
+    undoing = null;
+    window.clearTimeout(toastTimer);
+    toastEl.classList.remove("show");
+  }
 
   function hideHint(): void {
     if (tapping()) return;
@@ -373,6 +380,7 @@ export function startApp(o: AppOptions): App {
 
   // A thread whose first comment was deleted goes away with it, as a deleted reply does.
   const threadsNow = () => o.doc.threads().filter((t) => !t.root.deleted);
+  const look = pageLook();
 
   const exportItem = (t: Thread): ExportItem => ({
     thread: t,
@@ -458,6 +466,7 @@ export function startApp(o: AppOptions): App {
       try {
         await o.doc.reply(parentId, text, mentions);
         say("Reply sent");
+        movedOn();
         tell(mentions, text);
       } catch (e) {
         if (e instanceof UnsavedChangeError) toast(UNSAVED_NOTE);
@@ -660,12 +669,24 @@ export function startApp(o: AppOptions): App {
     visible: (t) =>
       !state.hidden && (!t.resolved || state.showResolved || writingIn(t.id)) && !elsewhere.has(t.id),
     quoteAt: (x, y) => {
+      // In comment mode a block with a comment of its own reads like its marker (§5): the block under the point.
+      const under = state.commenting && !state.paused ? document.elementFromPoint(x, y) : null;
+      const block = under && under !== host.element ? pickBlock(under, o.root, look) : null;
+      let found: Thread | null = null;
       for (const t of threadsNow()) {
         const r = resolved.get(t.id);
-        if (t.anchor.quote && ctx.visible(t) && r?.range && hit(x, y, quoteRects(r))) return t;
+        if (!ctx.visible(t) || !r) continue;
+        if (
+          t.anchor.quote
+            ? r.range && hit(x, y, quoteRects(r))
+            : block && !t.anchor.point && r.element === block
+        )
+          if (t.anchor.quote) return t;
+          else found ??= t;
       }
-      return null;
+      return found;
     },
+    replying: () => !!state.active && writingIn(state.active),
     readsAt: (x, y) => (ctx.draftEmpty() && !state.pinning ? ctx.quoteAt(x, y) : null),
     // A key passed in from a host's field (field.ts) stops at the shadow root: it is Pipeup's too.
     owns: (e) => {
@@ -1026,8 +1047,8 @@ export function startApp(o: AppOptions): App {
     });
   }
 
-  /** Opens thread `id` (null: closes the open one). */
-  function open(id: string | null): void {
+  /** Opens thread `id` (null: closes the open one). `rest`: with a pointer, so a thread of the reader's own words opens to read. */
+  function open(id: string | null, rest = false): void {
     // A host shows the thread; the page marks it.
     if (o.host && id) {
       if (state.draft && !ctx.draftEmpty()) return ctx.backToDraft();
@@ -1050,19 +1071,20 @@ export function startApp(o: AppOptions): App {
     // What is being written in the closing thread's reply line waits for it.
     keepReplies();
     state.active = id;
+    const t = id ? o.doc.threads().find((x) => x.id === id) : undefined;
     if (id) {
       state.draft = null;
       pulse(id);
-      const t = o.doc.threads().find((x) => x.id === id);
       if (t) seen(t);
+      movedOn();
     }
     render();
     if (id) {
       putReply(id);
-      // On a touch screen the reply line waits to be tapped: the keyboard doesn't cover a thread opened to read it.
-      focusReply(id, busy || touch(), from);
-      // The first thread opened in comment mode: how to put a comment at a point (said once, §5).
-      if (state.commenting) hintOnce("pin");
+      // On a touch screen the reply line waits to be tapped: the keyboard doesn't cover a thread opened to read it. So
+      // does a thread of only the reader's own words opened with a pointer: there is nobody to answer (§7).
+      const mine = !!t && t.root.author === o.doc.me && replies(t).every((c) => c.author === o.doc.me);
+      focusReply(id, busy || touch() || (rest && mine), from);
     }
   }
 
@@ -1073,6 +1095,7 @@ export function startApp(o: AppOptions): App {
   function sent(id: string): void {
     state.draft = null;
     state.active = null;
+    movedOn();
     resolveAll(new Set([id]));
     render();
     if (modeView?.cursor()) modeView.refocus();

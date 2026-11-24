@@ -4,6 +4,7 @@ import {
   leaveReply,
   open,
   openAll,
+  replyFrom,
   seedElement,
   seedText,
   selectWords,
@@ -21,6 +22,8 @@ test("clicking a highlight puts the cursor in the popover's reply line", async (
   await open(page, "site.html");
   await showComments(page);
   await seedText(page, "h1", "in minutes not meetings", "Love this line.");
+  // Somebody to answer: a thread of only the reader's own words opens to read (§7).
+  await replyFrom(page, "Ada", "Same here.");
   const p = await quotePoint(page);
   await page.mouse.click(p.x, p.y);
   await expect(page.locator(".pop.show")).toContainText("Love this line.");

@@ -149,6 +149,8 @@ test("a reply being written is kept when its pop-up closes, and when the window 
   const spot = await quoteSpot(page);
   await page.mouse.click(spot.x, spot.y);
   const line = page.locator(".pop.show .rbox textarea");
+  // The reader's own thread opens to read (§7): the reply line is clicked.
+  await line.click();
   await expect(line).toBeFocused();
   await page.keyboard.type("Half a thought");
   // A click elsewhere closes it; opening it again brings the words back.
