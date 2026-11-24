@@ -28,10 +28,17 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 
 - Nothing is added to a page until the reviewer asks: from the browser's toolbar button, or its shortcut (Shift+Alt+P;
   Shift+Alt+C stays comment mode once Pipeup is on).
-- Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
-  asks the browser's permission for that site only.
+- Installing asks for no access to sites. In Chrome, Edge and Firefox, pressing the toolbar button is the permission for
+  that page, and nothing is asked. Safari grants nothing on a press: the first time Pipeup is used it asks, once,
+  whether Pipeup may see websites, and the panel says so under the button before the press (comments stay in the
+  browser; **Always Allow on Every Website** means it never asks again). No other question is ever asked for
+  commenting, since comments go nowhere; only an add-on that sends them somewhere says so when it is turned on (§6).
+  **Always on for this site** adds Pipeup whenever that site is opened, and where the browser asks per site, asks for
+  that site only.
 - The toolbar button's panel shows the page's address. Off, it offers one main action, **Comment on this page**, which
-  adds Pipeup and starts comment mode, since that is why the reviewer pressed it.
+  adds Pipeup and starts comment mode, since that is why the reviewer pressed it. The press is never lost: when the
+  browser closes the panel to ask its question (Safari), Pipeup is still added and comment mode still starts once the
+  question is answered.
 - With Pipeup on, the toolbar panel is **Pipeup's menu**, drawn by the extension: where comments go, who you are (the
   name edited in place), **Copy comments** (As Markdown, As text), **Theme**, **Comments** (with the open count),
   **Hide comments**, **Keep comments beside the page** and **Start commenting**, then **Always on for this site** and
@@ -143,3 +150,6 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-10 — Built for local testing in Firefox and in Safari on a Mac. What Safari can't do is left out: comments aren't pinned beside the page there, and Send to my agent isn't offered (§2).
 - 2026-11-10 — Ready for the stores, agreed with the maintainer after checking the store drafts against the code: what each browser leaves out (§2: Send to my agent not on Windows; Voice not in Firefox; Share, Live and pictures not in Safari; Firefox on Android and Safari on iPhone and iPad later); Send to my agent's command fits the browser and release (§4a); nothing Pipeup shows can be read by the site, add-ons' choices are kept by the extension, and deleting a comment removes its picture (§5); what leaves the browser, and when, said in full, with the browser asked first where it asks (§6); packages built from the release's tag (§7).
 - 2026-11-10 — Agreed with the maintainer: what the reviewer types into Pipeup on a page can't be seen by the page, keys included (§5). Design: docs/design/extension-private-typing.md.
+- 2026-11-24 — Safari: one question, once, instead of one per site per day, said in the panel before the press; and
+  Comment on this page finishes its work after Safari's question closes the panel, instead of losing the press (§3).
+  Found by the maintainer on the first press in Safari.

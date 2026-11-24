@@ -1141,7 +1141,7 @@ GETTING COMMENTS TO WHOEVER ASKED
 Each comment says what it is about: the words you chose, or what the picture or block is and what it is called. So an agent or a colleague can find the place without your page open.
 
 KEEPING IT ON A SITE
-Pipeup is added to a page only when you ask. Installing it gives it no access to any site. If you review one site often, turn on Always on for this site, and Safari asks your permission for that site only. Turn it off in the same menu.
+Pipeup is added to a page only when you ask. Installing it gives it no access to any site. The first time you press Comment on this page, Safari asks once whether Pipeup may see websites; choose Always Allow on Every Website and it never asks again. Comments stay in Safari either way. If you review one site often, turn on Always on for this site. Turn it off in the same menu.
 
 ADD-ONS
 Turn add-ons on or off on the Comments you've made page.
@@ -1256,9 +1256,9 @@ Copy comments (As Markdown, As text) writes the page's comments to the clipboard
 ```text
 Adds one right-click item, Comment with Pipeup, on selected words, a picture, a link or the page. Choosing it adds Pipeup to that tab and opens a comment box on what was right-clicked.
 ```
-#### optional_host_permissions: <all_urls>
+#### host_permissions: <all_urls> (Safari); optional_host_permissions: <all_urls> (Chrome, Edge, Firefox)
 ```text
-Nothing is granted at install. Pipeup asks for access only when the user turns on Always on for this site, and then only for that site (for example https://example.com/*). Always on for local pages asks only for http://localhost, 127.0.0.1 and [::1]. Safari shows its own prompt. Turning the switch off removes the access. Only http and https sites are ever requested.
+Nothing is granted at install. In Safari, which grants nothing on a toolbar press, the first press of Comment on this page brings Safari's own question, once, whether Pipeup may see websites; the panel says so before the press, and the user's answer (one day, this site, or every website) is Safari's to keep. Pipeup adds itself to a page only when the user presses Comment on this page, turns on Always on for this site, or chooses Comment with Pipeup from the right-click menu. In Chrome, Edge and Firefox the press itself is the permission (activeTab), and access is asked only when the user turns on Always on for this site, for that site only (for example https://example.com/*); Always on for local pages asks only for http://localhost, 127.0.0.1 and [::1]. Turning the switch off removes the access. Only http and https sites are ever requested.
 ```
 #### web_accessible_resources: pipeup/*, addons/* matching <all_urls>
 ```text
@@ -1319,8 +1319,8 @@ No account or sign-in is needed.
 TRY IT (2 minutes)
 1. Open the Pipeup app. Use its button to open Safari Settings and tick Pipeup in Extensions.
 2. In Safari open https://example.com (any page works except the Pipeup website, which has Pipeup built in, so the extension steps aside there).
-3. Press Pipeup in the toolbar. If Safari asks to allow Pipeup on this site, choose Allow for One Day. The menu shows the page's address and Comment on this page.
-4. Press Comment on this page. Select a few words. A comment box opens beside them with the cursor in it. Type "Sam: shorter please" and press Return. A mark appears on the words.
+3. Press Pipeup in the toolbar. The menu shows the page's address and Comment on this page, with a line saying Safari will ask once.
+4. Press Comment on this page. Safari asks whether Pipeup may see websites: choose Always Allow on Every Website (or Allow for One Day). Comment mode starts. Select a few words. A comment box opens beside them with the cursor in it. Type "Sam: shorter please" and press Return. A mark appears on the words.
 5. Press Pipeup again: the menu now shows Copy comments, Save comments, Comments, Always on for this site and Turn off on this page, among others. Choose Copy comments > As Markdown and paste into TextEdit to see the comment with the words it is on.
 6. Right-click the page's link and choose Comment with Pipeup to comment on it.
 7. Comments you've made (bottom of the menu) lists the page and holds the settings and add-ons.
@@ -1378,7 +1378,7 @@ Contact: https://pipeup-ai.github.io/pipeup/support.html
 - DSA trader status: declare non-trader or trader. This is a legal call. A trader's address, phone and email are published in the EU.
 - Art: app icons drawn at full size rather than scaled up from 128 px, and the 7 screenshots at 2880×1800 in Safari, light look, on fictional pages, once the containing app is done.
 - Reword the popup's Save comments hint "to open again" (popup.html): nothing in the extension opens a saved Pipeup file.
-- Confirm the export-compliance exemption, and confirm on a clean Mac (through TestFlight) whether Safari prompts on a toolbar press, its prompt wording, and that Option-Shift-P is applied.
+- Confirm the export-compliance exemption, and confirm on a clean Mac (through TestFlight) that Option-Shift-P is applied. (Safari's question: seen by the maintainer 2026-11-24; it comes on Comment on this page, and now once, for every website.)
 
 ## Decisions for the maintainer
 

@@ -7,6 +7,8 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
+
 - Export review downloads your marked feedback as Markdown to share by email or chat.
 
 - The public design review opens on a visual decision. Open the live product or select a pin on a browser capture of the published document, slide deck or touch interface to send private feedback in context.
