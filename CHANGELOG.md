@@ -33,6 +33,19 @@ to read in every browser. Nothing in the API or the stored format changes.
 - Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
 - Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
 - On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
+## [1.0.1] - 2026-11-25
+
+Fixes for the shipped extension, found in the first days of real use.
+
+### Added
+
+- The website's public design review: export marked feedback as a Markdown file, and open a review on a visual
+  decision (the live product, or a pin on a browser capture of a document, deck or touch interface).
+
+### Fixed
+
+- Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
+- Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
 
 ## [1.0.0] - 2026-11-10
 
@@ -561,8 +574,9 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/pipeup-ai/pipeup/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
