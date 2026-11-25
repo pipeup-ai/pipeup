@@ -2,7 +2,7 @@
 // Drives Safari with Pipeup's extension in it, with Apple's UI testing (apps/extension/safari/ui-tests), and keeps a
 // screenshot of every step. Design note: docs/design/safari-ui-tests.md.
 //
-//   node tools/safari-ui-test.mjs        needs: a Pipeup extension on in Safari, the site built (apps/site/build.sh)
+//   node tools/safari-ui-test.mjs        needs: the app installed (npm run safari-install) and on in Safari, the site built
 //
 // Output: apps/extension/dist/safari-ui-test/NN-step.png (and NN-step.txt, Safari's accessibility tree, where a step
 // couldn't find what it expected), exported from results.xcresult. The test runner is sandboxed and takes no
@@ -27,6 +27,26 @@ const port = 8792;
 if (process.platform !== "darwin") fail("Safari's test runs on a Mac");
 if (!existsSync(`${site}/extension-test.html`))
   fail("build the site first (apps/site/build.sh)");
+
+// What Safari runs is the installed app (npm run safari-install): one copy, in its one place, the current build.
+const home = process.env.PIPEUP_SAFARI_HOME || `${root}apps/extension/dist/Pipeup.app`;
+const appex = `${home}/Contents/PlugIns/Pipeup Extension.appex`;
+if (!existsSync(appex)) fail("no installed Safari app: run npm run safari-install first");
+const registered = spawnSync("pluginkit", ["-m", "-v", "-A", "-i", "ai.pipeup.Pipeup.Extension"], { encoding: "utf8" })
+  .stdout.split("\n")
+  .filter((l) => l.includes("/"));
+if (registered.length !== 1 || !registered[0].includes(home))
+  fail(`Safari sees ${registered.length} Pipeup extensions, not the installed one alone; run npm run safari-install:\n${registered.join("\n")}`);
+const installed = JSON.parse(readFileSync(`${appex}/Contents/Resources/manifest.json`, "utf8")).version;
+const current = existsSync(`${root}apps/extension/dist/safari/manifest.json`)
+  ? JSON.parse(readFileSync(`${root}apps/extension/dist/safari/manifest.json`, "utf8")).version
+  : installed;
+if (installed !== current)
+  fail(`the installed Safari app is ${installed} but the last build is ${current}: run npm run safari-install`);
+const signed = spawnSync("codesign", ["-dv", appex], { encoding: "utf8" }).stderr;
+if (!/TeamIdentifier=[A-Z0-9]{10}/.test(signed))
+  console.warn("safari-ui-test: the installed app is unsigned; Safari turns it off at every start unless Develop → Allow Unsigned Extensions is on");
+console.log(`Safari's Pipeup: ${installed} at ${home}`);
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
@@ -128,6 +148,12 @@ const shots = readdirSync(out)
 console.log(`\n${shots.length} files in ${out}`);
 for (const s of shots) console.log(`  ${s}`);
 if (result.status !== 0) {
+  if (/No toolbar-button/.test(log))
+    console.error(
+      "\nPipeup's button isn't in Safari's toolbar, so Safari doesn't have the extension on. Safari → Settings → " +
+        "Extensions → tick Pipeup (once; a signed build then stays on). If the list shows more than one Pipeup, " +
+        "or none, run npm run safari-install.",
+    );
   if (/not authorized|not permitted|AXIsProcessTrusted|TCC/.test(log))
     console.error(
       "\nmacOS must allow the test runner to control the computer: System Settings → Privacy & Security → Accessibility.",

@@ -24,6 +24,23 @@ for what it does, [docs/design/architecture.md](docs/design/architecture.md) for
   disappears abruptly.
 - Use fictional names (Sam, Ada, Lee…) in code, tests and docs; never real people's names or addresses.
 
+## Driving Safari
+
+The person's Safari is theirs, not a test fixture. A test run once left its toolbar without an address field, and
+putting that back cost an afternoon. So:
+
+- Drive Safari only through the project's own UI test (`npm run safari-test` in apps/extension), and only when the
+  maintainer asks for a run. Never send clicks or keys to Safari any other way (no AppleScript, no scripted
+  events, no computer-use clicks), and never reach into Safari's settings or profile.
+- The test never types to reach a page: pages open through the system (LaunchServices). It sends keys only while Safari
+  is the app in front, and fails instead when it isn't. It touches nothing in the toolbar but Pipeup's button, and it
+  checks the address field is still there before and after.
+- Put a build into Safari only with `npm run safari-install`: signed by the Mac's development certificate, one copy in
+  one place, a fresh build number. Unsigned builds are turned off by Safari at every start until Allow Unsigned
+  Extensions is on again, while still listed as on; a second copy of the app anywhere makes Safari list two; replacing
+  the app under the same path makes Safari untick it; the same version makes Safari keep the old files. A day was lost
+  to each of these in turn (25 November 2026). Never swap the app under Safari by hand.
+
 ## Workflow
 
 - **Spec first.** Before coding a change in behaviour, update the functional spec

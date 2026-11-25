@@ -7,7 +7,7 @@
 //                                           reach any page without a press on the toolbar button, which a test can't
 //                                           make. Never published.
 //   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only;
-//                                           with APPLE_TEAM_ID set it is signed, and Safari needs no Allow Unsigned Extensions
+//                                           signed with APPLE_TEAM_ID (environment or .env.local); --unsigned to skip
 //   APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release
 //                                           archives Safari's app for the Mac App Store, signed by that team
 //                                           (dist/Pipeup.xcarchive; upload it from Xcode's Organizer)
@@ -15,6 +15,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { appIcon, INK, listed, toolbar } from "./extension-icons.mjs";
+import { teamId } from "./apple-team.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
@@ -87,11 +88,20 @@ const TARGETS = {
     delete m.minimum_chrome_version;
     m.permissions = m.permissions.filter((p) => p !== "sidePanel" && p !== "nativeMessaging");
     m.browser_specific_settings = { safari: { strict_min_version: "17.0" } };
+    // Safari grants nothing on a toolbar press (activeTab is silent in Chrome and Firefox, never in Safari): it asks
+    // in words. Asking for every website up front makes that one question, with Always Allow on Every Website as its
+    // answer, instead of one per site per day.
+    m.host_permissions = ["<all_urls>"];
+    delete m.optional_host_permissions;
     // Safari's background takes no "type" (the background script imports nothing), and opens settings where it likes.
     m.background = { service_worker: m.background.service_worker };
     delete m.options_ui.open_in_tab;
     // One black bubble: Safari takes a grayscale toolbar icon as a template and tints it for its toolbar.
     m.action.default_icon = Object.fromEntries([16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]));
+    // A development build carries its build number as a fourth part (1.1.0.7): Safari keeps an extension's files
+    // cached by version, so a new number is what makes it read the new build. Releases keep the three parts.
+    if (process.env.PIPEUP_BUILD_NUMBER && !process.argv.includes("--safari-release"))
+      m.version = `${m.version}.${process.env.PIPEUP_BUILD_NUMBER}`;
     return m;
   },
 };
@@ -184,8 +194,15 @@ if (app) console.log(`  ${app}`);
  */
 function safariApp(release) {
   if (process.platform !== "darwin") throw new Error("build-extension: Safari's app is built on a Mac");
-  const team = process.env.APPLE_TEAM_ID;
+  const team = teamId(root);
   if (release && !team) throw new Error("build-extension: --safari-release needs APPLE_TEAM_ID (the developer team)");
+  if (!release && !team && !process.argv.includes("--unsigned"))
+    throw new Error(
+      "build-extension: --safari signs with your Apple development certificate: put APPLE_TEAM_ID=<your team id> in " +
+        ".env.local at the repository's root (Xcode → Settings → Accounts shows the team). Unsigned, Safari turns the " +
+        "extension off at every start until Develop → Allow Unsigned Extensions is on again; --unsigned builds that " +
+        "way on purpose, for a Mac with no Apple account.",
+    );
   const project = `${root}apps/extension/dist/safari-app`;
   rmSync(project, { recursive: true, force: true });
   execFileSync(

@@ -98,6 +98,20 @@ jobs:
         working-directory: apps/extension
       - run: npm run check
         working-directory: apps/extension
+      # Safari's package, as the stores get it: it asks for every website up front (one question, once; spec §3) and
+      # carries the release's version. A branch without that line once shipped a Safari build that lost the press.
+      - name: Safari's manifest asks once and names the release
+        working-directory: apps/extension
+        run: |
+          node -e '
+            const m = require("./dist/safari/manifest.json");
+            const v = require("../../libs/ts/pipeup/package.json").version;
+            if (JSON.stringify(m.host_permissions) !== JSON.stringify(["<all_urls>"]))
+              throw new Error("safari manifest: host_permissions is " + JSON.stringify(m.host_permissions) + ", not <all_urls>");
+            if (m.optional_host_permissions) throw new Error("safari manifest: optional_host_permissions should be gone");
+            if (m.version !== v.replace(/-.*/, "")) throw new Error("safari manifest: version " + m.version + " is not the release " + v);
+            console.log("safari manifest " + m.version + ": asks for every website once");
+          '
       - name: Upload Playwright report on failure
         if: failure()
         uses: actions/upload-artifact@v6
