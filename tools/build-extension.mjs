@@ -209,13 +209,19 @@ function safariApp(release) {
   // The app's own window and icon, kept in apps/extension/safari, over the converter's stock ones.
   const app = `${project}/Pipeup/Pipeup`;
   const ours = `${root}apps/extension/safari`;
-  cpSync(`${ours}/Main.html`, `${app}/Resources/Base.lproj/Main.html`);
+  // The window carries the licences behind one link: the package's own notices, escaped into the page.
+  const escape = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const licences = `${escape(readFileSync(`${root}LICENSE`, "utf8").trim())}\n\n${escape(notices.trim())}`;
+  writeFileSync(
+    `${app}/Resources/Base.lproj/Main.html`,
+    readFileSync(`${ours}/Main.html`, "utf8").replace("<!--LICENCES-->", licences),
+  );
   for (const f of ["Style.css", "Script.js"]) cpSync(`${ours}/${f}`, `${app}/Resources/${f}`);
   cpSync(`${ours}/ViewController.swift`, `${app}/ViewController.swift`);
   writeFileSync(`${app}/Resources/Icon.png`, appIcon(192));
-  // The window fits the page: the converter's is 425 × 325, which cuts off the steps and the links.
+  // The window fits the page: the converter's is 425 × 325, which cuts off the drawing and the links.
   const board = `${app}/Base.lproj/Main.storyboard`;
-  writeFileSync(board, readFileSync(board, "utf8").replace(/width="425" height="325"/g, 'width="480" height="640"'));
+  writeFileSync(board, readFileSync(board, "utf8").replace(/width="425" height="325"/g, 'width="460" height="470"'));
   for (const size of [16, 32, 128, 256, 512])
     for (const k of [1, 2]) writeFileSync(`${app}/Assets.xcassets/AppIcon.appiconset/mac-icon-${size}@${k}x.png`, appIcon(size * k));
   // What the store reads from the project: the version and build, the Mac it needs (Safari 17 runs on macOS 12 and

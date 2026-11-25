@@ -1,4 +1,5 @@
-/* The Mac app's one window: what Pipeup is, whether it's on in Safari, and how to start. Light and dark, as the Mac. */
+/* The Mac app's one window: a drawing, whether Pipeup is on in Safari, and one button about it. Light and dark, as
+   the Mac; the drawing uses the same two palettes. Design note: docs/design/safari-app-window.md. */
 :root {
   color-scheme: light dark;
   --ink: #2f3437;
@@ -7,6 +8,12 @@
   --line: #d9d6e8;
   --bg: #ffffff;
   --accent: #534ab7;
+  --accent-soft: #ecebf8;
+  --accent-ink: #a9a5c8;
+  --paper: #ffffff;
+  --sheet: #f3f2ee;
+  --pen: #2b2a28;
+  --pen-soft: #d8d5cc;
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 @media (prefers-color-scheme: dark) {
@@ -17,6 +24,12 @@
     --line: #3a3850;
     --bg: #1c1c20;
     --accent: #8f87e8;
+    --accent-soft: #2b2946;
+    --accent-ink: #7a74b8;
+    --paper: #26262b;
+    --sheet: #303036;
+    --pen: #e6e6ea;
+    --pen-soft: #4a4a52;
   }
 }
 * {
@@ -36,35 +49,57 @@ body {
     sans-serif;
 }
 main {
-  max-width: 440px;
+  max-width: 400px;
   margin: 0 auto;
-  padding: 28px 24px;
+  padding: 32px 24px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   text-align: center;
 }
-h1 {
-  margin: 4px 0 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--strong);
+
+/* The drawing: both scenes stacked, one shown, with a cross-fade on a change of state. */
+.scenes {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 320 / 180;
 }
-.lede {
-  margin: 0;
-  color: var(--muted);
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
 }
+body:not(.state-on) .scene-settings,
+body.state-on .scene-page {
+  opacity: 1;
+}
+
+/* The line: the state, then what to do about it. Each state's words are present; CSS shows one set. */
 .state {
   margin: 6px 0 0;
-  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.state b {
+  font-weight: 600;
+  font-size: 16px;
   color: var(--strong);
+}
+.state span {
+  color: var(--muted);
 }
 body:not(.state-on, .state-off) :is(.state-on, .state-off),
 body.state-on :is(.state-off, .state-unknown),
 body.state-off :is(.state-on, .state-unknown) {
   display: none;
 }
+
 button {
   font:
     500 14px -apple-system,
@@ -83,24 +118,12 @@ button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-ol {
-  text-align: left;
-  margin: 8px 0 0;
-  padding: 14px 16px 14px 34px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-li + li {
-  margin-top: 6px;
-}
-li b {
-  font-weight: 600;
-  color: var(--strong);
-}
+
 .links {
   display: flex;
   gap: 18px;
-  margin: 4px 0 0;
+  margin: 10px 0 0;
+  font-size: 13px;
 }
 a {
   color: var(--accent);
@@ -110,8 +133,37 @@ a {
 a:hover {
   text-decoration: underline;
 }
-.small {
+
+/* Licences, shown in place of the front; a way back at the top. */
+.licences {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px 24px 24px;
+}
+.licences .links {
+  margin: 0 0 8px;
+}
+.licences h1 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--strong);
+}
+.licences pre {
   margin: 0;
-  font-size: 12px;
-  color: var(--muted);
+  white-space: pre-wrap;
+  font:
+    12px/1.5 ui-monospace,
+    Menlo,
+    monospace;
+  color: var(--ink);
+  -webkit-user-select: text;
+  cursor: text;
+}
+main,
+.licences {
+  transition: opacity 0.3s var(--ease);
+}
+[hidden] {
+  display: none !important;
 }

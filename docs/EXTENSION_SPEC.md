@@ -79,6 +79,15 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   the browser's own switch that lets an extension see files). Where the browser gives the extension no address at
   all, the panel says "This page" rather than guessing one.
 
+- **Safari's app window.** Safari's Pipeup is a Mac app with the extension inside; its one window is seen once after
+  install and whenever the app is opened. It says one thing, whether Pipeup is on in Safari, and does one thing about
+  it: not on yet or turned off, a line saying to tick Pipeup under Extensions and a button that opens Safari's
+  settings there; on, a line saying to press Pipeup's button on any page and a button that opens Pipeup's sample page
+  in Safari. A drawing shows what the line is about: the Extensions pane with Pipeup's row, or a page with Pipeup's
+  button pressed and one comment. No introduction and no steps: the store said what Pipeup is, and the toolbar menu
+  teaches the steps as they are needed. A footer of links: Support, Privacy, Source and Licences, which shows the
+  MIT and third-party notices. Light and dark follow the Mac; the window keeps its size and the state eases in.
+
 ## 4. Commenting
 
 - Pipeup works as on a page that has it built in: the same control, menu, comments and add-ons, in the same looks.
@@ -171,3 +180,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-23 — HTML files opened from this computer: the panel says they're closed to extensions and how to open them so Pipeup can run; no address from the browser reads "This page", not "about" (§3). Found on a file opened in Safari.
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/extension-menu.html): one menu, built for the job. Before the first comment, one action and one sentence; with Pipeup on, six rows (name, Your comments on this page, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting) and More for preferences and ways out; no status line or footer; Pipeup's own menu isn't shown on the page; a one-time line after the first comment; Comments you've made becomes the first part of Settings (§3, §4a, §5). From the newcomer's first run in Safari and Chromium (23 November 2026).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run over the one menu: before the first comment the sentence says only what clicking does; the one-time line after it uses the menu's verbs (copy, save or send); Send to my agent is under More until it is set up; the hint on the page names no button; Settings reads in about a hundred words, the shortcuts on one line each and the agent set-up behind one line (§3, §4a, §5).
+- 2026-11-25 — Agreed with the maintainer (visual spec docs/design/safari-app-window.html): Safari's app window says whether Pipeup is on and does one thing about it, with a drawing instead of an introduction and steps; a footer of Support, Privacy, Source and Licences (§3). From the window's wall of text on a dev build.
