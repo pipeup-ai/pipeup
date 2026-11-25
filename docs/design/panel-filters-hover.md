@@ -1,5 +1,7 @@
 # All comments: filters that read as on/off, and actions on a closed card
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §7 (*All comments*, *Actions*). Builds on [panel-hub.md](panel-hub.md).
 
 ## The filters (`launcher.ts`, `styles.ts`)

@@ -1,5 +1,7 @@
 # One Copy row, Theme, and Space to pause
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (holding Space pauses comment mode) and §7 (the menu's rows). Builds on
 [panel-filters-hover.md](panel-filters-hover.md) and [comments-at-rest.md](comments-at-rest.md).
 

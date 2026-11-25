@@ -1,5 +1,7 @@
 # Dictation in Safari and Firefox
 
+Status: **built** (2026-10-29; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §11a (*Dictation*) and §14 (the speech-service exception). Reported
 on 0.8.2: "the microphone add-on doesn't seem to work well in Safari, or at all" and "I have not gotten the microphone
 to work in Firefox". Visual spec for the review: [Dictation in Safari and Firefox](https://claude.ai/artifact/6q8nsaVyk9QwU6uuPEpD3G) (29 October 2026).

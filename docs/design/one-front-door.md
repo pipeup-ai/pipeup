@@ -1,5 +1,7 @@
 # One front door: how the site builds it
 
+Status: **built** (2026-10-27; see the change log).
+
 Design note for WEBSITE_SPEC §3 items 1, 2, 2a and 3 (change log 2026-10-27). What it looks like and says is the visual
 spec, [one-front-door-mockups.html](one-front-door-mockups.html), revised by
 [one-screen-home-mockups.html](one-screen-home-mockups.html) (the home page fits one screen; What your AI does and The

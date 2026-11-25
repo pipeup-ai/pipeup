@@ -12,6 +12,7 @@ import {
   tally,
   type Ask,
 } from "./asks";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 const CSS = `*{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -121,7 +122,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "inline",
     api: 1,
-    version: "0.9.1",
+    version,
     needs: ["place", "post", "menu", "panel", "styles"],
     network: {
       when: "never",

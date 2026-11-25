@@ -2,6 +2,7 @@ import type { AddonHost, ItemHandle, PipeupAddon, SignedOp } from "pipeup";
 import { inboxId, keyFrom, open, seal, signedBy, type InboxKey } from "./crypto";
 import { Service } from "./service";
 import { pageSetting } from "@pipeup/kit";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 const KEEP = "pipeup:inbox-on";
 const PEOPLE = ["M12 12a4 4 0 1 0 0-8a4 4 0 0 0 0 8z", "M4 20c0-4 3.6-6 8-6s8 2 8 6"];
@@ -65,7 +66,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "inbox",
     api: 1,
-    version: "0.7.0-beta.1",
+    version,
     needs: ["menu", "notify", "panel", "sign"],
     network: {
       when: "after-consent",

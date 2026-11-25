@@ -8,10 +8,10 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  */
 async function writeComment(page: Page, text: string, on = "#p1"): Promise<void> {
   await page.bringToFront();
-  // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
+  // Pipeup has started in the tab; Comment on this page turned comment mode on. If it's off, the shortcut would turn
+  // it on, but the shortcut is the browser's own command (background.js), which a test can't press: the same
+  // message the command sends does.
   await expect(page.locator(".launch")).toBeAttached();
-  // Comment on this page starts comment mode from the background, a moment after Pipeup is added. If it isn't on yet,
-  // ask for it the same way (the message is idempotent); a key press here would race that and toggle it off again.
   if ((await page.locator(".launch .mode.on").count()) === 0) {
     const worker = page.context().serviceWorkers()[0];
     const [tab] = await worker.evaluate((url) => chrome.tabs.query({ url }), page.url());
@@ -409,7 +409,7 @@ test("in the side panel, a whole card opens its thread, and a comment on a pictu
   await expect(side.locator(".card.open").getByRole("textbox", { name: "Reply" })).toBeVisible();
 });
 
-test("the toolbar button's bubble follows the browser's look: light on a dark toolbar, dark on a light one", async ({
+test("the toolbar button is Pipeup's violet bubble, whatever the browser's or the system's look", async ({
   context,
   worker,
   id,
@@ -417,18 +417,112 @@ test("the toolbar button's bubble follows the browser's look: light on a dark to
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await panel(context, worker, id, page);
-  await expect
-    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
-    .toBe(false);
   await p.emulateMedia({ colorScheme: "dark" });
-  await expect
-    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
-    .toBe(true);
-  // Each look has its own bubble.
+  await page.waitForTimeout(300);
+  // One bubble, no light or dark pair, and nothing about the look is kept.
   const found = await p.evaluate(async () =>
-    Promise.all(["light", "dark"].map(async (look) => (await fetch(`icons/toolbar-${look}-32.png`)).ok)),
+    Promise.all(
+      ["toolbar-32", "toolbar-light-32", "toolbar-dark-32"].map((f) =>
+        fetch(`icons/${f}.png`).then(
+          (r) => r.ok,
+          () => false, // a file the package doesn't have: the browser refuses the fetch rather than answering 404
+        ),
+      ),
+    ),
   );
-  expect(found).toEqual([true, true]);
+  expect(found).toEqual([true, false, false]);
+  expect(await worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark)).toBeUndefined();
+  // The violet bubble, in the manifest, is what the toolbar shows.
+  const icon = await worker.evaluate(() => chrome.runtime.getManifest().action?.default_icon);
+  expect(icon).toEqual({ 16: "icons/toolbar-16.png", 32: "icons/toolbar-32.png" });
+});
+
+test("one shortcut: Alt+Shift+C is the browser's command for Comment on this page; the menu's own has no default key", async ({
+  worker,
+}) => {
+  const commands = await worker.evaluate(() => chrome.runtime.getManifest().commands);
+  expect(commands?.comment?.suggested_key?.default).toBe("Alt+Shift+C");
+  expect(commands?._execute_action?.suggested_key).toBeUndefined();
+  expect(Object.keys(commands ?? {}).sort()).toEqual(["_execute_action", "comment"]);
+});
+
+test("on a dark site with white links, the box keeps Pipeup's violet and its field stays transparent", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}dark-site.html`);
+  const p = await panel(context, worker, id, page);
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  const at = (await page.locator("#p1").boundingBox())!;
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  const box = page.frameLocator(".draft .line iframe").locator(".box");
+  await expect(box).toBeFocused();
+  // The accent is Pipeup's own, not the site's white link colour: the Comment button is violet.
+  const send = page.locator(".draft .send");
+  const [bg, layer] = await page.evaluate(() => {
+    const root = document.querySelector("pipeup-root")!.shadowRoot!;
+    return [
+      getComputedStyle(root.querySelector(".draft .send")!).backgroundColor,
+      root.querySelector(".layer")!.className,
+    ];
+  });
+  expect(layer).toContain("dark");
+  expect(bg).not.toMatch(/rgb\(2[2-5]\d, 2[2-5]\d, 2[2-5]\d\)/);
+  await expect(send).toBeVisible();
+  // The field's frame and its element agree on the dark scheme, so the browser paints no white backdrop.
+  const frame = page.locator(".draft .line iframe");
+  expect(await frame.evaluate((f) => getComputedStyle(f).colorScheme)).toBe("dark");
+  expect(await box.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+});
+
+test("on a page with Pipeup built in, the shortcut goes to the page's own Pipeup, and the menu says to use it", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}built-in-on.html`);
+  await expect(page.locator(".launch")).toBeAttached();
+  await expect(page.locator(".launch .mode.on")).toHaveCount(0);
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeVisible();
+  await expect(p.locator("#built-in kbd")).toHaveText(/C$|Shift\+Alt\+C/);
+  // What the shortcut does: the same path the browser's command takes.
+  const tab = await tabOf(worker, page);
+  await page.bringToFront();
+  const ok = await p.evaluate((tabId) => chrome.runtime.sendMessage({ type: "comment", tabId }), tab);
+  expect(ok).toEqual({ ok: true });
+  // The page's own Pipeup took it: its comment mode is on, and there is still one Pipeup, the page's.
+  await expect(page.locator(".launch .mode.on")).toBeAttached();
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).not.toHaveAttribute("data-pipeup-extension", "");
+});
+
+test("a root left by a cut-off copy of the extension isn't Pipeup built in: it is taken off and Pipeup starts", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  // What an orphan leaves: the extension's own root, marked, with no copy behind it to answer.
+  await page.evaluate(() => {
+    const root = document.createElement("pipeup-root");
+    root.setAttribute("data-pipeup-extension", "");
+    document.body.append(root);
+  });
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeHidden();
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  // One root, the live one, marked as the extension's.
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).toHaveAttribute("data-pipeup-extension", "");
 });
 
 test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({

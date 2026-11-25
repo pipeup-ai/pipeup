@@ -1,5 +1,7 @@
 # iPhone taps and keyboard
 
+Status: **built** (2026-10-18; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (touch screens, the on-screen keyboard), §7 (the menu by touch).
 Found demoing 0.8.0 on an iPhone, and reproduced in the iOS Simulator's Safari with an on-screen log of events: taps
 took several tries, and the keyboard covered the comment box. The touch review agents had used Chromium, which sends

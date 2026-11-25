@@ -14,8 +14,8 @@
     "default_title": "Pipeup",
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icons/toolbar-light-16.png",
-      "32": "icons/toolbar-light-32.png"
+      "16": "icons/toolbar-16.png",
+      "32": "icons/toolbar-32.png"
     }
   },
   "background": {
@@ -35,11 +35,14 @@
   ],
   "optional_host_permissions": ["<all_urls>"],
   "commands": {
-    "_execute_action": {
+    "comment": {
       "suggested_key": {
-        "default": "Alt+Shift+P"
+        "default": "Alt+Shift+C"
       },
-      "description": "Open Pipeup for this page"
+      "description": "Comment on this page: Pipeup on, then commenting off and on"
+    },
+    "_execute_action": {
+      "description": "Open Pipeup's menu for this page"
     }
   },
   "web_accessible_resources": [

@@ -4,6 +4,7 @@ import { openPaste, STYLES } from "./paste-view";
 import { agentPrompt } from "./prompt";
 import { listedAgents, repliesUrl, startReplies } from "./replies";
 import { pageSetting } from "@pipeup/kit";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 /** What this add-on borrows from the core's global: the page's comments, as an agent reads them. */
 interface Core {
@@ -51,7 +52,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "agents",
     api: 1,
-    version: "0.6.0",
+    version,
     needs: ["menu", "status", "notify", "listnote", "dialog", "styles", "paste"],
     network: { when: "page-configured", to: ["page"], says: SAYS },
     setup(host: AddonHost) {

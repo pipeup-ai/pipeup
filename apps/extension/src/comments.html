@@ -91,6 +91,9 @@
         line-height: 1.4;
       }
       .setting kbd {
+        display: inline-flex;
+        align-items: center;
+        gap: 1px;
         color: var(--muted);
         font:
           13px -apple-system,
@@ -169,12 +172,8 @@
 
     <h2>Keyboard</h2>
     <div class="setting">
-      <span>Turn Pipeup on<small>Any page</small></span
-      ><kbd>⇧⌥P</kbd>
-    </div>
-    <div class="setting">
-      <span>Comment mode<small>With Pipeup on</small></span
-      ><kbd>⇧⌥C</kbd>
+      <span>Comment on this page<small>Pipeup on, then commenting off and on</small></span
+      ><kbd data-keys="C"></kbd>
     </div>
 
     <h2>Pipeup on pages</h2>

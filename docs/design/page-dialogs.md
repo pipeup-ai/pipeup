@@ -1,5 +1,7 @@
 # Working in a page's own dialogs
 
+Status: **built** (2026-10-17; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §9 (*Pipeup keeps working while a page's own dialog is open*) and §7
 (messages while All comments is open). Found after 0.8.0-beta.3: with a dialog open, nothing on the page could be
 commented on.

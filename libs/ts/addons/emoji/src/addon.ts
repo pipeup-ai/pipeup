@@ -1,5 +1,6 @@
 import type { PipeupAddon } from "pipeup";
 import { createPicker } from "./picker";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 const CSS = `.emoji{display:flex;flex-direction:column;color:var(--pu-text);font-size:13px}
 .emoji-top{display:flex;gap:6px;padding:8px 8px 4px}
@@ -22,7 +23,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "emoji",
     api: 1,
-    version: "0.6.0",
+    version,
     needs: ["reactions", "styles"],
     network: {
       when: "never",

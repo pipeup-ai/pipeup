@@ -1,5 +1,6 @@
 import type { AddonHost, ItemHandle, PipeupAddon, SignedOp } from "pipeup";
 import { pageSetting } from "@pipeup/kit";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const NAME = /^[A-Za-z0-9-]{1,39}$/;
@@ -50,7 +51,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "github",
     api: 1,
-    version: "0.6.0",
+    version,
     needs: ["menu", "notify"],
     network: {
       when: "after-consent",

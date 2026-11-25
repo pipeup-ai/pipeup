@@ -11,6 +11,10 @@
     const path = script.src ? new URL(script.src, location.href).pathname : "";
     return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
   });
+  // The extension's own root carries a mark (set below). One left by a copy the browser has already cut off (the
+  // extension reloaded or replaced under an open tab; Safari doesn't always tell the old copy) is an orphan, not the
+  // page's own Pipeup: it is taken off, and this copy starts.
+  for (const orphan of document.querySelectorAll("pipeup-root[data-pipeup-extension]")) orphan.remove();
   if (document.querySelector("pipeup-root") || ownScript) {
     state.builtIn = true;
     return;
@@ -61,8 +65,11 @@
     frame.src = TYPING;
     frame.setAttribute("title", field.getAttribute("aria-label") ?? "");
     frame.setAttribute("tabindex", "0");
+    // The frame's colour scheme and the frame element's are set to the same value, from Pipeup's look, at every
+    // change: a browser paints an opaque backdrop behind a frame whose scheme differs from its element's (a white
+    // field with light words, on a dark site).
     frame.style.cssText =
-      "display:none;border:0;margin:0;padding:0;width:100%;min-width:0;flex:1;height:27px;background:transparent;color-scheme:normal";
+      "display:none;border:0;margin:0;padding:0;width:100%;min-width:0;flex:1;height:27px;background:transparent;color-scheme:light";
     const proto =
       field instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype;
     const value = Object.getOwnPropertyDescriptor(proto, "value");
@@ -109,7 +116,10 @@
     };
     const lookOf = () => {
       const s = getComputedStyle(field);
+      const scheme = field.closest(".layer")?.classList.contains("dark") ? "dark" : "light";
+      frame.style.colorScheme = scheme;
       return {
+        scheme,
         color: s.color,
         caret: s.caretColor,
         font: s.font,
@@ -335,11 +345,16 @@
       retire();
     }
   };
-  // The browser's look, for the toolbar button's bubble (background.js).
-  const dark = matchMedia("(prefers-color-scheme: dark)");
-  const sayLook = () => send({ type: "look", dark: dark.matches });
-  sayLook();
-  dark.addEventListener("change", sayLook);
+  // The shortcut is the browser's (background.js, chrome.commands): Pipeup's own copy of it stands aside here, so a
+  // press the browser also delivers to the page is one change, not two. Browsers without commands keep Pipeup's.
+  if (chrome.commands)
+    window.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.code === "KeyC" && e.shiftKey && e.altKey && !e.metaKey && !e.ctrlKey) e.preventDefault();
+      },
+      true,
+    );
   // An orphaned copy takes itself off the page, so the updated extension starts clean when it is pressed again.
   let retired = false;
   function retire() {
@@ -373,6 +388,9 @@
       settings: pageSettings(await settingsNow()),
       ...OPTIONS[mode],
     });
+    document
+      .querySelector("pipeup-root:not([data-pipeup-extension])")
+      ?.setAttribute("data-pipeup-extension", "");
     place = where();
     known = new Set(pu.document.threads().map((t) => t.id));
     state.mode = mode;

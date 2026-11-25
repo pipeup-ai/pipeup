@@ -237,7 +237,8 @@ test.describe("a phone (375 × 812)", () => {
     await tapAt(page, 2, 2);
     const hint = page.locator(".toast.show");
     await expect(hint).toContainText("Tap what you want to comment on");
-    await expect(hint).not.toContainText(/Tab|Option|Space|Esc|⇧⌥C|Shift\+Alt/);
+    await expect(hint).not.toContainText(/Tab|Option|Space|Esc|Shift\+Alt/);
+    await expect(hint.locator(".keys")).toHaveCount(0);
     const h = await boxOf(hint);
     const c = (await control(page).boundingBox())!;
     expect(apart(h, c)).toBe(true);
@@ -258,6 +259,20 @@ test.describe("a phone (375 × 812)", () => {
     await expect(page.locator(".namebar.show")).toHaveCount(0);
   });
 
+  test("by touch, the keyboard and mouse hints never come: a block taller than the screen says nothing about pinning", async ({
+    page,
+  }) => {
+    // The hero is taller than half the screen: with a mouse this is where Option-click to pin a spot would be said.
+    await open(page, "phone-site.html");
+    await commentMode(page);
+    const hero = (await page.locator("[data-pipeup-id=hero]").boundingBox())!;
+    await tapAt(page, hero.x + 6, hero.y + 40);
+    await expect(page.locator(".pop.show")).toBeVisible();
+    await page.waitForTimeout(400);
+    for (const t of await page.locator(".toast.show").allTextContents())
+      expect(t).not.toMatch(/Option-click|Alt-click|Tab moves|Hold Space/);
+  });
+
   test("on a touch-only screen the menu and the panel's footer show no keyboard shortcut", async ({
     page,
   }) => {
@@ -265,11 +280,11 @@ test.describe("a phone (375 × 812)", () => {
     await openMenu(page);
     const start = page.getByRole("menuitemcheckbox", { name: "Start commenting" });
     await expect(start).toBeVisible();
-    expect(await start.innerText()).not.toMatch(/⇧⌥C|Shift\+Alt\+C/);
+    await expect(start.locator(".keys")).toBeHidden();
     await page.getByRole("menuitem", { name: /All comments/ }).tap();
     const sw = page.locator(".all.show").getByRole("switch", { name: /Comment/ });
     await expect(sw).toBeVisible();
-    expect(await sw.innerText()).not.toMatch(/⇧⌥C|Shift\+Alt\+C/);
+    await expect(sw.locator(".keys")).toBeHidden();
   });
 
   test("everything a finger presses is at least 44 px across", async ({ page }) => {

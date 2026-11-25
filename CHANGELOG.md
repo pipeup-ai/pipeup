@@ -7,6 +7,16 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Each add-on reports its package's real version in Pipeup's add-ons list (they said 0.4.1 to 0.9.1 while all were 1.0.0).
+- `pipeup watch` refuses a page whose Pipeup is older than 0.7 (it used to serve 0.6 pages through their built-in agent support); 0.7 shipped in October 2026 and every page since takes the agents add-on.
+- On a touch screen, comment mode's one-time keyboard and mouse hints (Tab, Space, Option-click to pin) no longer appear; only the touch hint does, as the spec always said.
+- Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
+- Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
+- On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
+- Extension: in the light look, the menu's and Settings' small text is the page's own grey (5.4:1 on white, from 4.2:1), off switches have an edge so they can be found, and dividers are a touch darker. The dark look is unchanged.
+- Extension: one shortcut, Shift+Alt+C (⇧⌥C). With Pipeup off on the page it adds Pipeup and starts commenting; with Pipeup on it turns commenting off and on. Shift+Alt+P is no longer a default key for the toolbar menu, and Settings lists the one shortcut.
+- The Shift and Option keys in shortcuts (the control's tip, the menu's Commenting row, the extension's menu and Settings, the website) are drawn as Pipeup's own glyphs on a Mac, the same in every browser, instead of ⇧ and ⌥ from whatever font each browser fell back to; on Windows and Linux the extension's pages now say Shift+Alt+C and Shift+Alt+P like everything else.
+- Extension: the toolbar button is Pipeup's violet bubble in Chrome, Edge and Firefox too, whatever the browser's or the system's look; it no longer turns light grey on a light toolbar when the Mac is in dark mode.
 - Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
 - After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
 
