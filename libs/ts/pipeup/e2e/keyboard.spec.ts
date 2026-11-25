@@ -577,9 +577,7 @@ for (const fixture of ["doc.html", "controls.html"])
     await page.keyboard.type("Too vague");
     await page.keyboard.press("Enter");
     await expect.poll(() => cursorOn(page)).toEqual({ ...before, label: `${before.label}, has 1 comment` });
-    // The new thread is open; moving on closes it.
-    await expect(page.locator(".th.on, .pop.show [data-thread]")).toHaveCount(1);
-    await page.keyboard.press("Tab");
+    // The comment closes once sent: no thread is open (§7).
     await expect(page.locator(".th.on, .pop.show [data-thread]")).toHaveCount(0);
   });
 
@@ -682,13 +680,14 @@ test("the cursor moved off the draft's block lets go of it: ↑ moves the cursor
   expect(await page.evaluate(() => (window as any).slid)).toEqual([1, 0]);
 });
 
-test("without the cursor, focus after sending is in the new thread's reply line", async ({ page }) => {
+test("without the cursor, a sent comment closes and focus goes to the Comment control", async ({ page }) => {
   await open(page, "controls.html");
   await toggleCommenting(page);
   await page.locator("#card").click();
   await draftLine(page).fill("Plain?");
   await page.keyboard.press("Enter");
-  await expect(page.locator(".pop.show .rbox textarea")).toBeFocused();
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect(control(page)).toBeFocused();
 });
 
 test("a fresh landing starts at the landing block's level, not the one the cursor left", async ({ page }) => {
@@ -1141,8 +1140,10 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     await toggleCommenting(page);
     await commenting(page);
     expect(await cursorOn(page)).toBeNull();
-    await expect(page.locator(".toast.show")).toContainText("Tab between blocks");
+    await expect(page.locator(".toast.show")).toContainText("Click anything to comment");
     await page.keyboard.press("Tab");
+    // The first key pressed in comment mode: Tab moves between blocks, said once.
+    await expect(page.locator(".toast.show")).toContainText("Tab moves between blocks");
     await expect.poll(() => cursorOn(page)).toEqual({ label: "Heading, 1 of 8", block: "h1" });
     await page.keyboard.press("Tab");
     await expect.poll(() => cursorOn(page)).toMatchObject({ block: "p1" });
@@ -1189,7 +1190,7 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     expect(await page.evaluate(() => location.hash)).toBe("");
   });
 
-  test("after a comment sent from a click, Tab still goes through the thread's own buttons", async ({
+  test("after a comment sent from a click, its marker stays, nothing is open, and the next click goes on", async ({
     page,
   }) => {
     await open(page, "doc.html", { name: "Sam" });
@@ -1197,9 +1198,12 @@ test.describe("Tab in comment mode, however it was turned on", () => {
     await page.locator("#p2").click();
     await page.keyboard.type("Looks right");
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("textbox", { name: "Reply" })).toBeFocused();
-    await page.keyboard.press("Tab");
+    await expect(page.locator(".pop.show .draft, .th.on .draft")).toHaveCount(0);
+    await expect(page.locator(".pop.show, .th.on").getByRole("textbox", { name: "Reply" })).toHaveCount(0);
+    await expect(page.locator("[data-thread]").first()).toBeVisible();
     expect(await cursorOn(page)).toBeNull();
+    await page.locator("#p3").click();
+    await expect(draftLine(page)).toBeFocused();
   });
 
   test(

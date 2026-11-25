@@ -11,6 +11,7 @@
     "firefox": "npx @puppeteer/browsers install firefox@stable --path node_modules/.cache/firefox",
     "build:safari": "node ../../tools/build-extension.mjs --safari",
     "store-art": "node ../../tools/build-extension.mjs --test && STORE_ART=1 playwright test e2e/store-art.spec.ts --project=chromium",
+    "safari-install": "node ../../tools/safari-install.mjs",
     "safari-test": "node ../../tools/safari-ui-test.mjs"
   },
   "devDependencies": {

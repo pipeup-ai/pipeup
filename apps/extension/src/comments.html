@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Comments you've made · Pipeup</title>
+    <title>Settings · Pipeup</title>
     <link rel="stylesheet" href="popup.css" />
     <style>
+      /* Settings: about a hundred words. Comments you've made, the keyboard, two settings, then the add-ons and the
+         agent's set-up each behind one line. */
       body {
         width: auto;
         max-width: 720px;
@@ -20,6 +22,11 @@
       .lede {
         color: var(--muted);
         margin: 0 0 24px;
+      }
+      h2 {
+        font-size: 17px;
+        color: var(--strong);
+        margin: 32px 0 8px;
       }
       ol {
         list-style: none;
@@ -52,32 +59,47 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      h2 {
-        font-size: 17px;
-        color: var(--strong);
-        margin: 40px 0 12px;
+      li span {
+        flex: none;
+        color: var(--muted);
+        font-size: 13px;
       }
+      #none {
+        color: var(--muted);
+        margin: 0;
+      }
+      /* One line per setting or shortcut: its words, one sentence under them, and its switch or key at the end. */
       .setting {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
         padding: 12px 0;
-        border-top: 1px solid var(--line);
         border-bottom: 1px solid var(--line);
         font-size: 14px;
+        color: var(--strong);
+      }
+      h2 + .setting {
+        border-top: 1px solid var(--line);
       }
       .setting small {
+        display: block;
         max-width: 56ch;
         margin-top: 2px;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.4;
       }
-      .cmd {
-        overflow-x: auto;
-        padding: 10px 12px;
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+      .setting kbd {
+        display: inline-flex;
+        align-items: center;
+        gap: 1px;
+        color: var(--muted);
         font:
-          12.5px ui-monospace,
-          "SF Mono",
-          Menlo,
-          monospace;
-        color: var(--strong);
+          13px -apple-system,
+          "Segoe UI",
+          system-ui,
+          sans-serif;
       }
       .field {
         display: block;
@@ -92,60 +114,110 @@
         color: var(--strong);
         font: inherit;
       }
-      li span {
-        flex: none;
-        color: var(--muted);
-        font-size: 13px;
+      /* The add-ons and the agent's set-up, each behind one line until asked for. */
+      .line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        margin-top: 32px;
+        padding: 12px 0;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: none;
+        color: var(--strong);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+      .line small {
+        display: block;
+        color: var(--faint);
+        font-size: 12px;
+      }
+      .line .chev {
+        color: var(--faint);
+        transition: transform 0.24s ease;
+      }
+      .line[aria-expanded="true"] .chev {
+        transform: rotate(90deg);
+      }
+      .sub .sub-rows {
+        padding-left: 0;
+      }
+      .cmd {
+        overflow-x: auto;
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+        font:
+          12.5px ui-monospace,
+          "SF Mono",
+          Menlo,
+          monospace;
+        color: var(--strong);
       }
     </style>
   </head>
   <body>
-    <h1>Comments you've made</h1>
-    <p class="lede">
-      Every page you've commented on with the extension, newest first. They're kept in this browser.
-    </p>
-    <ol id="pages"></ol>
-    <p id="none" hidden>No comments yet. Open a page, press Pipeup in the toolbar, and comment.</p>
-    <h2>Settings</h2>
-    <div class="row setting">
+    <h1>Settings</h1>
+    <p class="lede">Everything here is kept in this browser.</p>
+
+    <h2 id="made">Comments you've made</h2>
+    <ol id="pages" aria-labelledby="made"></ol>
+    <p id="none" hidden>None yet. Press Pipeup in the toolbar on a page and click anything.</p>
+
+    <h2>Keyboard</h2>
+    <div class="setting">
+      <span>Comment on this page<small>Pipeup on, then commenting off and on</small></span
+      ><kbd data-keys="C"></kbd>
+    </div>
+
+    <h2>Pipeup on pages</h2>
+    <div class="setting">
       <label for="show-button">
-        Show Pipeup's button on pages
-        <small
-          >The comment button in the corner of each page, as on pages with Pipeup built in. Off, the toolbar
-          button is the way in. Takes effect the next time Pipeup starts on a page.</small
-        >
+        Show Pipeup's own button in the page's corner
+        <small>Instead of the toolbar button. From the next page Pipeup starts on.</small>
       </label>
       <input id="show-button" type="checkbox" role="switch" />
     </div>
-    <div class="row setting">
+    <div class="setting" id="pictures-row">
       <label for="pictures">
-        Keep a picture of where each comment was made
-        <small
-          >A small picture, so a comment whose place has gone still shows what it was about. Kept in this
-          browser only, never sent, shared or copied. Turning this off deletes the pictures kept.</small
-        >
+        Keep a small picture of where each comment was
+        <small>Only in this browser; never sent or copied. Off deletes them.</small>
       </label>
       <input id="pictures" type="checkbox" role="switch" />
     </div>
 
-    <h2>Add-ons</h2>
-    <p class="lede">
-      What each one sends, and where, is said in Pipeup's menu once it's on. Changes take effect the next time
-      Pipeup starts on a page.
-    </p>
-    <div id="addons"></div>
+    <button id="addons-line" class="line" type="button" aria-expanded="false" aria-controls="addons-box">
+      <span>Add-ons<small id="addons-said"></small></span><span class="chev" aria-hidden="true">›</span>
+    </button>
+    <div id="addons-box" class="sub" inert>
+      <div class="sub-rows">
+        <p class="lede" style="margin: 12px 0">
+          Their rows are under More in the toolbar menu, from the next page.
+        </p>
+        <div id="addons"></div>
+      </div>
+    </div>
 
     <section id="agent-section">
-      <h2>Send to my agent</h2>
-      <p class="lede">
-        Sends a page's comments to agents on this computer; their replies come back into the threads. Set it
-        up once, in a terminal:
-      </p>
-      <pre class="cmd"><code id="agent-cmd"></code></pre>
-      <p class="lede">
-        Agents then read with <code id="agent-read">npx --yes pipeup browser read</code> and answer with
-        <code id="agent-reply">npx --yes pipeup browser reply</code>.
-      </p>
+      <button id="agent-line" class="line" type="button" aria-expanded="false" aria-controls="agent-box">
+        <span>Send to an AI agent on this computer<small id="agent-said"></small></span
+        ><span class="chev" aria-hidden="true">›</span>
+      </button>
+      <div id="agent-box" class="sub" inert>
+        <div class="sub-rows">
+          <p class="lede" style="margin: 12px 0 0">
+            A page's comments go to the agent, and its replies come back into the threads. Set it up once, in
+            a terminal:
+          </p>
+          <pre class="cmd"><code id="agent-cmd"></code></pre>
+        </div>
+      </div>
     </section>
     <script type="module" src="comments.js"></script>
   </body>

@@ -1,3 +1,5 @@
+import { icon } from "./icons";
+
 /** The comment-mode shortcut: change the key, or its labels, here and nowhere else. */
 export const SHORTCUT = {
   /** The physical key (`KeyboardEvent.code`): Option changes the typed character on a Mac. */
@@ -14,6 +16,18 @@ export const SHORTCUT_LABEL: string = MAC ? "⇧⌥C" : "Shift+Alt+C";
 export const HOLD = " ";
 export const HOLD_LABEL = "Space";
 export const SHORTCUT_ARIA = "Shift+Alt+C";
+
+/**
+ * The shortcut as shown: on Apple platforms the Shift and Option keys as Pipeup's own glyphs (the fonts browsers fall
+ * back to draw ⇧ and ⌥ each their own way) and the letter; elsewhere the words. Decorative: callers set the ARIA.
+ */
+export function shortcutKeys(letter = "C"): HTMLElement {
+  const keys = document.createElement("span");
+  keys.className = "keys";
+  if (MAC) keys.append(icon("shift", 13, 1.9), icon("option", 13, 1.9), letter);
+  else keys.textContent = `Shift+Alt+${letter}`;
+  return keys;
+}
 
 /**
  * Shift+Option+C (Shift+Alt+C): never a key repeat, Command or Ctrl, or AltGr (which types characters).

@@ -70,7 +70,7 @@ _5978 characters. Revised against commit f1a7d76: the page's scripts can no long
 ```text
 Pipeup lets you comment on web pages and hand your comments to the person or AI agent who asked for your feedback.
 
-Press Pipeup in the toolbar (or Alt+Shift+P) and choose Comment on this page. Point at what you mean: select a few words, click a picture or a block, or pin a spot. A box opens beside it with the cursor in it. Write your note and press Enter. You can reply, resolve and reopen, and edit or delete your own comments.
+Press Pipeup in the toolbar and choose Comment on this page, or press Alt+Shift+C. Point at what you mean: select a few words, click a picture or a block, or pin a spot. A box opens beside it with the cursor in it. Write your note and press Enter. You can reply, resolve and reopen, and edit or delete your own comments.
 
 What you can do
 • Comment on ordinary web pages (http and https). The browser's own pages, such as settings, the new tab page and extension stores, are closed to extensions, and Pipeup says so there.
@@ -207,7 +207,7 @@ Untick (deferred publishing)
 ### Permission justifications
 #### activeTab
 ```text
-The reviewer gives Pipeup one tab at a time: by opening the toolbar menu (the button or Alt+Shift+P) or by choosing Comment with Pipeup in the right-click menu. activeTab gives access to that tab for that use, so no site access is asked for at install. With it, the menu shows the page's address and uses its title to name a saved file, Comment on this page adds Pipeup to the tab, and tabs.captureVisibleTab takes the small picture of where a new comment was made. Pictures are kept by the extension in this browser only, are deleted with their comment, and can be turned off in the settings, which deletes them all. The 'tabs' permission is not requested. On a site the reviewer set to Always on, Pipeup starts through the optional host permission instead (see that justification).
+The reviewer gives Pipeup one tab at a time: by opening the toolbar menu (the button), pressing the shortcut (Alt+Shift+C) or by choosing Comment with Pipeup in the right-click menu. activeTab gives access to that tab for that use, so no site access is asked for at install. With it, the menu shows the page's address and uses its title to name a saved file, Comment on this page adds Pipeup to the tab, and tabs.captureVisibleTab takes the small picture of where a new comment was made. Pictures are kept by the extension in this browser only, are deleted with their comment, and can be turned off in the settings, which deletes them all. The 'tabs' permission is not requested. On a site the reviewer set to Always on, Pipeup starts through the optional host permission instead (see that justification).
 ```
 #### scripting
 ```text
@@ -215,7 +215,7 @@ Used to add Pipeup to the page the reviewer chose: chrome.scripting.executeScrip
 ```
 #### storage
 ```text
-Pipeup keeps its data in chrome.storage.local, in this browser: the comments on each page with their full history (keyed by page), the list of pages commented on (address without query, title, time), each site's choices where Pipeup was started (look, Hide comments), the reviewer's display name and signing key, the settings (comments beside the page, Show Pipeup's button on pages, pictures on or off, which add-ons are on, the sharing address and the GitHub repository), add-ons' choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji), whether Send to my agent was used and which agent replies were added, the small pictures of where comments were made, and the toolbar icon's look. Nothing is written to the site's own storage. Comments leave the browser only through features the reviewer uses: Copy, Save, Send to my agent, and add-ons they turned on (Share and Live send while on).
+Pipeup keeps its data in chrome.storage.local, in this browser: the comments on each page with their full history (keyed by page), the list of pages commented on (address without query, title, time), each site's choices where Pipeup was started (look, Hide comments), the reviewer's display name and signing key, the settings (comments beside the page, Show Pipeup's button on pages, pictures on or off, which add-ons are on, the sharing address and the GitHub repository), add-ons' choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji), whether Send to my agent was used and which agent replies were added, the small pictures of where comments were made. Nothing is written to the site's own storage. Comments leave the browser only through features the reviewer uses: Copy, Save, Send to my agent, and add-ons they turned on (Share and Live send while on).
 ```
 #### unlimitedStorage
 ```text
@@ -324,7 +324,7 @@ No account, sign-in or setup is needed for the core features.
 Try it in a few minutes
 1. Pin Pipeup from the puzzle-piece menu.
 2. Open https://example.com (any ordinary http or https page works; the browser's own pages and the Web Store are closed to extensions, and Pipeup says so there).
-3. Press Pipeup in the toolbar (or Alt+Shift+P). The menu shows the page's address, Comment on this page, Always on for this site, the shortcut and a link to Comments you've made. Press Comment on this page.
+3. Press Pipeup in the toolbar (or press Alt+Shift+C, which does what Comment on this page does). The menu shows the page's address, Comment on this page, Always on for this site, the shortcut and a link to Comments you've made. Press Comment on this page.
 4. Comment mode starts: an outline follows the pointer. Select the words "Example Domain", or click the heading. A box opens beside it with the cursor in it. Type "Sam: make this heading shorter" and press Enter. The place is marked on the page, and the toolbar button shows a count.
 5. Press Pipeup again. The menu now lists your name, Copy comments, Save comments, Send to my agent, Theme, Comments, Keep comments beside the page, Hide comments, Start commenting, Always on for this site and Turn off on this page. Press Comments: the comment list opens on the page. Turn on Keep comments beside the page: the list moves into the browser's side panel, with Reply and Resolve.
 6. Copy comments > As Markdown puts the comment on the clipboard. Save comments > As a Markdown file saves it to Downloads.
@@ -404,7 +404,7 @@ _5,912 characters, counted (limit 250 to 10,000). Names no other browser. Covers
 Pipeup lets you comment on the web pages you visit, and pass those comments to the person or AI agent who asked for your feedback.
 
 HOW IT WORKS
-- Open a page, press Pipeup in the toolbar (or Alt+Shift+P) and choose Comment on this page.
+- Open a page, press Pipeup in the toolbar and choose Comment on this page (or press Alt+Shift+C).
 - Point at what you mean: select words, or click a picture, a block or a point on the page. A comment box opens beside it with the cursor in it.
 - Each comment is a thread. You can reply, resolve it, and edit or delete your own comments.
 - Comments, in the toolbar menu, shows every comment on the page. Turn on Keep comments beside the page to see them in the browser's sidebar instead.
@@ -531,7 +531,7 @@ Pipeup
 ### Permission justifications
 #### activeTab
 ```text
-Pipeup works only on the tab where the person presses its toolbar button, its shortcut (Alt+Shift+P) or its right-click item, Comment with Pipeup. That press lets the menu show the page's address and title (the title names a saved file), lets Comment on this page add Pipeup to that tab, and lets the extension take a small picture of where each new comment was made (tabs.captureVisibleTab). The picture is cropped to the comment's place, kept in the extension's storage in this browser, never sent, and deleted with its comment. Because of activeTab, installing gives no access to any site.
+Pipeup works only on the tab where the person presses its toolbar button, its shortcut (Alt+Shift+C) or its right-click item, Comment with Pipeup. That press lets the menu show the page's address and title (the title names a saved file), lets Comment on this page add Pipeup to that tab, and lets the extension take a small picture of where each new comment was made (tabs.captureVisibleTab). The picture is cropped to the comment's place, kept in the extension's storage in this browser, never sent, and deleted with its comment. Because of activeTab, installing gives no access to any site.
 ```
 #### scripting
 ```text
@@ -539,7 +539,7 @@ Injects Pipeup's comment layer, which is packaged in the extension (start.js, pi
 ```
 #### storage
 ```text
-Keeps everything the extension holds in this browser: each page's comments and their history, the list of pages commented on (address without query, title, time), the person's name and signing key, per-site look, Hide comments and first-run choices, settings (pinned, show button, pictures, add-ons, sharing address, GitHub repository), the add-ons' own choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji and skin tone), the pictures of where comments were made, whether Send to my agent has been used, the agent replies already shown, and the toolbar icon's light or dark look. Keeping these here means nothing goes into the site's own storage, so a page can't read them or set them. Nothing is synced or sent to the developer.
+Keeps everything the extension holds in this browser: each page's comments and their history, the list of pages commented on (address without query, title, time), the person's name and signing key, per-site look, Hide comments and first-run choices, settings (pinned, show button, pictures, add-ons, sharing address, GitHub repository), the add-ons' own choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji and skin tone), the pictures of where comments were made, whether Send to my agent has been used, and the agent replies already shown. Keeping these here means nothing goes into the site's own storage, so a page can't read them or set them. Nothing is synced or sent to the developer.
 ```
 #### unlimitedStorage
 ```text

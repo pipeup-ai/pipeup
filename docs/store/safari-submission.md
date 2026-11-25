@@ -6,18 +6,23 @@ your Apple account, your password or a legal answer.
 
 ## A. Check it in Safari (about 25 minutes, before anything else)
 
-`npm run safari-test` in apps/extension drives the newcomer's first run in Safari itself (see
-[docs/design/safari-ui-tests.md](../design/safari-ui-tests.md)); the rest of the checklist is still by hand.
+Nothing can drive Safari with an extension in it but the project's own UI test, so this is the test of the extension
+in Safari itself.
 
-1. Build and open the app: `node tools/build-extension.mjs --safari`, then open
-   `apps/extension/dist/safari-app/build/Build/Products/Debug/Pipeup.app`. Its window says whether Pipeup is on.
-2. **(you)** Safari → Settings → Advanced → turn on **Show features for web developers**. Then Develop → **Allow
-   Unsigned Extensions** (asks for your password; Safari forgets it when it quits).
-3. Safari → Settings → Extensions → turn on **Pipeup**.
-4. Serve the sample page: `python3 -m http.server 8792 --directory apps/site/_site` (after `apps/site/build.sh`), and
-   open `http://localhost:8792/extension-test.html`.
-5. Run the Safari column of [the hand checklist](../testing/extension-checklist.md). Watch these first, which only
-   Chrome and Firefox have tested so far:
+1. Once: put `APPLE_TEAM_ID=<your team id>` in `.env.local` at the repository's root (git ignores it; Xcode → Settings
+   → Accounts shows the id). The Mac needs an Apple Development certificate, which Xcode makes under that account.
+2. `npm run safari-install` in apps/extension. It builds the app signed by your development certificate, with a fresh
+   build number, forgets any other copy of the app the Mac knows, installs the one copy at
+   `apps/extension/dist/Pipeup.app` and opens it. Its window says whether Pipeup is on in Safari.
+3. **(you)** The first time only: Safari → Settings → Extensions → tick **Pipeup**. Signed, it stays on across Safari's
+   restarts; nothing in the Develop menu is needed. (An unsigned build, `--unsigned`, is turned off at every start until
+   Develop → Allow Unsigned Extensions is on again, which asks for your password and is forgotten when Safari quits.)
+4. `npm run safari-test` runs the first run in Safari and keeps a screenshot of every step in
+   `apps/extension/dist/safari-ui-test/`. It checks first that the installed app is the current build and the only one
+   Safari sees, and says plainly when the button is missing from the toolbar.
+5. Then the Safari column of [the hand checklist](../testing/extension-checklist.md), on
+   `http://localhost:8792/extension-test.html` (the test's server, or `python3 -m http.server 8792 --directory
+   apps/site/_site` after `apps/site/build.sh`). Watch these first:
    - **13a**: type quickly the moment a comment box opens: every letter arrives. The box is the extension's own frame.
    - Esc, Shift+Return and a reply in a thread, typed in that frame.
    - **38**: the settings list Emoji, Voice, Save to GitHub and My identity, and no pictures switch.
@@ -55,7 +60,7 @@ your Apple account, your password or a legal answer.
    Connect → Upload.
 4. **TestFlight:** in App Store Connect → TestFlight, add yourself as an internal tester and install the build on a
    Mac (or a new macOS user) that never had Pipeup. Turn it on in Safari and check what Safari asks the first time, and
-   that Option-Shift-P starts Pipeup.
+   that Option-Shift-C starts Pipeup with commenting on.
 5. **The version's page** (App Store Connect → the app → macOS App), from the Safari section of the listings doc:
    - Promotional text, Description, Keywords, Support URL (`https://pipeup-ai.github.io/pipeup/support.html`),
      Marketing URL (`https://pipeup-ai.github.io/pipeup/`), Copyright (`2026 Pipeup contributors`).
@@ -79,3 +84,5 @@ your Apple account, your password or a legal answer.
 - 2026-11-10: The app is created in App Store Connect as Pipeup: Commenting for HTML; build 0.9.1 (1) uploaded for
   TestFlight from Xcode's Organizer.
 - 2026-11-23: Section A points at the Safari UI test for the first run.
+- 2026-11-25: A development build signed by the team (APPLE_TEAM_ID) needs no Allow Unsigned Extensions; one copy in one place, since Safari turns the extension off when the app under it changes.
+- 2026-11-25: Step A is one command, npm run safari-install: a signed build, one copy, a fresh build number; the test checks the install before it runs.

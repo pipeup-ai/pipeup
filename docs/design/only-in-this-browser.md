@@ -1,5 +1,7 @@
 # Only in this browser
 
+Status: **built** (2026-10-30; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §11 (the shared copy). Visual spec:
 [Only in this browser](https://claude.ai/artifact/BmLqPSCE5LgpV3kJhcUZok) (29 October 2026), approved with one wording and
 the size budget raised to 60.5 KB. Follows [comments-stay-here.md](comments-stay-here.md), which says where comments

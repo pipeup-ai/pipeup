@@ -97,16 +97,19 @@ test("in Firefox, Comment on this page adds Pipeup in comment mode; comments are
     "a picture of where the comment was made",
   );
 
-  // Firefox has a sidebar and reaches agents on this computer: both rows are offered; the setup needs no id.
+  // Firefox has a sidebar and reaches agents on this computer: both rows are offered (the agent's under More until
+  // it is set up); the setup needs no id.
   await p.close();
   p = await panel(browser, page);
   await until(() => p.$eval("#count", (e) => e.textContent === "1"), "the count");
   expect(await p.$eval("#pin-row", (e) => (e as HTMLElement).hidden)).toBe(false);
-  expect(await p.$eval("#agent-group", (e) => (e as HTMLElement).hidden)).toBe(false);
-  await press(p, "Send to my agent");
+  expect(await p.$eval("#agent", (e) => (e as HTMLElement).hidden)).toBe(true);
+  expect(await p.$eval("#agent-setup", (e) => (e as HTMLElement).hidden)).toBe(false);
+  await press(p, "More");
+  await press(p, "Send to an AI agent on this computer");
   // Firefox asks the reviewer to agree first; the test can't answer, so nothing is sent.
   await until(
-    () => p.$eval("#agent-said", (e) => /Firefox wasn't allowed/.test(e.textContent ?? "")),
+    () => p.$eval("#agent-setup-said", (e) => /Firefox wasn't allowed/.test(e.textContent ?? "")),
     "Firefox's question before anything is sent",
   );
 

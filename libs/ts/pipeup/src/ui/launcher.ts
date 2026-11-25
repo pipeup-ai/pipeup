@@ -8,7 +8,7 @@ import type { Ctx, Draft, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
 import { setting } from "./settings";
-import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
+import { SHORTCUT_ARIA, shortcutKeys } from "./shortcut";
 import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
 import { narrow, PANEL, touch } from "./layout";
@@ -58,7 +58,7 @@ export function createLauncher(ctx: Ctx): View {
   const tip = h(
     "span",
     { class: "ttip", "aria-hidden": "true" },
-    h("span", {}, tipWords, h("small", {}, SHORTCUT_LABEL)),
+    h("span", {}, tipWords, h("small", {}, shortcutKeys())),
   );
   // One click on the control starts or stops comment mode; ⋯ just left of it, shown when pointed at, opens the menu.
   const dots = h(
@@ -70,6 +70,9 @@ export function createLauncher(ctx: Ctx): View {
   // The page has its own way to start commenting (§4a): Pipeup's control steps aside; its menu and panel stay.
   const pageOwned = setting("data-pipeup-control") === "off";
   if (pageOwned) launch.classList.add("off");
+  // The host draws Pipeup's menu itself (the browser extension's toolbar menu): no ⋯ on the page, by the control or in
+  // the panel's bar, which keeps the name and the Comment switch.
+  const hostMenu = setting("data-pipeup-menu") === "off";
   /** Where focus goes back to when the page's own control opened the menu or the panel. */
   let returnTo: HTMLElement | null = null;
   const focusBack = () => {
@@ -181,7 +184,7 @@ export function createLauncher(ctx: Ctx): View {
       "aria-keyshortcuts": SHORTCUT_ARIA,
     },
     "Comment",
-    h("small", { class: "ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("small", { class: "ks", "aria-hidden": "true" }, shortcutKeys()),
     h("span", { class: "sw", "aria-hidden": "true" }),
   );
   footSwitch.addEventListener("click", (e) => {
@@ -211,6 +214,10 @@ export function createLauncher(ctx: Ctx): View {
   const wireDot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   wireDot.setAttribute("r", "4");
   wire.append(wirePath, wireDot);
+  if (hostMenu) {
+    dots.remove();
+    more.remove();
+  }
   // Closed, the menu and panels are out of the keyboard's reach.
   menu.inert = all.inert = true;
   // The panel comes last: open, it covers the control (its own close button and Esc take its place).
@@ -965,7 +972,7 @@ export function createLauncher(ctx: Ctx): View {
       }
     },
     true,
-    h("span", { class: "kc ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("span", { class: "kc ks", "aria-hidden": "true" }, shortcutKeys()),
   );
   startRow.dataset.item = "comment";
   startRow.setAttribute("aria-keyshortcuts", SHORTCUT_ARIA);

@@ -1,5 +1,7 @@
-// The toolbar panel: Pipeup's menu. It reads the tab's state each time it opens: on, off, built in, or a page
-// extensions can't reach. With Pipeup on, every row of Pipeup's own menu is here, drawn by the extension.
+// The toolbar panel: Pipeup's menu, the one menu in the extension. It reads the tab's state each time it opens: on,
+// off, built in, or a page extensions can't reach. Off, one action and one sentence. On, six rows for the reviewer's
+// job (comment, then get the comments to whoever asked) and More for everything set once or rarely. Design note:
+// docs/design/one-menu.md.
 import { agentSetup, agreeToSend, browserName, canPin, canReachAgents, openSide } from "./browser.js";
 
 const $ = (id) => document.getElementById(id);
@@ -60,12 +62,18 @@ async function probe() {
   try {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () =>
-        !!document.querySelector("pipeup-root") ||
-        [...document.scripts].some((script) => {
-          const path = script.src ? new URL(script.src, location.href).pathname : "";
-          return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
-        }),
+      // A root with the extension's mark and no live copy answering for it is an orphan (the extension was reloaded
+      // or replaced under this tab): taken off here, so the page reads as off, not as Pipeup built in.
+      func: () => {
+        for (const orphan of document.querySelectorAll("pipeup-root[data-pipeup-extension]")) orphan.remove();
+        return (
+          !!document.querySelector("pipeup-root") ||
+          [...document.scripts].some((script) => {
+            const path = script.src ? new URL(script.src, location.href).pathname : "";
+            return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
+          })
+        );
+      },
     });
     return { on: false, builtIn: !!result, count: 0 };
   } catch {
@@ -95,6 +103,58 @@ async function always() {
 /** Kept for every site: comments pinned beside the page in the side panel, or popovers on it. */
 const settings = async () => (await chrome.storage.local.get("settings")).settings ?? {};
 
+// Save as a file and More open in place, under their row, and fold back with ‹, Esc or ←.
+const SUBS = { save: "save-as", more: "more-rows" };
+function fold(id, open) {
+  const sub = $(SUBS[id]);
+  sub.classList.toggle("open", open);
+  sub.inert = !open;
+  $(id).setAttribute("aria-expanded", String(open));
+  $(id).querySelector(".chev").textContent = open ? "‹" : "›";
+}
+const isOpen = (id) => $(id).getAttribute("aria-expanded") === "true";
+for (const id of Object.keys(SUBS)) $(id).addEventListener("click", () => fold(id, !isOpen(id)));
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" && e.key !== "ArrowLeft") return;
+  if (e.target instanceof HTMLInputElement && e.target.type === "text") return;
+  const open = Object.keys(SUBS).find(
+    (id) => isOpen(id) && ($(SUBS[id]).contains(e.target) || e.target === $(id)),
+  );
+  if (!open) return;
+  e.preventDefault();
+  fold(open, false);
+  $(open).focus();
+});
+
+/** The add-ons' own rows (Share, Live and the rest), under More, as Pipeup's menu would show them: words only. */
+function extras(rows) {
+  const box = $("extras");
+  box.replaceChildren(
+    ...rows.map((r) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "item";
+      b.title = r.hint;
+      const label = Object.assign(document.createElement("span"), { textContent: r.label });
+      b.append(label);
+      if (r.count) b.append(Object.assign(document.createElement("small"), { textContent: r.count }));
+      if (r.checked !== undefined) {
+        b.setAttribute("role", "switch");
+        b.setAttribute("aria-checked", String(r.checked));
+        const sw = document.createElement("span");
+        sw.className = "sw";
+        sw.setAttribute("aria-hidden", "true");
+        b.append(sw);
+      }
+      b.addEventListener("click", async () => {
+        await ask("row", r.key);
+        await show();
+      });
+      return b;
+    }),
+  );
+}
+
 let state = null;
 async function show() {
   state = web ? await probe() : null;
@@ -103,26 +163,31 @@ async function show() {
   $("built-in").hidden = !state?.builtIn;
   $("off").hidden = !state || state.on || state.builtIn;
   $("on").hidden = !state?.on;
-  $("stop").hidden = !state?.on;
-  $("always-row").hidden = !state || state.builtIn || local;
-  $("local-row").hidden = !state || state.builtIn || !local;
-  $("local").checked =
-    (await chrome.scripting.getRegisteredContentScripts({ ids: ["always local"] })).length > 0;
   if (state?.on) {
     $("count").textContent = String(state.count);
     $("count").hidden = state.count === 0;
     $("commenting").checked = state.commenting;
     $("hide").checked = state.hidden;
     $("theme-now").textContent = LOOK_WORDS[state.look] ?? "Automatic";
-    $("who-name").textContent = state.name || "Add your name";
-    $("who-hint").textContent = state.name ? "Edit name" : "Add name";
+    // Who you are: the name, or the animal Pipeup gave until there is one, with the invitation beside it.
+    $("who-name").textContent = state.name || state.animal || "You";
+    $("who-hint").textContent = state.name ? "Edit" : "Add your name";
     $("pinned").checked = canPin && !!(await settings()).pinned;
     // Safari has no panel beside the page, nor a way to reach agents on this computer: those rows aren't offered.
     $("pin-row").hidden = !canPin;
-    $("agent-group").hidden = !canReachAgents;
-    $("extras").hidden = !state.extras;
+    // Send to my agent is in the top level once it is set up (a send has reached an agent), naming the agent that
+    // last answered; until then it is under More, as a row to set up once.
+    const { agentUsed, agentName } = await chrome.storage.local.get(["agentUsed", "agentName"]);
+    $("agent").hidden = !canReachAgents || !agentUsed;
+    $("agent-setup").hidden = !canReachAgents || !!agentUsed;
+    $("agent-said").textContent = agentName || "on this computer";
+    $("always-row").hidden = local;
+    $("local-row").hidden = !local;
+    $("local").checked =
+      (await chrome.scripting.getRegisteredContentScripts({ ids: ["always local"] })).length > 0;
+    $("always").checked = await always();
+    extras(state.rows ?? []);
   }
-  $("always").checked = await always();
 }
 
 /** The panel's job is done: it closes so the reviewer is straight on the page (opened in a tab, it stays and updates). */
@@ -173,25 +238,14 @@ $("commenting").addEventListener("change", async (e) => {
   await done();
 });
 
-// Comments: every comment. Pinned, in the side panel; otherwise in Pipeup's own panel on the page.
+// Your comments on this page: every comment. Pinned, in the side panel; otherwise in Pipeup's own panel on the page.
 $("all").addEventListener("click", async () => {
   if (state?.mode === "pinned") await openComments();
   else await ask("all");
   await done();
 });
 
-// Add-ons' own rows (Share, Live and the rest) are in Pipeup's menu on the page.
-$("extras").addEventListener("click", async () => {
-  await ask("menu");
-  await done();
-});
-
-// Save comments: one row that opens to its two choices; the file is saved where the browser saves downloads.
-$("save").addEventListener("click", () => {
-  const open = $("save-as").hidden;
-  $("save-as").hidden = !open;
-  $("save").setAttribute("aria-expanded", String(open));
-});
+// Save as a file: a Markdown file or a Pipeup file, saved where the browser saves downloads.
 const fileName = (ext) =>
   `${
     (tab.title || url.host)
@@ -207,8 +261,8 @@ async function save(text, ext, type) {
   document.body.append(a);
   a.click();
   a.remove();
+  fold("save", false);
   $("saved").textContent = "Saved";
-  $("save-as").hidden = true;
 }
 $("save-md").addEventListener("click", async () => {
   const text = await ask("copy", "ai");
@@ -228,27 +282,38 @@ async function agentReplies() {
   const back = await chrome.runtime
     .sendNativeMessage(HOST, { type: "replies", doc: sent.doc })
     .catch(() => null);
-  return back?.ok && back.replies.length ? ((await tell("agentReplies", { replies: back.replies })) ?? 0) : 0;
+  if (!back?.ok || !back.replies.length) return 0;
+  // The agent that last answered names the row from now on.
+  const agent = back.replies.at(-1)?.agent;
+  if (agent) await chrome.storage.local.set({ agentName: String(agent) });
+  return (await tell("agentReplies", { replies: back.replies })) ?? 0;
 }
-$("agent").addEventListener("click", async () => {
+/** Sends to the agent, from either row: set up, it says so and the row moves to the top level; else the one command. */
+async function sendToAgent(said) {
   // Firefox asks first; the question is put in answer to this press, before anything is awaited.
   if (!(await agreeToSend())) {
-    $("agent-said").textContent = "not sent: Firefox wasn't allowed to";
+    said.textContent = "not sent: Firefox wasn't allowed to";
     return;
   }
   const sent = await tell("agentSend");
   if (!sent) return;
   const answer = await chrome.runtime.sendNativeMessage(HOST, { type: "send", ...sent }).catch(() => null);
   if (!answer?.ok) {
+    // The command is under More, with the set-up row: opened, in case the press came from the top level.
     $("agent-cmd").textContent = agentSetup();
     $("agent-help").hidden = false;
-    $("agent-said").textContent = "not set up yet";
+    said.textContent = "Not set up yet";
+    fold("more", true);
     return;
   }
-  $("agent-said").textContent = "Sent";
+  said.textContent = "Sent";
   await chrome.storage.local.set({ agentUsed: true });
   await agentReplies();
-});
+  await show();
+  $("agent-said").textContent = "Sent";
+}
+$("agent").addEventListener("click", () => sendToAgent($("agent-said")));
+$("agent-setup").addEventListener("click", () => sendToAgent($("agent-setup-said")));
 $("agent-copy").addEventListener(
   "click",
   () => void navigator.clipboard.writeText($("agent-cmd").textContent),
@@ -323,14 +388,9 @@ $("name").addEventListener("keydown", (e) => {
   }
 });
 
-// Copy comments: one row that opens to its two choices.
-$("copy").addEventListener("click", () => {
-  const open = $("copy-as").hidden;
-  $("copy-as").hidden = !open;
-  $("copy").setAttribute("aria-expanded", String(open));
-});
-const copy = async (as) => {
-  const text = await ask("copy", as);
+// Copy comments, one press: readable text a person can paste into a message or an AI chat, which is also Markdown.
+$("copy").addEventListener("click", async () => {
+  const text = await ask("copy", "ai");
   if (typeof text !== "string") return;
   try {
     await navigator.clipboard.writeText(text);
@@ -339,16 +399,13 @@ const copy = async (as) => {
   } catch {
     $("copied").textContent = "Couldn't copy";
   }
-  $("copy-as").hidden = true;
-  $("copy").setAttribute("aria-expanded", "false");
-};
-$("copy-md").addEventListener("click", () => void copy("ai"));
-$("copy-text").addEventListener("click", () => void copy("text"));
+});
 
 $("stop").addEventListener("click", async () => {
   await tell("off");
   // Pipeup takes itself off a moment after answering.
   for (let i = 0; i < 40 && (await tell("probe")); i++) await new Promise((r) => setTimeout(r, 50));
+  fold("more", false);
   await show();
 });
 

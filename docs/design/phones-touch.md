@@ -1,5 +1,7 @@
 # Phones and touch
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (touch: 44 px, fitting the screen, Pin, the touch hint), §7
 (nothing under the control, the reply box waits, bubbles on screen, the menu fits, the narrow panel), §7b (a long
 press on a reaction). From the touch review of 0.8.0-beta.2 (findings T03 to T18). Builds on

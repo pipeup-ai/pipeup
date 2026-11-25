@@ -14,98 +14,110 @@
       </div>
     </header>
     <main id="main" aria-live="polite">
+      <!-- Off: one action and one sentence, nothing else before the first comment. -->
       <section id="off" hidden>
         <button id="start" class="main" type="button">Comment on this page</button>
+        <p class="note">Click anything on the page to comment on it.</p>
         <p id="asks" class="help" hidden>
           Safari will ask once whether Pipeup may see websites. Choose Always Allow on Every Website: comments
           stay in this browser, and Safari won't ask again.
         </p>
       </section>
+      <!-- On: Pipeup's menu, built for the job: comment, then get the comments to whoever asked. -->
       <section id="on" class="rows" hidden>
-        <p id="status" class="status">Comments stay in this browser until you send them</p>
         <button id="who" class="item" type="button">
-          <span id="who-name">Add your name</span><small id="who-hint">Add name</small>
+          <span id="who-name">You</span><small id="who-hint">Add your name</small>
         </button>
         <form id="name-form" class="item name" hidden>
           <label class="sr" for="name">Your name</label>
           <input id="name" type="text" maxlength="80" autocomplete="name" placeholder="Your name" />
         </form>
-        <button id="copy" class="item" type="button" aria-expanded="false">
-          <span>Copy comments</span><small id="copied">›</small>
-        </button>
-        <div id="copy-as" class="sub" hidden>
-          <button id="copy-md" class="item" type="button">As Markdown<small>for an AI</small></button>
-          <button id="copy-text" class="item" type="button">As text</button>
-        </div>
-        <button id="save" class="item" type="button" aria-expanded="false">
-          <span>Save comments</span><small id="saved">›</small>
-        </button>
-        <div id="save-as" class="sub" hidden>
-          <button id="save-md" class="item" type="button">
-            As a Markdown file<small>for people and AIs</small>
-          </button>
-          <button id="save-file" class="item" type="button">
-            As a Pipeup file<small>to open again</small>
-          </button>
-        </div>
-        <div id="agent-group">
-          <button id="agent" class="item" type="button">
-            <span>Send to my agent</span><small id="agent-said">on this computer</small>
-          </button>
-          <p id="agent-help" class="help" hidden>
-            Set up once, in a terminal:
-            <code id="agent-cmd"></code>
-            <button id="agent-copy" class="btn-link" type="button">Copy</button>
-          </p>
-        </div>
-        <button id="extras" class="item" type="button" hidden>
-          <span>More from add-ons</span><small>›</small>
-        </button>
-        <button id="theme" class="item" type="button">
-          <span>Theme</span><small id="theme-now">Automatic</small>
-        </button>
         <button id="all" class="item" type="button">
-          <span>Comments</span><span id="count" class="n">0</span>
+          <span>Your comments on this page</span><span id="count" class="n">0</span>
         </button>
-        <label id="pin-row" class="item" for="pinned">
-          <span>Keep comments beside the page</span>
-          <input id="pinned" type="checkbox" role="switch" />
-        </label>
-        <label class="item" for="hide">
-          <span>Hide comments</span>
-          <input id="hide" type="checkbox" role="switch" />
-        </label>
-        <label class="item first" for="commenting">
-          <span>Start commenting</span>
-          <span class="end"><kbd>⇧⌥C</kbd><input id="commenting" type="checkbox" role="switch" /></span>
-        </label>
         <hr />
-      </section>
-      <section id="local-row" class="row item-row" hidden>
-        <label for="local">
-          <span>Always on for local pages</span>
-          <small>localhost and 127.0.0.1, any port</small>
+        <button id="copy" class="item" type="button">
+          <span class="strong">Copy comments</span><small id="copied">to paste anywhere</small>
+        </button>
+        <button id="save" class="item" type="button" aria-expanded="false" aria-controls="save-as">
+          <span>Save as a file</span><small id="saved" class="chev">›</small>
+        </button>
+        <div id="save-as" class="sub" inert>
+          <div class="sub-rows">
+            <button id="save-md" class="item" type="button">
+              <span>A Markdown file</span><small>for people and AIs</small>
+            </button>
+            <button id="save-file" class="item" type="button">
+              <span>A Pipeup file</span><small>to open again</small>
+            </button>
+          </div>
+        </div>
+        <!-- Send to my agent, once it is set up (until then its row is under More). -->
+        <button id="agent" class="item" type="button" hidden>
+          <span>Send to my agent</span><small id="agent-said">on this computer</small>
+        </button>
+        <hr />
+        <label class="item" for="commenting">
+          <span>Commenting</span>
+          <span class="end"
+            ><kbd data-keys="C"></kbd><input id="commenting" type="checkbox" role="switch"
+          /></span>
         </label>
-        <input id="local" type="checkbox" role="switch" />
+        <!-- More: everything a person sets once or rarely, and the ways out. Opens in place; ‹, Esc or ← folds it. -->
+        <button id="more" class="item" type="button" aria-expanded="false" aria-controls="more-rows">
+          <span>More</span><small class="chev">›</small>
+        </button>
+        <div id="more-rows" class="sub" inert>
+          <div class="sub-rows">
+            <button id="theme" class="item" type="button">
+              <span>Theme</span><small id="theme-now">Automatic</small>
+            </button>
+            <label class="item" for="hide">
+              <span>Hide comments</span>
+              <input id="hide" type="checkbox" role="switch" />
+            </label>
+            <label id="pin-row" class="item" for="pinned">
+              <span>Keep comments beside the page</span>
+              <input id="pinned" type="checkbox" role="switch" />
+            </label>
+            <label id="local-row" class="item tall" for="local" hidden>
+              <span>Always on for local pages<small>localhost and 127.0.0.1, any port</small></span>
+              <input id="local" type="checkbox" role="switch" />
+            </label>
+            <label id="always-row" class="item tall" for="always" hidden>
+              <span
+                ><span id="always-label">Always on for this site</span
+                ><small>Pipeup starts whenever you open it</small></span
+              >
+              <input id="always" type="checkbox" role="switch" />
+            </label>
+            <!-- Send to an AI agent, until it is set up: the row opens to the one command. -->
+            <button id="agent-setup" class="item tall" type="button" hidden>
+              <span>Send to an AI agent on this computer<small id="agent-setup-said">Set up once</small></span
+              ><small class="chev">›</small>
+            </button>
+            <p id="agent-help" class="help" hidden>
+              Set up once, in a terminal:
+              <code id="agent-cmd"></code>
+              <button id="agent-copy" class="btn-link" type="button">Copy</button>
+            </p>
+            <!-- The add-ons' own rows (Share, Live and the rest), as Pipeup's menu would show them. -->
+            <div id="extras"></div>
+            <hr />
+            <button id="stop" class="item" type="button">Turn off on this page</button>
+            <a id="mine" class="item" href="comments.html" target="_blank">
+              <span>Settings</span><small class="chev">›</small>
+            </a>
+          </div>
+        </div>
       </section>
-      <section id="always-row" class="row item-row" hidden>
-        <label for="always">
-          <span id="always-label">Always on for this site</span>
-          <small>Pipeup starts whenever you open it</small>
-        </label>
-        <input id="always" type="checkbox" role="switch" />
-      </section>
-      <button id="stop" class="item quiet-item" type="button" hidden>Turn off on this page</button>
       <p id="built-in" hidden>
-        This page has Pipeup built in, so the extension stays out of the way. Its comments go where the page's
-        author chose.
+        This page has Pipeup built in, so the extension stays out of the way. Comment with its own button, or
+        press
+        <kbd data-keys="C"></kbd>. Its comments go where the page's author chose.
       </p>
       <p id="blocked" hidden></p>
     </main>
-    <footer>
-      <span id="keys">Shortcut <kbd>⇧⌥P</kbd></span>
-      <a id="mine" href="comments.html" target="_blank">Comments you've made</a>
-    </footer>
     <script type="module" src="popup.js"></script>
   </body>
 </html>

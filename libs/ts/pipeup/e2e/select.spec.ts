@@ -98,7 +98,11 @@ test("on rich pages the draft opens in a popover below the selection", async ({ 
   expect((await pop.boundingBox())!.y).toBeGreaterThanOrEqual(bottom);
   await pop.getByRole("textbox", { name: "Comment" }).fill("Love this.");
   await pop.getByRole("textbox", { name: "Comment" }).press("Enter");
-  await expect(pop).toContainText("Love this.");
+  // Sent, the box closes; the comment is in, on those words.
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => (window as any).pu.document.threads().map((t: any) => t.root.text)))
+    .toEqual(["Love this."]);
 });
 
 test("a draft whose save fails is still posted once, with a notice", async ({ page }) => {

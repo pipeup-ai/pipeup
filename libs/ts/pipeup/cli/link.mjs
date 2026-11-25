@@ -45,25 +45,23 @@ export function served(html, { base, agent, key, file, addon = false }) {
   return /<\/body>/i.test(out) ? out.replace(/<\/body>/i, () => `${tag}</body>`) : out + tag;
 }
 
-/** Which of Pipeup's agent support a version has: before 0.6 none, 0.6.x built in, 0.7 and later in the agents add-on. */
+/** Whether a Pipeup version takes the agents add-on: 0.7 and later do; anything older can't take an agent. */
 function byVersion(v) {
   const m = /^(\d+)\.(\d+)\.\d+/.exec(v);
   if (!m) return null;
   const [major, minor] = [Number(m[1]), Number(m[2])];
-  return major > 0 || minor >= 7 ? "addon" : minor === 6 ? "builtin" : "old";
+  return major > 0 || minor >= 7 ? "addon" : "old";
 }
 
 /** The same, read from a Pipeup script's own text: it carries the names of what it supports. */
 function bySignature(text) {
   if (!text.includes("pipeup-root")) return null;
-  if (text.includes("pipeupReplies")) return "builtin";
   return text.includes("listnote") ? "addon" : "old";
 }
 
 /**
- * What the page's Pipeup can do for an agent, found without running the page: "old" (before 0.6, can't take an
- * agent), "builtin" (0.6.x, agent support is part of it), "addon" (0.7 or later: the agents add-on serves an agent),
- * or "unknown" (a floating address, or no Pipeup script to read). `loaded` says the page already includes the add-on.
+ * What the page's Pipeup can do for an agent, found without running the page: "old" (before 0.7, can't take an
+ * agent), "addon" (0.7 or later: the agents add-on serves an agent), or "unknown" (a floating address, or no Pipeup script to read). `loaded` says the page already includes the add-on.
  */
 export async function pageSupport(html, dir) {
   const result = { support: "unknown", version: "", loaded: false };
@@ -104,9 +102,9 @@ export async function watch({ page, agent, key, port = 0, log = console.log }) {
   const found = await pageSupport(await readFile(file, "utf8"), dir);
   if (found.support === "old")
     throw new Error(
-      `this page uses ${found.version ? `Pipeup ${found.version}` : "a Pipeup older than 0.6"}, which can't take an agent. Use Pipeup 0.6 or later (pin an exact version) and run this again`,
+      `this page uses ${found.version ? `Pipeup ${found.version}` : "a Pipeup older than 0.7"}, which can't take an agent. Use Pipeup 0.7 or later (pin an exact version) and run this again`,
     );
-  const addon = found.support !== "builtin" && !found.loaded;
+  const addon = !found.loaded;
   let addonCode = "";
   if (addon) {
     try {

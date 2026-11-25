@@ -17,6 +17,7 @@ import {
   SECTION,
   type Passage,
 } from "./text";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 /** The most replies in one thread, and the wait between two comments' replies. */
 const MAX_REPLIES = 3;
@@ -78,7 +79,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "assist",
     api: 1,
-    version: "0.5.1",
+    version,
     needs: ["menu", "notify", "note", "panel", "styles", "status", "sign"],
     network: {
       when: "after-consent",

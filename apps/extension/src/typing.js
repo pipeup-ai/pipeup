@@ -114,6 +114,8 @@ function look(l) {
   if (!l) return;
   const s = document.documentElement.style;
   s.setProperty("--placeholder", l.placeholder);
+  // The same scheme as the frame element in the page (start.js), so the backdrop stays transparent.
+  if (l.scheme) s.colorScheme = l.scheme;
   Object.assign(document.body.style, { color: l.color, font: l.font, caretColor: l.caret });
   if (box) Object.assign(box.style, { padding: l.padding, lineHeight: l.lineHeight, textAlign: l.textAlign });
   height();

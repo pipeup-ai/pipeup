@@ -8,9 +8,19 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  */
 async function writeComment(page: Page, text: string, on = "#p1"): Promise<void> {
   await page.bringToFront();
-  // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
+  // Pipeup has started in the tab; Comment on this page turned comment mode on. If it's off, the shortcut would turn
+  // it on, but the shortcut is the browser's own command (background.js), which a test can't press: the same
+  // message the command sends does.
   await expect(page.locator(".launch")).toBeAttached();
-  if ((await page.locator(".launch .mode.on").count()) === 0) await page.keyboard.press("Shift+Alt+KeyC");
+  if ((await page.locator(".launch .mode.on").count()) === 0) {
+    const worker = page.context().serviceWorkers()[0];
+    const [tab] = await worker.evaluate((url) => chrome.tabs.query({ url }), page.url());
+    await worker.evaluate(
+      (id) =>
+        chrome.tabs.sendMessage(id, { to: "page", type: "act", action: "mode", value: true }, { frameId: 0 }),
+      tab.id!,
+    );
+  }
   await expect(page.locator(".launch .mode.on")).toBeAttached();
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
   const at = (await page.locator(on).boundingBox())!;
@@ -38,9 +48,11 @@ test("Comment on this page adds Pipeup and starts comment mode, with no button o
   await expect(page.locator(".launch.off")).toBeAttached();
   await expect(page.locator(".launch .mode")).toBeHidden();
   await expect(page.locator(".launch .mode.on")).toBeAttached();
-  await expect(p.getByRole("button", { name: "Turn off on this page" })).toBeVisible();
-  await expect(p.getByRole("switch", { name: /Start commenting/ })).toBeChecked();
+  await expect(p.getByRole("switch", { name: /Commenting/ })).toBeChecked();
   await expect(p.locator("#count")).toHaveText("0");
+  // Turn off on this page, under More: Pipeup leaves the page.
+  await expect(p.getByRole("button", { name: "Turn off on this page" })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
   await p.getByRole("button", { name: "Turn off on this page" }).click();
   await expect(page.locator("pipeup-root")).toHaveCount(0);
   await expect(p.getByRole("button", { name: "Comment on this page" })).toBeVisible();
@@ -91,7 +103,28 @@ test("comments are kept by the extension, not the site, and come back after a re
   await expect(side.locator(".card", { hasText: "Which beta" })).toBeVisible();
 });
 
-test("Comments you've made lists the pages commented on", async ({ context, worker, id }) => {
+test("after the first comment, one line says where it went, with the menu's own verbs; the box has closed", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  await (
+    await panel(context, worker, id, page)
+  )
+    .getByRole("button", { name: "Comment on this page" })
+    .click();
+  await writeComment(page, "Say which week in May.");
+  await expect(page.locator(".toast.show")).toHaveText(
+    "Saved in this browser. Press Pipeup in the toolbar to copy, save or send them.",
+  );
+  // Closed once sent: no reply line; the marker is there.
+  await expect(page.locator(".pop.show, .th.on").getByRole("textbox", { name: "Reply" })).toHaveCount(0);
+  await expect(page.locator("[data-thread]").first()).toBeVisible();
+});
+
+test("Settings opens on Comments you've made: the pages commented on", async ({ context, worker, id }) => {
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   await (
@@ -102,6 +135,7 @@ test("Comments you've made lists the pages commented on", async ({ context, work
   await writeComment(page, "Say which week in May.");
   const list = await context.newPage();
   await list.goto(`chrome-extension://${id}/comments.html`);
+  await expect(list.getByRole("heading", { level: 2 }).first()).toHaveText("Comments you've made");
   await expect(list.locator("li")).toHaveCount(1);
   await expect(list.locator("li a")).toHaveText("Lumen launch plan");
   await expect(list.locator("li span")).toContainText("1 comment");
@@ -150,18 +184,33 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await panel(context, worker, id, page);
+  // Off: one action and one sentence (what clicking does; where comments stay is said after the first comment).
+  await expect(p.locator("#off .note")).toHaveText("Click anything on the page to comment on it.");
+  await expect(p.getByRole("switch")).toHaveCount(0);
   await p.getByRole("button", { name: "Comment on this page" }).click();
   await expect(page.locator(".launch .mode.on")).toBeAttached();
-  await expect(p.locator("#status")).toHaveText("Comments stay in this browser until you send them");
+  // On: the rows and More; no status line, no footer. Send to my agent waits under More until it is set up.
+  await expect(p.locator("#status, footer")).toHaveCount(0);
+  await expect(p.locator("#on > .item:visible, #on > div > .item:visible")).toHaveText([
+    /Add your name/,
+    /Your comments on this page/,
+    /Copy comments/,
+    /Save as a file/,
+    /Commenting/,
+    /More/,
+  ]);
 
-  // Who you are: the row becomes a name field in place.
+  // Who you are: the animal Pipeup gave, and the row becomes a name field in place.
+  await expect(p.locator("#who-name")).not.toHaveText(/^(You|)$/);
   await p.getByRole("button", { name: /Add your name/ }).click();
   await p.getByRole("textbox", { name: "Your name" }).fill("Sam");
   await p.keyboard.press("Enter");
   await expect(p.getByRole("button", { name: /Sam/ })).toBeVisible();
   expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
 
-  // Theme: each press moves on, and the page's Pipeup follows.
+  // Theme, under More: each press moves on, and the page's Pipeup follows.
+  await expect(p.getByRole("button", { name: /Theme/ })).toBeHidden();
+  await p.getByRole("button", { name: "More" }).click();
   await p.getByRole("button", { name: /Theme/ }).click();
   await expect(p.locator("#theme-now")).toHaveText("Light");
   await p.getByRole("button", { name: /Theme/ }).click();
@@ -174,20 +223,26 @@ test("the toolbar panel is Pipeup's menu: name, copy, theme, Hide comments and c
     .poll(() => p.evaluate(() => (document.getElementById("hide") as HTMLInputElement).checked))
     .toBe(true);
 
-  // Copy comments, as Markdown for an AI (what goes to the clipboard is caught here).
+  // More folds back with Esc, and focus comes back to its row.
+  await p.getByRole("switch", { name: "Hide comments" }).focus();
+  await p.keyboard.press("Escape");
+  await expect(p.getByRole("button", { name: /Theme/ })).toBeHidden();
+  await expect(p.getByRole("button", { name: "More" })).toBeFocused();
+
+  // Copy comments, one press: the readable text, which is also Markdown (what goes to the clipboard is caught here).
   await p.evaluate(() => {
     const w = window as unknown as { copied: string };
     navigator.clipboard.writeText = async (t: string) => void (w.copied = t);
   });
+  await expect(p.locator("#copied")).toHaveText("to paste anywhere");
   await p.getByRole("button", { name: /Copy comments/ }).click();
-  await p.getByRole("button", { name: /As Markdown/ }).click();
   await expect(p.locator("#copied")).toHaveText("Copied 0 threads");
   expect(await p.evaluate(() => (window as unknown as { copied: string }).copied)).toContain(
     "# Comments on Lumen launch plan",
   );
 
-  // Start commenting turns comment mode off and on.
-  await p.getByRole("switch", { name: /Start commenting/ }).click();
+  // Commenting turns comment mode off and on.
+  await p.getByRole("switch", { name: /Commenting/ }).click();
   await expect(page.locator(".launch .mode.on")).toHaveCount(0);
 });
 
@@ -204,7 +259,9 @@ test("unpinned, threads open as popovers on the page, and Comments lists them al
     .getByRole("button", { name: "Comment on this page" })
     .click();
   await writeComment(page, "Which beta?");
-  // Written: it opens beside the paragraph, as a popover, and the page keeps its width.
+  // Written: it closes (§7); its marker opens it beside the paragraph, as a popover, and the page keeps its width.
+  await expect(page.locator(".pop.show")).toHaveCount(0);
+  await page.locator("[data-thread]").first().click();
   await expect(page.locator(".pop.show", { hasText: "Which beta?" })).toBeVisible();
   const side = await sidePanel(context, worker, id, page);
   await expect(side.locator(".card", { hasText: "Which beta?" })).toBeVisible();
@@ -246,7 +303,10 @@ test("pinned, a thread opened on the page shows in the side panel, and replies a
     )
     .toBe("pinned");
   await writeComment(page, "Which beta?");
-  // Written on the page; the thread shows in the side panel, not on the page.
+  // Written on the page, it closes; its marker opens the thread in the side panel, not on the page.
+  await expect(side.locator(".card", { hasText: "Which beta?" })).toBeVisible();
+  await expect(side.locator(".card.open")).toHaveCount(0);
+  await page.locator("[data-thread]").first().click();
   const card = side.locator(".card.open");
   await expect(card).toContainText("Which beta?");
   await expect(page.locator(".pop.show .th")).toHaveCount(0);
@@ -258,8 +318,9 @@ test("pinned, a thread opened on the page shows in the side panel, and replies a
   await expect(side.locator(".card", { hasText: "Which beta?" })).toHaveCount(0);
   await side.getByRole("button", { name: "✓ Resolved" }).click();
   await expect(side.locator(".card.resolved", { hasText: "Which beta?" })).toBeVisible();
-  // The toolbar panel's switch says so too.
+  // The toolbar panel's switch, under More, says so too.
   await p.reload();
+  await p.getByRole("button", { name: "More" }).click();
   await expect(p.getByRole("switch", { name: "Keep comments beside the page" })).toBeChecked();
 });
 
@@ -293,7 +354,7 @@ test("the toolbar button shows comment mode: green, saying on when there are no 
 test("Show Pipeup's button on pages brings the corner button back", async ({ context, worker, id }) => {
   const settings = await context.newPage();
   await settings.goto(`chrome-extension://${id}/comments.html`);
-  await settings.getByRole("switch", { name: /Show Pipeup's button on pages/ }).check();
+  await settings.getByRole("switch", { name: /Show Pipeup's own button/ }).check();
   await expect
     .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("settings")).settings))
     .toEqual({
@@ -348,7 +409,7 @@ test("in the side panel, a whole card opens its thread, and a comment on a pictu
   await expect(side.locator(".card.open").getByRole("textbox", { name: "Reply" })).toBeVisible();
 });
 
-test("the toolbar button's bubble follows the browser's look: light on a dark toolbar, dark on a light one", async ({
+test("the toolbar button is Pipeup's violet bubble, whatever the browser's or the system's look", async ({
   context,
   worker,
   id,
@@ -356,18 +417,112 @@ test("the toolbar button's bubble follows the browser's look: light on a dark to
   const page = await context.newPage();
   await page.goto(`${PAGES}plain.html`);
   const p = await panel(context, worker, id, page);
-  await expect
-    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
-    .toBe(false);
   await p.emulateMedia({ colorScheme: "dark" });
-  await expect
-    .poll(() => worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark))
-    .toBe(true);
-  // Each look has its own bubble.
+  await page.waitForTimeout(300);
+  // One bubble, no light or dark pair, and nothing about the look is kept.
   const found = await p.evaluate(async () =>
-    Promise.all(["light", "dark"].map(async (look) => (await fetch(`icons/toolbar-${look}-32.png`)).ok)),
+    Promise.all(
+      ["toolbar-32", "toolbar-light-32", "toolbar-dark-32"].map((f) =>
+        fetch(`icons/${f}.png`).then(
+          (r) => r.ok,
+          () => false, // a file the package doesn't have: the browser refuses the fetch rather than answering 404
+        ),
+      ),
+    ),
   );
-  expect(found).toEqual([true, true]);
+  expect(found).toEqual([true, false, false]);
+  expect(await worker.evaluate(async () => (await chrome.storage.local.get("dark")).dark)).toBeUndefined();
+  // The violet bubble, in the manifest, is what the toolbar shows.
+  const icon = await worker.evaluate(() => chrome.runtime.getManifest().action?.default_icon);
+  expect(icon).toEqual({ 16: "icons/toolbar-16.png", 32: "icons/toolbar-32.png" });
+});
+
+test("one shortcut: Alt+Shift+C is the browser's command for Comment on this page; the menu's own has no default key", async ({
+  worker,
+}) => {
+  const commands = await worker.evaluate(() => chrome.runtime.getManifest().commands);
+  expect(commands?.comment?.suggested_key?.default).toBe("Alt+Shift+C");
+  expect(commands?._execute_action?.suggested_key).toBeUndefined();
+  expect(Object.keys(commands ?? {}).sort()).toEqual(["_execute_action", "comment"]);
+});
+
+test("on a dark site with white links, the box keeps Pipeup's violet and its field stays transparent", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}dark-site.html`);
+  const p = await panel(context, worker, id, page);
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  const at = (await page.locator("#p1").boundingBox())!;
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  const box = page.frameLocator(".draft .line iframe").locator(".box");
+  await expect(box).toBeFocused();
+  // The accent is Pipeup's own, not the site's white link colour: the Comment button is violet.
+  const send = page.locator(".draft .send");
+  const [bg, layer] = await page.evaluate(() => {
+    const root = document.querySelector("pipeup-root")!.shadowRoot!;
+    return [
+      getComputedStyle(root.querySelector(".draft .send")!).backgroundColor,
+      root.querySelector(".layer")!.className,
+    ];
+  });
+  expect(layer).toContain("dark");
+  expect(bg).not.toMatch(/rgb\(2[2-5]\d, 2[2-5]\d, 2[2-5]\d\)/);
+  await expect(send).toBeVisible();
+  // The field's frame and its element agree on the dark scheme, so the browser paints no white backdrop.
+  const frame = page.locator(".draft .line iframe");
+  expect(await frame.evaluate((f) => getComputedStyle(f).colorScheme)).toBe("dark");
+  expect(await box.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+});
+
+test("on a page with Pipeup built in, the shortcut goes to the page's own Pipeup, and the menu says to use it", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}built-in-on.html`);
+  await expect(page.locator(".launch")).toBeAttached();
+  await expect(page.locator(".launch .mode.on")).toHaveCount(0);
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeVisible();
+  await expect(p.locator("#built-in kbd")).toHaveText(/C$|Shift\+Alt\+C/);
+  // What the shortcut does: the same path the browser's command takes.
+  const tab = await tabOf(worker, page);
+  await page.bringToFront();
+  const ok = await p.evaluate((tabId) => chrome.runtime.sendMessage({ type: "comment", tabId }), tab);
+  expect(ok).toEqual({ ok: true });
+  // The page's own Pipeup took it: its comment mode is on, and there is still one Pipeup, the page's.
+  await expect(page.locator(".launch .mode.on")).toBeAttached();
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).not.toHaveAttribute("data-pipeup-extension", "");
+});
+
+test("a root left by a cut-off copy of the extension isn't Pipeup built in: it is taken off and Pipeup starts", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  // What an orphan leaves: the extension's own root, marked, with no copy behind it to answer.
+  await page.evaluate(() => {
+    const root = document.createElement("pipeup-root");
+    root.setAttribute("data-pipeup-extension", "");
+    document.body.append(root);
+  });
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeHidden();
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  // One root, the live one, marked as the extension's.
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).toHaveAttribute("data-pipeup-extension", "");
 });
 
 test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({
@@ -384,6 +539,6 @@ test("a site's script whose name only contains “pipeup” isn't Pipeup built i
   await expect(page.locator("pipeup-root")).toHaveCount(1);
   // Reopened, the panel is Pipeup's menu: the extension's own Pipeup is never mistaken for the page's.
   const again = await panel(context, worker, id, page);
-  await expect(again.getByRole("button", { name: "Turn off on this page" })).toBeVisible();
+  await expect(again.getByRole("switch", { name: /Commenting/ })).toBeVisible();
   await expect(again.locator("#built-in")).toBeHidden();
 });

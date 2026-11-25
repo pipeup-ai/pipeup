@@ -1,5 +1,7 @@
 # Looks, accessibility and motion: fixes from the click-path review
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §7 (*long comments at rest*, the comment control), §8 (*Motion*), §9
 (*accent*, *highlights over any colour*, *text direction*, *keyboard focus* and *forced colours*). These are the looks,
 assistive-settings and motion findings from the hands-on review of 0.8.0-beta.2 (LK-02, -03, -04, -05, -07, -08, -09,

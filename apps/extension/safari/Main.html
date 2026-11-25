@@ -8,34 +8,88 @@
     <script src="../Script.js" defer></script>
   </head>
   <body>
-    <main>
-      <img src="../Icon.png" width="96" height="96" alt="" />
-      <h1>Pipeup for Safari</h1>
-      <p class="lede">
-        Comment on any web page, then pass the comments to the person or AI agent who asked for your feedback.
+    <!-- One window, three states (unknown, on, off). The drawing, the line and the button swap; nothing else moves.
+         Design note: docs/design/safari-app-window.md. -->
+    <main class="front">
+      <div class="scenes" aria-hidden="true">
+        <!-- Not on yet, or off: Safari's Extensions pane. The pointer eases to Pipeup's row and ticks it. -->
+        <div class="scene scene-settings">
+          <div class="mini">
+            <div class="bar"><i></i><i></i><i></i><span class="tab">Extensions</span></div>
+            <div class="pane">
+              <div class="list">
+                <div class="row"><span class="tick on"></span><span class="ln w1"></span></div>
+                <div class="row pipeup">
+                  <span class="tick"></span><span class="bubble"></span><span class="name">Pipeup</span>
+                </div>
+              </div>
+              <div class="detail">
+                <span class="ln h"></span><span class="ln w3"></span><span class="ln w2"></span
+                ><span class="ln w3 gap"></span><span class="ln w1"></span>
+              </div>
+            </div>
+          </div>
+          <span class="pointer"
+            ><svg width="14" height="16" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" /></svg
+          ></span>
+        </div>
+        <!-- On: a page, Pipeup's button pressed, a comment made on a sentence. The site's hero, small. -->
+        <div class="scene scene-page">
+          <div class="mini">
+            <div class="bar">
+              <i></i><i></i><i></i
+              ><span class="pbtn"
+                ><svg viewBox="0 0 24 24">
+                  <path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg></span
+              ><span class="url"></span>
+            </div>
+            <div class="page">
+              <span class="ln title"></span>
+              <p class="words">
+                We launch in May, <span class="hl">after the beta</span> with Ada's team, and change pricing
+                in June.
+              </p>
+              <span class="ln w3"></span><span class="ln w2"></span><span class="ln w1"></span>
+              <span class="mark"></span>
+              <div class="cbox" data-say="Beta first, then the survey.">
+                <div class="who"><span class="av"></span><b>Otter</b><span class="ago">just now</span></div>
+                <div class="line"><span class="txt"></span><span class="ph">Comment</span></div>
+                <div class="send">Comment</div>
+              </div>
+            </div>
+          </div>
+          <span class="pointer"
+            ><svg width="14" height="16" viewBox="0 0 18 20"><path d="M2 1.5l13 7.4-5.6 1.4-2.9 5.4z" /></svg
+          ></span>
+        </div>
+      </div>
+
+      <p class="state">
+        <b class="state-unknown">Turn on Pipeup in Safari.</b>
+        <b class="state-on">Pipeup is on in Safari.</b>
+        <b class="state-off">Pipeup is off in Safari.</b>
+        <span class="state-unknown">Under Extensions, tick Pipeup.</span>
+        <span class="state-on">Press its button on any page.</span>
+        <span class="state-off">Under Extensions, tick Pipeup to turn it back on.</span>
       </p>
-      <p class="state state-unknown">Turn Pipeup on in Safari Settings, under Extensions.</p>
-      <p class="state state-on">Pipeup is on in Safari.</p>
-      <p class="state state-off">Pipeup is off. Turn it on in Safari Settings, under Extensions.</p>
-      <button class="open-preferences" type="button">Open Safari Settings</button>
-      <ol>
-        <li>In Safari, open a web page and press Pipeup in the toolbar.</li>
-        <li>
-          Choose <b>Comment on this page</b>, click what you want to comment on, type, and press Return.
-        </li>
-        <li>
-          Press Pipeup again for your comments: <b>Copy comments</b> or <b>Save comments</b> to send them on.
-        </li>
-      </ol>
+
+      <button class="open-preferences state-unknown" type="button">Open Safari Settings</button>
+      <button class="open-preferences state-off" type="button">Open Safari Settings</button>
+      <button class="open-sample state-on" type="button">Try it on a sample page</button>
+
       <p class="links">
         <a href="https://pipeup-ai.github.io/pipeup/support.html">Support</a>
         <a href="https://pipeup-ai.github.io/pipeup/privacy.html">Privacy</a>
         <a href="https://github.com/pipeup-ai/pipeup">Source</a>
-      </p>
-      <p class="small">
-        Free and open source under the MIT licence. Includes emojibase-data (MIT) for emoji names. Pipeup
-        collects nothing; your comments stay in Safari until you send them.
+        <a href="#licences" class="show-licences">Licences</a>
       </p>
     </main>
+
+    <!-- The MIT licence and third-party notices, filled in by tools/build-extension.mjs from the package. -->
+    <section class="licences" hidden>
+      <p class="links"><a href="#" class="hide-licences">‹ Back</a></p>
+      <h1>Licences</h1>
+      <pre><!--LICENCES--></pre>
+    </section>
   </body>
 </html>

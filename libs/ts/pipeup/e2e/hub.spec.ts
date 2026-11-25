@@ -249,16 +249,17 @@ test("with the panel open, a new comment is written in it, in page order, joined
   expect(order[1]).toBe("new");
   const box = card.getByRole("textbox", { name: "Comment" });
   await expect(box).toBeFocused();
-  await expect(box).toHaveAttribute("placeholder", "Comment or add others with @");
+  await expect(box).toHaveAttribute("placeholder", "Comment");
   await expect(page.locator(".cx.show")).toHaveCount(1);
   // Comment stays grey until there are words.
   await expect(card.locator(".send")).not.toHaveClass(/\bshow\b/);
   await page.keyboard.type("Say who the designer is");
   await expect(card.locator(".send")).toHaveClass(/\bshow\b/);
   await card.locator(".send").click();
-  // Sent: it is a thread in the panel, open for a reply; the panel stays.
+  // Sent: it is a thread in the panel, closed (§7); the panel stays.
   await expect(panel(page).locator(".cd.new")).toHaveCount(0);
-  await expect(panel(page).locator(".xr")).toContainText("Say who the designer is");
+  await expect(panel(page).locator(".cd", { hasText: "Say who the designer is" })).toHaveCount(1);
+  await expect(panel(page).locator(".xr")).toHaveCount(0);
   await expect(panel(page).locator(".cd")).toHaveCount(3);
   await commenting(page);
 });

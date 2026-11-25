@@ -39,6 +39,8 @@ const GLIDE_MS = 400;
 /** The keyboard's hint: shown as a toast, and read with the block cursor's first landing. */
 export const KEYS_HINT =
   "Tab moves between blocks · \u2191 \u2193 change level · Enter comments · Hold Space to use the page · Esc to finish · F7 selects text";
+/** Blocks where a comment on the whole of it is rarely the point: pinning is worth a word the first time. */
+const PICTURE = "img,picture,svg,canvas,video,figure,iframe,object,embed";
 /** Pointer movement, in px, the cursor ignores before the mouse takes the outline from it. */
 const NUDGE = 4;
 /** A block with at most this many characters is read whole as the cursor's name; a longer one as its description. */
@@ -334,6 +336,9 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     choose(point ? null : el);
     drafted = open ?? next;
     ctx.moveDraft(next);
+    // Where "this block" isn't precise enough, how to put a comment at a point (said once, §5).
+    if (!point && (el.matches(PICTURE) || el.getBoundingClientRect().height > innerHeight / 2))
+      ctx.hint("pin");
     // A box moved to another block (a click there, or Enter) takes the caret with it.
     if (open) ctx.focusDraft();
     ctx.say(point ? next.label : `Commenting on ${next.label}`);
@@ -369,10 +374,15 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     if (ctx.state.draft && e.altKey) return ctx.dismiss();
     // A click on a highlight reads its thread (the comment views open it), never picks the block under it.
     if (!e.altKey && ctx.readsAt(e.clientX, e.clientY)) return;
-    // A thread open to read: a click on the page closes it (keeping any reply being written) and does nothing else; the
-    // next click chooses a block. One just written doesn't hold up the next comment.
-    if (reading()) return ctx.open(null);
-    if (ctx.state.active) ctx.open(null);
+    // A thread open to read closes as the click chooses its block, in one go (§5); a reply half-written in it holds the
+    // click, as a comment with words does.
+    if (reading()) {
+      if (block && ctx.replying()) {
+        ctx.toast("Finish or cancel this reply first");
+        return ctx.focusReply(ctx.state.active!);
+      }
+      ctx.open(null);
+    }
     // A pointer's click puts the block cursor away; a screen reader's activate (no pointer) moves it there.
     if (cur && e.detail) stow();
     if (e.altKey) {
@@ -438,8 +448,8 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     });
   };
 
-  /** A thread is open to read (not one just written, which shows but doesn't hold up the next comment). */
-  const reading = () => !!ctx.state.active && !ctx.state.sent;
+  /** A thread is open to read (a comment just sent closes, §7, so it never holds up the next one). */
+  const reading = () => !!ctx.state.active;
   const onMove = (e: PointerEvent) => {
     const step = lastAt ? Math.abs(e.clientX - lastAt.x) + Math.abs(e.clientY - lastAt.y) : 0;
     lastAt = { x: e.clientX, y: e.clientY };
@@ -449,11 +459,6 @@ export function createCommentMode(ctx: Ctx): CommentMode {
       return;
     }
     e.stopPropagation();
-    // One thing at a time: while a thread is open to read, no other block is offered (§5).
-    if (reading()) {
-      if (!chosen) show(null);
-      return;
-    }
     if (chosen || ctx.state.draft) return;
     const block = !selected() && e.target instanceof Element ? pickBlock(e.target, ctx.root, look) : null;
     if (cur) {
@@ -506,12 +511,26 @@ export function createCommentMode(ctx: Ctx): CommentMode {
     e.preventDefault();
     e.stopPropagation();
     // A click that closes the open menu does only that (whichever of the two hears it first).
-    if (e.type === "click" && !ctx.state.menu && !ctx.claimed(e)) onPick(e as MouseEvent);
+    if (e.type === "click" && !ctx.state.menu && !ctx.claimed(e)) {
+      const control = (e.target as Element).closest?.(CONTROL);
+      onPick(e as MouseEvent);
+      // The first link, button or field clicked in comment mode: how to use the page instead (said once, §5).
+      if (control) ctx.hint("space");
+    }
   };
 
   // Escape is the app's: it steps back one level at a time (draft, thread, chosen block, comment mode).
   // Enter and Space on a page control do what the page expects while the block cursor isn't in use.
   const onKey = (e: KeyboardEvent) => {
+    keyDown(e);
+    // The first key pressed in comment mode (not Esc, Space or a modifier alone, and not while typing words or in the
+    // menu): Tab moves between blocks, said once (§5). After the key's own work, which may put the showing hint away.
+    const at = e.composedPath()[0];
+    const typing = at instanceof Element && at.matches("input,textarea,[contenteditable]");
+    if (!typing && !ctx.state.menu && e.key !== "Escape" && e.key !== HOLD && !e.getModifierState(e.key))
+      ctx.hint("keys");
+  };
+  const keyDown = (e: KeyboardEvent) => {
     if (e.key !== HOLD) byKeys = true;
     // Once paused, Space stays Pipeup's until it is let go, even on a control the click has just focused.
     if (holds(e) || (e.key === HOLD && ctx.state.paused)) {

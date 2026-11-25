@@ -44,8 +44,6 @@ export interface UiState {
   menu: boolean;
   /** Pin was tapped on a touch screen: the next tap on the page is where the pin goes, even on a highlight. */
   pinning: boolean;
-  /** The open thread was opened by sending it: it shows, but the next click in comment mode goes on to the next block. */
-  sent: boolean;
   /** The thread whose place is being chosen (Not here, Show where it belongs): comment mode's next pick moves it. */
   picking: string | null;
 }
@@ -74,6 +72,12 @@ export interface MenuActions {
 }
 
 export type LookChoice = "auto" | "light" | "dark";
+
+/**
+ * Comment mode's hints, each said once per browser: the first visit's (`start`), then Tab between blocks (`keys`),
+ * Hold Space to use the page (`space`) and Option-click to pin (`pin`), each the first time it would have helped.
+ */
+export type HintKind = "start" | "keys" | "space" | "pin";
 
 /** What every view shares: the document, state, and the few things views can ask the app to do. */
 export interface Ctx {
@@ -111,7 +115,10 @@ export interface Ctx {
   claim(e: Event): void;
   /** A view already handled this event. */
   claimed(e: Event): boolean;
-  open(id: string | null): void;
+  /** `rest`: opened with a pointer, so a thread holding only the reader's own words opens to read (§7). */
+  open(id: string | null, rest?: boolean): void;
+  /** Words are half-written in the open thread's reply line. */
+  replying(): boolean;
   /** Puts the cursor in thread `id`'s reply line, unless the reader is typing elsewhere. */
   focusReply(id: string): void;
   /** What is written in reply lines waits for their threads (before a thread closes or its card is rebuilt). */
@@ -156,6 +163,8 @@ export interface Ctx {
   say(text: string): void;
   /** Comment mode's hint goes, if it is showing. */
   hideHint(): void;
+  /** Says one of comment mode's once-only hints (§5), the first time it would have helped in this browser. */
+  hint(kind: HintKind): void;
   /** Whether Pipeup waits for a tap on the page changed (the menu opened or closed): iOS is told to send taps. */
   taps(): void;
   /** Escape's step back: the draft, the open thread, then comment mode's own, then comment mode. */

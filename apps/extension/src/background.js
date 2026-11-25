@@ -10,26 +10,29 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   void chrome.action.setBadgeTextColor?.({ tabId, color: "#ffffff" });
 });
 
-// The toolbar button's bubble follows the browser's look: dark on a light toolbar, light on a dark one. The background
-// can't see the look, so the extension's pages and Pipeup in tabs say it; the last one heard is kept for the next start.
-// Safari takes its one icon as a template and tints it itself.
-const safari = location.protocol.startsWith("safari");
-const toolbarIcon = (dark) => {
-  const look = dark ? "dark" : "light";
-  return chrome.action.setIcon({
-    path: { 16: `icons/toolbar-${look}-16.png`, 32: `icons/toolbar-${look}-32.png` },
-  });
-};
-chrome.runtime.onMessage.addListener((message) => {
-  if (message?.type !== "look" || safari) return;
-  const dark = message.dark === true;
-  void toolbarIcon(dark).catch(() => {});
-  void chrome.storage.local.set({ dark });
+// The one shortcut, Shift+Alt+C, as the browser delivers it (the page needn't be open to the extension yet: the key
+// grants the tab, as the toolbar button does). Pipeup off on the page: start it with comment mode on, as Comment on
+// this page does. Pipeup on: comment mode off or on, from the last state the page reported. The page's own copy of
+// the shortcut stands aside while the extension is there (start.js), so one press is one change.
+const commenting = new Map(); // tab id → whether comment mode is on, as the page last said
+chrome.runtime.onMessage.addListener((message, sender) => {
+  const tabId = sender.tab?.id;
+  if (message?.type === "state" && tabId !== undefined) commenting.set(tabId, message.commenting === true);
 });
-if (!safari)
-  void chrome.storage.local.get("dark").then(({ dark }) => dark && toolbarIcon(true).catch(() => {}));
+chrome.tabs.onRemoved.addListener((tabId) => commenting.delete(tabId));
+chrome.commands?.onCommand.addListener((command, tab) => {
+  if (command === "comment" && tab?.id !== undefined) void comment(tab.id);
+});
+chrome.runtime.onMessage.addListener((message, _sender, reply) => {
+  if (message?.type !== "comment" || typeof message.tabId !== "number") return;
+  comment(message.tabId).then(
+    () => reply({ ok: true }),
+    () => reply({ ok: false }),
+  );
+  return true;
+});
 
-/** Waits for Pipeup to answer in the tab (it starts a moment after its script is added), up to five seconds. */
+/** Pipeup in `tab` answers once it has started there. */
 async function started(tabId, frameId = 0) {
   for (let i = 0; i < 100; i++) {
     const answer = await chrome.tabs
@@ -39,6 +42,59 @@ async function started(tabId, frameId = 0) {
     await new Promise((r) => setTimeout(r, 50));
   }
   return false;
+}
+
+/**
+ * A page with Pipeup built in keeps its own: the press goes to it as its shortcut (a browser takes the shortcut
+ * before the page sees it, so this is how the key still reaches the page's Pipeup). True when it was handed over.
+ */
+async function handOver(tabId, frameId = 0) {
+  const [{ result } = {}] = await chrome.scripting.executeScript({
+    target: { tabId, ...(frameId ? { frameIds: [frameId] } : {}) },
+    func: () => {
+      if (!globalThis.__pipeupExt?.builtIn) return false;
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "C",
+          code: "KeyC",
+          shiftKey: true,
+          altKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      return true;
+    },
+  });
+  return result === true;
+}
+
+/** Comment in `tab`: Pipeup off there, start it with comment mode on; on, comment mode off or on; built in, hand over. */
+async function comment(tabId) {
+  const page = { to: "page" };
+  try {
+    const there = await chrome.tabs
+      .sendMessage(tabId, { ...page, type: "probe" }, { frameId: 0 })
+      .catch(() => null);
+    if (there?.ok) {
+      await chrome.tabs.sendMessage(
+        tabId,
+        { ...page, type: "act", action: "mode", value: !commenting.get(tabId) },
+        { frameId: 0 },
+      );
+      return;
+    }
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["start.js"] });
+    if (await handOver(tabId)) return;
+    if (!(await started(tabId))) return;
+    await chrome.tabs.sendMessage(
+      tabId,
+      { ...page, type: "act", action: "mode", value: true },
+      { frameId: 0 },
+    );
+  } catch {
+    // A page browsers keep closed to extensions.
+  }
 }
 
 // Comment on this page, from the toolbar panel: adds Pipeup to the tab and starts comment mode. Done here, not in the
@@ -88,8 +144,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const target = { tabId: tab.id, ...(info.frameId ? { frameIds: [info.frameId] } : {}) };
   try {
     await chrome.scripting.executeScript({ target, files: ["start.js"] });
-    // Pipeup starts in a moment (it answers once it has); then the comment box opens on what was right-clicked.
-    await started(tab.id, info.frameId ?? 0);
+    // Pipeup starts in a moment (it answers once it has); then the comment box opens on what was right-clicked. A page
+    // with Pipeup built in gets the press as its shortcut instead.
+    if (await handOver(tab.id, info.frameId ?? 0)) return;
+    if (!(await started(tab.id, info.frameId ?? 0))) return;
     await chrome.tabs.sendMessage(
       tab.id,
       {

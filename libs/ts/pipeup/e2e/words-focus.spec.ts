@@ -149,6 +149,8 @@ test("a reply being written is kept when its pop-up closes, and when the window 
   const spot = await quoteSpot(page);
   await page.mouse.click(spot.x, spot.y);
   const line = page.locator(".pop.show .rbox textarea");
+  // The reader's own thread opens to read (§7): the reply line is clicked.
+  await line.click();
   await expect(line).toBeFocused();
   await page.keyboard.type("Half a thought");
   // A click elsewhere closes it; opening it again brings the words back.
@@ -520,6 +522,9 @@ test("Esc while an input method is composing cancels the composition, never the 
   await expect(draftLine(page)).toHaveValue("Words ");
   await expect(page.locator(".toast.show", { hasText: "discarded" })).toHaveCount(0);
   await page.keyboard.press("Enter");
+  // Sent, the comment closes and the cursor is back on its block; Shift+Enter opens the thread.
+  await expect(draftLine(page)).toHaveCount(0);
+  await page.keyboard.press("Shift+Enter");
   const th = page.locator(".th.on, .pop.show .thread").first();
   await expect(th).toHaveCount(1);
   await th.locator(".rbox textarea").focus();

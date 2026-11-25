@@ -318,7 +318,7 @@ function draw() {
   $("empty").hidden = shown.length > 0;
   $("empty").textContent = filter.mine
     ? "No comments mention you."
-    : "No comments yet. Turn on Start commenting in Pipeup's toolbar menu and click something on the page.";
+    : "No comments yet. Turn on Commenting in Pipeup's toolbar menu and click something on the page.";
   // A redraw keeps the caret where the reviewer was writing.
   if (typingIn) {
     const box = list.querySelector(`[data-thread="${CSS.escape(typingIn)}"] textarea`);

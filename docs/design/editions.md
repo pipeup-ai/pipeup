@@ -1,5 +1,7 @@
 # Editions: comments stay with the edition the page names
 
+Status: **built** (2026-10-21; see the change log).
+
 Builds §4 and §8's edition attribute. Mock-ups: `edition-attribute-mockups.html`. The earlier way, one identity per
 edition, stays documented in the integrate skill for pages that want editions wholly apart or run an older Pipeup.
 

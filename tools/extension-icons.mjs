@@ -4,18 +4,17 @@
 // Everywhere it's the bubble alone, no plus and no background:
 // - listed(n): in Pipeup's violet, where the extension is listed (the browser's extensions page, the stores, Safari's
 //   settings, the toolbar panel's header). A violet that reads on light and dark pages alike.
-// - toolbar(n, rgb): filling the toolbar button, in one grey each: dark for light toolbars, light for dark ones; Safari
-//   takes the black one as a template and tints it itself.
+// - toolbar(n, rgb): filling the toolbar button, in Pipeup's violet (Chrome, Edge, Firefox); Safari takes the black
+//   one as a template and tints it itself.
 import { deflateSync } from "node:zlib";
 
-/** The toolbar glyph's colours: Chrome's own icon greys, for light and dark toolbars, and black for Safari's template. */
+/** Pipeup's accent, a little lighter, so the bubble reads on a dark toolbar or extensions page as well as a light one. */
+const VIOLET = [0x6a, 0x60, 0xd6];
+/** The toolbar glyph's colours: Pipeup's violet, and black for Safari's template. */
 export const INK = {
-  light: [0x47, 0x47, 0x47],
-  dark: [0xe3, 0xe3, 0xe3],
+  brand: VIOLET,
   template: [0, 0, 0],
 };
-/** Pipeup's accent, a little lighter, so the bubble reads on a dark extensions page as well as a light one. */
-const VIOLET = [0x6a, 0x60, 0xd6];
 
 // The bubble, in its 24-unit box: a circle with a gap where the tail leaves it, and the tail.
 const [CX, CY, R] = [12.5, 11.5, 8];
@@ -28,14 +27,21 @@ const TAIL = [
 function toSegment(x, y, [x1, y1, x2, y2]) {
   const dx = x2 - x1;
   const dy = y2 - y1;
-  const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)));
+  const t = Math.max(
+    0,
+    Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)),
+  );
   return Math.hypot(x - (x1 + t * dx), y - (y1 + t * dy));
 }
 
 /** Whether a point of the 24-unit box is on the bubble's strokes, `half` units either side of each line. */
 function onGlyph(x, y, half) {
   const a = Math.atan2(y - CY, x - CX);
-  if (Math.abs(Math.hypot(x - CX, y - CY) - R) <= half && !(a > GAP[0] && a < GAP[1])) return true;
+  if (
+    Math.abs(Math.hypot(x - CX, y - CY) - R) <= half &&
+    !(a > GAP[0] && a < GAP[1])
+  )
+    return true;
   return TAIL.some((s) => toSegment(x, y, s) <= half);
 }
 
@@ -59,7 +65,8 @@ function draw(n, cover) {
           a++;
         }
       const i = (py * n + qx) * 4;
-      if (a) [px[i], px[i + 1], px[i + 2]] = [r / a, g / a, b / a].map(Math.round);
+      if (a)
+        [px[i], px[i + 1], px[i + 2]] = [r / a, g / a, b / a].map(Math.round);
       px[i + 3] = Math.round((a / (S * S)) * 255);
     }
   return png(n, px);
@@ -86,19 +93,23 @@ export function appIcon(n) {
     const [a, b] = [m + inset, 1 - m - inset];
     const cx = Math.min(Math.max(x, a + r), b - r);
     const cy = Math.min(Math.max(y, a + r), b - r);
-    return x >= a && x <= b && y >= a && y <= b && Math.hypot(x - cx, y - cy) <= r;
+    return (
+      x >= a && x <= b && y >= a && y <= b && Math.hypot(x - cx, y - cy) <= r
+    );
   };
   // The bubble: half the plate, centred on it.
   const size = 0.5;
   const [x0, y0, x1, y1] = [4, 3.5, 20.5, 19.8];
   const unit = size / Math.max(x1 - x0, y1 - y0);
-  const half = 0.105 * size * 0.5 / unit;
+  const half = (0.105 * size * 0.5) / unit;
   const ox = 0.5 - ((x1 - x0) * unit) / 2;
   const oy = 0.5 - ((y1 - y0) * unit) / 2;
   return draw(n, (x, y) => {
     if (!inPlate(x, y)) return null;
     if (!inPlate(x, y, edge)) return [0xd9, 0xd6, 0xe8];
-    return onGlyph(x0 + (x - ox) / unit, y0 + (y - oy) / unit, half) ? VIOLET : [0xff, 0xff, 0xff];
+    return onGlyph(x0 + (x - ox) / unit, y0 + (y - oy) / unit, half)
+      ? VIOLET
+      : [0xff, 0xff, 0xff];
   });
 }
 
@@ -111,13 +122,18 @@ function bubble(n, ink, margin) {
   const half = stroke / 2 / unit;
   const ox = (n - (x1 - x0) * unit) / 2;
   const oy = (n - (y1 - y0) * unit) / 2;
-  return draw(n, (x, y) => (onGlyph(x0 + (x * n - ox) / unit, y0 + (y * n - oy) / unit, half) ? ink : null));
+  return draw(n, (x, y) =>
+    onGlyph(x0 + (x * n - ox) / unit, y0 + (y * n - oy) / unit, half)
+      ? ink
+      : null,
+  );
 }
 
 /** An RGBA picture as a PNG file: w wide, h high (square unless said). */
 export function png(w, rgba, h = w) {
   const raw = Buffer.alloc((w * 4 + 1) * h);
-  for (let y = 0; y < h; y++) rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4);
+  for (let y = 0; y < h; y++)
+    rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4);
   const chunk = (type, data) => {
     const len = Buffer.alloc(4);
     len.writeUInt32BE(data.length);

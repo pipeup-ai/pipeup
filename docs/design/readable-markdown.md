@@ -1,5 +1,7 @@
 # Readable Markdown copy
 
+Status: **built** (2026-10-27; see the change log).
+
 Spec §7a. Visual spec: [readable-markdown-mockups.html](readable-markdown-mockups.html).
 
 ## Why

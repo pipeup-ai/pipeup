@@ -585,7 +585,10 @@ test.describe("lists and menus ease (LK-08, LK-09, LK-10, LK-16)", () => {
     const draftTop = seen[0]!.find((c) => c.draft)!.top;
     const posted = seen.flatMap((f) => f.filter((c) => c.words === "Posted words" && c.o > 0));
     expect(posted.length).toBeGreaterThan(0);
-    for (const c of posted) expect(Math.abs(c.top - draftTop)).toBeLessThanOrEqual(2);
+    // The thread appears where the box was, then, closed (§7), glides to a card's place: no frame jumps.
+    expect(Math.abs(posted[0]!.top - draftTop)).toBeLessThanOrEqual(2);
+    const glide = posted.slice(1).map((c, i) => Math.abs(c.top - posted[i]!.top));
+    expect(Math.max(0, ...glide)).toBeLessThan(12);
     // The threads already there never move more than a few px in a frame.
     for (const words of ["Is this the plan?", "Who owns pricing?"]) {
       const ys = seen.map((f) => f.find((c) => c.words === words)?.top).filter((y) => y !== undefined);

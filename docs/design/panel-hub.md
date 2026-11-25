@@ -1,5 +1,7 @@
 # All comments as the hub, and one card everywhere
 
+Status: **built** (2026-10-14; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (the comment box, Edit and Delete) and §7 (*compact cards*, actions,
 the comment control, All comments). Mock-ups: the *Comments at Rest* page, part two (storyboard, swimlanes, screens). This
 builds on [comments-at-rest.md](comments-at-rest.md).
