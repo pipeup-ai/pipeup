@@ -105,12 +105,16 @@ test("a picture of where a new comment was is kept, and shown when the comment's
   await page.mouse.click(at.x + 20, at.y + at.height / 2);
   await page.keyboard.type("Is June firm?");
   await page.keyboard.press("Enter");
+  // The picture is taken by the background after the comment is kept (a capture of the visible tab, then a crop and a
+  // write to storage): a few seconds on a loaded machine.
   await expect
-    .poll(async () =>
-      worker.evaluate(
-        async () =>
-          Object.keys(await chrome.storage.local.get(null)).filter((k) => k.startsWith("shot:")).length,
-      ),
+    .poll(
+      async () =>
+        worker.evaluate(
+          async () =>
+            Object.keys(await chrome.storage.local.get(null)).filter((k) => k.startsWith("shot:")).length,
+        ),
+      { timeout: 20_000 },
     )
     .toBe(1);
   // The paragraph goes: the comment is lost, and the side panel shows how it looked. Pipeup takes a moment to give a

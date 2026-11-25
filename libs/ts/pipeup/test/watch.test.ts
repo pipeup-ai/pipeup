@@ -15,8 +15,8 @@ describe("which Pipeup a page uses, and what it can do for an agent", () => {
       pageSupport(page(src(`https://cdn.jsdelivr.net/npm/pipeup@${v}/dist/pipeup.min.js`)), dir);
     expect(await at("0.5.1")).toMatchObject({ support: "old", version: "0.5.1" });
     expect(await at("0.4.1")).toMatchObject({ support: "old" });
-    expect(await at("0.6.0")).toMatchObject({ support: "builtin", version: "0.6.0" });
-    expect(await at("0.6.9")).toMatchObject({ support: "builtin" });
+    expect(await at("0.6.0")).toMatchObject({ support: "old", version: "0.6.0" });
+    expect(await at("0.6.9")).toMatchObject({ support: "old" });
     expect(await at("0.7.0")).toMatchObject({ support: "addon" });
     expect(await at("0.7.0-beta.1")).toMatchObject({ support: "addon" });
     expect(await at("1.0.0")).toMatchObject({ support: "addon" });
@@ -38,7 +38,7 @@ describe("which Pipeup a page uses, and what it can do for an agent", () => {
     await writeFile(join(d, "new.js"), 'var x="pipeup-root";var c=["menu","listnote"]');
     await writeFile(join(d, "other.js"), "console.log('not pipeup')");
     expect((await pageSupport(page(src("old.js")), d)).support).toBe("old");
-    expect((await pageSupport(page(src("mid.js?v=1")), d)).support).toBe("builtin");
+    expect((await pageSupport(page(src("mid.js?v=1")), d)).support).toBe("old");
     expect((await pageSupport(page(src("new.js")), d)).support).toBe("addon");
     expect((await pageSupport(page(src("other.js")), d)).support).toBe("unknown");
     expect((await pageSupport(page(src("missing.js")), d)).support).toBe("unknown");
@@ -94,15 +94,8 @@ describe("watch", () => {
     return { file, run: () => watch({ page: file, agent: "Claude", key: "K".repeat(43), log: () => {} }) };
   };
 
-  it("refuses a page whose Pipeup is before 0.6, in words", async () => {
-    const { run } = await start(src("https://cdn.jsdelivr.net/npm/pipeup@0.5.1/dist/pipeup.min.js"));
-    await expect(run()).rejects.toThrow(/uses Pipeup 0\.5\.1, which can't take an agent.*0\.6 or later/);
-  });
-
-  it("starts for a 0.6.x page without the add-on", async () => {
+  it("refuses a page whose Pipeup is before 0.7, in words", async () => {
     const { run } = await start(src("https://cdn.jsdelivr.net/npm/pipeup@0.6.0/dist/pipeup.min.js"));
-    const link = await run();
-    expect(link).toMatchObject({ support: "builtin", addon: false });
-    await link.close();
+    await expect(run()).rejects.toThrow(/uses Pipeup 0\.6\.0, which can't take an agent.*0\.7 or later/);
   });
 });

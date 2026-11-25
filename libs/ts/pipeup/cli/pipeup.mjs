@@ -52,8 +52,7 @@ pipeup agent [--name <name>] [--page <page.html>] [--yes]
 pipeup watch <page.html> [--agent <name>] [--port <number>]
   Shows the page from this computer, with a live link to the agent: the page offers "Share with my agent"
   (off until the person switches it on), and the agent is listed for this page while the link runs. It adds the
-  agents add-on to the page it shows (the file is not changed), unless the page's Pipeup already has agent support
-  (0.6.x), and refuses a page whose Pipeup is older than 0.6.
+  agents add-on to the page it shows (the file is not changed), and refuses a page whose Pipeup is older than 0.7.
 
 pipeup comments <page.html> [--all] [--json]
   Prints the comments the page has shared (open threads, or all with --all), as Markdown or, with --json, as data.
@@ -468,11 +467,9 @@ else if (command === "skills") {
   if (link.addon)
     console.log(
       link.support === "unknown"
-        ? "It couldn't tell which Pipeup the page uses, so it adds the agents add-on to the page it shows (the add-on stays off on a Pipeup that already has agent support). The page's file is not changed."
+        ? "It couldn't tell which Pipeup the page uses, so it adds the agents add-on to the page it shows. The page's file is not changed."
         : "It adds the agents add-on to the page it shows. The page's file is not changed.",
     );
-  else if (link.support === "builtin")
-    console.log("This page's Pipeup (0.6) has agent support built in, so nothing is added to it.");
   console.log(
     `Read:  ${RUN} comments ${page}\nReply: ${RUN} reply --page ${page} --thread <id> "words" --addressed "note"\nStop:  Ctrl-C (comments stay in ${basename(link.sidecar)})`,
   );
