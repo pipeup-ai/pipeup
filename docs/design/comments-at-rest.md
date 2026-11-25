@@ -1,5 +1,7 @@
 # Comments at rest, Hide comments, and pausing comment mode
 
+Status: **built** (2026-10-14; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (holding ⌘ pauses comment mode), §7 (*When comments show*,
 the menu's Hide comments, All comments) and §9 (the gutter). This reverses the 2026-10-06 rule in
 [architecture.md](architecture.md) §11 *Visibility*, where comments showed only in comment mode.

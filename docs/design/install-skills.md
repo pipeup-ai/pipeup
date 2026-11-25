@@ -1,5 +1,7 @@
 # Installing the skills
 
+Status: **built** (2026-10-12; see the change log).
+
 Functional requirements: [FUNCTIONAL_SPEC §15a](../FUNCTIONAL_SPEC.md). This note says how.
 
 ## One source, three carriers

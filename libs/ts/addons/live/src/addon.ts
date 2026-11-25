@@ -5,6 +5,7 @@ import { h } from "./dom";
 import { Mesh } from "./mesh";
 import { join, type Person, type Session } from "./session";
 import { relayList } from "./signal";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 const SAYS =
   "When you go live, you connect directly to other people viewing this page. They see your network address; the meeting-point services see your network address and when you connect, never your comments.";
@@ -30,7 +31,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "live",
     api: 1,
-    version: "0.4.1",
+    version,
     needs: ["menu", "notify", "status", "overlay", "here", "panel", "styles", "sign"],
     network: {
       when: "after-consent",

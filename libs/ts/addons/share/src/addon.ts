@@ -6,6 +6,7 @@ import { Mailbox } from "./mailbox";
 import { listedAgents, Policy, type Saved } from "./policy";
 import { PrivateBin } from "./privatebin";
 import { ShareTransport } from "./transport";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 export interface ShareOptions {
   /** A sharing address, instead of the page's `data-pipeup-share`. */
@@ -34,7 +35,7 @@ export function createAddon(options: ShareOptions = {}): PipeupAddon {
   return {
     id: "share",
     api: 1,
-    version: "0.4.1",
+    version,
     needs: ["sync", "menu", "notify", "note", "commentmark"],
     network: {
       when: "page-configured",

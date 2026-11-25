@@ -1,5 +1,7 @@
 # Local agents, end to end
 
+Status: **built** (2026-10-19; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §15b (the prompt; The commands an agent runs; What agents are
 told). Visual spec: [local-agents-mockups.html](local-agents-mockups.html). From a run on 19 October where a local agent
 (pi, with a model in Ollama) couldn't get a reply onto a wiki shown through `viewer.html?file=…`.

@@ -1,5 +1,7 @@
 # Agents reading and answering comments
 
+Status: **built** (2026-10-12; see the change log).
+
 Functional requirements: [FUNCTIONAL_SPEC §15b](../FUNCTIONAL_SPEC.md). This note says how.
 
 ## Reading

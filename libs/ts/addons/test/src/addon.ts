@@ -1,11 +1,12 @@
 import type { PipeupAddon } from "pipeup";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 /** A fixture add-on that uses every slot, so the core's slots can be tested from a real page. */
 export function createAddon(): PipeupAddon {
   return {
     id: "hello",
     api: 1,
-    version: "1.0.0",
+    version,
     needs: ["menu", "notify", "note", "composer", "panel", "styles", "status", "overlay", "here", "sign"],
     network: { when: "never", to: [], says: "Sends nothing." },
     setup(host) {

@@ -3,6 +3,7 @@ import { decide, type Notice } from "./decide";
 import { KEYS } from "./keys";
 import { check } from "./verify";
 import { pageSetting } from "@pipeup/kit";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 export const LIST_URL = "https://pipeup-ai.github.io/pipeup/updates.json";
 const DAY = 864e5;
@@ -60,7 +61,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "updates",
     api: 1,
-    version: "0.6.0",
+    version,
     needs: ["menu", "notify"],
     network: {
       when: "page-configured",

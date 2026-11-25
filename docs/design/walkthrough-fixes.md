@@ -1,5 +1,7 @@
 # Fixes from the walkthrough
 
+Status: **built** (2026-10-14; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (selecting words), §7 (*compact cards*, opening a thread, the comment
 control) and §10a (mentions). These are the five bugs found by walking every feature through a document, a website and a
 deck, on a phone and on a dark page. They build on [panel-hub.md](panel-hub.md).
