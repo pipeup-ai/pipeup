@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
 - Extension: in the light look, the menu's and Settings' small text is the page's own grey (5.4:1 on white, from 4.2:1), off switches have an edge so they can be found, and dividers are a touch darker. The dark look is unchanged.
 - Extension: one shortcut, Shift+Alt+C (⇧⌥C). With Pipeup off on the page it adds Pipeup and starts commenting; with Pipeup on it turns commenting off and on. Shift+Alt+P is no longer a default key for the toolbar menu, and Settings lists the one shortcut.
 - The Shift and Option keys in shortcuts (the control's tip, the menu's Commenting row, the extension's menu and Settings, the website) are drawn as Pipeup's own glyphs on a Mac, the same in every browser, instead of ⇧ and ⌥ from whatever font each browser fell back to; on Windows and Linux the extension's pages now say Shift+Alt+C and Shift+Alt+P like everything else.

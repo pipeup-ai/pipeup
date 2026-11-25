@@ -70,6 +70,18 @@ describe("theme", () => {
     expect(pageIsDark(document)).toBe(true);
     document.body.style.backgroundColor = "rgb(255, 255, 255)";
     expect(pageIsDark(document)).toBe(false);
+  });
+
+  it("takes a page's link colour only when it is a colour: white or grey links keep Pipeup's own accent", () => {
+    document.documentElement.removeAttribute("style");
+    document.body.innerHTML =
+      '<a href="#" style="color: rgb(232, 234, 237)">a white link, as on a dark site</a>';
+    expect(readTheme(document.body, "dark").accent).toBe("#9A94EE");
+    document.body.innerHTML = '<a href="#" style="color: rgb(60, 60, 60)">a grey link</a>';
+    expect(readTheme(document.body, "light").accent).toBe("#534AB7");
+    document.body.innerHTML = '<a href="#" style="color: rgb(40, 90, 200)">a blue link</a>';
+    expect(readTheme(document.body, "light").accent).toBe("rgb(40, 90, 200)");
+    document.body.innerHTML = "";
     expect(readTheme(document.body, "light").dark).toBe(false);
   });
 

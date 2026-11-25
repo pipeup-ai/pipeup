@@ -159,7 +159,10 @@ export function readTheme(root: Element, look: Look): Theme {
       luminance(c),
       luminance({ r: 0.12 * c.r + 0.88 * sr!, g: 0.12 * c.g + 0.88 * sg!, b: 0.12 * c.b + 0.88 * sb! }),
     ) >= 4.5;
-  const accent = readable ? (want as string) : dark ? FALLBACK_ACCENT_DARK : FALLBACK_ACCENT;
+  // A page's link colour is taken only when it is a colour: a grey, white or black link (a dark site's white links,
+  // say) would make Pipeup's button, outline and markers the same as plain text. The author's own choice is theirs.
+  const colourful = !!c && (!!custom || Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) >= 40);
+  const accent = readable && colourful ? (want as string) : dark ? FALLBACK_ACCENT_DARK : FALLBACK_ACCENT;
   // Words on the accent: whichever of white and near black reads better.
   const rgb = parseColour(accent, doc);
   const on = rgb && luminance(rgb) > 0.19 ? "#111" : "#fff";
