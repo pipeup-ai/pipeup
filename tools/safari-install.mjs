@@ -66,11 +66,19 @@ for (const line of run("pluginkit", ["-m", "-v", "-A", "-i", EXT]).split(
   if (p && p.startsWith("/") && !p.startsWith(home))
     others.push(p.replace(/\/Contents\/PlugIns\/.*$/, ""));
 }
+// Safari lists an app as long as its files exist, whatever the system has forgotten: our own earlier copies (under
+// dist) are deleted; a copy elsewhere (an Xcode archive, a download) is named, for the person to remove or to
+// uninstall in Safari's Extensions settings.
+const elsewhere = [];
 for (const p of new Set(others)) {
+  spawnSync("pkill", ["-f", `${p}/Contents/MacOS/Pipeup`], { stdio: "ignore" });
   if (existsSync(appex(p)))
     spawnSync("pluginkit", ["-r", appex(p)], { stdio: "ignore" });
   spawnSync(lsregister, ["-u", p], { stdio: "ignore" });
-  console.log(`forgot another copy: ${p}`);
+  if (p.startsWith(`${dist}/`) && existsSync(p)) {
+    rmSync(p, { recursive: true, force: true });
+    console.log(`removed an earlier copy: ${p}`);
+  } else if (existsSync(p)) elsewhere.push(p);
 }
 
 // A fresh build number, kept in dist (ignored by git), so each install is a new version to Safari.
@@ -121,7 +129,7 @@ const manifest = JSON.parse(
   readFileSync(`${appex(home)}/Contents/Resources/manifest.json`, "utf8"),
 );
 console.log(
-  `\nPipeup ${manifest.version} is installed at ${home}, signed, the only copy.`,
+  `\nPipeup ${manifest.version} is installed at ${home}, signed${elsewhere.length ? "" : ", the only copy"}.`,
 );
 console.log(
   "Its window says whether Safari has it on. The first time: Safari → Settings → Extensions → tick Pipeup.",
