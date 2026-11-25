@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
 - After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
 
 - Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.

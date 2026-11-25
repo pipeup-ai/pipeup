@@ -28,11 +28,17 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 
 - Nothing is added to a page until the reviewer asks: from the browser's toolbar button, or its shortcut (Shift+Alt+P;
   Shift+Alt+C stays comment mode once Pipeup is on).
-- Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
-  asks the browser's permission for that site only.
+- Installing asks for no access to sites. In Chrome, Edge and Firefox, pressing the toolbar button is the permission for
+  that page, and nothing is asked. Safari grants nothing on a press: the first time Pipeup is used it asks, once,
+  whether Pipeup may see websites, and the panel says so under the button before the press (comments stay in the
+  browser; **Always Allow on Every Website** means it never asks again). No other question is ever asked for
+  commenting, since comments go nowhere; only an add-on that sends them somewhere says so when it is turned on (§6).
+  **Always on for this site** adds Pipeup whenever that site is opened, and where the browser asks per site, asks for
+  that site only.
 - The toolbar button's panel shows the page's address. Off, it offers one main action, **Comment on this page**, which
   adds Pipeup and starts comment mode, since that is why the reviewer pressed it, and one sentence saying what will
-  happen (clicking anything on the page comments on it). Where comments stay is said once, after the first comment,
+  happen (clicking anything on the page comments on it). The press is never lost: when the browser closes the panel to
+  ask its question (Safari), Pipeup is still added and comment mode still starts once the question is answered. Where comments stay is said once, after the first comment,
   not before. Nothing else: no switches, shortcuts or links before the first comment.
 - With Pipeup on, the toolbar panel is **Pipeup's menu**, the one menu in the extension, built for the reviewer's job
   (comment, then get the comments to whoever asked) rather than the feature list. In order:
@@ -171,3 +177,6 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-23 — HTML files opened from this computer: the panel says they're closed to extensions and how to open them so Pipeup can run; no address from the browser reads "This page", not "about" (§3). Found on a file opened in Safari.
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/extension-menu.html): one menu, built for the job. Before the first comment, one action and one sentence; with Pipeup on, six rows (name, Your comments on this page, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting) and More for preferences and ways out; no status line or footer; Pipeup's own menu isn't shown on the page; a one-time line after the first comment; Comments you've made becomes the first part of Settings (§3, §4a, §5). From the newcomer's first run in Safari and Chromium (23 November 2026).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run over the one menu: before the first comment the sentence says only what clicking does; the one-time line after it uses the menu's verbs (copy, save or send); Send to my agent is under More until it is set up; the hint on the page names no button; Settings reads in about a hundred words, the shortcuts on one line each and the agent set-up behind one line (§3, §4a, §5).
+- 2026-11-24 — Safari: one question, once, instead of one per site per day, said in the panel before the press; and
+  Comment on this page finishes its work after Safari's question closes the panel, instead of losing the press (§3).
+  Found by the maintainer on the first press in Safari.
