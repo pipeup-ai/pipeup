@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/emoji",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The full set of emoji for reactions on a Pipeup page: search, groups, recently used and skin tones, from the device's own emoji.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "1.0.0"
+    "pipeup": "1.1.0"
   },
   "pipeup": {
     "network": {

@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/updates",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Tells the author, on their own computer, when a newer Pipeup or a security fix is out, from the project's signed update list.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "1.0.0"
+    "pipeup": "1.1.0"
   },
   "pipeup": {
     "network": {
