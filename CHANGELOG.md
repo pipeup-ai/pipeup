@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension: the toolbar button is Pipeup's violet bubble in Chrome, Edge and Firefox too, whatever the browser's or the system's look; it no longer turns light grey on a light toolbar when the Mac is in dark mode.
 - After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
 
 - Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.

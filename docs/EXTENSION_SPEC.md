@@ -30,6 +30,9 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   Shift+Alt+C stays comment mode once Pipeup is on).
 - Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
   asks the browser's permission for that site only.
+- The toolbar button is Pipeup's violet bubble in every browser, on light and dark toolbars alike, as the stores and
+  the app show it; its badge counts the page's open comments, and turns green while comment mode is on. It never
+  changes with the browser's look or the system's.
 - The toolbar button's panel shows the page's address. Off, it offers one main action, **Comment on this page**, which
   adds Pipeup and starts comment mode, since that is why the reviewer pressed it, and one sentence saying what will
   happen (clicking anything on the page comments on it). Where comments stay is said once, after the first comment,
@@ -171,3 +174,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-23 — HTML files opened from this computer: the panel says they're closed to extensions and how to open them so Pipeup can run; no address from the browser reads "This page", not "about" (§3). Found on a file opened in Safari.
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/extension-menu.html): one menu, built for the job. Before the first comment, one action and one sentence; with Pipeup on, six rows (name, Your comments on this page, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting) and More for preferences and ways out; no status line or footer; Pipeup's own menu isn't shown on the page; a one-time line after the first comment; Comments you've made becomes the first part of Settings (§3, §4a, §5). From the newcomer's first run in Safari and Chromium (23 November 2026).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run over the one menu: before the first comment the sentence says only what clicking does; the one-time line after it uses the menu's verbs (copy, save or send); Send to my agent is under More until it is set up; the hint on the page names no button; Settings reads in about a hundred words, the shortcuts on one line each and the agent set-up behind one line (§3, §4a, §5).
+- 2026-11-25 — The toolbar button is the violet bubble in every browser (§3). It was one of two greys picked by the system's dark mode, so a dark Mac with a light Chrome theme got a light-grey bubble on a light toolbar, near invisible; Safari, which tints its own icon, showed violet, and the two didn't match.
