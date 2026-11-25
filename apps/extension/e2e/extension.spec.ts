@@ -10,7 +10,17 @@ async function writeComment(page: Page, text: string, on = "#p1"): Promise<void>
   await page.bringToFront();
   // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
   await expect(page.locator(".launch")).toBeAttached();
-  if ((await page.locator(".launch .mode.on").count()) === 0) await page.keyboard.press("Shift+Alt+KeyC");
+  // Comment on this page starts comment mode from the background, a moment after Pipeup is added. If it isn't on yet,
+  // ask for it the same way (the message is idempotent); a key press here would race that and toggle it off again.
+  if ((await page.locator(".launch .mode.on").count()) === 0) {
+    const worker = page.context().serviceWorkers()[0];
+    const [tab] = await worker.evaluate((url) => chrome.tabs.query({ url }), page.url());
+    await worker.evaluate(
+      (id) =>
+        chrome.tabs.sendMessage(id, { to: "page", type: "act", action: "mode", value: true }, { frameId: 0 }),
+      tab.id!,
+    );
+  }
   await expect(page.locator(".launch .mode.on")).toBeAttached();
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
   const at = (await page.locator(on).boundingBox())!;
