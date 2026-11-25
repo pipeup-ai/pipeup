@@ -15,8 +15,10 @@ middle. The maintainer asked whether all of it was needed and whether it could b
 
 The window keeps what only it can do: say whether Pipeup is on in Safari, and get it turned on.
 
-- One drawing. Not on yet, or off: Safari's Extensions pane with Pipeup's row and an empty tick. On: a page with
-  Pipeup's button pressed and one comment on a paragraph. The drawing is the how-to.
+- One drawing, in motion like the site's hero. Not on yet, or off: Safari's Extensions pane, where the pointer eases
+  to Pipeup's row and ticks it. On: a page with Pipeup's button pressed, where the pointer picks a sentence, the box
+  opens, a comment is typed and sent, the card settles and its mark stays. A loop of a few seconds, every change
+  eased; with reduced motion the scene holds its last moment. The drawing is the how-to.
 - One line, in two parts: the state, then what to do about it.
 - One button that answers the line: **Open Safari Settings** while Pipeup is off; **Try it on a sample page** once it
   is on, which opens Pipeup's sample page in Safari.
@@ -33,6 +35,8 @@ Pipeup on, from a hundred and twenty-one.
 - `apps/extension/safari/Main.html`, `Style.css`, `Script.js` and `ViewController.swift` are copied over Apple's
   converter's stock files by `tools/build-extension.mjs`; the licences page is `Licences.html`, copied beside them, and
   filled from the package's LICENSE and THIRD-PARTY-NOTICES.txt at build time.
+- The scenes are HTML in `Main.html`; `Script.js` runs a small timeline per scene (moments that switch classes, and
+  spots for the pointer), the same shape as the site's hero, and plays only the scene that is shown.
 - The app tells the page the state (`show(enabled, settingsWord)`) as before; the page swaps the drawing, the line and
   the button with a short cross-fade.
 - Two messages to the controller: `open-preferences` (as before) and `open-sample`, which opens the sample page in the
@@ -41,3 +45,4 @@ Pipeup on, from a hundred and twenty-one.
 ## Change log
 
 - 2026-11-25 — Proposed from the window seen on a dev build; built the same day.
+- 2026-11-25 — The drawing moves: the site's hero, small, on the maintainer's ask.

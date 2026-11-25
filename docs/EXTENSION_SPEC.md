@@ -83,8 +83,9 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
   install and whenever the app is opened. It says one thing, whether Pipeup is on in Safari, and does one thing about
   it: not on yet or turned off, a line saying to tick Pipeup under Extensions and a button that opens Safari's
   settings there; on, a line saying to press Pipeup's button on any page and a button that opens Pipeup's sample page
-  in Safari. A drawing shows what the line is about: the Extensions pane with Pipeup's row, or a page with Pipeup's
-  button pressed and one comment. No introduction and no steps: the store said what Pipeup is, and the toolbar menu
+  in Safari. A drawing shows what the line is about, and moves as the website's does: the Extensions pane, where the
+  pointer ticks Pipeup's row; or a page where the pointer picks a sentence, a comment is typed and sent, and its mark
+  stays. It holds its last moment when the Mac asks for reduced motion. No introduction and no steps: the store said what Pipeup is, and the toolbar menu
   teaches the steps as they are needed. A footer of links: Support, Privacy, Source and Licences, which shows the
   MIT and third-party notices. Light and dark follow the Mac; the window keeps its size and the state eases in.
 
