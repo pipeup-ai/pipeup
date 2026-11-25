@@ -103,6 +103,11 @@ const TARGETS = {
       (p) => p !== "sidePanel" && p !== "nativeMessaging",
     );
     m.browser_specific_settings = { safari: { strict_min_version: "17.0" } };
+    // Safari grants nothing on a toolbar press (activeTab is silent in Chrome and Firefox, never in Safari): it asks
+    // in words. Asking for every website up front makes that one question, with Always Allow on Every Website as its
+    // answer, instead of one per site per day.
+    m.host_permissions = ["<all_urls>"];
+    delete m.optional_host_permissions;
     // Safari's background takes no "type" (the background script imports nothing), and opens settings where it likes.
     m.background = { service_worker: m.background.service_worker };
     delete m.options_ui.open_in_tab;
