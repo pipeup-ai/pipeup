@@ -8,9 +8,19 @@ import { fileURLToPath, pathToFileURL } from "node:url";
  */
 async function writeComment(page: Page, text: string, on = "#p1"): Promise<void> {
   await page.bringToFront();
-  // Pipeup has started in the tab; Comment on this page turned comment mode on, and the shortcut does if it's off.
+  // Pipeup has started in the tab; Comment on this page turned comment mode on. If it's off, the shortcut would turn
+  // it on, but the shortcut is the browser's own command (background.js), which a test can't press: the same
+  // message the command sends does.
   await expect(page.locator(".launch")).toBeAttached();
-  if ((await page.locator(".launch .mode.on").count()) === 0) await page.keyboard.press("Shift+Alt+KeyC");
+  if ((await page.locator(".launch .mode.on").count()) === 0) {
+    const worker = page.context().serviceWorkers()[0];
+    const [tab] = await worker.evaluate((url) => chrome.tabs.query({ url }), page.url());
+    await worker.evaluate(
+      (id) =>
+        chrome.tabs.sendMessage(id, { to: "page", type: "act", action: "mode", value: true }, { frameId: 0 }),
+      tab.id!,
+    );
+  }
   await expect(page.locator(".launch .mode.on")).toBeAttached();
   // Comment mode's layer takes the click, as on any page: press where the paragraph is.
   const at = (await page.locator(on).boundingBox())!;
@@ -425,6 +435,15 @@ test("the toolbar button is Pipeup's violet bubble, whatever the browser's or th
   // The violet bubble, in the manifest, is what the toolbar shows.
   const icon = await worker.evaluate(() => chrome.runtime.getManifest().action?.default_icon);
   expect(icon).toEqual({ 16: "icons/toolbar-16.png", 32: "icons/toolbar-32.png" });
+});
+
+test("one shortcut: Alt+Shift+C is the browser's command for Comment on this page; the menu's own has no default key", async ({
+  worker,
+}) => {
+  const commands = await worker.evaluate(() => chrome.runtime.getManifest().commands);
+  expect(commands?.comment?.suggested_key?.default).toBe("Alt+Shift+C");
+  expect(commands?._execute_action?.suggested_key).toBeUndefined();
+  expect(Object.keys(commands ?? {}).sort()).toEqual(["_execute_action", "comment"]);
 });
 
 test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({

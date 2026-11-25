@@ -26,8 +26,11 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 
 ## 3. Turning Pipeup on
 
-- Nothing is added to a page until the reviewer asks: from the browser's toolbar button, or its shortcut (Shift+Alt+P;
-  Shift+Alt+C stays comment mode once Pipeup is on).
+- Nothing is added to a page until the reviewer asks: from the browser's toolbar button, or the one shortcut,
+  Shift+Alt+C (Shift+Option+C on a Mac). With Pipeup off on the page, the shortcut adds Pipeup and starts comment
+  mode, as **Comment on this page** does; with Pipeup on, it turns comment mode off and on, the comments staying in
+  view. There is no second shortcut: taking Pipeup off the page is **Turn off on this page** in the menu, and the
+  toolbar button's own shortcut has no key unless the reviewer gives it one in the browser's settings.
 - Installing asks for no access to sites. **Always on for this site** adds Pipeup whenever that site is opened, and
   asks the browser's permission for that site only.
 - The toolbar button is Pipeup's violet bubble in every browser, on light and dark toolbars alike, as the stores and
@@ -175,3 +178,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/extension-menu.html): one menu, built for the job. Before the first comment, one action and one sentence; with Pipeup on, six rows (name, Your comments on this page, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting) and More for preferences and ways out; no status line or footer; Pipeup's own menu isn't shown on the page; a one-time line after the first comment; Comments you've made becomes the first part of Settings (§3, §4a, §5). From the newcomer's first run in Safari and Chromium (23 November 2026).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run over the one menu: before the first comment the sentence says only what clicking does; the one-time line after it uses the menu's verbs (copy, save or send); Send to my agent is under More until it is set up; the hint on the page names no button; Settings reads in about a hundred words, the shortcuts on one line each and the agent set-up behind one line (§3, §4a, §5).
 - 2026-11-25 — The toolbar button is the violet bubble in every browser (§3). It was one of two greys picked by the system's dark mode, so a dark Mac with a light Chrome theme got a light-grey bubble on a light toolbar, near invisible; Safari, which tints its own icon, showed violet, and the two didn't match.
+- 2026-11-25 — One shortcut, Shift+Alt+C, on and off: with Pipeup off it adds Pipeup and starts comment mode, with Pipeup on it turns comment mode off and on; the toolbar button's Shift+Alt+P is no longer a default key, and Settings lists the one shortcut (§3). The maintainer: two ways on don't make sense.

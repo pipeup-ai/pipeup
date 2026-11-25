@@ -10,6 +10,49 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   void chrome.action.setBadgeTextColor?.({ tabId, color: "#ffffff" });
 });
 
+// The one shortcut, Shift+Alt+C, as the browser delivers it (the page needn't be open to the extension yet: the key
+// grants the tab, as the toolbar button does). Pipeup off on the page: start it with comment mode on, as Comment on
+// this page does. Pipeup on: comment mode off or on, from the last state the page reported. The page's own copy of
+// the shortcut stands aside while the extension is there (start.js), so one press is one change.
+const commenting = new Map(); // tab id → whether comment mode is on, as the page last said
+chrome.runtime.onMessage.addListener((message, sender) => {
+  const tabId = sender.tab?.id;
+  if (message?.type === "state" && tabId !== undefined) commenting.set(tabId, message.commenting === true);
+});
+chrome.tabs.onRemoved.addListener((tabId) => commenting.delete(tabId));
+chrome.commands?.onCommand.addListener(async (command, tab) => {
+  if (command !== "comment" || tab?.id === undefined) return;
+  const page = { to: "page" };
+  try {
+    const there = await chrome.tabs
+      .sendMessage(tab.id, { ...page, type: "probe" }, { frameId: 0 })
+      .catch(() => null);
+    if (there?.ok) {
+      await chrome.tabs.sendMessage(
+        tab.id,
+        { ...page, type: "act", action: "mode", value: !commenting.get(tab.id) },
+        { frameId: 0 },
+      );
+      return;
+    }
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["start.js"] });
+    for (let i = 0; i < 100; i++) {
+      const answer = await chrome.tabs
+        .sendMessage(tab.id, { ...page, type: "probe" }, { frameId: 0 })
+        .catch(() => null);
+      if (answer?.ok) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    await chrome.tabs.sendMessage(
+      tab.id,
+      { ...page, type: "act", action: "mode", value: true },
+      { frameId: 0 },
+    );
+  } catch {
+    // A page browsers keep closed to extensions, or one with Pipeup built in.
+  }
+});
+
 // The browser's right-click menu: "Comment with Pipeup" on selected words, a picture, a link, or anything on the page.
 // The click lets the extension into that tab, as pressing the toolbar button does.
 const MENU = "pipeup-comment";

@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension: one shortcut, Shift+Alt+C (⇧⌥C). With Pipeup off on the page it adds Pipeup and starts commenting; with Pipeup on it turns commenting off and on. Shift+Alt+P is no longer a default key for the toolbar menu, and Settings lists the one shortcut.
 - The Shift and Option keys in shortcuts (the control's tip, the menu's Commenting row, the extension's menu and Settings, the website) are drawn as Pipeup's own glyphs on a Mac, the same in every browser, instead of ⇧ and ⌥ from whatever font each browser fell back to; on Windows and Linux the extension's pages now say Shift+Alt+C and Shift+Alt+P like everything else.
 - Extension: the toolbar button is Pipeup's violet bubble in Chrome, Edge and Firefox too, whatever the browser's or the system's look; it no longer turns light grey on a light toolbar when the Mac is in dark mode.
 - After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
