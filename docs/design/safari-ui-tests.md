@@ -52,7 +52,9 @@ A day (24 to 25 November 2026) went on a toolbar button that would not appear, w
   Hence: the build number in the version.
 - **A build from the wrong branch.** Two installs took the build tool from a branch without main's Safari permission
   line, so the press was lost again. Hence: CI checks the Safari manifest asks for every website.
-- The site built (`apps/site/build.sh`), for the sample page.
+- The site built (`apps/site/build.sh`), for the sample page. The runner writes a copy of it with a fresh document id
+  for each run (`extension-test-fresh.html`): comments are kept by document id, so the same page would open the last
+  run's comment where the test expects an empty paragraph.
 - Once: macOS asks whether the test runner may control the computer (Accessibility). Allow it; the test then runs
   unattended.
 
@@ -66,3 +68,4 @@ A day (24 to 25 November 2026) went on a toolbar button that would not appear, w
 - 2026-11-23 — First version: the scaffold and the first-run test.
 - 2026-11-23 — The menu's rows renamed with the one-menu change (docs/design/one-menu.md): the count is read from Your comments on this page.
 - 2026-11-25 — npm run safari-install, the test's pre-checks and plain failure, the CI check on the Safari manifest, and the list of what went wrong and why each rule exists.
+- 2026-11-25 — Each run opens a copy of the sample page with a new document id, so earlier runs' comments never meet the test.

@@ -8,7 +8,8 @@ import XCTest
 
 final class FirstRunTests: XCTestCase {
   let safari = XCUIApplication(bundleIdentifier: "com.apple.Safari")
-  let url = "http://localhost:8792/extension-test.html"
+  // A copy of the sample page with a fresh document id, written by tools/safari-ui-test.mjs for each run.
+  let url = "http://localhost:8792/extension-test-fresh.html"
   var step = 0
   /// Safari's windows reach accessibility as dialogs, with an identifier that names them; the main one comes first.
   lazy var window = safari.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'SafariWindow'")).firstMatch

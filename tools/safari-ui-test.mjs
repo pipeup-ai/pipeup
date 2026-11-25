@@ -6,7 +6,8 @@
 //
 // Output: apps/extension/dist/safari-ui-test/NN-step.png (and NN-step.txt, Safari's accessibility tree, where a step
 // couldn't find what it expected), exported from results.xcresult. The test runner is sandboxed and takes no
-// environment, so the page's address is fixed in the test: http://localhost:8792/extension-test.html.
+// environment, so the page's address is fixed in the test: http://localhost:8792/extension-test-fresh.html, a copy of
+// the sample page with a new document id for each run.
 import {
   existsSync,
   mkdirSync,
@@ -14,6 +15,7 @@ import {
   readdirSync,
   renameSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
@@ -50,6 +52,17 @@ console.log(`Safari's Pipeup: ${installed} at ${home}`);
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
+
+// A fresh copy of the sample page for this run: comments are kept by the page's document id, so the same page would
+// open the last run's comment where the test expects an empty paragraph. The id is random, in the shape Pipeup makes
+// (16 and 43 base64url characters), and the test opens this copy.
+const b64u = (n) => Buffer.from(crypto.getRandomValues(new Uint8Array(n))).toString("base64url");
+const sample = readFileSync(`${site}/extension-test.html`, "utf8");
+if (!/data-pipeup-doc="[^"]+"/.test(sample)) fail("extension-test.html has no data-pipeup-doc");
+writeFileSync(
+  `${site}/extension-test-fresh.html`,
+  sample.replace(/data-pipeup-doc="[^"]+"/, `data-pipeup-doc="${b64u(12)}:${b64u(32)}"`),
+);
 
 // The sample page, served locally unless something already serves that port.
 const free = await new Promise((resolve) => {
