@@ -335,6 +335,16 @@
       retire();
     }
   };
+  // The shortcut is the browser's (background.js, chrome.commands): Pipeup's own copy of it stands aside here, so a
+  // press the browser also delivers to the page is one change, not two. Browsers without commands keep Pipeup's.
+  if (chrome.commands)
+    window.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.code === "KeyC" && e.shiftKey && e.altKey && !e.metaKey && !e.ctrlKey) e.preventDefault();
+      },
+      true,
+    );
   // An orphaned copy takes itself off the page, so the updated extension starts clean when it is pressed again.
   let retired = false;
   function retire() {

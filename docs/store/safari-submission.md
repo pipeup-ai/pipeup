@@ -55,7 +55,7 @@ your Apple account, your password or a legal answer.
    Connect → Upload.
 4. **TestFlight:** in App Store Connect → TestFlight, add yourself as an internal tester and install the build on a
    Mac (or a new macOS user) that never had Pipeup. Turn it on in Safari and check what Safari asks the first time, and
-   that Option-Shift-P starts Pipeup.
+   that Option-Shift-C starts Pipeup with commenting on.
 5. **The version's page** (App Store Connect → the app → macOS App), from the Safari section of the listings doc:
    - Promotional text, Description, Keywords, Support URL (`https://pipeup-ai.github.io/pipeup/support.html`),
      Marketing URL (`https://pipeup-ai.github.io/pipeup/`), Copyright (`2026 Pipeup contributors`).
