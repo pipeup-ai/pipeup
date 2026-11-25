@@ -99,6 +99,16 @@ record.
   browser's own switch that lets an extension see files). Where the browser gives the extension no address at all,
   the menu says "This page" rather than guessing one.
 
+- **Safari's app window.** Safari's Pipeup is a Mac app with the extension inside; its one window is seen once after
+  install and whenever the app is opened. It says one thing, whether Pipeup is on in Safari, and does one thing about
+  it: not on yet or turned off, a line saying to tick Pipeup under Extensions and a button that opens Safari's
+  settings there; on, a line saying to press Pipeup's button on any page and a button that opens Pipeup's sample page
+  in Safari. A drawing shows what the line is about, and moves as the website's does: the Extensions pane, where the
+  pointer ticks Pipeup's row; or a page where the pointer picks a sentence, a comment is typed and sent, and its mark
+  stays. It holds its last moment when the Mac asks for reduced motion. No introduction and no steps: the store said what Pipeup is, and the toolbar menu
+  teaches the steps as they are needed. A footer of links: Support, Privacy, Source and Licences, which shows the
+  MIT and third-party notices. Light and dark follow the Mac; the window keeps its size and the state eases in.
+
 ## 4. Commenting
 
 - Pipeup works as on a page that has it built in: the same control, menu, comments and add-ons, in the same looks.
@@ -201,3 +211,4 @@ record.
 - 2026-11-25 — One shortcut, Shift+Alt+C, on and off: with Pipeup off it adds Pipeup and starts comment mode, with Pipeup on it turns comment mode off and on; the toolbar button's Shift+Alt+P is no longer a default key, and Settings lists the one shortcut (§3). The maintainer: two ways on don't make sense.
 - 2026-11-25 — On a page with Pipeup built in, the shortcut and Comment with Pipeup go to the page's own Pipeup instead of doing nothing (§3). The browser now takes the shortcut before the page sees it, so without this a built-in page lost its key. The maintainer: if Pipeup is there, don't offer to turn it on.
 - 2026-11-25 — Rewritten as the product is, after the maintainer found the spec layered (side-panel-era sentences beside the one menu's): §2 Safari is shipped, not next; §3 says the three ways in, the one shortcut, the permission in every browser, the two states of the toolbar menu, on-page threads as the default and the side panel as the pinned choice, built-in pages and orphans; §4a's right-click item always opens the box on its target; §5 names the one shortcut. The header names the current visual specs and marks the earlier ones as history. Nothing in the product changed.
+- 2026-11-25 — Agreed with the maintainer (visual spec docs/design/safari-app-window.html): Safari's app window says whether Pipeup is on and does one thing about it, with a drawing instead of an introduction and steps; a footer of Support, Privacy, Source and Licences (§3). From the window's wall of text on a dev build.

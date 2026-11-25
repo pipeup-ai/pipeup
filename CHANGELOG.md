@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Safari's app window says one thing and does one thing: whether Pipeup is on, with a drawing, a line and a button (Open Safari Settings, or Try it on a sample page once it's on); the introduction, the steps and the licence paragraph are gone, with the licences behind one link.
 - Each add-on reports its package's real version in Pipeup's add-ons list (they said 0.4.1 to 0.9.1 while all were 1.0.0).
 - `pipeup watch` refuses a page whose Pipeup is older than 0.7 (it used to serve 0.6 pages through their built-in agent support); 0.7 shipped in October 2026 and every page since takes the agents add-on.
 - On a touch screen, comment mode's one-time keyboard and mouse hints (Tab, Space, Option-click to pin) no longer appear; only the touch hint does, as the spec always said.

@@ -39,6 +39,11 @@ putting that back cost an afternoon. So:
 - If a run does leave Safari changed, say so at once and repair it yourself with
   `open -a Terminal tools/safari-toolbar-reset.command`, which puts the default toolbar back. Don't hand the person a
   list of steps to undo what the tools did.
+- Put a build into Safari only with `npm run safari-install`: signed by the Mac's development certificate, one copy in
+  one place, a fresh build number. Unsigned builds are turned off by Safari at every start until Allow Unsigned
+  Extensions is on again, while still listed as on; a second copy of the app anywhere makes Safari list two; replacing
+  the app under the same path makes Safari untick it; the same version makes Safari keep the old files. A day was lost
+  to each of these in turn (25 November 2026). Never swap the app under Safari by hand.
 
 ## Workflow
 

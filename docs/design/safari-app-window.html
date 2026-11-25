@@ -1,0 +1,150 @@
+<title>Safari App Window</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+  :root {
+    --bg: #faf9f6; --fg: #2b2a28; --muted: #6d6a63; --line: #e4e1d8; --card: #ffffff;
+    --accent: #534ab7; --accent-soft: #ecebf8; --win: #f3f2ee; --win-line: #d8d5cc; --ok: #2e7d4f;
+    --serif: "Source Serif 4", Georgia, serif; --sans: Inter, -apple-system, "SF Pro Text", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #1b1a18; --fg: #e8e6e0; --muted: #a39f95; --line: #34322d; --card: #232220;
+    --accent: #9a92ee; --accent-soft: #2b2946; --win: #2a2926; --win-line: #45423b; --ok: #6fc394; color-scheme: dark; } }
+  :root[data-theme="dark"] {
+    --bg: #1b1a18; --fg: #e8e6e0; --muted: #a39f95; --line: #34322d; --card: #232220;
+    --accent: #9a92ee; --accent-soft: #2b2946; --win: #2a2926; --win-line: #45423b; --ok: #6fc394; color-scheme: dark; }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--sans); margin: 0;
+    padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: 36px; line-height: 1.15; } h2 { font-size: 24px; } h3 { font-size: 17px; font-family: var(--sans); }
+  p { margin: 0; max-width: 64ch; } .muted { color: var(--muted); }
+  .kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: start; }
+  .shot { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .shot figcaption { font-size: 14px; color: var(--muted); }
+  /* The Mac window, drawn */
+  .mac { background: var(--win); border: 1px solid var(--win-line); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+  .mac .bar { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--win-line); font-size: 12px; color: var(--muted); }
+  .mac .bar i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; display: inline-block; } .mac .bar i + i { background: #febc2e; } .mac .bar i + i + i { background: #28c840; }
+  .mac .bar span { margin-left: 8px; font-weight: 500; color: var(--fg); }
+  .mac .body { padding: 26px 24px 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; font-size: 13px; line-height: 1.5; }
+  .mac .body.before { gap: 9px; font-size: 12.5px; }
+  .icon { width: 64px; height: 64px; border-radius: 15px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); display: grid; place-items: center; }
+  .icon svg { width: 36px; height: 36px; }
+  .mac h4 { margin: 0; font: 600 18px var(--sans); }
+  .mac .state { font-weight: 600; }
+  .mac .btn { background: var(--accent); color: #fff; border-radius: 8px; padding: 6px 14px; font-weight: 500; font-size: 13px; }
+  .mac .ghost { color: var(--accent); font-weight: 500; }
+  .mac ol { text-align: left; margin: 4px 0 0; padding: 10px 12px 10px 28px; border: 1px solid var(--win-line); border-radius: 8px; }
+  .mac ol li + li { margin-top: 4px; }
+  .mac .links { display: flex; gap: 14px; color: var(--accent); font-size: 12px; }
+  .mac .small { font-size: 11px; color: var(--muted); }
+  .mac svg.draw { width: 100%; max-width: 320px; height: auto; display: block; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 500; color: var(--muted); font-size: 13px; }
+  td:first-child { white-space: nowrap; color: var(--muted); }
+  .count { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .count div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .count b { display: block; font: 600 28px/1.1 var(--serif); margin-bottom: 4px; }
+  ul.plain { margin: 0; padding-left: 20px; } ul.plain li + li { margin-top: 6px; }
+  .call { background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 12px; padding: 18px 20px; }
+  @media (prefers-reduced-motion: no-preference) { .mac { transition: transform .5s cubic-bezier(.22,.61,.36,1); } }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:10px">
+    <div class="kicker">Pipeup for Safari · the Mac app's window · proposal, 25 November 2026</div>
+    <h1>One picture, one line, one button</h1>
+    <p class="muted">The window opens once, after install, and whenever the app is launched. Today it explains Pipeup in a hundred and twenty words. The proposal keeps what only this window can do, says whether Pipeup is on and gets it turned on, and shows the rest.</p>
+  </header>
+
+  <section>
+    <h2>Before and after</h2>
+    <div class="pair">
+      <figure class="shot" style="margin:0">
+        <div class="mac"><div class="bar"><i></i><i></i><i></i><span>Pipeup</span></div>
+          <div class="body before">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#534ab7" stroke-width="2"><path d="M12 3a8 8 0 0 1 8 8c0 4.4-3.6 8-8 8H5l1.6-3A8 8 0 0 1 12 3z"/></svg></div>
+            <h4>Pipeup for Safari</h4>
+            <p class="muted">Comment on any web page, then pass the comments to the person or AI agent who asked for your feedback.</p>
+            <p class="state">Pipeup is on in Safari.</p>
+            <span class="btn">Open Safari Settings</span>
+            <ol><li>In Safari, open a web page and press Pipeup in the toolbar.</li><li>Choose <b>Comment on this page</b>, click what you want to comment on, type, and press Return.</li><li>Press Pipeup again for your comments: <b>Copy comments</b> or <b>Save comments</b> to send them on.</li></ol>
+            <div class="links"><span>Support</span><span>Privacy</span><span>Source</span></div>
+            <p class="small">Free and open source under the MIT licence. Includes emojibase-data (MIT) for emoji names. Pipeup collects nothing; your comments stay in Safari until you send them.</p>
+          </div></div>
+        <figcaption>Today, with Pipeup on. 121 words, five kinds of text, and the one line that matters is in the middle.</figcaption>
+      </figure>
+      <figure class="shot" style="margin:0">
+        <div class="mac"><div class="bar"><i></i><i></i><i></i><span>Pipeup</span></div>
+          <div class="body">
+            <svg class="draw" viewBox="0 0 320 170" aria-label="A Safari window with Pipeup's button pressed and a comment on a paragraph">
+              <rect x="1" y="1" width="318" height="168" rx="10" fill="#fff" stroke="#d8d5cc"/>
+              <rect x="1" y="1" width="318" height="34" rx="10" fill="#f3f2ee"/><rect x="1" y="20" width="318" height="15" fill="#f3f2ee"/>
+              <circle cx="16" cy="18" r="4" fill="#d8d5cc"/><circle cx="28" cy="18" r="4" fill="#d8d5cc"/><circle cx="40" cy="18" r="4" fill="#d8d5cc"/>
+              <rect x="110" y="10" width="140" height="16" rx="5" fill="#fff" stroke="#e4e1d8"/>
+              <rect x="74" y="8" width="22" height="20" rx="6" fill="#ecebf8" stroke="#534ab7"/>
+              <path d="M85 12.5a4.5 4.5 0 0 1 4.5 4.5c0 2.5-2 4.5-4.5 4.5h-4l.9-1.7A4.5 4.5 0 0 1 85 12.5z" fill="none" stroke="#534ab7" stroke-width="1.4"/>
+              <rect x="40" y="56" width="150" height="7" rx="3" fill="#2b2a28" opacity=".85"/>
+              <rect x="40" y="76" width="200" height="30" rx="4" fill="#ecebf8" stroke="#534ab7"/>
+              <rect x="48" y="83" width="170" height="5" rx="2.5" fill="#a9a5c8"/><rect x="48" y="94" width="120" height="5" rx="2.5" fill="#a9a5c8"/>
+              <path d="M252 78a8 8 0 1 1-8 8l0 8z" fill="#534ab7"/>
+              <rect x="40" y="118" width="190" height="5" rx="2.5" fill="#d8d5cc"/><rect x="40" y="130" width="160" height="5" rx="2.5" fill="#d8d5cc"/><rect x="40" y="142" width="175" height="5" rx="2.5" fill="#d8d5cc"/>
+            </svg>
+            <p class="state" style="margin-top:4px">Pipeup is on in Safari.</p>
+            <p class="muted">Press its button on any page.</p>
+            <span class="btn">Try it on a sample page</span>
+            <div class="links" style="margin-top:8px"><span>Support</span><span>Privacy</span><span>Source</span><span>Licences</span></div>
+          </div></div>
+        <figcaption>Proposed, with Pipeup on. 16 words. The drawing shows the button, the pressed state and a comment, which is the whole how-to.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>What goes, and where it goes</h2>
+    <div class="count">
+      <div><b>121 → 16</b><span class="muted">words on the window when Pipeup is on</span></div>
+      <div><b>5 → 2</b><span class="muted">kinds of text: a state line and a footer of links</span></div>
+      <div><b>0 → 1</b><span class="muted">drawing, light and dark as the Mac</span></div>
+    </div>
+    <table>
+      <tr><th>Today</th><th>Proposed</th><th>Why</th></tr>
+      <tr><td>The lede</td><td>Gone</td><td>The store listing says what Pipeup is, before anyone installs. Inside the app they already know.</td></tr>
+      <tr><td>The three steps</td><td>The drawing</td><td>The toolbar menu teaches the steps one at a time, as they're needed. A picture of the button is the only thing the window must point at.</td></tr>
+      <tr><td>Open Safari Settings</td><td>Kept while Pipeup is off. With it on, <b>Try it on a sample page</b> opens the sample page in Safari.</td><td>The button answers the question the state line raises: off, turn it on; on, go and press it.</td></tr>
+      <tr><td>Licence paragraph</td><td>A <b>Licences</b> link, and the app's About panel</td><td>The MIT and emojibase notices must be reachable, not read on arrival. Both stay in the package too.</td></tr>
+      <tr><td>Support · Privacy · Source</td><td>Kept, as the footer</td><td>App Review looks for them.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>The three states</h2>
+    <p class="muted">One window, three moments. Only the line and the button change; the drawing changes with them, so each state looks like what it is about.</p>
+    <table>
+      <tr><th>State</th><th>Line</th><th>Button</th><th>Drawing</th></tr>
+      <tr><td>Not on yet (first launch)</td><td><b>Turn on Pipeup in Safari.</b><br><span class="muted">Under Extensions, tick Pipeup.</span></td><td>Open Safari Settings</td><td>Safari's Extensions pane, with Pipeup's row and its tick drawn empty</td></tr>
+      <tr><td>On</td><td><b>Pipeup is on in Safari.</b><br><span class="muted">Press its button on any page.</span></td><td>Try it on a sample page</td><td>A page with the button pressed and one comment (above)</td></tr>
+      <tr><td>Off (was on, then unticked)</td><td><b>Pipeup is off in Safari.</b><br><span class="muted">Under Extensions, tick Pipeup to turn it back on.</span></td><td>Open Safari Settings</td><td>The Extensions pane again</td></tr>
+    </table>
+    <p class="muted">On Macs that say Preferences instead of Settings, the words follow, as today.</p>
+  </section>
+
+  <section>
+    <h2>Rules it keeps</h2>
+    <ul class="plain">
+      <li>Light and dark, both complete, following the Mac. The drawing uses the same two palettes.</li>
+      <li>The window stays the same size and the state swaps ease in, nothing blinks.</li>
+      <li>Nothing new is collected or sent. The sample page is Pipeup's own, opened in Safari in the person's own session.</li>
+      <li>Everything App Review asks of a container app stays: what it is, how to enable it, support and privacy, licences.</li>
+    </ul>
+  </section>
+
+  <div class="call">
+    <h3>One call for the maintainer</h3>
+    <p style="margin-top:6px">With Pipeup on, the button opens the sample page. The alternative is no button at all once Pipeup is on, just the line and the footer. The sample page gives a first-timer somewhere to press the button straight away, which is why it is the proposal.</p>
+  </div>
+</div>

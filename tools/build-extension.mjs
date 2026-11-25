@@ -6,7 +6,8 @@
 //   node tools/build-extension.mjs --test   also dist/chromium-test and dist/firefox-test, for the tests only: they may
 //                                           reach any page without a press on the toolbar button, which a test can't
 //                                           make. Never published.
-//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only
+//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only;
+//                                           signed with APPLE_TEAM_ID (environment or .env.local); --unsigned to skip
 //   APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release
 //                                           archives Safari's app for the Mac App Store, signed by that team
 //                                           (dist/Pipeup.xcarchive; upload it from Xcode's Organizer)
@@ -21,6 +22,7 @@ import {
 } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { appIcon, INK, listed, toolbar } from "./extension-icons.mjs";
+import { teamId } from "./apple-team.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const src = `${root}apps/extension/src`;
@@ -112,9 +114,11 @@ const TARGETS = {
     m.background = { service_worker: m.background.service_worker };
     delete m.options_ui.open_in_tab;
     // One black bubble: Safari takes a grayscale toolbar icon as a template and tints it for its toolbar.
-    m.action.default_icon = Object.fromEntries(
-      [16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]),
-    );
+    m.action.default_icon = Object.fromEntries([16, 19, 32, 38].map((s) => [s, `icons/toolbar-${s}.png`]));
+    // A development build carries its build number as a fourth part (1.1.0.7): Safari keeps an extension's files
+    // cached by version, so a new number is what makes it read the new build. Releases keep the three parts.
+    if (process.env.PIPEUP_BUILD_NUMBER && !process.argv.includes("--safari-release"))
+      m.version = `${m.version}.${process.env.PIPEUP_BUILD_NUMBER}`;
     return m;
   },
 };
@@ -219,12 +223,15 @@ if (app) console.log(`  ${app}`);
  * xcodebuild builds it, signed for this Mac only: Safari runs it once Develop → Allow Unsigned Extensions is on.
  */
 function safariApp(release) {
-  if (process.platform !== "darwin")
-    throw new Error("build-extension: Safari's app is built on a Mac");
-  const team = process.env.APPLE_TEAM_ID;
-  if (release && !team)
+  if (process.platform !== "darwin") throw new Error("build-extension: Safari's app is built on a Mac");
+  const team = teamId(root);
+  if (release && !team) throw new Error("build-extension: --safari-release needs APPLE_TEAM_ID (the developer team)");
+  if (!release && !team && !process.argv.includes("--unsigned"))
     throw new Error(
-      "build-extension: --safari-release needs APPLE_TEAM_ID (the developer team)",
+      "build-extension: --safari signs with your Apple development certificate: put APPLE_TEAM_ID=<your team id> in " +
+        ".env.local at the repository's root (Xcode → Settings → Accounts shows the team). Unsigned, Safari turns the " +
+        "extension off at every start until Develop → Allow Unsigned Extensions is on again; --unsigned builds that " +
+        "way on purpose, for a Mac with no Apple account.",
     );
   const project = `${root}apps/extension/dist/safari-app`;
   rmSync(project, { recursive: true, force: true });
@@ -250,20 +257,19 @@ function safariApp(release) {
   // The app's own window and icon, kept in apps/extension/safari, over the converter's stock ones.
   const app = `${project}/Pipeup/Pipeup`;
   const ours = `${root}apps/extension/safari`;
-  cpSync(`${ours}/Main.html`, `${app}/Resources/Base.lproj/Main.html`);
-  for (const f of ["Style.css", "Script.js"])
-    cpSync(`${ours}/${f}`, `${app}/Resources/${f}`);
+  // The window carries the licences behind one link: the package's own notices, escaped into the page.
+  const escape = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const licences = `${escape(readFileSync(`${root}LICENSE`, "utf8").trim())}\n\n${escape(notices.trim())}`;
+  writeFileSync(
+    `${app}/Resources/Base.lproj/Main.html`,
+    readFileSync(`${ours}/Main.html`, "utf8").replace("<!--LICENCES-->", licences),
+  );
+  for (const f of ["Style.css", "Script.js"]) cpSync(`${ours}/${f}`, `${app}/Resources/${f}`);
   cpSync(`${ours}/ViewController.swift`, `${app}/ViewController.swift`);
   writeFileSync(`${app}/Resources/Icon.png`, appIcon(192));
-  // The window fits the page: the converter's is 425 × 325, which cuts off the steps and the links.
+  // The window fits the page: the converter's is 425 × 325, which cuts off the drawing and the links.
   const board = `${app}/Base.lproj/Main.storyboard`;
-  writeFileSync(
-    board,
-    readFileSync(board, "utf8").replace(
-      /width="425" height="325"/g,
-      'width="480" height="640"',
-    ),
-  );
+  writeFileSync(board, readFileSync(board, "utf8").replace(/width="425" height="325"/g, 'width="460" height="470"'));
   for (const size of [16, 32, 128, 256, 512])
     for (const k of [1, 2])
       writeFileSync(
@@ -325,16 +331,12 @@ function safariApp(release) {
     ]);
     return archive;
   }
-  xcode([
-    ...common,
-    "-configuration",
-    "Debug",
-    "-derivedDataPath",
-    `${project}/build`,
-    "CODE_SIGN_IDENTITY=-",
-    "CODE_SIGN_STYLE=Manual",
-    "DEVELOPMENT_TEAM=",
-    "build",
-  ]);
+  // With APPLE_TEAM_ID set, the Mac's own development certificate signs the build: Safari then loads it like any
+  // extension, with no Allow Unsigned Extensions, and keeps it on across its restarts. Without a team it is signed for
+  // this Mac only, and Safari asks for Allow Unsigned Extensions every time it starts.
+  const signing = team
+    ? [`DEVELOPMENT_TEAM=${team}`, "CODE_SIGN_STYLE=Automatic", "-allowProvisioningUpdates"]
+    : ["CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM="];
+  xcode([...common, "-configuration", "Debug", "-derivedDataPath", `${project}/build`, ...signing, "build"]);
   return `${project}/build/Build/Products/Debug/Pipeup.app`;
 }
