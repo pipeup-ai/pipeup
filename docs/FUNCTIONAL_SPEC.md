@@ -729,7 +729,9 @@ any of them off.
   This happens only on pages that reserve the gutter (§4); Pipeup never shifts a page that doesn't.
 - Pipeup takes on the page's **fonts, accent colour, and light or dark appearance**, so it reads
   as part of the page. It takes the page's accent colour (or the author's) only when words in it are readable
-  on Pipeup's surfaces, at least 4.5 to 1; otherwise it uses its own.
+  on Pipeup's surfaces, at least 4.5 to 1; and the page's link colour only when it is a colour, not a grey, white or
+  black, since Pipeup's button, outlines and markers in the page's text colour would read as plain text; otherwise
+  it uses its own.
 - Pipeup never breaks the page's own behaviour, and the page's styles never break Pipeup.
 - **Pipeup keeps working while a page's own dialog is open**, whatever kind it is: a browser's modal dialog
   (including one inside a web component), one from a library (which may stop the rest of the page taking clicks, hide
@@ -2115,3 +2117,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-23 — For the browser extension's one menu (extension spec, 2026-11-23): a host can keep Pipeup's own menu off the page, show and press the add-ons' rows itself, and say one line to the reviewer (section 4a). Design: docs/design/one-menu.md.
 - 2026-11-24 — From a third newcomer's run, on the states after the first comment (visual spec docs/design/states-pass.html): in comment mode a block with a comment previews on hover and opens on click like its marker; a click on a block while a thread is open closes it and opens the box in one go, and blocks stay outlined meanwhile (part of 2026-11-09 reversed); a thread of only the reader's own words opened with a pointer rests instead of focusing its reply line; the pin hint is said on the first box over a picture or a tall block, not on opening a thread; an Undo offer goes once the reviewer has moved on (§5, §7).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run: comment mode's hint says two things on the first visit and the rest once each when first useful, and names no button for a host that keeps Pipeup's control off the page (§5, §4a); the comment and reply boxes say "Comment" and "Reply" until there is someone to add with @ (§5, §7); a new comment closes once sent, its marker staying (§7).
+- 2026-11-25 — The page's link colour becomes Pipeup's accent only when it is a colour (§9): a dark site's white links made the Comment button, the outlines and the markers white. Found by the maintainer on google.com in Chrome.

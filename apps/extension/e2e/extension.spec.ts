@@ -446,6 +446,39 @@ test("one shortcut: Alt+Shift+C is the browser's command for Comment on this pag
   expect(Object.keys(commands ?? {}).sort()).toEqual(["_execute_action", "comment"]);
 });
 
+test("on a dark site with white links, the box keeps Pipeup's violet and its field stays transparent", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}dark-site.html`);
+  const p = await panel(context, worker, id, page);
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  const at = (await page.locator("#p1").boundingBox())!;
+  await page.mouse.click(at.x + 20, at.y + at.height / 2);
+  const box = page.frameLocator(".draft .line iframe").locator(".box");
+  await expect(box).toBeFocused();
+  // The accent is Pipeup's own, not the site's white link colour: the Comment button is violet.
+  const send = page.locator(".draft .send");
+  const [bg, layer] = await page.evaluate(() => {
+    const root = document.querySelector("pipeup-root")!.shadowRoot!;
+    return [
+      getComputedStyle(root.querySelector(".draft .send")!).backgroundColor,
+      root.querySelector(".layer")!.className,
+    ];
+  });
+  expect(layer).toContain("dark");
+  expect(bg).not.toMatch(/rgb\(2[2-5]\d, 2[2-5]\d, 2[2-5]\d\)/);
+  await expect(send).toBeVisible();
+  // The field's frame and its element agree on the dark scheme, so the browser paints no white backdrop.
+  const frame = page.locator(".draft .line iframe");
+  expect(await frame.evaluate((f) => getComputedStyle(f).colorScheme)).toBe("dark");
+  expect(await box.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
+});
+
 test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({
   context,
   worker,

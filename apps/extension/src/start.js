@@ -61,8 +61,11 @@
     frame.src = TYPING;
     frame.setAttribute("title", field.getAttribute("aria-label") ?? "");
     frame.setAttribute("tabindex", "0");
+    // The frame's colour scheme and the frame element's are set to the same value, from Pipeup's look, at every
+    // change: a browser paints an opaque backdrop behind a frame whose scheme differs from its element's (a white
+    // field with light words, on a dark site).
     frame.style.cssText =
-      "display:none;border:0;margin:0;padding:0;width:100%;min-width:0;flex:1;height:27px;background:transparent;color-scheme:normal";
+      "display:none;border:0;margin:0;padding:0;width:100%;min-width:0;flex:1;height:27px;background:transparent;color-scheme:light";
     const proto =
       field instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype;
     const value = Object.getOwnPropertyDescriptor(proto, "value");
@@ -109,7 +112,10 @@
     };
     const lookOf = () => {
       const s = getComputedStyle(field);
+      const scheme = field.closest(".layer")?.classList.contains("dark") ? "dark" : "light";
+      frame.style.colorScheme = scheme;
       return {
+        scheme,
         color: s.color,
         caret: s.caretColor,
         font: s.font,
