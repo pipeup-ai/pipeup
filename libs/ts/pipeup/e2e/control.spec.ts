@@ -90,7 +90,9 @@ test("pointed at, the control reaches left just far enough to show ⋯ beside th
   const before = (await control(page).boundingBox())!;
   await control(page).hover();
   await expect(tip).toHaveCSS("opacity", "1");
-  await expect(tip).toHaveText(/^(⇧⌥C|Shift\+Alt\+C)$/);
+  // The shortcut: the Shift and Option glyphs and the letter on a Mac, the words elsewhere.
+  await expect(tip).toHaveText(/^(C|Shift\+Alt\+C)$/);
+  if ((await tip.textContent()) === "C") await expect(tip.locator(".keys svg")).toHaveCount(2);
   await settled(page.locator(".launch .ttip"));
   await expect(page.locator(".launch .mm")).toHaveCSS("opacity", "1");
   await settled(page.locator(".launch .mm"));
@@ -135,7 +137,7 @@ test("⋯ opens the menu above the button; the item nearest it is Start commenti
   ]);
   await expect(menu.locator("[role=separator]")).toHaveCount(2);
   const last = menu.locator(".mi").last();
-  await expect(last).toContainText(/⇧⌥C|Shift\+Alt\+C/);
+  await expect(last.locator(".keys")).toBeVisible();
   await expect(last).toHaveAttribute("aria-keyshortcuts", "Shift+Alt+C");
   await expect(last).toHaveAttribute("aria-checked", "false");
   await last.click();
