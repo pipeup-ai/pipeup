@@ -77,6 +77,9 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - When the extension adds Pipeup, **Pipeup's corner button is hidden**, and comment mode's hint names no button. A setting, **Show Pipeup's button on pages** (off
   by default), brings back Pipeup's own button, menu and panel on the page instead.
 - On a page that has **Pipeup built in**, the extension steps aside and says so; the page's own copy is the only one.
+  A press that would have started commenting there, the shortcut or **Comment with Pipeup** in the right-click menu,
+  goes to the page's own Pipeup as its shortcut, so the key does on that page what it does on any page with Pipeup;
+  the menu's sentence says to use the page's own button or the key.
 - When the extension is reloaded or updated, Pipeup on open pages takes itself off them; pressing Pipeup again starts the
   new version. Comments are kept.
 - On pages browsers keep closed to extensions (their settings, new tab and store pages, files such as PDFs the browser
@@ -179,3 +182,4 @@ Functional requirements only. Visual spec: [design/browser-extension.html](desig
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run over the one menu: before the first comment the sentence says only what clicking does; the one-time line after it uses the menu's verbs (copy, save or send); Send to my agent is under More until it is set up; the hint on the page names no button; Settings reads in about a hundred words, the shortcuts on one line each and the agent set-up behind one line (§3, §4a, §5).
 - 2026-11-25 — The toolbar button is the violet bubble in every browser (§3). It was one of two greys picked by the system's dark mode, so a dark Mac with a light Chrome theme got a light-grey bubble on a light toolbar, near invisible; Safari, which tints its own icon, showed violet, and the two didn't match.
 - 2026-11-25 — One shortcut, Shift+Alt+C, on and off: with Pipeup off it adds Pipeup and starts comment mode, with Pipeup on it turns comment mode off and on; the toolbar button's Shift+Alt+P is no longer a default key, and Settings lists the one shortcut (§3). The maintainer: two ways on don't make sense.
+- 2026-11-25 — On a page with Pipeup built in, the shortcut and Comment with Pipeup go to the page's own Pipeup instead of doing nothing (§3). The browser now takes the shortcut before the page sees it, so without this a built-in page lost its key. The maintainer: if Pipeup is there, don't offer to turn it on.
