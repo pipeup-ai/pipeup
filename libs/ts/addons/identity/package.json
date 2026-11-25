@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/identity",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Makes a reviewer's identity portable: a recovery code or file to back it up, and using it on another browser or computer; and sharing a way to be reached.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "1.0.1"
+    "pipeup": "1.1.0"
   },
   "pipeup": {
     "network": {
