@@ -47,6 +47,14 @@ Build the website with `apps/site/build.sh`, then serve `apps/site/_site` with a
   Pipeup does, not how.
 - Use fictional names in examples and tests (Sam, Ada, Lee…).
 
+## Keeping the specs true
+
+The specs describe the product as it is. Anything not built lives only in the functional spec's §17 or §18, one line
+each; design notes carry a status line; and before each milestone the specs are read against the code and tests and
+every sentence that no longer holds is fixed in one pass (see [docs/design/README.md](docs/design/README.md)).
+Compatibility code for old pages is kept for comments staying readable, not for old tooling: a branch for a version
+more than one milestone back goes when the next milestone ships.
+
 ## Style
 
 - **No dependencies.** The library and its add-ons have no runtime dependencies: no third-party code

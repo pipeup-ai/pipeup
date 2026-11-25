@@ -851,8 +851,7 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 1. **The reviewer, by hand.** After sending, Pipeup offers "Let Sam know", which opens the reviewer's own
    mail app with the words and a link to the comment filled in, when the mentioned person has shared an
    email address. The reviewer sends it; Pipeup never sends for them. This works on any page.
-2. **An add-on**, chosen by the author and following §11a: first, a note in a GitHub issue; later, for example a message to a chat channel through the author's own webhook, or email through the
-   author's own service. Each says in one sentence what it sends and to whom, and sends nothing before
+2. **An add-on**, chosen by the author and following §11a: a note in a GitHub issue. Each says in one sentence what it sends and to whom, and sends nothing before
    the reviewer agrees.
 3. **The page's own system.** The author can give Pipeup the signed-in person and the people who can be
    mentioned, and a place to hand mentions to (the page's own notifications). Pipeup then shows those
@@ -862,8 +861,6 @@ Pipeup itself sends nothing (§14). A mention can reach a person only through:
 
 - By default a reviewer is still an animal in a colour with an optional name (§10): names are not
   proof. A mention of "Sam" does not show that the person who replies as "Sam" is the same Sam.
-- Later: a person **shown as verified** when the page's author supplies who they are (single sign-on stays the
-  page's business; Pipeup does not talk to sign-in providers), or an add-on proves a handle. Not built.
 - A reviewer may **add an email or handle** to their profile so others can reach them. It stays in their
   browser; it is shown to other people in the document only if the reviewer chooses, and it is never put
   into a comment, a copy for AI or any service without their agreement.
@@ -1313,16 +1310,10 @@ other comments are.
 
 ## 13. The relay
 
-- As a later add-on, an author can **create their own relay with one step** on a free hosting
-  account they own. The first supported host is Cloudflare.
-- Running a relay on a free account **never produces a bill**: when free limits are reached the
-  relay stops accepting new data and says so, rather than charging.
-- The relay enforces limits per room — size, rate of writes, number of people — and rooms that
-  are inactive for a chosen period **expire** and are deleted.
-- The author can list their rooms, see their size and last activity, and delete any room.
-- The relay keeps **no record of comment content** in a readable form and keeps no logs of its
-  own beyond what the host requires.
-- The Pipeup project runs **no relay** in the first release.
+The Pipeup project runs no relay, and none is planned. Live review runs peer to peer over public meeting points
+(§12), and sharing goes through a service the author picks (§11). The earlier plan for an author's own relay on a
+free hosting account, with rooms, invites and expiry (October 2026), is withdrawn: nothing in the product points at
+it, and the share and live add-ons cover what it was for. The section stays so that references to §13 still land.
 
 ## 14. Security and privacy
 
@@ -1364,7 +1355,7 @@ other comments are.
 
 ## 14a. Knowing about newer versions
 
-*Built (0.7).* The console line, the signing tools, the `updates` add-on and `pipeup check` are built; the version lookup in the check (below) is not yet.
+*Built (0.7).* The console line, the signing tools, the `updates` add-on and `pipeup check` are built.
 
 Pipeup itself makes no network requests (§14), so it can't look for updates. The person who needs to know is
 the **author** who put Pipeup on the page, not the reviewers. Authors learn about newer versions in three ways.
@@ -1378,9 +1369,8 @@ the **author** who put Pipeup on the page, not the reviewers. Authors learn abou
 
 **The author's tools, with no visitors involved**
 
-- Later: `pipeup check` says whether the version a page uses is the latest, lists published security advisories that
-  affect it, and says exactly what to change, including the new integrity hash when the page pins the script. Not
-  built; today `pipeup init --update` moves a page to the version the command comes with.
+- `pipeup init --update` moves a page to the version the command comes with, integrity hash included. The check
+  doesn't look versions up: the page's own console line and the `updates` add-on tell the author.
 - Every release has notes, and a version with a security problem is marked in the release notes, in the package
   registry's own deprecation notice and in a published security advisory, so tools that watch dependencies
   (and people who watch the repository) hear about it.
@@ -1686,19 +1676,16 @@ longer downloads them. Everything §15b and §15c say about what a person sees a
 - **`pipeup watch` adds it for the page it shows**, from the copy that came with the command, so the live link needs no
   edit to the page. Nothing is changed in the page's file.
 - **`pipeup watch` refuses a page whose Pipeup is too old.** Before it starts, it looks at which Pipeup the page uses.
-  A page on a version before 0.6 can't take an agent at all, so the command doesn't start; it says in words which
-  version the page uses and what to change. A page on 0.6.x already has agent support built in, so the command starts
-  and doesn't add the add-on. A page it can't read a version from starts, and the page says in words if agents aren't
-  available.
+  A page on a version before 0.7 can't take the agents add-on, so the command doesn't start; it says in words which
+  version the page uses and what to change. A page it can't read a version from starts, and the page says in words
+  if agents aren't available.
 - It can be included on its own, or in a combined file with Pipeup, like any add-on (§4).
 
-**Pages that already use agents (0.6)**
-- A page that uses Pipeup 0.6 or earlier keeps its agent support exactly as it is; nothing in a published version changes.
-- On a version that no longer has it built in, a page that lists an agent but has no agents add-on says so in
-  plain words in the browser console and in the check, and does nothing else; its comments are unaffected.
-- Replies files, signed replies and the command line (`pipeup agent`, `reply`, `comments`, `watch`) are unchanged, and
-  the add-on reads the same files.
-- `pipeup watch` doesn't add the add-on to a page whose Pipeup (0.6) already has agent support.
+**Pages from before the add-on**
+- A page that lists an agent but has no agents add-on says so in plain words in the browser console and in the
+  check, and does nothing else; its comments are unaffected. Published versions never change.
+- Replies files, signed replies and the command line (`pipeup agent`, `reply`, `comments`, `watch`) are the same
+  files and commands they were when agent support was part of Pipeup (0.6).
 
 **Skills and checking**
 - The integrate and add skills, `llms.txt` and the site's Markdown copies say that listing an agent also means adding
@@ -1826,7 +1813,7 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 - Standalone images and PDFs as review targets.
 - Accounts, sign-in by Pipeup itself, and email or push notifications sent by Pipeup itself (mentions
   and notifications through the page, the reviewer or an add-on are §10a).
-- A relay run by the Pipeup project, and hosts other than Cloudflare.
+- A relay of any kind, the project's or the author's (§13).
 - Rich text or attachments in comments (reactions are §7b).
 - Drag-to-select an area as a comment target.
 - Replies to a reply (every reply answers the original comment).
@@ -1854,18 +1841,12 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 8. **The newcomer's first run** (1.1, `next`): one toolbar menu built for the job, the first run and the states after
    the first comment simplified, one shortcut, Safari's app window, and the looks made to read in every browser
    (extension spec, November 2026).
-9. **The author's relay** (later):
-   - rooms on a relay the author owns;
-   - invites shared separately;
-   - closing rooms;
-   - detecting missing comments.
 
 ## 19. Open questions
 
-- How long inactive rooms live before expiring by default.
 - How long shared copies last on free services, which services Pipeup suggests, and how much traffic
   is fair to ask of volunteer-run services.
-- Reactions: whether the quick row of six is right; whether agents' reactions should be shown at all.
+- Reactions: whether agents' reactions should be shown at all.
 - Update notices: whether the age line in the console is worth its bytes.
 - Mentions: whether a reviewer's email may be shown to others by default; how an inbox is kept from being
   flooded;
@@ -2124,3 +2105,4 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 - 2026-11-25 — The page's link colour becomes Pipeup's accent only when it is a colour (§9): a dark site's white links made the Comment button, the outlines and the markers white. Found by the maintainer on google.com in Chrome.
 - 2026-11-25 — §16 and §18 brought up to date: 1.0 is out (the alpha sentence went), and the phases name 1.0 (the extension) and 1.1 (the newcomer's first run).
 - 2026-11-25 — Audited against the code after the extension spec's rewrite: the lines that said built what isn't (a General way to comment, verified people, dictation in an ask, a version lookup in the check, authors turning gestures off) now say not built or are gone; a drawer that was never built is gone; the size and release lines are history, not plans; wording follows the product (For you, Live with 2 others, Let Sam know by mail, an issue not a pull request, replies' ⋯ on your own); the header says 1.0 is out; three open questions decided in the code are closed. Nothing in the product changed.
+- 2026-11-25 — Freshness pass, with the maintainer: promises with no plan behind them are out (verified people, mentions by webhook or mail service, the author's relay with rooms and invites, a version lookup in the check); §13 says no relay is planned; §17 and §19 say less. `pipeup watch` no longer tells 0.6 pages apart (§15c).

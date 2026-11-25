@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- `pipeup watch` refuses a page whose Pipeup is older than 0.7 (it used to serve 0.6 pages through their built-in agent support); 0.7 shipped in October 2026 and every page since takes the agents add-on.
 - On a touch screen, comment mode's one-time keyboard and mouse hints (Tab, Space, Option-click to pin) no longer appear; only the touch hint does, as the spec always said.
 - Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
 - Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
