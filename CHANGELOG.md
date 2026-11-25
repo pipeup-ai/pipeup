@@ -563,7 +563,7 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
