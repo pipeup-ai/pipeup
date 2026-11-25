@@ -159,11 +159,17 @@ input[role="switch"]:checked::after {
   color: var(--faint);
 }
 kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
   font:
-    12px ui-monospace,
-    "SF Mono",
-    Menlo,
-    monospace;
+    500 12px -apple-system,
+    "Segoe UI",
+    system-ui,
+    sans-serif;
+}
+kbd svg {
+  flex: none;
 }
 @media (prefers-reduced-motion: reduce) {
   * {

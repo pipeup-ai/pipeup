@@ -262,6 +262,7 @@ the words need (a 0fr to 1fr column), so it opens and folds evenly, and it folds
 .ttip{display:grid;grid-template-columns:minmax(0,0fr);overflow:hidden;font-size:12px;color:var(--mu);pointer-events:none;opacity:0;transition:grid-template-columns var(--out) var(--ei),opacity var(--out) var(--ei)}
 .ttip>span{min-width:0;white-space:nowrap;padding-left:10px}
 .ttip small{font-size:12px}
+.keys{display:inline-flex;align-items:center;gap:1px;vertical-align:-1px}.keys svg{flex:none}
 .ttip small,.mi .kc{color:var(--fa)}
 .launch:has(.mode.on) :is(.ttip,.ttip small){color:inherit}
 .launch:hover .ttip{grid-template-columns:minmax(0,1fr);opacity:1;transition:grid-template-columns var(--mv) var(--eo) .4s,opacity var(--in) var(--eo) .4s}

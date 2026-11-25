@@ -36,6 +36,37 @@ const windows = navigator.userAgentData?.platform === "Windows" || /Windows/.tes
 /** Whether this browser has a panel beside the page for the comments. */
 export const canPin = !!(chrome.sidePanel || firefox);
 
+// The keyboard shortcuts, as shown: on a Mac the Shift and Option keys as Pipeup's own glyphs (the fonts browsers fall
+// back to draw ⇧ and ⌥ each their own way) and the letter; elsewhere the words. Every <kbd data-keys="C"> is filled.
+const mac = /Mac|iP(hone|ad|od)/.test(navigator.platform);
+const KEY_GLYPHS = {
+  shift: ["M12 4.5L4.5 12.5h4.5v7h6v-7h4.5z"],
+  option: ["M3.5 6h5.2l7 12h4.8", "M14.5 6h6"],
+};
+function keyGlyph(name) {
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "13");
+  svg.setAttribute("height", "13");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.9");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  for (const d of KEY_GLYPHS[name]) {
+    const path = document.createElementNS(ns, "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+  }
+  return svg;
+}
+for (const k of document.querySelectorAll("kbd[data-keys]")) {
+  const letter = k.dataset.keys;
+  k.replaceChildren(...(mac ? [keyGlyph("shift"), keyGlyph("option"), letter] : [`Shift+Alt+${letter}`]));
+}
+
 /** Whether Send to my agent can reach agents on this computer from this browser. */
 export const canReachAgents = browserName !== "safari" && !windows && !!chrome.runtime.sendNativeMessage;
 

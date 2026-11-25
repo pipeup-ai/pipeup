@@ -101,7 +101,7 @@ test("the bottom row is Start commenting, with a switch that follows comment mod
   await expect(start.locator(".sw")).toHaveCount(1);
   await expect(start).toHaveAttribute("aria-checked", "false");
   await expect(start.locator(".lb")).toHaveText("Start commenting");
-  await expect(start).toContainText(/⇧⌥C|Shift\+Alt\+C/);
+  await expect(start.locator(".keys")).toBeVisible();
   await expect(start).toHaveAttribute("aria-keyshortcuts", "Shift+Alt+C");
   await expect(page.getByRole("menuitemcheckbox", { name: "Start commenting" })).toHaveCount(1);
   // The switch eases between states with the move token.

@@ -8,7 +8,7 @@ import type { Ctx, Draft, View } from "./context";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
 import { setting } from "./settings";
-import { SHORTCUT_ARIA, SHORTCUT_LABEL } from "./shortcut";
+import { SHORTCUT_ARIA, shortcutKeys } from "./shortcut";
 import type { ListNote, MenuItem } from "./addons";
 import { draw, icon } from "./icons";
 import { narrow, PANEL, touch } from "./layout";
@@ -58,7 +58,7 @@ export function createLauncher(ctx: Ctx): View {
   const tip = h(
     "span",
     { class: "ttip", "aria-hidden": "true" },
-    h("span", {}, tipWords, h("small", {}, SHORTCUT_LABEL)),
+    h("span", {}, tipWords, h("small", {}, shortcutKeys())),
   );
   // One click on the control starts or stops comment mode; ⋯ just left of it, shown when pointed at, opens the menu.
   const dots = h(
@@ -184,7 +184,7 @@ export function createLauncher(ctx: Ctx): View {
       "aria-keyshortcuts": SHORTCUT_ARIA,
     },
     "Comment",
-    h("small", { class: "ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("small", { class: "ks", "aria-hidden": "true" }, shortcutKeys()),
     h("span", { class: "sw", "aria-hidden": "true" }),
   );
   footSwitch.addEventListener("click", (e) => {
@@ -972,7 +972,7 @@ export function createLauncher(ctx: Ctx): View {
       }
     },
     true,
-    h("span", { class: "kc ks", "aria-hidden": "true" }, SHORTCUT_LABEL),
+    h("span", { class: "kc ks", "aria-hidden": "true" }, shortcutKeys()),
   );
   startRow.dataset.item = "comment";
   startRow.setAttribute("aria-keyshortcuts", SHORTCUT_ARIA);
