@@ -641,7 +641,7 @@ No account, login or server is needed to test Pipeup. Send to my agent needs mac
 TRY IT IN TWO MINUTES
 1. Install, then pin Pipeup from the Extensions (puzzle-piece) menu.
 2. Open an ordinary page, for example https://example.com or any news article. (On a page that has Pipeup built in, the extension steps aside and says so.)
-3. Press Pipeup in the toolbar (or Alt+Shift+P). The menu shows the page's address and Comment on this page, with Always on for this site below. Press Comment on this page.
+3. Press Pipeup in the toolbar. The menu shows the page's address and Comment on this page, with Always on for this site below. Press Comment on this page (or skip the menu: Alt+Shift+C starts commenting straight away).
 4. Select some words on the page, or click a picture or a block. A comment box opens beside it with the cursor in it. Type "Can this be shorter?" and save it. A highlight and a pin mark the place; the toolbar button shows the count.
 5. Press Pipeup again. The menu is now Pipeup's menu. Choose Copy comments > As Markdown and paste into any text field: the comment, the words it is about and the page address. Save comments > As a Markdown file saves where the browser saves downloads.
 6. Press Comments: every comment on the page opens in a panel on the page. Turn on Keep comments beside the page, and Comments opens them in Edge's sidebar instead.
@@ -725,7 +725,7 @@ Pipeup lets you comment on web pages and then hand those comments to the person 
 
 **How it works**
 
-1. Press Pipeup in the toolbar (or Alt+Shift+P) and choose **Comment on this page**.
+1. Press Pipeup in the toolbar and choose **Comment on this page**, or press Alt+Shift+C.
 2. Click a block, a picture or a spot on the page, or select some words, and write your comment. You can also right-click and choose **Comment with Pipeup**.
 3. When you are done, open the toolbar menu again and choose how the comments go out: **Copy comments** (as Markdown or as text), **Save comments** (a Markdown file or a Pipeup file, saved to your downloads), or, on macOS and Linux, **Send to my agent**.
 
@@ -859,7 +859,7 @@ _2,909 characters. Fill in [release version], the Node version and the test page
 ```text
 No account needed. To try it:
 1. Open https://example.com (not the Pipeup website, which has Pipeup built in).
-2. Press Pipeup in the toolbar (or Alt+Shift+P). The menu shows the page address. Choose Comment on this page.
+2. Press Pipeup in the toolbar. The menu shows the page address. Choose Comment on this page (or press Alt+Shift+C, which starts commenting without the menu).
 3. Click the paragraph, type "Check this sentence" and press Enter. The badge shows 1.
 4. Press Pipeup again: Copy comments > As Markdown, or Save comments (.md). The options page lists the page under Comments you've made.
 5. Right-click a word > Comment with Pipeup opens a comment box on it.
@@ -887,7 +887,7 @@ No third-party code at run time. The emoji table (libs/ts/addons/emoji/src/data.
 #### Release notes ([release version], the first release whose tag contains apps/extension, max 3000)
 _415 characters._
 ```text
-First release on Firefox Add-ons. Comment on web pages from the toolbar, the shortcut Alt+Shift+P or the right-click menu; Copy comments, Save comments and, on macOS and Linux, Send to my agent; comments kept beside the page in Firefox's sidebar; Always on for this site; add-ons Emoji (on), Share, Live, Save to GitHub and My identity (off). Firefox asks before anything is sent. Voice is not available in Firefox.
+First release on Firefox Add-ons. Comment on web pages from the toolbar, the shortcut Alt+Shift+C or the right-click menu; Copy comments, Save comments and, on macOS and Linux, Send to my agent; comments kept beside the page in Firefox's sidebar; Always on for this site; add-ons Emoji (on), Share, Live, Save to GitHub and My identity (off). Firefox asks before anything is sent. Voice is not available in Firefox.
 ```
 #### Additional details (developer comments, max 3000)
 _251 characters._
@@ -916,7 +916,7 @@ Yes. Upload a git archive of the release tag that contains apps/extension.
 ### Permission justifications
 #### activeTab
 ```text
-When you press Pipeup in the toolbar, its shortcut Alt+Shift+P, or Comment with Pipeup in the right-click menu, Pipeup gets access to that one tab. It uses that access to show the page's address in its menu, to add Pipeup when you choose Comment on this page or Comment with Pipeup, and to take the small picture of where a comment was made. The access ends when the tab goes to another page. Because of this, installing asks for no access to sites.
+When you press Pipeup in the toolbar, its shortcut Alt+Shift+C, or Comment with Pipeup in the right-click menu, Pipeup gets access to that one tab. It uses that access to show the page's address in its menu, to add Pipeup when you choose Comment on this page or Comment with Pipeup, and to take the small picture of where a comment was made. The access ends when the tab goes to another page. Because of this, installing asks for no access to sites.
 ```
 #### scripting
 ```text
@@ -954,9 +954,9 @@ After you start a comment, Pipeup takes a picture of the visible tab, cut to the
 ```text
 The script added to the page loads Pipeup (pipeup/pipeup.esm.js) and any add-ons you turned on (addons/<id>.esm.js) as ES modules with import(runtime.getURL(...)). You can comment on any site, so the files must be loadable on any site. They are the extension's own bundled files; nothing is fetched from the web.
 ```
-#### commands: _execute_action (Alt+Shift+P)
+#### commands: comment (Alt+Shift+C) and _execute_action (no default key)
 ```text
-A keyboard shortcut that opens Pipeup's toolbar menu for the current page, the same as pressing the toolbar button. It is not a permission and has no code of its own.
+Alt+Shift+C adds Pipeup to the current page with commenting on, or turns commenting off and on once Pipeup is there: the same as Comment on this page in the toolbar menu. _execute_action opens the toolbar menu and has no default key; the user can give it one in the browser's shortcut settings. Neither is a permission; neither has code of its own.
 ```
 #### sidebar_action (manifest key, no permission)
 ```text
@@ -1004,7 +1004,7 @@ _Why:_ There is no XHR, sendBeacon, WebSocket or network fetch in the extension 
 ### Notes for the store's reviewer
 ```text
 Paste the Notes for Reviewers text from the listing. In short:
-- **Try it, no account:** open https://example.com, press Pipeup (or Alt+Shift+P), choose Comment on this page, click the paragraph, type a comment and press Enter; the badge shows 1. Press Pipeup again and choose Copy comments > As Markdown, or Save comments. The options page lists the page under Comments you've made. Right-click a word > Comment with Pipeup.
+- **Try it, no account:** open https://example.com, press Pipeup and choose Comment on this page (or press Alt+Shift+C), click the paragraph, type a comment and press Enter; the badge shows 1. Press Pipeup again and choose Copy comments > As Markdown, or Save comments. The options page lists the page under Comments you've made. Right-click a word > Comment with Pipeup.
 - **Share and Live** need a page whose HTML sets data-pipeup-doc; give reviewers a test page. Turning them on (or Save to GitHub) shows Firefox's data-sending prompt.
 - **Permissions:** activeTab + scripting inject start.js on a press; the UI is in a closed shadow root. Optional host access is requested for one site when Always on is turned on, and removed when it is turned off. captureVisibleTab keeps a picture locally only. clipboardWrite covers a copy after an async round trip. contextMenus is for Comment with Pipeup. web_accessible_resources are the add-on's own ES modules.
 - **Send to my agent** (macOS, Linux): nativeMessaging to ai.pipeup.browser, installed with `npx --yes pipeup@[release version] browser install --browser firefox` (source libs/ts/pipeup/cli). It sends {type:'send'} on the press, after Firefox's data prompt, and {type:'replies', doc} after most toolbar actions once it has been used.
@@ -1126,7 +1126,7 @@ Pipeup lets you comment on any web page you open in Safari, and hand those comme
 This Mac app contains the Pipeup extension for Safari. The app shows you how to turn it on: open Pipeup, then choose Pipeup in Safari Settings > Extensions. The extension does the work; the app is where you set it up and find help.
 
 HOW IT WORKS
-1. On the page you want to review, press Pipeup in Safari's toolbar (or Option-Shift-P). The menu shows the page's address.
+1. On the page you want to review, press Pipeup in Safari's toolbar. The menu shows the page's address. (Option-Shift-C skips the menu and starts commenting.)
 2. Choose Comment on this page. Safari may ask whether Pipeup may use this site.
 3. Select some words, or click a picture, a block or a point on the page. A comment box opens beside it with the cursor in it. Type and press Return.
 4. Comments show as small marks on the page. Click one to read it, reply, edit, delete or resolve it.
@@ -1234,7 +1234,7 @@ Leave empty unless App Store Connect requires it. If it is required, answer only
 ### Permission justifications
 #### activeTab
 ```text
-When the user presses Pipeup in the toolbar, presses Option-Shift-P or chooses Comment with Pipeup from the right-click menu, Pipeup gets access to that one tab only. That press lets it show the page's address in the menu, use the title to name a saved file and add Pipeup to the page. The access ends when the tab goes to another page. This is why the extension needs no access to any site when it is installed.
+When the user presses Pipeup in the toolbar, presses Option-Shift-C or chooses Comment with Pipeup from the right-click menu, Pipeup gets access to that one tab only. That press lets it show the page's address in the menu, use the title to name a saved file and add Pipeup to the page. The access ends when the tab goes to another page. This is why the extension needs no access to any site when it is installed.
 ```
 #### scripting
 ```text
@@ -1264,9 +1264,9 @@ Nothing is granted at install. In Safari, which grants nothing on a toolbar pres
 ```text
 Pipeup's own script and its add-ons (Emoji, Voice, Save to GitHub, My identity) are bundled in the app and loaded as modules into the tab the user chose to comment on. That tab can be any site, so the match is any site. Nothing is fetched from the web. Pipeup's UI lives in a closed shadow root, so the page's scripts can't read comments, names or recovery codes, and it doesn't change the page's layout.
 ```
-#### commands: _execute_action (Option-Shift-P)
+#### commands: comment (Option-Shift-C) and _execute_action (no default key)
 ```text
-A keyboard shortcut that opens Pipeup's toolbar menu for the current page. It grants the same one-tab access as pressing the toolbar button.
+Option-Shift-C adds Pipeup to the current page with commenting on, or turns commenting off and on once Pipeup is there, the same as Comment on this page in the toolbar menu; it grants the same one-tab access as pressing the toolbar button. _execute_action opens the toolbar menu and has no default key.
 ```
 #### Microphone (Voice add-on, off by default)
 ```text
@@ -1326,7 +1326,7 @@ TRY IT (2 minutes)
 7. Comments you've made (bottom of the menu) lists the page and holds the settings and add-ons.
 
 PERMISSIONS
-- activeTab: a press on the toolbar button, Option-Shift-P or the right-click item lets Pipeup into that one tab, to add Pipeup and read its address and title.
+- activeTab: a press on the toolbar button, Option-Shift-C or the right-click item lets Pipeup into that one tab, to add Pipeup and read its address and title.
 - scripting: adds Pipeup's bundled script to the tab on that press; checks whether the page already has Pipeup; registers the script for a site only after the user turns on Always on for this site.
 - storage, unlimitedStorage: comments with their history, the list of pages, the user's display name and signing key, settings and add-ons' choices are kept in the extension's storage, never in the site's. They grow with every page reviewed and are never sent to us.
 - clipboardWrite: Copy comments writes to the clipboard after asking the page for its comments, which can outlast the click.
@@ -1378,7 +1378,7 @@ Contact: https://pipeup-ai.github.io/pipeup/support.html
 - DSA trader status: declare non-trader or trader. This is a legal call. A trader's address, phone and email are published in the EU.
 - Art: app icons drawn at full size rather than scaled up from 128 px, and the 7 screenshots at 2880×1800 in Safari, light look, on fictional pages, once the containing app is done.
 - Reword the popup's Save comments hint "to open again" (popup.html): nothing in the extension opens a saved Pipeup file.
-- Confirm the export-compliance exemption, and confirm on a clean Mac (through TestFlight) that Option-Shift-P is applied. (Safari's question: seen by the maintainer 2026-11-24; it comes on Comment on this page, and now once, for every website.)
+- Confirm the export-compliance exemption, and confirm on a clean Mac (through TestFlight) that Option-Shift-C is applied. (Safari's question: seen by the maintainer 2026-11-24; it comes on Comment on this page, and now once, for every website.)
 
 ## Decisions for the maintainer
 
@@ -1411,3 +1411,5 @@ Contact: https://pipeup-ai.github.io/pipeup/support.html
   words or the keys. The caveat about keys is replaced.
 - 2026-11-10: The Privacy, Support and test pages are on the site; the listings point at them. Screenshots and art are
   made by `npm run store-art` in apps/extension; the Safari app has its own window, icon and store settings.
+- 2026-11-25: The shortcut is Alt+Shift+C (Option-Shift-C in Safari), which starts commenting; the toolbar menu has no
+  default key. Every mention of the old Alt+Shift+P is replaced, for the Firefox submission and the Safari 1.1.0 listing.
