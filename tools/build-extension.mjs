@@ -6,7 +6,8 @@
 //   node tools/build-extension.mjs --test   also dist/chromium-test and dist/firefox-test, for the tests only: they may
 //                                           reach any page without a press on the toolbar button, which a test can't
 //                                           make. Never published.
-//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only
+//   node tools/build-extension.mjs --safari also builds Safari's app (a Mac with Xcode), for this Mac only;
+//                                           with APPLE_TEAM_ID set it is signed, and Safari needs no Allow Unsigned Extensions
 //   APPLE_TEAM_ID=… node tools/build-extension.mjs --safari-release
 //                                           archives Safari's app for the Mac App Store, signed by that team
 //                                           (dist/Pipeup.xcarchive; upload it from Xcode's Organizer)
@@ -262,16 +263,12 @@ function safariApp(release) {
     ]);
     return archive;
   }
-  xcode([
-    ...common,
-    "-configuration",
-    "Debug",
-    "-derivedDataPath",
-    `${project}/build`,
-    "CODE_SIGN_IDENTITY=-",
-    "CODE_SIGN_STYLE=Manual",
-    "DEVELOPMENT_TEAM=",
-    "build",
-  ]);
+  // With APPLE_TEAM_ID set, the Mac's own development certificate signs the build: Safari then loads it like any
+  // extension, with no Allow Unsigned Extensions, and keeps it on across its restarts. Without a team it is signed for
+  // this Mac only, and Safari asks for Allow Unsigned Extensions every time it starts.
+  const signing = team
+    ? [`DEVELOPMENT_TEAM=${team}`, "CODE_SIGN_STYLE=Automatic", "-allowProvisioningUpdates"]
+    : ["CODE_SIGN_IDENTITY=-", "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM="];
+  xcode([...common, "-configuration", "Debug", "-derivedDataPath", `${project}/build`, ...signing, "build"]);
   return `${project}/build/Build/Products/Debug/Pipeup.app`;
 }

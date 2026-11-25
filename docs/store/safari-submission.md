@@ -9,11 +9,15 @@ your Apple account, your password or a legal answer.
 `npm run safari-test` in apps/extension drives the newcomer's first run in Safari itself (see
 [docs/design/safari-ui-tests.md](../design/safari-ui-tests.md)); the rest of the checklist is still by hand.
 
-1. Build and open the app: `node tools/build-extension.mjs --safari`, then open
-   `apps/extension/dist/safari-app/build/Build/Products/Debug/Pipeup.app`. Its window says whether Pipeup is on.
-2. **(you)** Safari → Settings → Advanced → turn on **Show features for web developers**. Then Develop → **Allow
-   Unsigned Extensions** (asks for your password; Safari forgets it when it quits).
-3. Safari → Settings → Extensions → turn on **Pipeup**.
+1. Build and open the app: `APPLE_TEAM_ID=<your team id> node tools/build-extension.mjs --safari`, then open
+   `apps/extension/dist/safari-app/build/Build/Products/Debug/Pipeup.app`. Its window says whether Pipeup is on. With
+   the team id the build is signed by your development certificate, so Safari treats it like any extension and keeps
+   it on across restarts. Keep one copy of the app in one place: Safari turns the extension off whenever the app under
+   it is replaced, and lists every copy it has seen.
+2. **(you)** Only for a build made without `APPLE_TEAM_ID`: Safari → Settings → Advanced → **Show features for web
+   developers**, then Develop → **Allow Unsigned Extensions** (asks for your password; Safari forgets it when it quits,
+   and turns the extension off until it is on again).
+3. Safari → Settings → Extensions → turn on **Pipeup** (once).
 4. Serve the sample page: `python3 -m http.server 8792 --directory apps/site/_site` (after `apps/site/build.sh`), and
    open `http://localhost:8792/extension-test.html`.
 5. Run the Safari column of [the hand checklist](../testing/extension-checklist.md). Watch these first, which only
@@ -79,3 +83,4 @@ your Apple account, your password or a legal answer.
 - 2026-11-10: The app is created in App Store Connect as Pipeup: Commenting for HTML; build 0.9.1 (1) uploaded for
   TestFlight from Xcode's Organizer.
 - 2026-11-23: Section A points at the Safari UI test for the first run.
+- 2026-11-25: A development build signed by the team (APPLE_TEAM_ID) needs no Allow Unsigned Extensions; one copy in one place, since Safari turns the extension off when the app under it changes.
