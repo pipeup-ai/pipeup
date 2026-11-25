@@ -1,5 +1,6 @@
 import { settings, type Settings } from "@pipeup/kit";
 import type { ComposerHandle, Dictation, PipeupAddon } from "pipeup";
+import { version } from "../package.json"; // the add-on's own version, the package's
 
 interface Result {
   readonly isFinal: boolean;
@@ -127,7 +128,7 @@ export function createAddon(): PipeupAddon {
   return {
     id: "voice",
     api: 1,
-    version: "0.4.1",
+    version,
     needs: ["composer", "panel", "notify", "styles"],
     network: {
       when: "after-consent",

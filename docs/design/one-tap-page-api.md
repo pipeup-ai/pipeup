@@ -1,5 +1,7 @@
 # One-tap commenting, selection outside comment mode, the page API, and settings off `<html>`
 
+Status: **built** (2026-10-21; see the change log).
+
 Spec: FUNCTIONAL_SPEC §4, §4a, §5, §7 (2026-10-21). Visual spec: [one-tap-page-api-mockups.html](one-tap-page-api-mockups.html).
 
 ## Why

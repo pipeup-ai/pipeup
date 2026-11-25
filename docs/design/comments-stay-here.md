@@ -1,5 +1,7 @@
 # Comments stay here
 
+Status: **built** (2026-10-29; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (*The comment box shows where comments go*) and §7 (the menu's top
 line). Visual spec: [Comments stay here](https://claude.ai/artifact/WJmkP27ewzhnxUhTrqreAe) (29 October 2026).
 Reviewers with plain Pipeup expected their comments to turn up on other people's copies, the way they do in a shared
