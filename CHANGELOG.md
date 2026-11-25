@@ -18,17 +18,23 @@ change the API and the stored comment format.
 - Extension: one shortcut, Shift+Alt+C (⇧⌥C). With Pipeup off on the page it adds Pipeup and starts commenting; with Pipeup on it turns commenting off and on. Shift+Alt+P is no longer a default key for the toolbar menu, and Settings lists the one shortcut.
 - The Shift and Option keys in shortcuts (the control's tip, the menu's Commenting row, the extension's menu and Settings, the website) are drawn as Pipeup's own glyphs on a Mac, the same in every browser, instead of ⇧ and ⌥ from whatever font each browser fell back to; on Windows and Linux the extension's pages now say Shift+Alt+C and Shift+Alt+P like everything else.
 - Extension: the toolbar button is Pipeup's violet bubble in Chrome, Edge and Firefox too, whatever the browser's or the system's look; it no longer turns light grey on a light toolbar when the Mac is in dark mode.
-- Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
 - After your first comment, the page behaves the way a newcomer expects: a commented block previews its comment on hover and opens it on click; one click opens a new box while another thread is open; your own thread opens to read, with a quiet reply line; the pin hint comes on the first picture, not the first thread; and a stale "Comment discarded" offer goes when you move on.
-
-- Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
 - **Pipeup for browsers: one menu, built for the job.** Before the first comment, the toolbar menu is one action, Comment on this page, and one sentence. With Pipeup on it has six rows (your name, Your comments on this page with the count, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting with its shortcut) and More, which opens in place to Theme, Hide comments, Keep comments beside the page, Always on, the add-ons' rows, Turn off on this page and Settings. No status line, no footer; Pipeup's own "…" menu isn't shown on the page; after the first comment one line says where it went and what comes next; Settings opens on Comments you've made, with the add-ons behind one line. For hosts: `mount({ pageMenu: "off" })`, `addonRows()`, `selectAddonRow(key)` and `note(text)`.
-
 - **Pipeup for browsers, and Pipeup on every page: the newcomer's second pass.** Comment mode's hint says two things the first time ("Click anything to comment · Esc when you're done", naming Pipeup's button only where it is shown); Tab between blocks, Hold Space and Option-click to pin are each said once, the first time they would have helped. A new comment closes once sent: its marker stays and nothing else opens. The comment box says "Comment" and the reply line "Reply" until there is someone to add with @. In the extension: the off state's one sentence says only what clicking does; the line after the first comment reads "Saved in this browser. Press Pipeup in the toolbar to copy, save or send them"; Send to my agent is under More ("Send to an AI agent on this computer · Set up once") until it is set up, then in the menu's top level naming the agent that last answered; Settings reads in about a hundred words, with the shortcuts on one line each and the agent's set-up behind one line.
 
-- Export review downloads your marked feedback as Markdown to share by email or chat.
+## [1.0.1] - 2026-11-25
 
-- The public design review opens on a visual decision. Open the live product or select a pin on a browser capture of the published document, slide deck or touch interface to send private feedback in context.
+Fixes for the shipped extension, found in the first days of real use.
+
+### Added
+
+- The website's public design review: export marked feedback as a Markdown file, and open a review on a visual
+  decision (the live product, or a pin on a browser capture of a document, deck or touch interface).
+
+### Fixed
+
+- Extension, Safari: the first press of Comment on this page brings Safari's one question (whether Pipeup may see websites) once, with Always Allow on Every Website as the answer, instead of a question per site per day; the panel says so beforehand, and comment mode still starts once the question is answered instead of the press being lost.
+- Extension: on an HTML file opened from this computer, the toolbar panel says files are closed to extensions and how to open the file so Pipeup can run, and no longer shows "about" as the address.
 
 ## [1.0.0] - 2026-11-10
 
@@ -557,7 +563,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/pipeup-ai/pipeup/compare/v0.8.2...v0.9.0
