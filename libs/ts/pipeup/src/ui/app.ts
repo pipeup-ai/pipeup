@@ -260,8 +260,9 @@ export function startApp(o: AppOptions): App {
     space: `Hold ${HOLD_LABEL} to use the page`,
     pin: "Option-click (Alt-click) to pin a spot",
   };
-  /** Says one of comment mode's hints the first time in this browser. */
+  /** Says one of comment mode's hints the first time in this browser. By touch, none: they name keys and a mouse. */
   function hintOnce(kind: HintKind): void {
+    if (touch()) return;
     if (once(`pipeup:hint:${kind}`)) toast(HINTS[kind], HINT_MS, true);
   }
   /** By touch, once a tap has opened a comment box, the hint's words fold away (screen readers no longer hear them). */

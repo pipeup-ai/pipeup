@@ -205,7 +205,7 @@ const fakePage = async (scripts: Record<string, string>, tags: string) => {
   return { file, env };
 };
 
-test("watch refuses a page whose Pipeup is before 0.6, and says what to change", async () => {
+test("watch refuses a page whose Pipeup is before 0.7, and says what to change", async () => {
   const { file, env } = await fakePage(
     { "old.js": 'var a="pipeup-root",b="pipeupAddons"' },
     '<script src="old.js"></script>',
@@ -215,26 +215,17 @@ test("watch refuses a page whose Pipeup is before 0.6, and says what to change",
     (e: { stderr: string }) => e.stderr,
   );
   expect(err).toMatch(/can't take an agent/);
-  expect(err).toMatch(/0\.6 or later/);
+  expect(err).toMatch(/0\.7 or later/);
 });
 
-test("watch starts for a 0.6.x page and adds nothing to it", async ({ request: api }) => {
+test("watch refuses a 0.6 page as well: its built-in agent support is no longer served", async () => {
   const { file, env } = await fakePage(
     { "mid.js": 'var a="pipeup-root",b="pipeupReplies"' },
     '<script src="mid.js"></script>',
   );
-  const child = spawn("node", [cli, "watch", file, "--agent", "Claude"], { env });
-  children.push(child);
-  const out = await new Promise<string>((ok, no) => {
-    let text = "";
-    child.stdout.on("data", (d) => {
-      text += d;
-      if (/built in/.test(text)) ok(text);
-    });
-    child.on("exit", () => no(new Error(`watch ended: ${text}`)));
-  });
-  const url = /Open this page: (\S+)/.exec(out)![1]!;
-  const body = await (await api.get(url)).text();
-  expect(body).toContain("data-pipeup-link=");
-  expect(body).not.toContain("agents.js");
+  const err = await run("node", [cli, "watch", file], { env }).then(
+    () => null,
+    (e: { stderr: string }) => e.stderr,
+  );
+  expect(err).toMatch(/can't take an agent.*0\.7 or later/);
 });

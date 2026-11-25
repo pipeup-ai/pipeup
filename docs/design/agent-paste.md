@@ -1,5 +1,7 @@
 # Pasting an agent's replies, signed or not
 
+Status: **built** (2026-10-18; see the change log).
+
 Builds §15b's copy-and-paste hand-off (PR #96) and signed pasted replies (PR #98) in the agents add-on, with the
 small pieces they need from Pipeup and the command line. Mock-ups: `agent-handoff-mockups.html`,
 `signed-replies-editions-mockups.html`.

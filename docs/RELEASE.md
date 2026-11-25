@@ -72,7 +72,7 @@ version.
    already exist on npm (see *A new add-on* below), and for a stable release `apps/site/updates.json` must give
    the hash of the file the workflow just built. When it succeeds, the Pages workflow deploys the site, so the
    site never points at a version npm doesn't have yet.
-   - **Publish the update list** (the `updates` add-on and `pipeup check` read it): keep `docs/advisories.json` current
+   - **Publish the update list** (the `updates` add-on reads it): keep `docs/advisories.json` current
      (a `security` advisory names the affected versions and the fix), then, last of all, build the release commit
      (`npm run build` in `libs/ts/pipeup`) so the hash is the published file's, `node tools/make-updates.mjs`,
      `node tools/sign-updates.mjs sign` (your Keychain asks for your password or Touch ID) and

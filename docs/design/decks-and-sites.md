@@ -1,5 +1,7 @@
 # Decks and sites
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (a click made while Space is held, the naming bar, how to pause),
 §6 (a deck's own controls, showing slides, refitting, the control above a deck's controls), §7 (one bubble per
 thread, a new comment's box in the window, the hint after the menu, All comments as a list), §7a (copy the same

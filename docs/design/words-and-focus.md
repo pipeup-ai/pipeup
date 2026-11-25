@@ -1,5 +1,7 @@
 # Words and focus
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 (Tab from a comment box, the waiting box, typed words, keys,
 focus), §7 (replies kept, a card's actions, ⋯ by keyboard, the menu). From the click-path review of 0.8.0-beta.2: six
 testers found that Tab walked an empty box through every button on screen before it closed, that words were thrown

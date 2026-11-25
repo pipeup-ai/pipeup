@@ -12,7 +12,14 @@
 //                                           archives Safari's app for the Mac App Store, signed by that team
 //                                           (dist/Pipeup.xcarchive; upload it from Xcode's Organizer)
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { execFileSync } from "node:child_process";
 import { appIcon, INK, listed, toolbar } from "./extension-icons.mjs";
 import { teamId } from "./apple-team.mjs";
@@ -29,17 +36,26 @@ const ADDONS = ["emoji", "voice", "share", "live", "github", "identity"];
 const PACKAGE = {
   chromium: { addons: ADDONS, pictures: true },
   firefox: { addons: ADDONS.filter((a) => a !== "voice"), pictures: true },
-  safari: { addons: ADDONS.filter((a) => a !== "share" && a !== "live"), pictures: false },
+  safari: {
+    addons: ADDONS.filter((a) => a !== "share" && a !== "live"),
+    pictures: false,
+  },
 };
 const pipeup = `${root}libs/ts/pipeup/dist/pipeup.esm.js`;
 if (!existsSync(pipeup)) {
-  console.error("build-extension: build Pipeup first (npm run build in libs/ts/pipeup)");
+  console.error(
+    "build-extension: build Pipeup first (npm run build in libs/ts/pipeup)",
+  );
   process.exit(1);
 }
-const { version } = JSON.parse(readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"));
+const { version } = JSON.parse(
+  readFileSync(`${root}libs/ts/pipeup/package.json`, "utf8"),
+);
 // Stores take only numbers: a pre-release (0.10.0-beta.1) can't be packed for them.
 if (!/^\d+\.\d+\.\d+$/.test(version))
-  console.warn(`build-extension: ${version} is a pre-release; the stores won't take it`);
+  console.warn(
+    `build-extension: ${version} is a pre-release; the stores won't take it`,
+  );
 
 // One folder per browser, from the same files:
 //
@@ -67,17 +83,16 @@ const TARGETS = {
     delete m.minimum_chrome_version;
     m.permissions = m.permissions.filter((p) => p !== "sidePanel");
     m.background = { scripts: m.background.scripts, type: m.background.type };
-    // Firefox picks the toolbar bubble for its own theme (light icons for dark themes), before any page has said.
-    m.action.theme_icons = [16, 32].map((size) => ({
-      light: `icons/toolbar-dark-${size}.png`,
-      dark: `icons/toolbar-light-${size}.png`,
-      size,
-    }));
     // Firefox's add-ons site asks what an extension sends: nothing on its own; Share, Live, Save to GitHub and Send
     // to my agent send what the reviewer writes, once the reviewer agrees (browser.js agreeToSend, from Firefox 140).
     m.browser_specific_settings.gecko.data_collection_permissions = {
       required: ["none"],
-      optional: ["websiteContent", "browsingActivity", "personalCommunications", "personallyIdentifyingInfo"],
+      optional: [
+        "websiteContent",
+        "browsingActivity",
+        "personalCommunications",
+        "personallyIdentifyingInfo",
+      ],
     };
     return m;
   },
@@ -86,7 +101,9 @@ const TARGETS = {
     delete m.side_panel;
     delete m.sidebar_action;
     delete m.minimum_chrome_version;
-    m.permissions = m.permissions.filter((p) => p !== "sidePanel" && p !== "nativeMessaging");
+    m.permissions = m.permissions.filter(
+      (p) => p !== "sidePanel" && p !== "nativeMessaging",
+    );
     m.browser_specific_settings = { safari: { strict_min_version: "17.0" } };
     // Safari grants nothing on a toolbar press (activeTab is silent in Chrome and Firefox, never in Safari): it asks
     // in words. Asking for every website up front makes that one question, with Always Allow on Every Website as its
@@ -108,7 +125,9 @@ const TARGETS = {
 
 const emojibase = `${root}libs/ts/addons/node_modules/emojibase-data`;
 if (!existsSync(`${emojibase}/LICENSE`))
-  throw new Error("build-extension: emojibase-data's licence is missing (npm ci in libs/ts/addons)");
+  throw new Error(
+    "build-extension: emojibase-data's licence is missing (npm ci in libs/ts/addons)",
+  );
 const notices = [
   "Pipeup for browsers includes the following third-party material.",
   "",
@@ -134,7 +153,9 @@ for (const [target, shape] of Object.entries(TARGETS)) {
   for (const id of PACKAGE[target].addons) {
     const file = `${root}libs/ts/addons/${id}/dist/${id}.esm.js`;
     if (!existsSync(file))
-      throw new Error(`build-extension: the ${id} add-on isn't built (npm run build in libs/ts/addons)`);
+      throw new Error(
+        `build-extension: the ${id} add-on isn't built (npm run build in libs/ts/addons)`,
+      );
     cpSync(file, `${dir}/addons/${id}.esm.js`);
   }
   writeFileSync(`${dir}/build.json`, JSON.stringify(PACKAGE[target]) + "\n");
@@ -142,14 +163,18 @@ for (const [target, shape] of Object.entries(TARGETS)) {
   // packed add-on carries with no notice of its own.
   cpSync(`${root}LICENSE`, `${dir}/LICENSE`);
   writeFileSync(`${dir}/THIRD-PARTY-NOTICES.txt`, notices);
-  writeFileSync(`${dir}/manifest.json`, JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n");
-  for (const size of [16, 32, 48, 128]) writeFileSync(`${dir}/icons/${size}.png`, listed(size));
-  // The toolbar button: the bubble alone, dark for light toolbars and light for dark ones (Safari: one template).
+  writeFileSync(
+    `${dir}/manifest.json`,
+    JSON.stringify(shape(structuredClone(manifest)), null, 2) + "\n",
+  );
+  for (const size of [16, 32, 48, 128])
+    writeFileSync(`${dir}/icons/${size}.png`, listed(size));
+  // The toolbar button: the bubble alone, in Pipeup's violet on every toolbar (Safari: one black template, tinted by it).
   for (const size of [16, 19, 32, 38])
-    if (target === "safari") writeFileSync(`${dir}/icons/toolbar-${size}.png`, toolbar(size, INK.template));
-    else
-      for (const look of ["light", "dark"])
-        writeFileSync(`${dir}/icons/toolbar-${look}-${size}.png`, toolbar(size, INK[look]));
+    writeFileSync(
+      `${dir}/icons/toolbar-${size}.png`,
+      toolbar(size, target === "safari" ? INK.template : INK.brand),
+    );
   // The file inside is the release's file, byte for byte: the same hash as on npm.
   inside = sri(readFileSync(`${dir}/pipeup/pipeup.esm.js`));
   if (inside !== sri(readFileSync(pipeup)))
@@ -170,12 +195,17 @@ if (process.argv.includes("--test")) {
     const m = JSON.parse(readFileSync(`${test}/manifest.json`, "utf8"));
     writeFileSync(
       `${test}/manifest.json`,
-      JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) + "\n",
+      JSON.stringify({ ...m, host_permissions: ["<all_urls>"] }, null, 2) +
+        "\n",
     );
     // The tests reach into Pipeup's UI, which the published build keeps in a closed shadow root.
     const start = readFileSync(`${test}/start.js`, "utf8");
-    if (!start.includes("const closed = true;")) throw new Error("build-extension: start.js has no `closed` switch");
-    writeFileSync(`${test}/start.js`, start.replace("const closed = true;", "const closed = false;"));
+    if (!start.includes("const closed = true;"))
+      throw new Error("build-extension: start.js has no `closed` switch");
+    writeFileSync(
+      `${test}/start.js`,
+      start.replace("const closed = true;", "const closed = false;"),
+    );
   }
 }
 
@@ -241,7 +271,11 @@ function safariApp(release) {
   const board = `${app}/Base.lproj/Main.storyboard`;
   writeFileSync(board, readFileSync(board, "utf8").replace(/width="425" height="325"/g, 'width="460" height="470"'));
   for (const size of [16, 32, 128, 256, 512])
-    for (const k of [1, 2]) writeFileSync(`${app}/Assets.xcassets/AppIcon.appiconset/mac-icon-${size}@${k}x.png`, appIcon(size * k));
+    for (const k of [1, 2])
+      writeFileSync(
+        `${app}/Assets.xcassets/AppIcon.appiconset/mac-icon-${size}@${k}x.png`,
+        appIcon(size * k),
+      );
   // What the store reads from the project: the version and build, the Mac it needs (Safari 17 runs on macOS 12 and
   // later), the category and copyright. The app keeps its outgoing-network entitlement: a sandboxed app's web view
   // shows nothing without it, even its own page (measured: a blank window).
@@ -250,9 +284,18 @@ function safariApp(release) {
   writeFileSync(
     pbx,
     readFileSync(pbx, "utf8")
-      .replace(/MACOSX_DEPLOYMENT_TARGET = [\d.]+;/g, "MACOSX_DEPLOYMENT_TARGET = 12.0;")
-      .replace(/MARKETING_VERSION = [^;]+;/g, `MARKETING_VERSION = ${manifest.version};`)
-      .replace(/CURRENT_PROJECT_VERSION = [^;]+;/g, `CURRENT_PROJECT_VERSION = ${build};`)
+      .replace(
+        /MACOSX_DEPLOYMENT_TARGET = [\d.]+;/g,
+        "MACOSX_DEPLOYMENT_TARGET = 12.0;",
+      )
+      .replace(
+        /MARKETING_VERSION = [^;]+;/g,
+        `MARKETING_VERSION = ${manifest.version};`,
+      )
+      .replace(
+        /CURRENT_PROJECT_VERSION = [^;]+;/g,
+        `CURRENT_PROJECT_VERSION = ${build};`,
+      )
       .replace(
         /INFOPLIST_KEY_NSHumanReadableCopyright = "";/g,
         'INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Pipeup contributors. MIT licence.";',
@@ -262,8 +305,16 @@ function safariApp(release) {
         '$1INFOPLIST_KEY_CFBundleDisplayName = Pipeup;\n$1INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";',
       ),
   );
-  const xcode = (args) => execFileSync("xcodebuild", args, { stdio: ["ignore", "ignore", "inherit"] });
-  const common = ["-project", `${project}/Pipeup/Pipeup.xcodeproj`, "-scheme", "Pipeup"];
+  const xcode = (args) =>
+    execFileSync("xcodebuild", args, {
+      stdio: ["ignore", "ignore", "inherit"],
+    });
+  const common = [
+    "-project",
+    `${project}/Pipeup/Pipeup.xcodeproj`,
+    "-scheme",
+    "Pipeup",
+  ];
   if (release) {
     const archive = `${root}apps/extension/dist/Pipeup.xcarchive`;
     rmSync(archive, { recursive: true, force: true });

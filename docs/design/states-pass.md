@@ -1,5 +1,7 @@
 # The newcomer's third pass: the states after the first comment
 
+Status: **built** (2026-11-24; see the change log).
+
 Design note for the changes agreed from the third newcomer's run (24 November 2026), on the one-menu build with the
 second pass in (PR 151). The visual spec with the real screens is [states-pass.html](states-pass.html); the functional
 requirements are in [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §5 and §7.

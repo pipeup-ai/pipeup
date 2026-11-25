@@ -1,5 +1,7 @@
 # Driving Safari: the first-run test
 
+Status: **built** (2026-11-23; see the change log).
+
 Until now nothing could drive Safari with an extension in it: Playwright's WebKit loads no extensions, and the hand
 checklist ([extension-checklist.md](../testing/extension-checklist.md)) was Safari's only check. Apple's own UI testing
 (XCUITest) can drive Safari, though: a test bundle with no app of its own launches Safari by bundle identifier and

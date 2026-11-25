@@ -1,5 +1,7 @@
 # The comment control as a frosted corner square
 
+Status: **built** (2026-10-15; see the change log).
+
 Spec: [FUNCTIONAL_SPEC.md](../FUNCTIONAL_SPEC.md) §7 (*The comment control*). Chosen from the options drawn on 2026-10-15:
 the slim tab that reaches out on hover (D3), made square, with no border, frosted glass and the count inside a larger
 bubble. It replaces the 46 px round button that floated 20 px in from the corner.

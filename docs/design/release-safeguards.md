@@ -1,5 +1,7 @@
 # Release safeguards
 
+Status: **built** (2026-11-01; see the change log).
+
 The 0.9.0 release stopped part way: the core and ten add-ons were published, but `@pipeup/inline` (new) couldn't
 be, so the mailbox, the GitHub Release and the site waited until it was published by hand. Its signed update list
 also gave the wrong hash, made from a stale local build. These changes make each of those fail before anything is

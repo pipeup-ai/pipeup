@@ -145,6 +145,8 @@
       .try .touch { display: none; }
       @media (hover: none) and (pointer: coarse) { .try .keys { display: none; } .try .touch { display: inline; } }
       [data-shortcut] { display: inline-flex; gap: 4px; }
+      /* The Shift and Option keys are drawn (the fonts browsers fall back to draw ⇧ and ⌥ each their own way). */
+      kbd svg { display: block; }
       kbd {
         display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px;
         font: 500 14px/1 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif; color: var(--ink);
@@ -379,7 +381,7 @@
             <li><span class="n">3</span><span><b>Send that file</b> with your AI's note. People comment in their browser and send them back. <a class="quiet" href="add-comments.html">How reviewing works</a></span></li>
             <li><span class="n">4</span><span><b>Paste their comments into your AI.</b> It makes the changes.</span></li>
           </ol>
-          <p class="try rise" style="--i: 3"><span class="keys">Try it on this page: press <span data-shortcut><kbd>⇧</kbd><kbd>⌥</kbd><kbd>C</kbd></span> and click anything.</span><span class="touch">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</span></p>
+          <p class="try rise" style="--i: 3"><span class="keys">Try it on this page: press <span data-shortcut><kbd><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.5L4.5 12.5h4.5v7h6v-7h4.5z"/></svg></kbd><kbd><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6h5.2l7 12h4.8M14.5 6h6"/></svg></kbd><kbd>C</kbd></span> and click anything.</span><span class="touch">Try it on this page: tap the comment button in the bottom-right corner, choose Start commenting, then tap anything.</span></p>
           <p class="small rise" style="--i: 3">Adding it yourself? <a href="details.html">The script tag, licence and size.</a></p>
         </div>
         <div class="ad rise" style="--i: 2" role="region" aria-roledescription="carousel" aria-label="Pipeup on a document, slides, a website and with the keyboard">
@@ -582,7 +584,7 @@
         const TIMES = [POINTER, POINTER, POINTER, KEYBOARD];
         // The keyboard scene: [ms, keys, what it does, the block the cursor is on after it (null: comment mode off)].
         const KEYS = [
-          [600, isMac ? ["⇧", "⌥", "C"] : ["Shift", "Alt", "C"], "Comment mode", ".kh"],
+          [600, isMac ? ["<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4.5L4.5 12.5h4.5v7h6v-7h4.5z\"/></svg>", "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 6h5.2l7 12h4.8M14.5 6h6\"/></svg>", "C"] : ["Shift", "Alt", "C"], "Comment mode", ".kh"],
           [1700, ["Tab"], "Next block", ".k1"],
           [2800, ["Tab"], "Next block", ".k2"],
           [3900, ["↑"], "Around it", ".sec"],

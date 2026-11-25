@@ -1,14 +1,17 @@
-/* The toolbar panel: off, one main action and one sentence; on, Pipeup's menu. A light and a dark look. */
+/* The toolbar panel: off, one main action and one sentence; on, Pipeup's menu. A light and a dark look. The light
+   greys are the page-side Pipeup's: faint text 5.4:1 on white (the old #7d7c76 was 4.2:1, under what small text
+   needs), and an off switch with an edge in that grey, so it can be found (contrast review, 25 November 2026). */
 :root {
   --ink: #2f3437;
   --strong: #111;
   --muted: #55544f;
-  --faint: #7d7c76;
-  --line: #e4e2db;
+  --faint: #6b6a64;
+  --line: #dbd9d1;
   --surface: #fff;
   --accent: #534ab7;
   --on-accent: #fff;
-  --off: #d8d6cf;
+  --off: #cfcdc5;
+  --off-edge: var(--faint);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -22,6 +25,7 @@
     --accent: #8f86e8;
     --on-accent: #16151c;
     --off: #4a4a52;
+    --off-edge: transparent;
     color-scheme: dark;
   }
 }
@@ -130,9 +134,12 @@ input[role="switch"] {
   margin: 0;
   border-radius: 9px;
   background: var(--off);
+  box-shadow: inset 0 0 0 1px var(--off-edge);
   position: relative;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 input[role="switch"]::after {
   content: "";
@@ -148,6 +155,7 @@ input[role="switch"]::after {
 }
 input[role="switch"]:checked {
   background: var(--accent);
+  box-shadow: none;
 }
 input[role="switch"]:checked::after {
   left: 14px;
@@ -159,11 +167,17 @@ input[role="switch"]:checked::after {
   color: var(--faint);
 }
 kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
   font:
-    12px ui-monospace,
-    "SF Mono",
-    Menlo,
-    monospace;
+    500 12px -apple-system,
+    "Segoe UI",
+    system-ui,
+    sans-serif;
+}
+kbd svg {
+  flex: none;
 }
 @media (prefers-reduced-motion: reduce) {
   * {

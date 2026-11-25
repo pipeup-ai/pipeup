@@ -7,6 +7,9 @@ const PATHS = {
     "M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2",
   ],
   resolve: ["M5 12.5l4.5 4.5L19 7.5"],
+  // The Shift and Option keys, drawn here so they look the same in every browser: fonts differ on ⇧ and ⌥.
+  shift: ["M12 4.5L4.5 12.5h4.5v7h6v-7h4.5z"],
+  option: ["M3.5 6h5.2l7 12h4.8", "M14.5 6h6"],
   reopen: ["M3 12a9 9 0 1 0 3-6.7", "M3 4v5h5"],
   lines: ["M4 7h16M4 12h10M4 17h7"],
   // A list of threads, each with its writer: All comments.
