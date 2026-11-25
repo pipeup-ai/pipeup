@@ -113,11 +113,24 @@ test("a picture of where a new comment was is kept, and shown when the comment's
       ),
     )
     .toBe(1);
-  // The paragraph goes: the comment is lost, and the side panel shows how it looked.
+  // The paragraph goes: the comment is lost, and the side panel shows how it looked. Pipeup takes a moment to give a
+  // place up (it waits out the page's churn before calling a comment lost), and the tab tells the panel every 1.5 s:
+  // wait for the page's own word first, then look at the panel.
   await page.evaluate(() => document.querySelector("#p2")!.remove());
+  const tab = await tabOf(worker, page);
+  await expect
+    .poll(
+      () =>
+        worker.evaluate(async (t) => {
+          const answer = await chrome.tabs.sendMessage(t, { to: "page", type: "snapshot" }, { frameId: 0 });
+          return answer?.result?.threads?.map((x: { where?: string }) => x.where ?? "").join("|") ?? "";
+        }, tab),
+      { timeout: 20_000 },
+    )
+    .toMatch(/No longer on the page/);
   const side = await sidePanel(context, worker, id, page);
   const card = side.locator(".card", { hasText: "Is June firm?" });
-  await expect(card).toContainText("No longer on the page");
+  await expect(card).toContainText("No longer on the page", { timeout: 10_000 });
   await expect(card.locator("img")).toBeVisible();
   // Deleting the comment deletes its picture.
   await card.click();
