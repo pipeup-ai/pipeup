@@ -171,6 +171,10 @@ if (result.status !== 0) {
     console.error(
       "\nmacOS must allow the test runner to control the computer: System Settings → Privacy & Security → Accessibility.",
     );
+  if (/lost its address field/.test(log))
+    console.error(
+      "\nSafari's toolbar has lost its address field. Put it back with: open -a Terminal tools/safari-toolbar-reset.command",
+    );
   process.exit(result.status ?? 1);
 }
 

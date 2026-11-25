@@ -97,6 +97,38 @@ async function comment(tabId) {
   }
 }
 
+// Comment on this page, from the toolbar panel: adds Pipeup to the tab and starts comment mode. Done here, not in the
+// panel, because Safari closes the panel while it asks whether Pipeup may see the site, which would lose the press.
+// Where adding the script is refused until the question is answered, it is tried again as soon as the site is allowed.
+chrome.runtime.onMessage.addListener((message, _sender, reply) => {
+  if (message?.type !== "start" || typeof message.tabId !== "number") return;
+  startCommenting(message.tabId).then(
+    () => reply({ ok: true }),
+    () => reply({ ok: false }),
+  );
+  return true;
+});
+async function startCommenting(tabId) {
+  const { url } = await chrome.tabs.get(tabId);
+  const origins = [`${new URL(url).origin}/*`];
+  for (let i = 0; ; i++) {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: ["start.js"] });
+      break;
+    } catch (e) {
+      // Up to a minute for the answer to the browser's own question; then the press has lapsed.
+      if (i >= 120 || (await chrome.permissions.contains({ origins }).catch(() => false))) throw e;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  if (!(await started(tabId))) return;
+  await chrome.tabs.sendMessage(
+    tabId,
+    { to: "page", type: "act", action: "mode", value: true },
+    { frameId: 0 },
+  );
+}
+
 // The browser's right-click menu: "Comment with Pipeup" on selected words, a picture, a link, or anything on the page.
 // The click lets the extension into that tab, as pressing the toolbar button does.
 const MENU = "pipeup-comment";

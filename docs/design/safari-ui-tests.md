@@ -60,6 +60,22 @@ A day (24 to 25 November 2026) went on a toolbar button that would not appear, w
 - Once: macOS asks whether the test runner may control the computer (Accessibility). Allow it; the test then runs
   unattended.
 
+## Keeping Safari as it was
+
+The test runs in the person's own Safari, so it must leave no trace but its screenshots. One run left Safari's toolbar
+without its address field, most likely a key or click that landed on the toolbar while the person was using another
+app. Three guards:
+
+- Pages open through the system (LaunchServices), never by typing an address, so nothing is typed into Safari's
+  toolbar at all.
+- Keys (the comment, Return, Escape) go out only while Safari is the app in front; otherwise the test fails and sends
+  none, so a person working in another app never receives them.
+- The test checks the address field before and after, and fails with the repair if it has gone.
+
+The repair, `tools/safari-toolbar-reset.command`, quits Safari, forgets every saved toolbar layout and opens it again.
+It is opened in the Terminal app (`open -a Terminal tools/safari-toolbar-reset.command`) because macOS lets Terminal
+read Safari's settings where a shell inside another app is refused.
+
 ## Not in this change
 
 - The rest of the hand checklist in Safari. The scaffold takes more tests the same way.
@@ -69,5 +85,7 @@ A day (24 to 25 November 2026) went on a toolbar button that would not appear, w
 
 - 2026-11-23 — First version: the scaffold and the first-run test.
 - 2026-11-23 — The menu's rows renamed with the one-menu change (docs/design/one-menu.md): the count is read from Your comments on this page.
+- 2026-11-23 — Pages open through LaunchServices rather than typed; keys only while Safari is in front; the address
+  field is checked before and after; `tools/safari-toolbar-reset.command` repairs the toolbar.
 - 2026-11-25 — npm run safari-install, the test's pre-checks and plain failure, the CI check on the Safari manifest, and the list of what went wrong and why each rule exists.
 - 2026-11-25 — Each run opens a copy of the sample page with a new document id, so earlier runs' comments never meet the test.

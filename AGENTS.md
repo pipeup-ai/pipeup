@@ -35,6 +35,10 @@ putting that back cost an afternoon. So:
 - The test never types to reach a page: pages open through the system (LaunchServices). It sends keys only while Safari
   is the app in front, and fails instead when it isn't. It touches nothing in the toolbar but Pipeup's button, and it
   checks the address field is still there before and after.
+- Opening Safari's **Customize Toolbar…** from a test is off limits, as is dragging anything in the toolbar.
+- If a run does leave Safari changed, say so at once and repair it yourself with
+  `open -a Terminal tools/safari-toolbar-reset.command`, which puts the default toolbar back. Don't hand the person a
+  list of steps to undo what the tools did.
 - Put a build into Safari only with `npm run safari-install`: signed by the Mac's development certificate, one copy in
   one place, a fresh build number. Unsigned builds are turned off by Safari at every start until Allow Unsigned
   Extensions is on again, while still listed as on; a second copy of the app anywhere makes Safari list two; replacing
