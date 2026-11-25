@@ -11,6 +11,10 @@
     const path = script.src ? new URL(script.src, location.href).pathname : "";
     return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
   });
+  // The extension's own root carries a mark (set below). One left by a copy the browser has already cut off (the
+  // extension reloaded or replaced under an open tab; Safari doesn't always tell the old copy) is an orphan, not the
+  // page's own Pipeup: it is taken off, and this copy starts.
+  for (const orphan of document.querySelectorAll("pipeup-root[data-pipeup-extension]")) orphan.remove();
   if (document.querySelector("pipeup-root") || ownScript) {
     state.builtIn = true;
     return;
@@ -384,6 +388,9 @@
       settings: pageSettings(await settingsNow()),
       ...OPTIONS[mode],
     });
+    document
+      .querySelector("pipeup-root:not([data-pipeup-extension])")
+      ?.setAttribute("data-pipeup-extension", "");
     place = where();
     known = new Set(pu.document.threads().map((t) => t.id));
     state.mode = mode;
