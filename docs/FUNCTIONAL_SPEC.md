@@ -1786,9 +1786,9 @@ agent's replies.
 - **Open source under the MIT licence.** The source, issues and releases are public on GitHub, and
   the website (with its Try pages and agent skills) is published alongside it.
 - Versions follow semantic versioning, and add-ons are released with Pipeup at the same version.
-  Until 1.0 the project is in **alpha**: the API may change between minor versions, and each release
-  says what changed. **Comments written by any released version stay readable by every later
-  version**, including comments already saved in reviewers' browsers.
+  Since 1.0 (10 November 2026) the API changes only with a major version, and each release says what
+  changed. **Comments written by any released version stay readable by every later version**,
+  including comments already saved in reviewers' browsers.
 - When a page meets comments from a newer version of Pipeup that it can't show, it says how many in
   words, rather than dropping them silently.
 - **Pre-releases** can be tried before a milestone reaches everyone: installed from npm and the CDNs
@@ -1847,7 +1847,12 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 4. **Agents** (shipped: 0.6): reading and answering comments (§15b), the live link (§15c), installing the skills (§15a).
 5. **Touch and narrow pages, and agents as an add-on** (0.7): §15d.
 6. **The rest of the command-line tool** (0.8): `init` (§15e) and `read` (§15f) (`check` shipped in 0.7). **A size pass** (§16a).
-7. **The author's relay** (later):
+7. **Pipeup for browsers** (shipped: 1.0, 10 November 2026): the extension for Chrome, Edge, Firefox and Safari on a
+   Mac ([EXTENSION_SPEC.md](EXTENSION_SPEC.md)), with Send to my agent (§15g); the stores' reviews follow.
+8. **The newcomer's first run** (1.1, `next`): one toolbar menu built for the job, the first run and the states after
+   the first comment simplified, one shortcut, Safari's app window, and the looks made to read in every browser
+   (extension spec, November 2026).
+9. **The author's relay** (later):
    - rooms on a relay the author owns;
    - invites shared separately;
    - closing rooms;
@@ -2118,3 +2123,4 @@ portable identities and the one-look-everywhere work all landed in it, and the b
 - 2026-11-24 — From a third newcomer's run, on the states after the first comment (visual spec docs/design/states-pass.html): in comment mode a block with a comment previews on hover and opens on click like its marker; a click on a block while a thread is open closes it and opens the box in one go, and blocks stay outlined meanwhile (part of 2026-11-09 reversed); a thread of only the reader's own words opened with a pointer rests instead of focusing its reply line; the pin hint is said on the first box over a picture or a tall block, not on opening a thread; an Undo offer goes once the reviewer has moved on (§5, §7).
 - 2026-11-23 — Agreed with the maintainer (visual spec docs/design/newcomer-pass.html), from a second newcomer's run: comment mode's hint says two things on the first visit and the rest once each when first useful, and names no button for a host that keeps Pipeup's control off the page (§5, §4a); the comment and reply boxes say "Comment" and "Reply" until there is someone to add with @ (§5, §7); a new comment closes once sent, its marker staying (§7).
 - 2026-11-25 — The page's link colour becomes Pipeup's accent only when it is a colour (§9): a dark site's white links made the Comment button, the outlines and the markers white. Found by the maintainer on google.com in Chrome.
+- 2026-11-25 — §16 and §18 brought up to date: 1.0 is out (the alpha sentence went), and the phases name 1.0 (the extension) and 1.1 (the newcomer's first run).

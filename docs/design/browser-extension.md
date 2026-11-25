@@ -1,6 +1,6 @@
 # Pipeup for browsers (extension)
 
-Status: **built for local testing in Chrome, Firefox and Safari (Mac)**; stores to come. Visual spec: [browser-extension.html](browser-extension.html). Functional requirements:
+Status: **shipped in 1.0.0** (10 November 2026); the stores' reviews follow. This note is the first shape; the menu and first run were redone since (one-menu.md, newcomer-pass.md, states-pass.md). Visual spec, historical: [browser-extension.html](browser-extension.html). Functional requirements:
 [EXTENSION_SPEC.md](../EXTENSION_SPEC.md). Targets `next`.
 
 ## Shape
