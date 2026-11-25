@@ -1,6 +1,6 @@
 {
   "name": "@pipeup/inline",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Asks in the content of a Pipeup page (open, agree, choice), answered in place as ordinary comments, and blocks that show their comments in place.",
   "license": "MIT",
   "author": "Pipeup contributors",
@@ -24,7 +24,7 @@
     "LICENSE"
   ],
   "peerDependencies": {
-    "pipeup": "1.0.1"
+    "pipeup": "1.1.0"
   },
   "pipeup": {
     "network": {

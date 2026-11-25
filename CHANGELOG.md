@@ -7,13 +7,16 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-25
+
+The newcomer's first run. Three passes over what a person meets the first time they press Pipeup in a browser, in
+Safari, Chrome and Firefox, each from a real first run: one toolbar menu built for the job, the first comment and
+the states after it made to behave as a newcomer expects, one shortcut, Safari's app window redone, and the looks made
+to read in every browser. Nothing in the API or the stored format changes.
+
+### Changed
+
 - Safari's app window says one thing and does one thing: whether Pipeup is on, with a drawing, a line and a button (Open Safari Settings, or Try it on a sample page once it's on); the introduction, the steps and the licence paragraph are gone, with the licences behind one link.
-- Each add-on reports its package's real version in Pipeup's add-ons list (they said 0.4.1 to 0.9.1 while all were 1.0.0).
-- `pipeup watch` refuses a page whose Pipeup is older than 0.7 (it used to serve 0.6 pages through their built-in agent support); 0.7 shipped in October 2026 and every page since takes the agents add-on.
-- On a touch screen, comment mode's one-time keyboard and mouse hints (Tab, Space, Option-click to pin) no longer appear; only the touch hint does, as the spec always said.
-- Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
-- Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
-- On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
 - Extension: in the light look, the menu's and Settings' small text is the page's own grey (5.4:1 on white, from 4.2:1), off switches have an edge so they can be found, and dividers are a touch darker. The dark look is unchanged.
 - Extension: one shortcut, Shift+Alt+C (⇧⌥C). With Pipeup off on the page it adds Pipeup and starts commenting; with Pipeup on it turns commenting off and on. Shift+Alt+P is no longer a default key for the toolbar menu, and Settings lists the one shortcut.
 - The Shift and Option keys in shortcuts (the control's tip, the menu's Commenting row, the extension's menu and Settings, the website) are drawn as Pipeup's own glyphs on a Mac, the same in every browser, instead of ⇧ and ⌥ from whatever font each browser fell back to; on Windows and Linux the extension's pages now say Shift+Alt+C and Shift+Alt+P like everything else.
@@ -22,6 +25,14 @@ change the API and the stored comment format.
 - **Pipeup for browsers: one menu, built for the job.** Before the first comment, the toolbar menu is one action, Comment on this page, and one sentence. With Pipeup on it has six rows (your name, Your comments on this page with the count, Copy comments in one press, Save as a file, Send to my agent where offered, Commenting with its shortcut) and More, which opens in place to Theme, Hide comments, Keep comments beside the page, Always on, the add-ons' rows, Turn off on this page and Settings. No status line, no footer; Pipeup's own "…" menu isn't shown on the page; after the first comment one line says where it went and what comes next; Settings opens on Comments you've made, with the add-ons behind one line. For hosts: `mount({ pageMenu: "off" })`, `addonRows()`, `selectAddonRow(key)` and `note(text)`.
 - **Pipeup for browsers, and Pipeup on every page: the newcomer's second pass.** Comment mode's hint says two things the first time ("Click anything to comment · Esc when you're done", naming Pipeup's button only where it is shown); Tab between blocks, Hold Space and Option-click to pin are each said once, the first time they would have helped. A new comment closes once sent: its marker stays and nothing else opens. The comment box says "Comment" and the reply line "Reply" until there is someone to add with @. In the extension: the off state's one sentence says only what clicking does; the line after the first comment reads "Saved in this browser. Press Pipeup in the toolbar to copy, save or send them"; Send to my agent is under More ("Send to an AI agent on this computer · Set up once") until it is set up, then in the menu's top level naming the agent that last answered; Settings reads in about a hundred words, with the shortcuts on one line each and the agent's set-up behind one line.
 
+### Fixed
+
+- Each add-on reports its package's real version in Pipeup's add-ons list (they said 0.4.1 to 0.9.1 while all were 1.0.0).
+- `pipeup watch` refuses a page whose Pipeup is older than 0.7 (it used to serve 0.6 pages through their built-in agent support); 0.7 shipped in October 2026 and every page since takes the agents add-on.
+- On a touch screen, comment mode's one-time keyboard and mouse hints (Tab, Space, Option-click to pin) no longer appear; only the touch hint does, as the spec always said.
+- Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
+- Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
+- On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
 ## [1.0.1] - 2026-11-25
 
 Fixes for the shipped extension, found in the first days of real use.
@@ -563,7 +574,8 @@ The first public release.
 - The `pipeup` command line (`init`, `check`, `read`, `reply`) comes in 0.6.
 - Shared rooms and presence come later; for now feedback travels by Copy all.
 
-[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/pipeup-ai/pipeup/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/pipeup-ai/pipeup/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/pipeup-ai/pipeup/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/pipeup-ai/pipeup/compare/v0.9.1...v1.0.0
 [0.9.1]: https://github.com/pipeup-ai/pipeup/compare/v0.9.0...v0.9.1
