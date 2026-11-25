@@ -7,6 +7,7 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+- Extension: on a page with Pipeup built in, Shift+Alt+C and Comment with Pipeup go to the page's own Pipeup instead of doing nothing, and the menu says to use the page's own button or the key.
 - Extension: a tab where an earlier copy of the extension was cut off (the extension reloaded or replaced under it, which Safari doesn't always tell the old copy) no longer reads as "Pipeup built in": the extension's own root carries a mark, an orphan is taken off, and Comment on this page works again.
 - On a dark site with white links (google.com), the Comment button, the outlines and the markers were white, and in the extension the comment box's field was a white box with light words. Pipeup takes a page's link colour only when it is a colour, and the extension's typing field now agrees with the page on a colour scheme.
 - Extension: in the light look, the menu's and Settings' small text is the page's own grey (5.4:1 on white, from 4.2:1), off switches have an edge so they can be found, and dividers are a touch darker. The dark look is unchanged.

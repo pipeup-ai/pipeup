@@ -479,6 +479,29 @@ test("on a dark site with white links, the box keeps Pipeup's violet and its fie
   expect(await box.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
 });
 
+test("on a page with Pipeup built in, the shortcut goes to the page's own Pipeup, and the menu says to use it", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}built-in-on.html`);
+  await expect(page.locator(".launch")).toBeAttached();
+  await expect(page.locator(".launch .mode.on")).toHaveCount(0);
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeVisible();
+  await expect(p.locator("#built-in kbd")).toHaveText(/C$|Shift\+Alt\+C/);
+  // What the shortcut does: the same path the browser's command takes.
+  const tab = await tabOf(worker, page);
+  await page.bringToFront();
+  const ok = await p.evaluate((tabId) => chrome.runtime.sendMessage({ type: "comment", tabId }), tab);
+  expect(ok).toEqual({ ok: true });
+  // The page's own Pipeup took it: its comment mode is on, and there is still one Pipeup, the page's.
+  await expect(page.locator(".launch .mode.on")).toBeAttached();
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).not.toHaveAttribute("data-pipeup-extension", "");
+});
+
 test("a root left by a cut-off copy of the extension isn't Pipeup built in: it is taken off and Pipeup starts", async ({
   context,
   worker,

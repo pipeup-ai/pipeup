@@ -20,38 +20,82 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   if (message?.type === "state" && tabId !== undefined) commenting.set(tabId, message.commenting === true);
 });
 chrome.tabs.onRemoved.addListener((tabId) => commenting.delete(tabId));
-chrome.commands?.onCommand.addListener(async (command, tab) => {
-  if (command !== "comment" || tab?.id === undefined) return;
+chrome.commands?.onCommand.addListener((command, tab) => {
+  if (command === "comment" && tab?.id !== undefined) void comment(tab.id);
+});
+chrome.runtime.onMessage.addListener((message, _sender, reply) => {
+  if (message?.type !== "comment" || typeof message.tabId !== "number") return;
+  comment(message.tabId).then(
+    () => reply({ ok: true }),
+    () => reply({ ok: false }),
+  );
+  return true;
+});
+
+/** Pipeup in `tab` answers once it has started there. */
+async function started(tabId, frameId = 0) {
+  for (let i = 0; i < 100; i++) {
+    const answer = await chrome.tabs
+      .sendMessage(tabId, { to: "page", type: "probe" }, { frameId })
+      .catch(() => null);
+    if (answer?.ok) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return false;
+}
+
+/**
+ * A page with Pipeup built in keeps its own: the press goes to it as its shortcut (a browser takes the shortcut
+ * before the page sees it, so this is how the key still reaches the page's Pipeup). True when it was handed over.
+ */
+async function handOver(tabId, frameId = 0) {
+  const [{ result } = {}] = await chrome.scripting.executeScript({
+    target: { tabId, ...(frameId ? { frameIds: [frameId] } : {}) },
+    func: () => {
+      if (!globalThis.__pipeupExt?.builtIn) return false;
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "C",
+          code: "KeyC",
+          shiftKey: true,
+          altKey: true,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      return true;
+    },
+  });
+  return result === true;
+}
+
+/** Comment in `tab`: Pipeup off there, start it with comment mode on; on, comment mode off or on; built in, hand over. */
+async function comment(tabId) {
   const page = { to: "page" };
   try {
     const there = await chrome.tabs
-      .sendMessage(tab.id, { ...page, type: "probe" }, { frameId: 0 })
+      .sendMessage(tabId, { ...page, type: "probe" }, { frameId: 0 })
       .catch(() => null);
     if (there?.ok) {
       await chrome.tabs.sendMessage(
-        tab.id,
-        { ...page, type: "act", action: "mode", value: !commenting.get(tab.id) },
+        tabId,
+        { ...page, type: "act", action: "mode", value: !commenting.get(tabId) },
         { frameId: 0 },
       );
       return;
     }
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["start.js"] });
-    for (let i = 0; i < 100; i++) {
-      const answer = await chrome.tabs
-        .sendMessage(tab.id, { ...page, type: "probe" }, { frameId: 0 })
-        .catch(() => null);
-      if (answer?.ok) break;
-      await new Promise((r) => setTimeout(r, 50));
-    }
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["start.js"] });
+    if (await handOver(tabId)) return;
+    if (!(await started(tabId))) return;
     await chrome.tabs.sendMessage(
-      tab.id,
+      tabId,
       { ...page, type: "act", action: "mode", value: true },
       { frameId: 0 },
     );
   } catch {
-    // A page browsers keep closed to extensions, or one with Pipeup built in.
+    // A page browsers keep closed to extensions.
   }
-});
+}
 
 // The browser's right-click menu: "Comment with Pipeup" on selected words, a picture, a link, or anything on the page.
 // The click lets the extension into that tab, as pressing the toolbar button does.
@@ -68,14 +112,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const target = { tabId: tab.id, ...(info.frameId ? { frameIds: [info.frameId] } : {}) };
   try {
     await chrome.scripting.executeScript({ target, files: ["start.js"] });
-    // Pipeup starts in a moment (it answers once it has); then the comment box opens on what was right-clicked.
-    for (let i = 0; i < 100; i++) {
-      const answer = await chrome.tabs
-        .sendMessage(tab.id, { to: "page", type: "probe" }, { frameId: info.frameId ?? 0 })
-        .catch(() => null);
-      if (answer?.ok) break;
-      await new Promise((r) => setTimeout(r, 50));
-    }
+    // Pipeup starts in a moment (it answers once it has); then the comment box opens on what was right-clicked. A page
+    // with Pipeup built in gets the press as its shortcut instead.
+    if (await handOver(tab.id, info.frameId ?? 0)) return;
+    if (!(await started(tab.id, info.frameId ?? 0))) return;
     await chrome.tabs.sendMessage(
       tab.id,
       {
