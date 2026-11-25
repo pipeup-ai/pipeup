@@ -215,7 +215,7 @@ Used to add Pipeup to the page the reviewer chose: chrome.scripting.executeScrip
 ```
 #### storage
 ```text
-Pipeup keeps its data in chrome.storage.local, in this browser: the comments on each page with their full history (keyed by page), the list of pages commented on (address without query, title, time), each site's choices where Pipeup was started (look, Hide comments), the reviewer's display name and signing key, the settings (comments beside the page, Show Pipeup's button on pages, pictures on or off, which add-ons are on, the sharing address and the GitHub repository), add-ons' choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji), whether Send to my agent was used and which agent replies were added, the small pictures of where comments were made, and the toolbar icon's look. Nothing is written to the site's own storage. Comments leave the browser only through features the reviewer uses: Copy, Save, Send to my agent, and add-ons they turned on (Share and Live send while on).
+Pipeup keeps its data in chrome.storage.local, in this browser: the comments on each page with their full history (keyed by page), the list of pages commented on (address without query, title, time), each site's choices where Pipeup was started (look, Hide comments), the reviewer's display name and signing key, the settings (comments beside the page, Show Pipeup's button on pages, pictures on or off, which add-ons are on, the sharing address and the GitHub repository), add-ons' choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji), whether Send to my agent was used and which agent replies were added, the small pictures of where comments were made. Nothing is written to the site's own storage. Comments leave the browser only through features the reviewer uses: Copy, Save, Send to my agent, and add-ons they turned on (Share and Live send while on).
 ```
 #### unlimitedStorage
 ```text
@@ -539,7 +539,7 @@ Injects Pipeup's comment layer, which is packaged in the extension (start.js, pi
 ```
 #### storage
 ```text
-Keeps everything the extension holds in this browser: each page's comments and their history, the list of pages commented on (address without query, title, time), the person's name and signing key, per-site look, Hide comments and first-run choices, settings (pinned, show button, pictures, add-ons, sharing address, GitHub repository), the add-ons' own choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji and skin tone), the pictures of where comments were made, whether Send to my agent has been used, the agent replies already shown, and the toolbar icon's light or dark look. Keeping these here means nothing goes into the site's own storage, so a page can't read them or set them. Nothing is synced or sent to the developer.
+Keeps everything the extension holds in this browser: each page's comments and their history, the list of pages commented on (address without query, title, time), the person's name and signing key, per-site look, Hide comments and first-run choices, settings (pinned, show button, pictures, add-ons, sharing address, GitHub repository), the add-ons' own choices (Live's consent, Share's and Voice's choices, Emoji's recent emoji and skin tone), the pictures of where comments were made, whether Send to my agent has been used, and the agent replies already shown. Keeping these here means nothing goes into the site's own storage, so a page can't read them or set them. Nothing is synced or sent to the developer.
 ```
 #### unlimitedStorage
 ```text
