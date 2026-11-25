@@ -479,6 +479,29 @@ test("on a dark site with white links, the box keeps Pipeup's violet and its fie
   expect(await box.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
 });
 
+test("a root left by a cut-off copy of the extension isn't Pipeup built in: it is taken off and Pipeup starts", async ({
+  context,
+  worker,
+  id,
+}) => {
+  const page = await context.newPage();
+  await page.goto(`${PAGES}plain.html`);
+  // What an orphan leaves: the extension's own root, marked, with no copy behind it to answer.
+  await page.evaluate(() => {
+    const root = document.createElement("pipeup-root");
+    root.setAttribute("data-pipeup-extension", "");
+    document.body.append(root);
+  });
+  const p = await panel(context, worker, id, page);
+  await expect(p.locator("#built-in")).toBeHidden();
+  await p.getByRole("button", { name: "Comment on this page" }).click();
+  await page.bringToFront();
+  await expect(page.locator(".launch")).toBeAttached();
+  // One root, the live one, marked as the extension's.
+  await expect(page.locator("pipeup-root")).toHaveCount(1);
+  await expect(page.locator("pipeup-root")).toHaveAttribute("data-pipeup-extension", "");
+});
+
 test("a site's script whose name only contains “pipeup” isn't Pipeup built in: the extension offers itself", async ({
   context,
   worker,

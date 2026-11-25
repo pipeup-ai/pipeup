@@ -62,12 +62,18 @@ async function probe() {
   try {
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      func: () =>
-        !!document.querySelector("pipeup-root") ||
-        [...document.scripts].some((script) => {
-          const path = script.src ? new URL(script.src, location.href).pathname : "";
-          return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
-        }),
+      // A root with the extension's mark and no live copy answering for it is an orphan (the extension was reloaded
+      // or replaced under this tab): taken off here, so the page reads as off, not as Pipeup built in.
+      func: () => {
+        for (const orphan of document.querySelectorAll("pipeup-root[data-pipeup-extension]")) orphan.remove();
+        return (
+          !!document.querySelector("pipeup-root") ||
+          [...document.scripts].some((script) => {
+            const path = script.src ? new URL(script.src, location.href).pathname : "";
+            return /\/pipeup(\.[\w-]+)*\.m?js$|\/pipeup@[^/]+\/|\/pipeup\/dist\//i.test(path);
+          })
+        );
+      },
     });
     return { on: false, builtIn: !!result, count: 0 };
   } catch {
