@@ -6,7 +6,7 @@ Help with Pipeup for browsers, the extension that lets you comment on any web pa
 
 - **Install** Pipeup from your browser's store: Chrome Web Store, Microsoft Edge Add-ons, Firefox Add-ons, or the Mac App Store for Safari.
 - **Pin it** to the toolbar from the browser's extensions menu (the puzzle piece). In Safari, open Safari Settings, then Extensions, and turn Pipeup on.
-- **Comment on a page:** open any web page, press Pipeup in the toolbar (or Shift+Alt+P) and choose **Comment on this page**. Click what you want to comment on, type, and press Enter.
+- **Comment on a page:** open any web page, press Pipeup in the toolbar and choose **Comment on this page** (or press Shift+Alt+C; Shift+Option+C on a Mac). Click what you want to comment on, type, and press Enter.
 - **Read the comments:** press Pipeup again and choose **Comments**.
 - **Get them out:** **Copy comments** puts them on your clipboard as Markdown or text, ready to paste into a message or an AI chat. **Save comments** saves them as a file.
 

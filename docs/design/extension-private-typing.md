@@ -1,6 +1,6 @@
 # Private typing in the extension
 
-Status: **agreed** (2026-11-10). Functional requirement: [EXTENSION_SPEC.md](../EXTENSION_SPEC.md) §5
+Status: **built** (shipped in 1.0.0). Functional requirement: [EXTENSION_SPEC.md](../EXTENSION_SPEC.md) §5
 ("What the reviewer types into Pipeup on a page can't be seen by the page"). Targets `next`, on the extension branch.
 
 ## The problem
@@ -54,15 +54,15 @@ Enter, Esc, undo, spelling, input methods, right-to-left words. Pages with Pipeu
 
 ## Risks and how they are checked
 
-| Risk | Check |
-|---|---|
-| A key Pipeup acts on is missed, or reaches the page | A test types in every composer and asserts the page's `window` capture listeners hear no `key*`, `*input`, `paste` or `composition*` event; one test per key Pipeup acts on |
-| Focus and Tab order break (Tab into, out of, Shift+Tab) | The existing focus and keyboard tests, run in the extension build too |
-| The @mention list is placed wrongly (caret position from another document) | A test opens the list after `@` at the start, middle and end of a line |
-| Input methods (Japanese, Chinese), dictation, spelling | Hand checklist steps per browser |
-| Safari: a frame of the extension in a page | The hand checklist in Safari; `safari-web-extension://` frames are allowed for web-accessible pages |
-| Size: the core grows | The seam is small (a factory and the composer reading through it); budget checked by `npm run check` |
-| A page frames `typing.html` itself | A test frames it from the page and finds it inert |
+| Risk                                                                       | Check                                                                                                                                                                       |
+| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A key Pipeup acts on is missed, or reaches the page                        | A test types in every composer and asserts the page's `window` capture listeners hear no `key*`, `*input`, `paste` or `composition*` event; one test per key Pipeup acts on |
+| Focus and Tab order break (Tab into, out of, Shift+Tab)                    | The existing focus and keyboard tests, run in the extension build too                                                                                                       |
+| The @mention list is placed wrongly (caret position from another document) | A test opens the list after `@` at the start, middle and end of a line                                                                                                      |
+| Input methods (Japanese, Chinese), dictation, spelling                     | Hand checklist steps per browser                                                                                                                                            |
+| Safari: a frame of the extension in a page                                 | The hand checklist in Safari; `safari-web-extension://` frames are allowed for web-accessible pages                                                                         |
+| Size: the core grows                                                       | The seam is small (a factory and the composer reading through it); budget checked by `npm run check`                                                                        |
+| A page frames `typing.html` itself                                         | A test frames it from the page and finds it inert                                                                                                                           |
 
 ## Not in this change
 
