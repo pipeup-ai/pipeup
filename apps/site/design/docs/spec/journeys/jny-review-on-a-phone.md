@@ -11,12 +11,12 @@ Maya reviews a page on her phone as easily as on her laptop: one tap picks, the 
 ### Open the page on a phone
 ![Open the page on a phone](../../references/screens/jny-review-on-a-phone/open-on-phone--default--phone--dark.png)
 
-- **FR-022** On a touch screen the control is at least 44 px square, every tap Pipeup answers works the first time, and the menu opens and closes by tap alone.
+- **FR-022** On a touch screen the control is at least 44 px square, every tap Pipeup answers works the first time, one tap starts commenting, and the menu opens from a press-and-hold and closes by tap alone.
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-open-on-phone-1** (FR-022): Given a 390 × 844 touch screen, when the page renders, then the page never scrolls sideways, the tag is at least 44 px square at the bottom-right corner, and nothing else of Pipeup's shows. _(proven in the prototype, 2026-11-10)_
-- **AC-open-on-phone-2** (FR-022): Given the tag, when Maya taps it, then the menu opens above it and fits in the screen. _(proven in the prototype, 2026-11-10)_
+- **AC-open-on-phone-1** (FR-022): Given a 390 × 844 touch screen, when the page renders, then the page never scrolls sideways, the tag is at least 44 px square at the bottom-right corner, and nothing else of Pipeup's shows. _(proven in the prototype, 2026-11-26)_
+- **AC-open-on-phone-2** (FR-022): Given the tag, when Maya taps it, then comment mode is on; when she presses and holds it, the menu opens above it and fits in the screen. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -27,8 +27,8 @@ Maya reviews a page on her phone as easily as on her laptop: one tap picks, the 
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-tap-to-comment-1** (FR-028): Given comment mode on a 390 × 844 touch screen, when Maya taps the second paragraph, then it is outlined and the comment box opens below it with the cursor in it, and no second tap is needed. _(proven in the prototype, 2026-11-10)_
-- **AC-tap-to-comment-2** (FR-028): Given the box with words, when she presses Enter, then the thread sits below the paragraph and the page never scrolls sideways. _(proven in the prototype, 2026-11-10)_
+- **AC-tap-to-comment-1** (FR-028): Given comment mode on a 390 × 844 touch screen, when Maya taps the second paragraph, then it is outlined and the comment box opens below it with the cursor in it, and no second tap is needed. _(proven in the prototype, 2026-11-26)_
+- **AC-tap-to-comment-2** (FR-028): Given the box with words, when she presses Enter, then the thread sits below the paragraph and the page never scrolls sideways. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -39,8 +39,8 @@ Maya reviews a page on her phone as easily as on her laptop: one tap picks, the 
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-all-comments-on-phone-1** (FR-029): Given three threads on a 390 × 844 screen, when Maya opens All comments, then the panel is as wide as the screen, the page is not visible beside it, and the three cards show with the words they are about. _(proven in the prototype, 2026-11-10)_
-- **AC-all-comments-on-phone-2** (FR-029): Given the panel, when she presses Close, then the page is back and the tag is in its corner. _(proven in the prototype, 2026-11-10)_
+- **AC-all-comments-on-phone-1** (FR-029): Given three threads on a 390 × 844 screen, when Maya opens All comments, then the panel is as wide as the screen, the page is not visible beside it, and the three cards show with the words they are about. _(proven in the prototype, 2026-11-26)_
+- **AC-all-comments-on-phone-2** (FR-029): Given the panel, when she presses Close, then the page is back and the tag is in its corner. _(proven in the prototype, 2026-11-26)_
 
 </details>
 

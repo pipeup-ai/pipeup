@@ -19,9 +19,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-add-your-name-1** (FR-011): Given the menu open, when Maya chooses the edit mark, then the first row becomes a text field holding her current name with the cursor at its end, and the menu stays open. _(proven in the prototype, 2026-11-10)_
-- **AC-add-your-name-2** (FR-011): Given the field, when she types a name and presses Enter, then the row shows that name with the edit mark, and every card on the page shows it. _(proven in the prototype, 2026-11-10)_
-- **AC-add-your-name-3** (FR-011): Given the field, when she presses Esc, then the row shows the name she had and the menu is still open. _(proven in the prototype, 2026-11-10)_
+- **AC-add-your-name-1** (FR-011): Given the menu open, when Maya chooses the edit mark, then the first row becomes a text field holding her current name with the cursor at its end, and the menu stays open. _(proven in the prototype, 2026-11-26)_
+- **AC-add-your-name-2** (FR-011): Given the field, when she types a name and presses Enter, then the row shows that name with the edit mark, and every card on the page shows it. _(proven in the prototype, 2026-11-26)_
+- **AC-add-your-name-3** (FR-011): Given the field, when she presses Esc, then the row shows the name she had and the menu is still open. _(proven in the prototype, 2026-11-26)_
 
 </details>
 

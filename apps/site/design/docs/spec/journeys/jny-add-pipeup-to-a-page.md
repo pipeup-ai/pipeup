@@ -11,12 +11,12 @@ Tom turns his HTML page into a reviewable one with one line, and knows before se
 ### Add the script tag and the key
 ![Add the script tag and the key](../../references/screens/jny-add-pipeup-to-a-page/add-the-script--default--desktop--dark.png)
 
-- **FR-024** An author adds Pipeup with one pinned script tag and one document key, both copied whole from one page, and the key is made once and kept.
+- **FR-024** An author adds Pipeup with one pinned script tag, copied whole from one page; a document key, made once and kept, is offered beside it and is what keeps every copy of the file one document, but the script line alone already starts Pipeup.
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-add-the-script-1** (FR-024): Given the page, when Tom presses Copy on the script block, then the clipboard holds exactly the script tag with its pinned version and integrity, and the button reads "Copied". _(proven in the prototype, 2026-11-10)_
-- **AC-add-the-script-2** (FR-024): Given the page, when it is read, then it offers exactly two things to copy, the key attribute and the script tag, and one way to make a key. _(proven in the prototype, 2026-11-10)_
+- **AC-add-the-script-1** (FR-024): Given the page, when Tom presses Copy on the script block, then the clipboard holds exactly the script tag with its pinned version and integrity, and the button reads "Copied". _(proven in the prototype, 2026-11-26)_
+- **AC-add-the-script-2** (FR-024): Given the page, when it is read, then it offers exactly two things to copy, the key attribute and the script tag, and one way to make a key. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -31,9 +31,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-check-the-page-1** (FR-027): Given the command, when Tom presses Copy, then the clipboard holds exactly the command with no prompt. _(proven in the prototype, 2026-11-10)_
-- **AC-check-the-page-2** (FR-027): Given a page that passes, when the report renders, then it lists 390, 820 and 1280 each with "nothing covered, nothing changed" and ends "ready to review". _(proven in the prototype, 2026-11-10)_
-- **AC-check-the-page-3** (FR-027): Given a page whose footer link the tag covers at 1280, when the report renders, then it names the link and the fix. _(proven in the prototype, 2026-11-10)_
+- **AC-check-the-page-1** (FR-027): Given the command, when Tom presses Copy, then the clipboard holds exactly the command with no prompt. _(proven in the prototype, 2026-11-26)_
+- **AC-check-the-page-2** (FR-027): Given a page that passes, when the report renders, then it lists 390, 820 and 1280 each with "nothing covered, nothing changed" and ends "ready to review". _(proven in the prototype, 2026-11-26)_
+- **AC-check-the-page-3** (FR-027): Given a page whose footer link the tag covers at 1280, when the report renders, then it names the link and the fix. _(proven in the prototype, 2026-11-26)_
 
 </details>
 

@@ -4,98 +4,108 @@
 /* Color foundation. Setting: theme (light | dark | contrast). Default: light.
    Every theme block defines every token (parity). Values are hex so contrast can be computed.
    Raw colour values live only here; components and screens use var(--ds-color-*).
-   The palette is paper and ink, 1978: cream paper, brown-black ink, burnt orange for the one action,
-   and faded print tones for status. Dark is the same print under a desk lamp. */
+   The palette is Pipeup's own, shared with the website and the library: white paper with a warm grey, dark grey ink,
+   violet for the one action, and quiet status tones. Dark is Pipeup's dark look. */
 
 .ds-root,
 .ds-root[data-ds-theme="light"] {
   color-scheme: light;
-  /* surfaces: paper */
-  --ds-color-surface-default: #F3EBD9;
-  --ds-color-surface-raised: #FBF6EA;
-  --ds-color-surface-sunken: #EADFC7;
-  --ds-color-surface-canvas: #E1D4B6;
-  --ds-color-surface-strong: #2A1F14;
-  --ds-color-neutral-surface: #E6DBC2;
-  /* text: ink */
-  --ds-color-text-default: #2A1F14;
-  --ds-color-text-muted: #5E4E3A;
+  /* surfaces: Pipeup's paper */
+  --ds-color-surface-default: #FFFFFF;
+  --ds-color-surface-raised: #FFFFFF;
+  --ds-color-surface-sunken: #F7F6F3;
+  --ds-color-surface-canvas: #F1EFE8;
+  --ds-color-surface-strong: #2F3437;
+  --ds-color-neutral-surface: #ECEBE6;
+  /* text: Pipeup's ink */
+  --ds-color-text-default: #2F3437;
+  --ds-color-text-muted: #5F5E5A;
   --ds-color-text-on-accent: #FFFFFF;
-  --ds-color-text-on-strong: #F3EBD9;
-  --ds-color-text-on-strong-muted: #C9B99A;
-  /* lines: a ruled line, and the hard ink line */
-  --ds-color-border-default: #D6C7A6;
-  --ds-color-border-strong: #2A1F14;
-  /* action: burnt orange */
-  --ds-color-accent: #B4411A;
-  --ds-color-accent-hover: #9A3614;
-  --ds-color-accent-pressed: #7E2C10;
-  --ds-color-focus-ring: #1F5F78;
-  /* the AI ring: decoration only, never text; print inks */
-  --ds-color-ai-1: #7E2C10;
-  --ds-color-ai-2: #1F5F78;
-  --ds-color-ai-3: #6B8A1F;
-  --ds-color-ai-4: #D59A1E;
-  --ds-color-ai-5: #B4411A;
-  /* status: faded print tones, each beside a word */
-  --ds-color-neutral-mark: #8C7A5E;
-  --ds-color-status-info: #1B536A;
-  --ds-color-status-info-surface: #DCE7E6;
-  --ds-color-status-info-mark: #2E7D9A;
-  --ds-color-status-success: #3F5A12;
-  --ds-color-status-success-surface: #E2E6CE;
-  --ds-color-status-success-mark: #6B8A1F;
-  --ds-color-status-warning: #7A4E00;
-  --ds-color-status-warning-surface: #F5E3B8;
-  --ds-color-status-warning-mark: #D59A1E;
-  --ds-color-status-danger: #962516;
-  --ds-color-status-danger-surface: #F1DCD2;
-  --ds-color-status-danger-mark: #C8402A;
+  --ds-color-text-on-strong: #FFFFFF;
+  --ds-color-text-on-strong-muted: #C4C2B9;
+  /* lines */
+  --ds-color-border-default: #E5E3DA;
+  --ds-color-border-strong: #2F3437;
+  /* action: Pipeup's violet */
+  --ds-color-accent: #534AB7;
+  --ds-color-accent-hover: #463EA3;
+  --ds-color-accent-pressed: #3A3390;
+  --ds-color-focus-ring: #534AB7;
+  --ds-color-accent-surface: #ECE9FB;
+  /* the AI ring: decoration only, never text */
+  --ds-color-ai-1: #534AB7;
+  --ds-color-ai-2: #1264A3;
+  --ds-color-ai-3: #2E7D4F;
+  --ds-color-ai-4: #9A6A12;
+  --ds-color-ai-5: #8F5FD6;
+  /* window controls, for a drawn browser window */
+  --ds-color-window-close: #FF5F57;
+  --ds-color-window-minimise: #FEBC2E;
+  --ds-color-window-zoom: #28C840;
+  /* status: quiet tones, each beside a word */
+  --ds-color-neutral-mark: #8F8D84;
+  --ds-color-status-info: #1B4F7A;
+  --ds-color-status-info-surface: #EAF2F9;
+  --ds-color-status-info-mark: #1264A3;
+  --ds-color-status-success: #2A5C3B;
+  --ds-color-status-success-surface: #EAF4EC;
+  --ds-color-status-success-mark: #2E7D4F;
+  --ds-color-status-warning: #6E4A0A;
+  --ds-color-status-warning-surface: #FBF3DB;
+  --ds-color-status-warning-mark: #B9800F;
+  --ds-color-status-danger: #8A2E22;
+  --ds-color-status-danger-surface: #FBEBE8;
+  --ds-color-status-danger-mark: #B4432F;
 }
 
 .ds-root[data-ds-theme="dark"] {
   color-scheme: dark;
-  /* surfaces: the desk at night */
-  --ds-color-surface-default: #1E1A14;
-  --ds-color-surface-raised: #2A251C;
-  --ds-color-surface-sunken: #15120D;
-  --ds-color-surface-canvas: #0F0D0A;
-  --ds-color-surface-strong: #3A3326;
-  --ds-color-neutral-surface: #3A3326;
-  /* text: lamp-lit paper */
-  --ds-color-text-default: #F1E6CC;
-  --ds-color-text-muted: #BFB092;
-  --ds-color-text-on-accent: #1E1A14;
-  --ds-color-text-on-strong: #F1E6CC;
-  --ds-color-text-on-strong-muted: #BFB092;
+  /* surfaces: Pipeup's dark look */
+  --ds-color-surface-default: #1B1B19;
+  --ds-color-surface-raised: #22221F;
+  --ds-color-surface-sunken: #161614;
+  --ds-color-surface-canvas: #111110;
+  --ds-color-surface-strong: #ECEBE6;
+  --ds-color-neutral-surface: #2C2C29;
+  /* text */
+  --ds-color-text-default: #ECEBE6;
+  --ds-color-text-muted: #B4B2A9;
+  --ds-color-text-on-accent: #1B1B19;
+  --ds-color-text-on-strong: #1B1B19;
+  --ds-color-text-on-strong-muted: #5F5E5A;
   /* lines */
-  --ds-color-border-default: #3F3729;
-  --ds-color-border-strong: #F1E6CC;
-  /* action: amber */
-  --ds-color-accent: #F2A25A;
-  --ds-color-accent-hover: #F7B679;
-  --ds-color-accent-pressed: #D98A42;
-  --ds-color-focus-ring: #7FC4DE;
+  --ds-color-border-default: #3A3936;
+  --ds-color-border-strong: #ECEBE6;
+  /* action: the violet, lifted for dark */
+  --ds-color-accent: #9A92EE;
+  --ds-color-accent-hover: #ACA5F3;
+  --ds-color-accent-pressed: #8A82E0;
+  --ds-color-focus-ring: #9A92EE;
+  --ds-color-accent-surface: #2B2840;
   /* the AI ring */
-  --ds-color-ai-1: #F2A25A;
-  --ds-color-ai-2: #7FC4DE;
-  --ds-color-ai-3: #BFD77F;
-  --ds-color-ai-4: #F2CF7C;
-  --ds-color-ai-5: #F4A08E;
+  --ds-color-ai-1: #9A92EE;
+  --ds-color-ai-2: #6FB3E6;
+  --ds-color-ai-3: #6FC394;
+  --ds-color-ai-4: #D9A94A;
+  --ds-color-ai-5: #B9A4F0;
+  /* window controls */
+  --ds-color-window-close: #FF5F57;
+  --ds-color-window-minimise: #FEBC2E;
+  --ds-color-window-zoom: #28C840;
   /* status */
-  --ds-color-neutral-mark: #8C7A5E;
-  --ds-color-status-info: #8FCBE3;
-  --ds-color-status-info-surface: #1C3340;
-  --ds-color-status-info-mark: #4AA3C6;
-  --ds-color-status-success: #BFD77F;
-  --ds-color-status-success-surface: #283418;
-  --ds-color-status-success-mark: #8EB83A;
-  --ds-color-status-warning: #F2CF7C;
-  --ds-color-status-warning-surface: #3D2F12;
-  --ds-color-status-warning-mark: #D59A1E;
-  --ds-color-status-danger: #F4A08E;
-  --ds-color-status-danger-surface: #3F1C14;
-  --ds-color-status-danger-mark: #E0634B;
+  --ds-color-neutral-mark: #9A9892;
+  --ds-color-status-info: #9CCBF0;
+  --ds-color-status-info-surface: #1A2A38;
+  --ds-color-status-info-mark: #6FB3E6;
+  --ds-color-status-success: #9FD9B3;
+  --ds-color-status-success-surface: #1B2E22;
+  --ds-color-status-success-mark: #6FC394;
+  --ds-color-status-warning: #E9C877;
+  --ds-color-status-warning-surface: #332A14;
+  --ds-color-status-warning-mark: #D9A94A;
+  --ds-color-status-danger: #F0A08E;
+  --ds-color-status-danger-surface: #3A1F1A;
+  --ds-color-status-danger-mark: #E8826F;
 }
 
 .ds-root[data-ds-theme="contrast"] {
@@ -117,16 +127,21 @@
   --ds-color-border-default: #6B6B6B;
   --ds-color-border-strong: #000000;
   /* action */
-  --ds-color-accent: #8A2E0E;
-  --ds-color-accent-hover: #6E2409;
-  --ds-color-accent-pressed: #521A06;
+  --ds-color-accent: #3A3390;
+  --ds-color-accent-hover: #2E2873;
+  --ds-color-accent-pressed: #231E59;
   --ds-color-focus-ring: #0038C7;
+  --ds-color-accent-surface: #E3E0F7;
   /* the AI ring */
-  --ds-color-ai-1: #521A06;
+  --ds-color-ai-1: #3A3390;
   --ds-color-ai-2: #0038C7;
   --ds-color-ai-3: #064F22;
   --ds-color-ai-4: #663000;
-  --ds-color-ai-5: #8A1600;
+  --ds-color-ai-5: #3A3390;
+  /* window controls */
+  --ds-color-window-close: #C62828;
+  --ds-color-window-minimise: #9A6A12;
+  --ds-color-window-zoom: #2E7D32;
   /* status */
   --ds-color-neutral-mark: #4D4D4D;
   --ds-color-status-info: #0A3594;
@@ -150,12 +165,12 @@
 
 .ds-root {
   /* families */
-  --ds-font-family-base: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
-  --ds-font-family-mono: "Courier Prime", "Courier New", Courier, "Nimbus Mono PS", monospace;
+  --ds-font-family-base: "Geist", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
+  --ds-font-family-mono: "Geist Mono", "SF Mono", ui-monospace, Menlo, monospace;
   /* size scale: interface sizes, then display sizes */
   --ds-text-size-xs: 13px;
   --ds-text-size-sm: 15px;
-  --ds-text-size-md: 17px;
+  --ds-text-size-md: 16px;
   --ds-text-size-lg: 19px;
   --ds-text-size-xl: 23px;
   --ds-text-size-2xl: 34px;
@@ -568,19 +583,19 @@
 }
 
 /* ---- design-system/foundations/fdn-radius/foundation.css ---- */
-/* Radius foundation. Setting: radius (square | soft | round). Default: square.
-   Every preset defines every token (parity). Square is the print default: hard corners, with a hair of softening. */
+/* Radius foundation. Setting: radius (square | soft | round). Default: soft.
+   Every preset defines every token (parity). Soft is Pipeup's own: 8 px controls, 14 px surfaces, round pills. */
 
-.ds-root,
 .ds-root[data-ds-radius="square"] {
   --ds-radius-control: 1px;
   --ds-radius-surface: 2px;
   --ds-radius-pill: 2px;
 }
 
+.ds-root,
 .ds-root[data-ds-radius="soft"] {
-  --ds-radius-control: 6px;
-  --ds-radius-surface: 10px;
+  --ds-radius-control: 8px;
+  --ds-radius-surface: 14px;
   --ds-radius-pill: 999px;
 }
 
@@ -615,10 +630,10 @@
   --ds-focus-width: 2px;
   --ds-focus-offset: 2px;
   /* depth */
-  --ds-shadow-raised: 2px 2px 0 #2A1F14;
-  --ds-shadow-lifted: 4px 4px 0 #2A1F14;
-  --ds-shadow-overlay: 4px 4px 0 #2A1F14;
-  --ds-shadow-frame: 6px 6px 0 #2A1F14;
+  --ds-shadow-raised: 0 1px 2px rgba(47, 52, 55, 0.08), 0 4px 12px rgba(47, 52, 55, 0.06);
+  --ds-shadow-lifted: 0 8px 28px rgba(47, 52, 55, 0.14);
+  --ds-shadow-overlay: 0 12px 36px rgba(47, 52, 55, 0.18);
+  --ds-shadow-frame: 0 24px 60px rgba(47, 52, 55, 0.16);
   --ds-opacity-disabled: 0.45;
   --ds-opacity-glow: 0.5;
   --ds-blur-glow: 10px;
@@ -1002,6 +1017,158 @@
 /* ring: separates the avatar from an overlapping neighbour or a picture underneath */
 .ds-root .ds-avatar--ring {
   box-shadow: 0 0 0 var(--ds-border-width-strong) var(--ds-color-surface-raised);
+}
+
+/* ---- design-system/components/basic/cmp-browser-chrome/component.css ---- */
+/* Browser chrome (Basic · display). A Mac browser window as Safari draws one: the three window dots at the left,
+   back and forward, the address in a capsule in the middle of the bar, Pipeup's toolbar button at the end, and the
+   page below. Values come only from foundation tokens; the build scopes every rule under
+   .ds-root. States: the button's :hover/.is-hover, :focus-visible/.is-focus and [aria-expanded="true"] (open). */
+
+.ds-root .ds-browser-chrome {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  border: var(--ds-border-width) solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-surface);
+  background-color: var(--ds-color-surface-default);
+  box-shadow: var(--ds-shadow-frame);
+}
+
+.ds-root .ds-browser-chrome__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-bottom: var(--ds-border-width) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-surface) var(--ds-radius-surface) 0 0;
+  background-color: var(--ds-color-surface-sunken);
+}
+
+/* the window's dots and the back and forward arrows, as Safari lays them */
+.ds-root .ds-browser-chrome__dots {
+  flex: none;
+  display: inline-flex;
+  gap: var(--ds-space-2);
+  margin-inline-end: var(--ds-space-2);
+}
+
+.ds-root .ds-browser-chrome__dot {
+  width: var(--ds-space-3);
+  height: var(--ds-space-3);
+  border-radius: var(--ds-radius-pill);
+  background-color: var(--ds-color-window-close);
+}
+
+.ds-root .ds-browser-chrome__dot:nth-child(2) { background-color: var(--ds-color-window-minimise); }
+.ds-root .ds-browser-chrome__dot:nth-child(3) { background-color: var(--ds-color-window-zoom); }
+
+.ds-root .ds-browser-chrome__nav {
+  flex: none;
+  display: inline-flex;
+  gap: var(--ds-space-1);
+  color: var(--ds-color-text-muted);
+}
+
+.ds-root .ds-browser-chrome__nav > .ds-icon {
+  width: var(--ds-target-min);
+  height: var(--ds-target-min);
+  padding: var(--ds-space-1);
+  box-sizing: border-box;
+}
+
+.ds-root .ds-browser-chrome__space {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* the address: a capsule in the middle of the bar, as wide as Safari's */
+.ds-root .ds-browser-chrome__address {
+  flex: 0 1 46%;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 var(--ds-space-3);
+  border: var(--ds-border-width) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-control);
+  background-color: var(--ds-color-surface-raised);
+  color: var(--ds-color-text-default);
+  font-family: var(--ds-font-family-base);
+  font-size: var(--ds-text-size-sm);
+  line-height: var(--ds-target-min);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ds-root .ds-browser-chrome__button {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--ds-target-min);
+  height: var(--ds-target-min);
+  padding: 0;
+  border: var(--ds-border-width) solid transparent;
+  border-radius: var(--ds-radius-control);
+  background-color: transparent;
+  color: var(--ds-color-accent);
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-quick) var(--ds-motion-ease),
+    border-color var(--ds-motion-quick) var(--ds-motion-ease);
+}
+
+.ds-root .ds-browser-chrome__button > .ds-icon {
+  width: var(--ds-target-min);
+  height: var(--ds-target-min);
+  padding: var(--ds-space-1);
+  box-sizing: border-box;
+}
+
+.ds-root .ds-browser-chrome__button:hover,
+.ds-root .ds-browser-chrome__button.is-hover {
+  background-color: var(--ds-color-neutral-surface);
+}
+
+.ds-root .ds-browser-chrome__button:focus-visible,
+.ds-root .ds-browser-chrome__button.is-focus {
+  outline: var(--ds-focus-width) solid var(--ds-color-focus-ring);
+  outline-offset: var(--ds-focus-offset);
+}
+
+.ds-root .ds-browser-chrome__button:active,
+.ds-root .ds-browser-chrome__button.is-pressed,
+.ds-root .ds-browser-chrome__button[aria-expanded="true"] {
+  background-color: var(--ds-color-neutral-surface);
+}
+
+/* the badge: open comments on this page, or "on" */
+.ds-root .ds-browser-chrome__badge {
+  position: absolute;
+  top: calc(var(--ds-space-1) * -1);
+  right: calc(var(--ds-space-1) * -1);
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--ds-space-4);
+  height: var(--ds-space-4);
+  padding: 0 var(--ds-space-1);
+  border-radius: var(--ds-radius-pill);
+  background-color: var(--ds-color-accent);
+  color: var(--ds-color-text-on-accent);
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-text-size-xs);
+  font-weight: var(--ds-text-weight-strong);
+  line-height: 1;
+  transition: opacity var(--ds-motion-quick) var(--ds-motion-ease);
+}
+
+.ds-root .ds-browser-chrome__page {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: var(--ds-space-8);
+  border-radius: 0 0 var(--ds-radius-surface) var(--ds-radius-surface);
 }
 
 /* ---- design-system/components/basic/cmp-button/component.css ---- */
@@ -1883,6 +2050,48 @@
   outline-offset: var(--ds-focus-offset);
 }
 
+/* more: the ⋯ that opens the menu, a sibling before the control in its row; folded away until the row is pointed at or focused, or its menu is open */
+.ds-root .ds-comment-control__more {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  height: var(--ds-target-min);
+  min-width: 0;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ds-radius-control);
+  background: transparent;
+  color: var(--ds-color-text-muted);
+  cursor: pointer;
+  transition:
+    max-width var(--ds-motion-settle) var(--ds-motion-ease),
+    padding var(--ds-motion-settle) var(--ds-motion-ease),
+    opacity var(--ds-motion-settle) var(--ds-motion-ease),
+    color var(--ds-motion-quick) var(--ds-motion-ease),
+    background-color var(--ds-motion-quick) var(--ds-motion-ease);
+}
+
+.ds-root .ds-stack:hover .ds-comment-control__more,
+.ds-root .ds-stack:focus-within .ds-comment-control__more,
+.ds-root .ds-stack:has(.is-hover) .ds-comment-control__more,
+.ds-root .ds-stack:has(.is-focus) .ds-comment-control__more,
+.ds-root .ds-comment-control__more[aria-expanded="true"] {
+  max-width: var(--ds-target-min);
+  min-width: var(--ds-target-min);
+  opacity: 1;
+}
+
+.ds-root .ds-comment-control__more:hover { color: var(--ds-color-text-default); background-color: var(--ds-color-surface-sunken); }
+.ds-root .ds-comment-control__more:focus-visible { outline: var(--ds-focus-width) solid var(--ds-color-focus-ring); outline-offset: var(--ds-focus-offset); }
+.ds-root .ds-comment-control__more > .ds-icon { width: var(--ds-target-min); height: var(--ds-target-min); padding: var(--ds-space-1); box-sizing: border-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-root .ds-comment-control__more { transition: none; }
+}
+
 /* on: comment mode; the tag takes the spot colour */
 .ds-root .ds-comment-control[aria-pressed="true"] {
   background-color: var(--ds-color-accent);
@@ -1905,6 +2114,12 @@
   border-block-end: 0;
   border-radius: var(--ds-radius-surface) 0 0 0;
   box-shadow: none;
+}
+
+/* in a row with the More button (and a menu), the row's end alignment places it; the auto margin would shove the
+   row's other children to the far left */
+.ds-root .ds-stack--horizontal > .ds-comment-control--corner {
+  margin-inline-start: 0;
 }
 
 /* with a count, the mark steps aside */
@@ -2125,8 +2340,8 @@
   padding: 0;
   border: 0;
   border-radius: var(--ds-radius-control);
-  background-color: var(--ds-color-status-warning-surface);
-  box-shadow: 0 0 0 var(--ds-space-1) var(--ds-color-status-warning-surface);
+  background-color: var(--ds-color-accent-surface);
+  box-shadow: 0 0 0 var(--ds-space-1) var(--ds-color-accent-surface);
   color: inherit;
   font: inherit;
   line-height: inherit;
@@ -2135,7 +2350,8 @@
   transition:
     opacity var(--ds-motion-settle) var(--ds-motion-ease),
     background-color var(--ds-motion-quick) var(--ds-motion-ease),
-    box-shadow var(--ds-motion-quick) var(--ds-motion-ease);
+    box-shadow var(--ds-motion-quick) var(--ds-motion-ease),
+    color var(--ds-motion-quick) var(--ds-motion-ease);
 }
 
 /* arriving (one frame): the wash fades in */
@@ -2146,8 +2362,9 @@
 
 .ds-root .ds-highlight:hover,
 .ds-root .ds-highlight.is-hover {
-  background-color: var(--ds-color-status-warning-mark);
-  box-shadow: 0 0 0 var(--ds-space-1) var(--ds-color-status-warning-mark);
+  background-color: var(--ds-color-accent);
+  box-shadow: 0 0 0 var(--ds-space-1) var(--ds-color-accent);
+  color: var(--ds-color-text-on-accent);
 }
 
 .ds-root .ds-highlight:focus-visible,
@@ -3385,7 +3602,11 @@
   flex-direction: column;
   width: var(--ds-layout-panel);
   max-width: 100%;
-  height: 100%;
+  position: sticky;
+  inset-block-start: 0;
+  align-self: start;
+  height: 100vh;
+  max-height: 100vh;
   min-height: 0;
   border-inline-start: var(--ds-border-width) solid var(--ds-color-border-strong);
   background-color: var(--ds-color-surface-default);
@@ -3526,7 +3747,7 @@
   max-width: 100%;
   height: var(--ds-control-height);
   padding-inline-start: var(--ds-space-3);
-  border: var(--ds-border-width) solid var(--ds-color-border-strong);
+  border: var(--ds-border-width) solid var(--ds-color-accent);
   border-block-end: 0;
   border-radius: var(--ds-radius-control) var(--ds-radius-control) 0 0;
   background-color: var(--ds-color-surface-raised);
@@ -3566,8 +3787,10 @@
 }
 
 .ds-root .ds-naming-bar__target {
-  outline: var(--ds-border-width-strong) dashed var(--ds-color-border-strong);
+  outline: var(--ds-border-width-strong) solid var(--ds-color-accent);
   outline-offset: var(--ds-space-1);
+  border-radius: var(--ds-radius-control);
+  background-color: var(--ds-color-accent-surface);
   transition: outline-color var(--ds-motion-settle) var(--ds-motion-ease);
 }
 

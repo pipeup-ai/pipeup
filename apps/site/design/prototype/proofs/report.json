@@ -1,12 +1,12 @@
 {
-  "date": "2026-11-10",
-  "source": "e2b6658a",
-  "build": "115eb0b2",
-  "runner": "Playwright, Chromium, 1440 × 900 unless a proof says otherwise",
+  "date": "2026-11-26",
+  "source": "8de84127",
+  "build": "058a6b30",
+  "runner": "Playwright 1.63.0, Chromium, 1440 × 900 unless a proof says otherwise",
   "totals": {
-    "pass": 73,
+    "pass": 85,
     "fail": 0,
-    "untested": 1
+    "untested": 3
   },
   "results": [
     {
@@ -158,6 +158,126 @@
       ],
       "status": "pass",
       "shot": "AC-content-gone-2.jpg"
+    },
+    {
+      "id": "AC-turn-on-in-safari-1",
+      "journey": "jny-comment-in-safari",
+      "step": "turn-on-in-safari",
+      "frs": [
+        "FR-030"
+      ],
+      "status": "pass",
+      "shot": "AC-turn-on-in-safari-1.jpg"
+    },
+    {
+      "id": "AC-turn-on-in-safari-2",
+      "journey": "jny-comment-in-safari",
+      "step": "turn-on-in-safari",
+      "frs": [
+        "FR-030"
+      ],
+      "status": "pass",
+      "shot": "AC-turn-on-in-safari-2.jpg"
+    },
+    {
+      "id": "AC-press-pipeup-1",
+      "journey": "jny-comment-in-safari",
+      "step": "press-pipeup",
+      "frs": [
+        "FR-031"
+      ],
+      "status": "pass",
+      "shot": "AC-press-pipeup-1.jpg"
+    },
+    {
+      "id": "AC-press-pipeup-2",
+      "journey": "jny-comment-in-safari",
+      "step": "press-pipeup",
+      "frs": [
+        "FR-031"
+      ],
+      "status": "pass",
+      "shot": "AC-press-pipeup-2.jpg"
+    },
+    {
+      "id": "AC-allow-once-1",
+      "journey": "jny-comment-in-safari",
+      "step": "allow-once",
+      "frs": [
+        "FR-032"
+      ],
+      "status": "pass",
+      "shot": "AC-allow-once-1.jpg"
+    },
+    {
+      "id": "AC-allow-once-2",
+      "journey": "jny-comment-in-safari",
+      "step": "allow-once",
+      "frs": [
+        "FR-032"
+      ],
+      "status": "pass",
+      "shot": "AC-allow-once-2.jpg"
+    },
+    {
+      "id": "AC-first-comment-1",
+      "journey": "jny-comment-in-safari",
+      "step": "first-comment",
+      "frs": [
+        "FR-033"
+      ],
+      "status": "pass",
+      "shot": "AC-first-comment-1.jpg"
+    },
+    {
+      "id": "AC-first-comment-2",
+      "journey": "jny-comment-in-safari",
+      "step": "first-comment",
+      "frs": [
+        "FR-033"
+      ],
+      "status": "untested",
+      "reason": "the prototype keeps one comment per page; a second comment in the same browser is Review a document's write-comment, where no such line exists"
+    },
+    {
+      "id": "AC-the-menu-1",
+      "journey": "jny-comment-in-safari",
+      "step": "the-menu",
+      "frs": [
+        "FR-034"
+      ],
+      "status": "pass",
+      "shot": "AC-the-menu-1.jpg"
+    },
+    {
+      "id": "AC-the-menu-2",
+      "journey": "jny-comment-in-safari",
+      "step": "the-menu",
+      "frs": [
+        "FR-034"
+      ],
+      "status": "pass",
+      "shot": "AC-the-menu-2.jpg"
+    },
+    {
+      "id": "AC-built-in-page-1",
+      "journey": "jny-comment-in-safari",
+      "step": "built-in-page",
+      "frs": [
+        "FR-035"
+      ],
+      "status": "pass",
+      "shot": "AC-built-in-page-1.jpg"
+    },
+    {
+      "id": "AC-built-in-page-2",
+      "journey": "jny-comment-in-safari",
+      "step": "built-in-page",
+      "frs": [
+        "FR-035"
+      ],
+      "status": "untested",
+      "reason": "the page's own Pipeup taking the shortcut is Review a document's behaviour; here the prototype says so instead of running two Pipeups"
     },
     {
       "id": "AC-all-comments-1",
@@ -340,6 +460,16 @@
       "shot": "AC-open-page-2.jpg"
     },
     {
+      "id": "AC-open-page-3",
+      "journey": "jny-review-a-document",
+      "step": "open-page",
+      "frs": [
+        "FR-001"
+      ],
+      "status": "pass",
+      "shot": "AC-open-page-3.jpg"
+    },
+    {
       "id": "AC-pick-a-block-1",
       "journey": "jny-review-a-document",
       "step": "pick-a-block",
@@ -378,6 +508,16 @@
       ],
       "status": "pass",
       "shot": "AC-pick-a-block-3.jpg"
+    },
+    {
+      "id": "AC-pick-a-block-5",
+      "journey": "jny-review-a-document",
+      "step": "pick-a-block",
+      "frs": [
+        "FR-002"
+      ],
+      "status": "pass",
+      "shot": "AC-pick-a-block-5.jpg"
     },
     {
       "id": "AC-write-comment-1",

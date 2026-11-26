@@ -15,8 +15,8 @@ Maya picks up where she left off: her comments, her name and her choices are kep
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-reopen-page-1** (FR-023): Given three threads made earlier, when the page is reopened in the same browser, then the three cards, the highlight and the pin are back and the tag reads 3. _(proven in the prototype, 2026-11-10)_
-- **AC-reopen-page-2** (FR-023): Given a name given earlier, when the page is reopened, then every card shows it. _(proven in the prototype, 2026-11-10)_
+- **AC-reopen-page-1** (FR-023): Given three threads made earlier, when the page is reopened in the same browser, then the three cards, the highlight and the pin are back and the tag reads 3. _(proven in the prototype, 2026-11-26)_
+- **AC-reopen-page-2** (FR-023): Given a name given earlier, when the page is reopened, then every card shows it. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -30,8 +30,8 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-hide-comments-1** (FR-025): Given three threads showing, when Maya turns on Hide comments, then no card, highlight or pin shows and the tag still reads 3. _(proven in the prototype, 2026-11-10)_
-- **AC-hide-comments-2** (FR-025): Given comments hidden, when she reopens the page, then they are still hidden and the menu row reads On. _(proven in the prototype, 2026-11-10)_
+- **AC-hide-comments-1** (FR-025): Given three threads showing, when Maya turns on Hide comments, then no card, highlight or pin shows and the tag still reads 3. _(proven in the prototype, 2026-11-26)_
+- **AC-hide-comments-2** (FR-025): Given comments hidden, when she reopens the page, then they are still hidden and the menu row reads On. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -40,13 +40,15 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 Wording (text the mock does not show as it is; `{…}` is what the data fills in):
 - "Content gone · was in {section}": above a thread whose content left the page.
+- "Is this the right place?": in the open card of a thread found by looking alike, with Yes, Not here and It's gone; anyone reading can answer, and the answer is kept for everyone.
+- "Click where this comment belongs": comment mode's hint after Not here; the next click moves the thread there, Esc cancels.
 
 - **FR-026** A thread whose content is gone from the page stays listed and counted in All comments, marked as content gone with where it was, and is never dropped or attached to the wrong place.
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-content-gone-1** (FR-026): Given a thread on a paragraph that was cut, when Maya opens All comments, then the thread is listed with "Content gone · was in The river" and the tag counts it. _(proven in the prototype, 2026-11-10)_
-- **AC-content-gone-2** (FR-026): Given that thread, when she copies as Markdown, then the text holds it with where it was. _(proven in the prototype, 2026-11-10)_
+- **AC-content-gone-1** (FR-026): Given a thread on a paragraph that was cut, when Maya opens All comments, then the thread is listed with "Content gone · was in The river" and the tag counts it. _(proven in the prototype, 2026-11-26)_
+- **AC-content-gone-2** (FR-026): Given that thread, when she copies as Markdown, then the text holds it with where it was. _(proven in the prototype, 2026-11-26)_
 
 </details>
 

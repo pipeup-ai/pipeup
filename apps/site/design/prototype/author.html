@@ -10,7 +10,7 @@
 <script defer src="runtime/prototype.js"></script>
 <script defer src="app.js"></script>
 <script defer src="runtime/ds.js"></script>
-<meta name="designup-review" content="{&quot;service&quot;:&quot;https://pipeup-design-reviews.noisyniche8.chatgpt.site&quot;,&quot;project&quot;:&quot;pipeup&quot;,&quot;design&quot;:&quot;https://pipeup-ai.github.io/pipeup/design/&quot;,&quot;page&quot;:&quot;prototype/author.html&quot;,&quot;snapshot&quot;:&quot;e2b6658a&quot;}">
+<meta name="designup-review" content="{&quot;service&quot;:&quot;https://pipeup-design-reviews.noisyniche8.chatgpt.site&quot;,&quot;project&quot;:&quot;pipeup&quot;,&quot;design&quot;:&quot;https://pipeup-ai.github.io/pipeup/design/&quot;,&quot;page&quot;:&quot;prototype/author.html&quot;,&quot;snapshot&quot;:&quot;8de84127&quot;}">
 <link rel="stylesheet" href="../site/assets/review-submit.css">
 <script src="../site/assets/review-auth.js" defer></script>
 <script src="../site/assets/review-submit.js" defer></script>
@@ -62,22 +62,27 @@
     <button class="ds-button ds-button--link" type="button" data-ref="undo" data-pipeup-id="undo" data-undo hidden>Undo</button>
     <div class="ds-inline-alert ds-inline-alert--success" role="status" data-ref="copied-message" data-pipeup-id="copied-message" hidden><span class="ds-icon" data-icon="check"></span><div class="ds-inline-alert__body"><p class="ds-inline-alert__text" data-message></p></div></div>
     <div class="ds-inline-alert ds-inline-alert--error" role="status" data-ref="clipboard-message" data-pipeup-id="clipboard-message" hidden><span class="ds-icon" data-icon="warning"></span><div class="ds-inline-alert__body"><p class="ds-inline-alert__text">The clipboard is blocked here. Your comments are selected below: press <kbd class="ds-kbd" data-copy-key>⌘</kbd> <kbd class="ds-kbd">C</kbd> to copy them.</p></div></div>
+    <div class="ds-inline-alert ds-inline-alert--info" role="status" data-ref="mode-hint" data-pipeup-id="mode-hint" hidden><span class="ds-icon" data-icon="info"></span><div class="ds-inline-alert__body"><p class="ds-inline-alert__text" data-hint-text>Click anything to comment · This button or Esc when you're done</p></div></div>
     <div class="ds-popover-menu" data-ds="popover-menu" data-ref="menu" data-pipeup-id="menu">
-      <button class="ds-comment-control ds-comment-control--corner ds-popover-menu__trigger" type="button" aria-pressed="false" aria-expanded="false" aria-label="No comments yet. Start commenting (Shift+Alt+C)" data-ref="comment-control" data-pipeup-id="comment-control"><span class="ds-comment-control__reach" aria-hidden="true">⇧⌥C</span><span class="ds-icon" data-icon="chat-circle"></span></button>
+      <button class="ds-comment-control__more ds-popover-menu__trigger" type="button" aria-expanded="false" aria-label="Comments menu" data-ref="menu-more" data-pipeup-id="menu-more"><span class="ds-icon" data-icon="dots-three"></span></button>
       <div class="ds-popover-menu__panel" data-ds-flip="up" hidden>
         <ul class="ds-popover-menu__items" aria-label="Comments menu">
-          <li data-name-row><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="name"><span class="ds-avatar ds-avatar--sm" aria-hidden="true"><span class="ds-avatar__initials" data-initials>ML</span></span><span data-name-text>Maya Lindqvist</span><span class="ds-icon" data-icon="pencil-simple"></span></button></li>
+          <li><p class="ds-text-caption ds-text-muted" data-where>Only in this browser until you send them.</p></li>
+                    <li data-name-row><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="name"><span class="ds-avatar ds-avatar--sm" aria-hidden="true"><span class="ds-avatar__initials" data-initials>ML</span></span><span data-name-text>Maya Lindqvist</span><span class="ds-icon" data-icon="pencil-simple"></span></button></li>
           <li data-name-edit hidden><div class="ds-popover-menu__item ds-text-field" data-ref="name-field" data-pipeup-id="name-field"><span class="ds-avatar ds-avatar--sm" aria-hidden="true"><span class="ds-avatar__initials" data-initials>ML</span></span><label class="ds-text-field__label ds-visually-hidden" for="your-name">Your name</label><input class="ds-text-field__input" id="your-name" type="text" autocomplete="name" data-name-input></div></li>
           <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" aria-expanded="false" data-menu="copy"><span class="ds-icon" data-icon="copy"></span>Copy comments<span class="ds-icon" data-icon="caret-up"></span></button></li>
           <li data-copy-choice hidden><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-ref="as-markdown" data-pipeup-id="as-markdown" data-menu="markdown"><span class="ds-icon" data-icon="file-md"></span><span data-label>As Markdown</span></button></li>
           <li data-copy-choice hidden><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="text"><span class="ds-icon" data-icon="text-aa"></span><span data-label>As text</span></button></li>
           <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="theme"><span class="ds-icon" data-icon="sun"></span>Theme · <span data-theme-label>Automatic</span></button></li>
           <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="all"><span class="ds-icon" data-icon="list-bullets"></span>All comments · <span data-count>0</span></button></li>
+          <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-menu="agent"><span class="ds-icon" data-icon="copy"></span><span data-label>Copy for my agent</span></button></li>
+          <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-gap="Paste my agent's replies: the paste, what it found and the agreement are described, not designed as a screen"><span class="ds-icon" data-icon="chat-circle"></span>Paste my agent's replies</button></li>
           <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" aria-pressed="false" data-menu="hide"><span class="ds-icon" data-icon="eye-slash"></span>Hide comments · <span data-hide-label>Off</span></button></li>
           <li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" aria-pressed="false" data-menu="mode"><span class="ds-icon" data-icon="chat-circle"></span>Start commenting · <span data-mode-label>Off</span><kbd class="ds-kbd" data-shortcut>⇧⌥C</kbd></button></li>
         </ul>
       </div>
     </div>
+    <button class="ds-comment-control ds-comment-control--corner" type="button" aria-pressed="false" aria-label="No comments yet. Start commenting (Shift+Alt+C)" data-ref="comment-control" data-pipeup-id="comment-control"><span class="ds-comment-control__reach" aria-hidden="true">⇧⌥C</span><span class="ds-icon" data-icon="chat-circle"></span></button>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/pipeup@0.9.1/dist/pipeup.min.js" integrity="sha384-A6m3XDf/DuMdxZzBxiaOfI8Oh73SEulupUD+WbjpkccThkVzz5Je66PSeVj5LtGk" crossorigin="anonymous"></script>

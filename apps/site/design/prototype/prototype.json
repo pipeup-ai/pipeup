@@ -30,15 +30,23 @@
     "jny-come-back-later/hide-comments": "review.html#hide-comments",
     "jny-come-back-later/content-gone": "review.html#content-gone",
     "jny-add-pipeup-to-a-page/add-the-script": "setup.html",
-    "jny-add-pipeup-to-a-page/check-the-page": "setup.html#check-the-page"
+    "jny-add-pipeup-to-a-page/check-the-page": "setup.html#check-the-page",
+    "jny-comment-in-safari/turn-on-in-safari": "safari.html#turn-on-in-safari",
+    "jny-comment-in-safari/press-pipeup": "safari.html#press-pipeup",
+    "jny-comment-in-safari/allow-once": "safari.html#allow-once",
+    "jny-comment-in-safari/first-comment": "safari.html#first-comment",
+    "jny-comment-in-safari/the-menu": "safari.html#the-menu",
+    "jny-comment-in-safari/built-in-page": "safari.html#built-in-page"
   },
   "outside": [],
   "clock": "2026-10-28T10:47",
   "questions": [
-    "The check's failing report (check-the-page, error state) is at setup.html#check-the-page-error: the prototype cannot run a real check, so the bar's map reaches the pass and the view holds the failure."
+    "The check's failing report (check-the-page, error state) is at setup.html#check-the-page-error: the prototype cannot run a real check, so the bar's map reaches the pass and the view holds the failure.",
+    "Safari (safari.html): Your comments on this page, More, the thread opening to read and the page's own Pipeup on a built-in page are the other journeys' screens; the prototype names them as gaps rather than drawing them twice.",
+    "Safari (safari.html): Add your name sets a sample name (the in-place field is Say who you are's screen)."
   ],
-  "source": "e2b6658a",
-  "built": "2026-11-10",
+  "source": "8de84127",
+  "built": "2026-11-26",
   "layer": {
     "css": [
       "assets/page.css"

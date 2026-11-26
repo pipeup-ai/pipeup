@@ -15,8 +15,8 @@ Maya says what she thinks about each slide of a deck, pointing at exact spots, a
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-open-deck-1** (FR-016): Given the deck opened, when the page renders, then slide 1 of 3 shows with the deck's own Previous, Next and count, and the only thing of Pipeup's is the tag in the corner. _(proven in the prototype, 2026-11-10)_
-- **AC-open-deck-2** (FR-016): Given comment mode on, when Maya presses Next, then slide 2 shows and comment mode is still on. _(proven in the prototype, 2026-11-10)_
+- **AC-open-deck-1** (FR-016): Given the deck opened, when the page renders, then slide 1 of 3 shows with the deck's own Previous, Next and count, and the only thing of Pipeup's is the tag in the corner. _(proven in the prototype, 2026-11-26)_
+- **AC-open-deck-2** (FR-016): Given comment mode on, when Maya presses Next, then slide 2 shows and comment mode is still on. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -27,8 +27,8 @@ Maya says what she thinks about each slide of a deck, pointing at exact spots, a
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-pin-on-a-slide-1** (FR-017): Given slide 2 in comment mode, when Maya Option-clicks the slide, then a pin appears on it, open, and the comment box opens beside the slide with the cursor in it. _(proven in the prototype, 2026-11-10)_
-- **AC-pin-on-a-slide-2** (FR-017): Given the box with words, when she presses Enter, then the pin reads 1 and the tag reads 1. _(proven in the prototype, 2026-11-10)_
+- **AC-pin-on-a-slide-1** (FR-017): Given slide 2 in comment mode, when Maya Option-clicks the slide, then a pin appears on it, open, and the comment box opens beside the slide with the cursor in it. _(proven in the prototype, 2026-11-26)_
+- **AC-pin-on-a-slide-2** (FR-017): Given the box with words, when she presses Enter, then the pin reads 1 and the tag reads 1. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -42,8 +42,8 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-turn-the-slide-1** (FR-018): Given two threads on slide 2, when Maya presses Next, then slide 3 shows no pin and no card, and the tag shows its mark with the label "0 here · 2 on other slides". _(proven in the prototype, 2026-11-10)_
-- **AC-turn-the-slide-2** (FR-018): Given slide 3, when she presses Previous, then slide 2's two pins and cards are back and the tag reads 2. _(proven in the prototype, 2026-11-10)_
+- **AC-turn-the-slide-1** (FR-018): Given two threads on slide 2, when Maya presses Next, then slide 3 shows no pin and no card, and the tag shows its mark with the label "0 here · 2 on other slides". _(proven in the prototype, 2026-11-26)_
+- **AC-turn-the-slide-2** (FR-018): Given slide 3, when she presses Previous, then slide 2's two pins and cards are back and the tag reads 2. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -57,8 +57,8 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-comments-by-slide-1** (FR-019): Given threads on slides 2 and 3, when Maya opens All comments on slide 2, then the list shows "Slide 2 · 2 open" marked as this slide, then "Slide 3 · 1 open", each with its threads. _(proven in the prototype, 2026-11-10)_
-- **AC-comments-by-slide-2** (FR-019): Given the panel, when she chooses the slide 3 thread, then the deck turns to slide 3 and that thread opens in the panel. _(proven in the prototype, 2026-11-10)_
+- **AC-comments-by-slide-1** (FR-019): Given threads on slides 2 and 3, when Maya opens All comments on slide 2, then the list shows "Slide 2 · 2 open" marked as this slide, then "Slide 3 · 1 open", each with its threads. _(proven in the prototype, 2026-11-26)_
+- **AC-comments-by-slide-2** (FR-019): Given the panel, when she chooses the slide 3 thread, then the deck turns to slide 3 and that thread opens in the panel. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
