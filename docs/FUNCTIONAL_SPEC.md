@@ -520,6 +520,9 @@ text offer to comment mode (below).
   - **where comments go**, one quiet line (not an item: no tooltip, and the arrow keys pass over it): with plain
     Pipeup, that they stay in this browser until the reviewer sends them; an add-on with something to report puts
     its status there instead (Share's "Shared · up to date", Live's "Live with 2 others");
+  - **Pipeup for your browser** (§7c; *not built*), only where the reviewer's browser has a public extension and until
+    they end the offer: one row, "Pipeup for Chrome" (the browser's name), that opens to the store and to Don't tell
+    me again;
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
     **Add name** or an edit mark at the end; choosing it turns that row into a name field in place
     (no separate box), with the cursor in it. **Enter** or leaving the field saves; **Esc** cancels
@@ -661,6 +664,51 @@ text offer to comment mode (below).
   quick row and still shows every reaction anyone gave. See §19.
 - Fully usable by keyboard and screen reader: each reaction is a button that says the emoji's name,
   how many people gave it and whether you did ("Thumbs up, 3 people, including you").
+
+## 7c. Pipeup for your browser, offered in the menu
+
+*Not built.* Visual spec: [design/extension-invite.html](design/extension-invite.html).
+
+A page with Pipeup built in can tell a reviewer that Pipeup exists for their browser too (the extension,
+[EXTENSION_SPEC.md](EXTENSION_SPEC.md)), so that they can comment on any page, not only this one. The offer is one row
+in Pipeup's own menu, and nothing else: never a toast, a bubble, a badge or anything that opens on its own.
+
+- **The row** is first in the menu, above the name row, and looks like every other row: the browser glyph, "Pipeup
+  for Chrome" (or Safari, Edge, Firefox: the name the stores list it under), and the mark that it opens. Its tooltip
+  says the one reason: "Comment on any page, not only this one." It is not coloured, bold or marked new, and it
+  follows the light and dark looks like any row.
+- **Pressing it opens two choices beneath it**, as Copy comments does (a second press, ←, or Esc folds them; they are
+  folded each time the menu opens):
+  - **Get it from the Chrome Web Store** (or the App Store, Edge Add-ons, Firefox Add-ons), marked as opening a new
+    tab. It opens the store's own listing in a new tab and closes the menu. Its tooltip: "Opens the store in a new
+    tab. Pipeup makes no request itself."
+  - **Don't tell me again.** The row and its choices ease out while the menu stays open, so the reviewer sees them go,
+    and focus moves to the name row. Its tooltip says how far the choice reaches: "Takes this row out of the menu on
+    this site, in this browser."
+- **Either choice ends the offer** on this site in this browser, remembered where Theme and Hide comments are. There
+  is no way back and no "later": the website says where the extension lives. Pipeup keeps nothing across sites and asks
+  no server, so a reviewer who ended the offer on one site may meet the row on another author's page.
+- **The row shows only when all of these hold**, checked each time the menu opens:
+  - the reviewer's browser is one Pipeup has a **public** extension for. The list ships inside Pipeup and changes only
+    with a release: a browser joins it when its store listing is public, so until then, and in every browser not on
+    it, there is no row. Browsers that install from Chrome's store (Brave, Vivaldi, Opera, Arc and others) count as
+    Chrome. The browser's own name decides it, the most specific first (Edge before Chrome), as the extension already
+    does when it chooses which rows to offer; a wrong guess only reaches a store that says the extension isn't for this
+    browser, which is why the choice names the store;
+  - the screen has a pointer or keyboard: on a screen with only touch there is no row, there being no extension for
+    phones and tablets yet;
+  - the page shows Pipeup's own menu. A host that draws the menu itself (the extension's toolbar menu, a page with its
+    own words, §4a) shows no row;
+  - the page's author has left the offer on: `data-pipeup-extension="off"` keeps the row off a page for good, and
+    `pipeup init` never sets it. Nothing else about the row is the page's to change: no other words, no other link;
+  - no one has ended the offer here.
+- **Keyboard.** The row is a stop for the arrow keys like any other; Enter or → opens the choices, Enter chooses, ←
+  or Esc folds them. Screen readers hear a button, "Pipeup for Chrome", expanded or collapsed, then a link and a button.
+- **Network and privacy.** Nothing is fetched and nothing is told to anyone: not that the row was shown, pressed or
+  ended. The store opens as the browser opens any link. Pipeup can't tell whether the extension is already installed
+  (an extension that is off for this page is invisible to it), so the offer leans on being quiet and final.
+- **Size.** The row, its choices, the browser check and the one remembered choice are counted in the size budget
+  (§16a) like any part of Pipeup.
 
 ## 8. Staying attached on changing pages
 
@@ -1841,6 +1889,8 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 8. **The newcomer's first run** (1.1, `next`): one toolbar menu built for the job, the first run and the states after
    the first comment simplified, one shortcut, Safari's app window, and the looks made to read in every browser
    (extension spec, November 2026).
+9. **The extension, offered from the page** (1.2, `next`): a page with Pipeup built in offers the extension in its
+   menu where the browser has a public listing, once (§7c).
 
 ## 19. Open questions
 
@@ -2106,3 +2156,4 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 - 2026-11-25 — §16 and §18 brought up to date: 1.0 is out (the alpha sentence went), and the phases name 1.0 (the extension) and 1.1 (the newcomer's first run).
 - 2026-11-25 — Audited against the code after the extension spec's rewrite: the lines that said built what isn't (a General way to comment, verified people, dictation in an ask, a version lookup in the check, authors turning gestures off) now say not built or are gone; a drawer that was never built is gone; the size and release lines are history, not plans; wording follows the product (For you, Live with 2 others, Let Sam know by mail, an issue not a pull request, replies' ⋯ on your own); the header says 1.0 is out; three open questions decided in the code are closed. Nothing in the product changed.
 - 2026-11-25 — Freshness pass, with the maintainer: promises with no plan behind them are out (verified people, mentions by webhook or mail service, the author's relay with rooms and invites, a version lookup in the check); §13 says no relay is planned; §17 and §19 say less. `pipeup watch` no longer tells 0.6 pages apart (§15c).
+- 2026-11-27 — §7c: a page with Pipeup built in offers the extension in its menu, as one row first from the top ("Pipeup for Chrome"), opening to the store and to Don't tell me again; only where the browser has a public listing, only on Pipeup's own menu, not by touch, off with `data-pipeup-extension="off"`, remembered per site in this browser, no network. Visual spec design/extension-invite.html. §18 names it as 1.2. Not built.
