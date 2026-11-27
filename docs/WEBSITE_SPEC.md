@@ -36,6 +36,12 @@ visitor how to add it. Functional requirements only.
    labels it; on a touch screen, the comment button in the bottom-right corner, then Start commenting, then a tap on
    anything. Under that, a quiet line for people adding Pipeup themselves ("Adding it yourself? The script tag,
    licence and size.") opens The details.
+   **The header** holds the mark and, at its right, **Add to Chrome** (the visitor's browser's name) and the GitHub link.
+   Add to <browser> is there only when the visitor's browser has a public listing of Pipeup for browsers, the same
+   list Pipeup itself uses on a page (functional spec §7c: Chrome today; Safari, Edge and Firefox when their listings
+   are public); it opens that store's listing in a new tab, is drawn quietly as a link with the browser glyph, and in
+   any other browser, on phones and tablets, and without scripts, it isn't there at all. It is the one exception to
+   "no other button" on the first screen, and never the page's main button.
    At phone width the order is: headline, sentence, the try line, the showcase, then the steps, with Copy prompt at
    full width. Reading and keyboard order follow what is shown, and nothing scrolls sideways. The page's Markdown copy
    and llms.txt say the same in words.
@@ -427,3 +433,4 @@ The published design snapshot excludes imported private feedback and decisions. 
 - 2026-11-13: A signed-in visitor may certify a visual asset with or without a suggestion. Before sending, show the exact asset, the private activity summary and the attestation. The owner sees who certified which version, the server receipt time, estimated active time and distinct marked details visited. No background reporting or keystroke history.
 - 2026-11-14: The active visual review uses captures of the published Pipeup product and links to the running pages. Do not show staged examples as current review targets. Preserve old certified images by immutable address.
 - 2026-11-14: Reviewers can export their visual feedback as a readable file without sending it or certifying a review. The file identifies the review, exact asset version, source page and marked detail for each note. Direct private submission remains account-only.
+- 2026-11-27 — The header offers **Add to Chrome** (the browser's name) where the visitor's browser has a public listing of Pipeup for browsers, from the same list the library uses (§7c); nothing elsewhere. The Design & feedback pages wear Pipeup's own mark (the comment bubble) instead of a drawn stand-in and the design system's starter initial, and the public design snapshot is the one at 1.1.0.

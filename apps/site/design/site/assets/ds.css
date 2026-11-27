@@ -590,6 +590,7 @@
   --ds-radius-control: 1px;
   --ds-radius-surface: 2px;
   --ds-radius-pill: 2px;
+  --ds-radius-avatar: 22%;
 }
 
 .ds-root,
@@ -597,12 +598,14 @@
   --ds-radius-control: 8px;
   --ds-radius-surface: 14px;
   --ds-radius-pill: 999px;
+  --ds-radius-avatar: 30%;
 }
 
 .ds-root[data-ds-radius="round"] {
   --ds-radius-control: 999px;
   --ds-radius-surface: 22px;
   --ds-radius-pill: 999px;
+  --ds-radius-avatar: 34%;
 }
 
 /* ---- design-system/foundations/fdn-layout/foundation.css ---- */
@@ -969,7 +972,8 @@
   width: var(--ds-size-avatar-md);
   height: var(--ds-size-avatar-md);
   overflow: hidden;
-  border-radius: var(--ds-radius-pill);
+  border-radius: var(--ds-radius-avatar);
+  corner-shape: squircle;
   background-color: var(--ds-color-neutral-surface);
   color: var(--ds-color-text-muted);
   font-size: var(--ds-text-size-xs);
@@ -1169,6 +1173,16 @@
   flex-direction: column;
   min-height: var(--ds-space-8);
   border-radius: 0 0 var(--ds-radius-surface) var(--ds-radius-surface);
+}
+
+/* what drops from the toolbar button (Safari's permission popover): over the page, at its top end, right under the
+   button; the page does not move. The part only places it: what it holds keeps its own look. */
+.ds-root .ds-browser-chrome__popover {
+  position: absolute;
+  top: var(--ds-space-2);
+  right: var(--ds-space-2);
+  z-index: 1;
+  width: min(calc(100% - var(--ds-space-4)), calc(var(--ds-space-8) * 6));
 }
 
 /* ---- design-system/components/basic/cmp-button/component.css ---- */
@@ -1565,6 +1579,342 @@
   border-color: var(--ds-color-text-muted);
   background-color: var(--ds-color-surface-sunken);
 }
+
+/* ---- design-system/components/basic/cmp-chart/component.css ---- */
+/* Chart (Basic · display). Sourced numbers drawn to compare, densely and exactly: almost all of the ink is data.
+   No gridlines, frames, shaded tracks or legends where a word beside the mark will do; thin marks on a hairline
+   baseline; every value written beside its mark in figures that line up. A visually hidden table carries the same
+   numbers. Values come only from foundation tokens. Lengths and positions that are data are SVG coordinates on a
+   0 to 100 scale; a dot is a zero-length line with a round cap, so it stays round however the plot stretches. */
+
+.ds-root .ds-chart {
+  --ds-chart-mark: var(--ds-color-accent);
+  --ds-chart-rule: var(--ds-color-border-default);
+  --ds-chart-bar: var(--ds-space-2);
+  --ds-chart-cell: var(--ds-space-3);
+  --ds-chart-row-gap: var(--ds-space-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  margin: 0;
+  color: var(--ds-color-text-default);
+  font-size: var(--ds-text-size-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--ds-text-leading-tight);
+}
+
+/* dense: more rows in the same space (a long matrix, a slide's grid) */
+.ds-root .ds-chart--dense {
+  --ds-chart-cell: var(--ds-space-2);
+  --ds-chart-row-gap: 0;
+  font-size: var(--ds-text-size-xs);
+}
+
+.ds-root .ds-chart__title {
+  font-size: var(--ds-text-size-md);
+  font-weight: var(--ds-text-weight-strong);
+}
+
+.ds-root .ds-chart__plot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-chart-row-gap);
+  min-width: 0;
+}
+
+.ds-root .ds-chart__source {
+  margin: 0;
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-size-xs);
+}
+
+/* tones: the status mark colours, always beside a word */
+.ds-root .ds-chart [data-tone="success"] { --ds-chart-mark: var(--ds-color-status-success-mark); }
+.ds-root .ds-chart [data-tone="warning"] { --ds-chart-mark: var(--ds-color-status-warning-mark); }
+.ds-root .ds-chart [data-tone="danger"] { --ds-chart-mark: var(--ds-color-status-danger-mark); }
+.ds-root .ds-chart [data-tone="info"] { --ds-chart-mark: var(--ds-color-status-info-mark); }
+.ds-root .ds-chart [data-tone="neutral"] { --ds-chart-mark: var(--ds-color-border-strong); }
+
+/* ---- rows: bar, dot and slope share them */
+.ds-root .ds-chart__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-chart-row-gap);
+}
+
+.ds-root .ds-chart__group + .ds-chart__group {
+  margin-top: var(--ds-space-2);
+}
+
+.ds-root .ds-chart__group-label {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-size-xs);
+  font-weight: var(--ds-text-weight-medium);
+  letter-spacing: var(--ds-text-tracking-caps);
+  text-transform: uppercase;
+}
+
+.ds-root .ds-chart__row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(var(--ds-space-7), auto);
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-1);
+}
+
+.ds-root .ds-chart__label {
+  min-width: 0;
+  color: var(--ds-color-text-muted);
+}
+
+/* the track holds the mark; its only ink is the hairline baseline at zero */
+.ds-root .ds-chart__track {
+  display: block;
+  width: 100%;
+  height: var(--ds-chart-bar);
+  overflow: visible;
+  border-left: var(--ds-border-width) solid var(--ds-color-text-muted);
+}
+
+.ds-root .ds-chart__base {
+  fill: none;
+}
+
+.ds-root .ds-chart__bar {
+  fill: var(--ds-chart-mark);
+  transition: width var(--ds-motion-settle) var(--ds-motion-ease);
+}
+
+.ds-root .ds-chart__value {
+  color: var(--ds-color-text-default);
+  font-weight: var(--ds-text-weight-medium);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---- dot: each value one dot on a shared hairline scale */
+.ds-root .ds-chart--dot .ds-chart__track,
+.ds-root .ds-chart--slope .ds-chart__track {
+  height: var(--ds-space-4);
+  border-left: 0;
+}
+
+.ds-root .ds-chart__rule {
+  stroke: var(--ds-chart-rule);
+  stroke-width: var(--ds-border-width);
+  vector-effect: non-scaling-stroke;
+}
+
+.ds-root .ds-chart__dot {
+  stroke: var(--ds-chart-mark);
+  stroke-width: var(--ds-size-dot);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ds-root .ds-chart__dot--from {
+  stroke: var(--ds-color-border-strong);
+}
+
+/* ---- slope: before and after on one scale, joined */
+.ds-root .ds-chart--slope .ds-chart__row {
+  grid-template-columns: minmax(0, 2fr) minmax(var(--ds-space-7), auto) minmax(0, 3fr) minmax(var(--ds-space-7), auto);
+}
+
+.ds-root .ds-chart__value--from {
+  color: var(--ds-color-text-muted);
+  font-weight: var(--ds-text-weight-regular);
+}
+
+.ds-root .ds-chart__join {
+  stroke: var(--ds-chart-mark);
+  stroke-width: var(--ds-border-width-strong);
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---- matrix: a label, then one or more groups of marks */
+.ds-root .ds-chart--matrix .ds-chart__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-1) var(--ds-space-3);
+  padding-block: 0;
+}
+
+.ds-root .ds-chart--matrix .ds-chart__label {
+  flex: 0 0 34%;
+}
+
+.ds-root .ds-chart__row--head {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-size-xs);
+  font-weight: var(--ds-text-weight-medium);
+}
+
+.ds-root .ds-chart__cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+}
+
+/* named columns: every row's marks line up under the head row's */
+.ds-root .ds-chart__plot:has(> .ds-chart__row--head) .ds-chart__cells {
+  display: grid;
+  flex: 1 1 0;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  justify-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ds-root .ds-chart__col {
+  text-align: center;
+}
+
+.ds-root .ds-chart__cell {
+  display: block;
+  width: var(--ds-chart-cell);
+  height: var(--ds-chart-cell);
+  box-sizing: border-box;
+  border: var(--ds-border-width) solid var(--ds-chart-mark);
+  border-radius: var(--ds-radius-pill);
+}
+
+.ds-root .ds-chart__cell--yes {
+  background-color: var(--ds-chart-mark);
+}
+
+.ds-root .ds-chart__cell--part {
+  background: linear-gradient(90deg, var(--ds-chart-mark) 50%, transparent 50%);
+}
+
+.ds-root .ds-chart__cell--no {
+  border-color: var(--ds-color-border-strong);
+  background-color: transparent;
+}
+
+/* ---- multiples: the same small chart repeated on one scale */
+.ds-root .ds-chart__multiples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--ds-space-8) * 3), 1fr));
+  gap: var(--ds-space-3) var(--ds-space-5);
+}
+
+.ds-root .ds-chart__multiple {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  padding-top: var(--ds-space-1);
+  border-top: var(--ds-border-width) solid var(--ds-chart-rule);
+}
+
+.ds-root .ds-chart__multiple .ds-chart__label {
+  overflow: hidden;
+  font-size: var(--ds-text-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ds-root .ds-chart__multiple .ds-chart__cells {
+  gap: var(--ds-space-1);
+}
+
+/* ---- timeline */
+.ds-root .ds-chart__events {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--ds-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ds-root .ds-chart__events::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--ds-size-dot) / 2);
+  right: 0;
+  left: 0;
+  border-top: var(--ds-border-width) solid var(--ds-color-text-muted);
+}
+
+.ds-root .ds-chart__event {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding-top: var(--ds-space-4);
+  min-width: 0;
+}
+
+.ds-root .ds-chart__event::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ds-size-dot);
+  height: var(--ds-size-dot);
+  border-radius: var(--ds-radius-pill);
+  background-color: var(--ds-chart-mark);
+}
+
+.ds-root .ds-chart__date {
+  color: var(--ds-color-text-muted);
+  font-family: var(--ds-font-family-mono);
+  font-size: var(--ds-text-size-xs);
+}
+
+/* ---- stack: one thin bar of parts, each named beside its share */
+.ds-root .ds-chart__stack {
+  display: block;
+  width: 100%;
+  height: var(--ds-chart-bar);
+  overflow: visible;
+}
+
+.ds-root .ds-chart__seg {
+  fill: var(--ds-chart-mark);
+  stroke: var(--ds-color-surface-default);
+  stroke-width: var(--ds-border-width-strong);
+  vector-effect: non-scaling-stroke;
+  transition: width var(--ds-motion-settle) var(--ds-motion-ease);
+}
+
+.ds-root .ds-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1) var(--ds-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ds-color-text-muted);
+}
+
+.ds-root .ds-chart__legend > li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ds-space-1);
+}
+
+.ds-root .ds-chart__key {
+  align-self: center;
+  width: var(--ds-size-dot);
+  height: var(--ds-size-dot);
+  border-radius: var(--ds-radius-pill);
+  background-color: var(--ds-chart-mark);
+}
+
+/* untoned parts step down from the accent, so neighbours stay apart; each is named beside its share */
+.ds-root .ds-chart__seg:not([data-tone]):nth-child(2),
+.ds-root .ds-chart__legend > li:not([data-tone]):nth-child(2) .ds-chart__key { opacity: 0.7; }
+.ds-root .ds-chart__seg:not([data-tone]):nth-child(3),
+.ds-root .ds-chart__legend > li:not([data-tone]):nth-child(3) .ds-chart__key { opacity: 0.45; }
+.ds-root .ds-chart__seg:not([data-tone]):nth-child(n+4),
+.ds-root .ds-chart__legend > li:not([data-tone]):nth-child(n+4) .ds-chart__key { opacity: 0.25; }
 
 /* ---- design-system/components/basic/cmp-checkbox/component.css ---- */
 /* Checkbox (Basic · inputs). A native checkbox in the accent colour with its label, hint and error.
@@ -3025,6 +3375,66 @@
   inset-inline-end: var(--ds-space-5);
   display: flex;
   gap: var(--ds-space-2);
+}
+
+/* ---- design-system/components/basic/cmp-sparkline/component.css ---- */
+/* Sparkline (Basic · display). A word-sized chart of one series, set in the line of text: a thin line (or thin bars),
+   the last point marked and written beside it. Values come only from foundation tokens; positions that are data are
+   SVG coordinates, and a mark is a zero-length line with a round cap, so it stays round however the plot stretches. */
+
+.ds-root .ds-sparkline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  vertical-align: middle;
+  color: var(--ds-color-text-default);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ds-root .ds-sparkline__plot {
+  display: block;
+  width: calc(var(--ds-text-size-md) * 5);
+  height: var(--ds-text-size-md);
+  overflow: visible;
+}
+
+.ds-root .ds-sparkline__line {
+  fill: none;
+  stroke: var(--ds-color-text-muted);
+  stroke-width: var(--ds-border-width-strong);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ds-root .ds-sparkline__bar {
+  fill: var(--ds-color-border-strong);
+}
+
+.ds-root .ds-sparkline__bar--last {
+  fill: var(--ds-color-accent);
+}
+
+.ds-root .ds-sparkline__mark {
+  stroke: var(--ds-color-accent);
+  stroke-width: var(--ds-size-dot);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ds-root .ds-sparkline__mark--low,
+.ds-root .ds-sparkline__mark--high {
+  stroke: var(--ds-color-text-muted);
+}
+
+.ds-root .ds-sparkline__value {
+  font-weight: var(--ds-text-weight-medium);
+}
+
+.ds-root .ds-sparkline__range {
+  color: var(--ds-color-text-muted);
+  font-size: var(--ds-text-size-xs);
 }
 
 /* ---- design-system/components/basic/cmp-status-pill/component.css ---- */

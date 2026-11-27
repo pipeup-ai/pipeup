@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+  <!-- Default portrait 4 of 5: an original illustration made for Designup (MIT), for any persona without a picture of its own. -->
+  <view id="avatar" viewBox="30 92 340 340"/>
+  <rect width="400" height="500" fill="#E8E6EC"/>
+  <ellipse cx="200" cy="300" rx="34" ry="22" fill="#2C2320"/>
+  <path d="M172 286h56v74h-56z" fill="#C4906A"/>
+  <path d="M48 500C52 428 90 390 150 374C168 370 180 362 186 352L214 352C220 362 232 370 250 374C310 390 348 428 352 500Z" fill="#2A2D36"/><path d="M168 330H232V366C220 376 180 376 168 366Z" fill="#22252D"/>
+  <ellipse cx="135" cy="212" rx="12" ry="19" fill="#C4906A"/>
+  <ellipse cx="265" cy="212" rx="12" ry="19" fill="#D5A27C"/>
+  <path d="M200 120C242 120 266 150 266 194C266 232 257 262 244 282C233 298 218 308 200 308C182 308 167 298 156 282C143 262 134 232 134 194C134 150 158 120 200 120Z" fill="#D5A27C"/>
+  <path d="M142 214C144 252 156 280 170 294C180 302 190 306 200 308C184 298 170 280 162 258C154 240 148 228 142 214Z" fill="#C4906A"/>
+  <path d="M134 192C132 144 160 110 200 110S268 144 266 192C252 162 228 146 200 144C172 146 148 162 134 192Z" fill="#2C2320"/>
+</svg>

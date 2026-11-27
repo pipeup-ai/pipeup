@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+  <!-- Default portrait 5 of 5: an original illustration made for Designup (MIT), for any persona without a picture of its own. -->
+  <view id="avatar" viewBox="30 92 340 340"/>
+  <rect width="400" height="500" fill="#EAE8E3"/>
+  
+  <path d="M172 286h56v74h-56z" fill="#A46B48"/>
+  <path d="M48 500C52 428 90 390 150 374C168 370 180 362 186 352L214 352C220 362 232 370 250 374C310 390 348 428 352 500Z" fill="#5A6475"/><path d="M176 360L200 420L224 360C220 356 216 352 214 350L186 350C184 352 180 356 176 360Z" fill="#F2F2F0"/><path d="M150 374L188 440L176 500H48C52 428 90 390 150 374Z" fill="#4E5767"/><path d="M250 374L212 440L224 500H352C348 428 310 390 250 374Z" fill="#4E5767"/><path d="M186 352L170 372L200 420Z" fill="#F2F2F0" opacity=".9"/><path d="M214 352L230 372L200 420Z" fill="#F2F2F0" opacity=".9"/>
+  <ellipse cx="135" cy="212" rx="12" ry="19" fill="#A46B48"/>
+  <ellipse cx="265" cy="212" rx="12" ry="19" fill="#B57A55"/>
+  <path d="M200 120C242 120 266 150 266 194C266 232 257 262 244 282C233 298 218 308 200 308C182 308 167 298 156 282C143 262 134 232 134 194C134 150 158 120 200 120Z" fill="#B57A55"/>
+  <path d="M142 214C144 252 156 280 170 294C180 302 190 306 200 308C184 298 170 280 162 258C154 240 148 228 142 214Z" fill="#A46B48"/>
+  <path d="M134 194C128 146 158 108 200 108S272 146 266 194C260 178 252 170 240 166C232 158 220 154 208 156C194 150 176 152 166 160C152 164 140 176 134 194Z" fill="#7A7470"/>
+</svg>
