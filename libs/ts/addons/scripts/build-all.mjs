@@ -24,7 +24,9 @@ const BUDGETS = {
   // Asks in the content, answered in place, and comments in place (docs/design/inline-comments.md).
   inline: 6 * 1024,
 };
-const CORE = 67 * 1024;
+// Core's own budget, the same figure as libs/ts/pipeup/scripts/size.mjs (68.5 KB since the extension is offered from the
+// page's menu, §7c); a combined file may be core plus the add-on, no more.
+const CORE = 68.5 * 1024;
 let over = false;
 const here = new URL(".", import.meta.url).pathname;
 // The fixture add-on the e2e tests load: no budget.

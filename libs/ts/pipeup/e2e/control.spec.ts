@@ -126,7 +126,9 @@ test("⋯ opens the menu above the button; the item nearest it is Start commenti
   const b = (await control(page).boundingBox())!;
   expect(m.y + m.height).toBeLessThanOrEqual(b.y);
   const names = await menu.locator(".mi .lb").allTextContents();
-  expect(names.slice(1)).toEqual([
+  // First the offer of Pipeup for this browser and its two folded choices (§7c), then your name, then the rest.
+  expect(names.slice(0, 3)).toEqual(["Pipeup for Chrome", "Chrome Web Store", "Don't tell me again"]);
+  expect(names.slice(4)).toEqual([
     "Copy comments",
     "As Markdown",
     "As text",
@@ -135,7 +137,7 @@ test("⋯ opens the menu above the button; the item nearest it is Start commenti
     "Hide comments",
     "Start commenting",
   ]);
-  await expect(menu.locator("[role=separator]")).toHaveCount(2);
+  await expect(menu.locator("[role=separator]")).toHaveCount(3);
   const last = menu.locator(".mi").last();
   await expect(last.locator(".keys")).toBeVisible();
   await expect(last).toHaveAttribute("aria-keyshortcuts", "Shift+Alt+C");

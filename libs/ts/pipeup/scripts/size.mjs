@@ -49,10 +49,11 @@ import { brotliCompressSync, gzipSync } from "node:zlib";
 // menu's calls; docs/design/browser-extension.md), with the maintainer's agreement to go up to 70 KB. Then 67.5 KB
 // for the newcomer's third pass (+0.3 KB; docs/design/states-pass.md): a commented block that previews and opens like
 // its marker, one click while a thread is open, a thread of your own words that opens to read, the pin hint on a
-// picture, and an Undo that goes when you move on.
+// picture, and an Undo that goes when you move on. Then 68.5 KB for the extension offered from the page's own menu
+// (+0.9 KB; docs/design/extension-invite.md): one row named for the browser, the store link, Don't tell me again.
 const BUDGETS = {
-  "dist/pipeup.min.js": 67.5 * 1024,
-  "dist/pipeup.esm.js": 67.5 * 1024,
+  "dist/pipeup.min.js": 68.5 * 1024,
+  "dist/pipeup.esm.js": 68.5 * 1024,
   "dist/pipeup.core.js": 12.5 * 1024,
 };
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;

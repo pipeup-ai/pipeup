@@ -5,6 +5,7 @@ import type { Thread } from "../model/types";
 import { avatar, faceOf } from "./animals";
 import { alike as alikeIn, lost as lostIn, moved as movedIn } from "./column";
 import type { Ctx, Draft, View } from "./context";
+import type { Invite } from "./invite";
 import { clip, h, inert } from "./dom";
 import { popoverAnchor, quoteRects } from "./geometry";
 import { setting } from "./settings";
@@ -238,6 +239,7 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Folds the menu's copy choices away (set once the rows exist). */
   let foldCopy = () => {};
+  let foldInvite = () => {};
   const setMenu = (on: boolean) => {
     menuOpen = ctx.state.menu = on;
     ctx.taps();
@@ -246,7 +248,10 @@ export function createLauncher(ctx: Ctx): View {
     away = 0;
     if (!on) endEdit?.(true);
     // The copy choices start folded each time the menu opens.
-    if (!on) foldCopy();
+    if (!on) {
+      foldCopy();
+      foldInvite();
+    }
     // Opened from the panel's footer it sits above the footer, without the rows the footer has. Set only as it opens,
     // so a menu closing as the panel opens fades where it is, whole.
     else menu.classList.toggle("inp", ctx.state.listing);
@@ -924,6 +929,60 @@ export function createLauncher(ctx: Ctx): View {
       setCopy(false);
     }
   });
+  // Pipeup for your browser (§7c): first from the top, one row named for the browser that opens to the store and to
+  // Don't tell me again. Either ends the offer on this site; the block eases out and is left out of the next build.
+  let inv: Invite | null = null;
+  const storeRow = h(
+    "a",
+    { class: "mi", role: "menuitem", target: "_blank", rel: "noopener noreferrer" },
+    icon("expand"),
+    h("span", { class: "lb" }),
+    h("span", { class: "kc", "aria-hidden": "true" }, "↗"),
+    h("span", { class: "tt", "aria-hidden": "true" }),
+  );
+  storeRow.addEventListener("click", (e) => {
+    e.stopPropagation();
+    endInvite(false);
+    closeToControl();
+  });
+  const noMoreRow = row(icon("close"), () => endInvite(true));
+  const inviteChoices = h("div", { class: "subs", role: "group" }, h("div", {}, storeRow, noMoreRow));
+  const inviteRow = row(
+    icon("browser"),
+    () => setInvite(inviteRow.getAttribute("aria-expanded") !== "true"),
+    false,
+    h("span", { class: "chev" }, icon("chev", 13)),
+  );
+  const inviteBlock = h("div", { class: "subs open inv" }, h("div", {}, inviteRow, inviteChoices, sep()));
+  const setInvite = (on: boolean, focus = true) => {
+    inviteRow.setAttribute("aria-expanded", String(on));
+    inviteChoices.classList.toggle("open", on);
+    inert(inviteChoices, !on);
+    if (focus) (on ? storeRow : inviteRow).focus({ preventScroll: true });
+  };
+  foldInvite = () => setInvite(false, false);
+  foldInvite();
+  inviteRow.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" && inviteRow.getAttribute("aria-expanded") !== "true") {
+      e.preventDefault();
+      setInvite(true);
+    }
+  });
+  inviteChoices.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setInvite(false);
+    }
+  });
+  /** Ends the offer here. From Don't tell me again the menu stays open: the block is seen to go, focus moves to your name. */
+  function endInvite(stay: boolean): void {
+    ctx.menu.endInvite();
+    inv = null;
+    if (!stay) return;
+    inert(inviteBlock, true);
+    inviteBlock.classList.remove("open");
+    idRow.focus({ preventScroll: true });
+  }
   /** Automatic, Light or Dark: each press moves on to the next, and the menu stays open so the page is seen to change. */
   const lookEnd = h("span", { class: "kc" });
   const lookRow = row(
@@ -1006,6 +1065,7 @@ export function createLauncher(ctx: Ctx): View {
   };
   /** The menu rises above the button, so it is built top down: who you are first, Start commenting last. */
   const rows = (): Node[] => [
+    ...(inv ? [inviteBlock] : []),
     idRow,
     sepA,
     copyRow,
@@ -1041,6 +1101,12 @@ export function createLauncher(ctx: Ctx): View {
       const av = avatar(ctx.doc.me, name);
       av.classList.add("in");
       face.replaceChildren(av);
+    }
+    if (inv) {
+      set(inviteRow, `Pipeup for ${inv.browser}`, "Comment on any page, not only this one.");
+      set(storeRow, inv.store, "Opens the store in a new tab. Pipeup makes no request itself.");
+      storeRow.href = inv.url;
+      set(noMoreRow, "Don't tell me again", "Takes this row out of the menu on this site, in this browser.");
     }
     set(copyRow, "Copy comments", "As Markdown, with where each thread is, or as text");
     set(mdRow, "As Markdown", "With where each thread is, ready for an AI or a document");
@@ -1085,8 +1151,14 @@ export function createLauncher(ctx: Ctx): View {
 
   /** Brings the rows up to date and puts them in the menu. */
   function build(): void {
+    const was = inv;
+    inv = ctx.menu.invite();
+    if (inv && !was) {
+      inert(inviteBlock, false);
+      inviteBlock.classList.add("open");
+    }
     sync();
-    if (built !== ctx.addons.rev || !menu.contains(idRow)) {
+    if (built !== ctx.addons.rev || !menu.contains(idRow) || Boolean(inv) !== Boolean(was)) {
       menu.replaceChildren(...rows());
       built = ctx.addons.rev;
       sync();

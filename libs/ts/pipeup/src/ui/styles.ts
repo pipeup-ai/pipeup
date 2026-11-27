@@ -298,6 +298,8 @@ transition:opacity var(--out) var(--ei),transform var(--out) var(--ei)}
 .subs.open{grid-template-rows:1fr;opacity:1}
 .subs>div{min-height:0;overflow:hidden}
 .subs .mi{padding-left:30px}
+.inv>div>.mi{padding-left:10px}
+a.mi{color:inherit;text-decoration:none}
 .chev{display:grid;transition:transform var(--in) var(--eo)}
 [aria-expanded=true]>.chev{transform:rotate(90deg)}
 .tt{position:absolute;right:calc(100% + 14px);top:50%;translate:0 -50%;width:max-content;max-width:220px;padding:4px 9px;border-radius:8px;font-size:12px;line-height:1.4;

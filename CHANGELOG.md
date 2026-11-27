@@ -7,6 +7,14 @@ change the API and the stored comment format.
 
 ## [Unreleased]
 
+### Added
+
+- A page with Pipeup built in offers Pipeup for browsers in its menu, once: a row named for the browser ("Pipeup for Chrome") that opens to the store and to Don't tell me again. Only where the store listing is public (Chrome, for now), only on Pipeup's own menu, never by touch; off with `data-pipeup-extension="off"`; remembered per site in this browser; no network (spec §7c).
+
+### Changed
+
+- The size budget is 68.5 KB (from 67.5 KB) for the offer above (+0.9 KB).
+
 ## [1.1.0] - 2026-11-25
 
 The newcomer's first run. Three passes over what a person meets the first time they press Pipeup in a browser, in

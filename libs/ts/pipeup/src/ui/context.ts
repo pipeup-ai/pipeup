@@ -3,6 +3,7 @@ import type { PipeupDocument } from "../document";
 import type { CopyAs, ExportItem } from "../export/format";
 import type { Anchor, Mention, Thread } from "../model/types";
 import type { Surface } from "./addons";
+import type { Invite } from "./invite";
 import type { DraftBox } from "./draft-view";
 import type { Here } from "./here";
 import type { Person } from "./mentions";
@@ -69,6 +70,10 @@ export interface MenuActions {
   /** The reviewer's choice of look, kept in their browser: Automatic follows the author, then the page. */
   look(): LookChoice;
   setLook(choice: LookChoice): void;
+  /** Pipeup for this browser, offered in the menu (§7c), or null: nothing to offer, or the offer ended here. */
+  invite(): Invite | null;
+  /** Ends the offer on this site in this browser (the store was opened, or Don't tell me again). */
+  endInvite(): void;
 }
 
 export type LookChoice = "auto" | "light" | "dark";

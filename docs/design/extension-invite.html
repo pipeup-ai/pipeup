@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Extension Invite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Pipeup design page: one reading column, light only like the other mock-ups; the menus are drawn in CSS at the size core draws them (290 px). */
+:root{
+  --bg:#ffffff; --paper:#f7f6f3; --ink:#2f3437; --strong:#111111; --muted:#6a6a64; --line:#e3e1ea;
+  --accent:#534ab7; --accent-soft:#eeedf9; --mark:#b4541f; --ok:#2f6f4e;
+  --serif:"Source Serif 4",Georgia,serif; --sans:Inter,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);
+  padding-block:0 4rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:880px;margin:0 auto}
+h1,h2,h3{font-family:var(--serif);color:var(--strong);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:2.4rem;font-weight:600;margin-top:3rem}
+h2{font-size:1.5rem;font-weight:600;margin-top:3.5rem;padding-top:1.5rem;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;font-weight:600;margin-top:0}
+p{max-width:65ch;margin:.8rem 0}
+.lede{font-size:1.15rem;color:var(--muted);max-width:60ch}
+.meta{font-size:.85rem;color:var(--muted)}
+.verdict{background:var(--paper);border-radius:10px;padding:1rem 1.25rem;margin:1.5rem 0}
+.verdict p{max-width:none;margin:.4rem 0}
+ul.plain,ol.plain{padding-left:1.2rem;max-width:68ch}
+ul.plain li,ol.plain li{margin:.45rem 0}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:2rem;align-items:start;margin:1.5rem 0}
+.row3>div{min-width:0}
+.cap{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 .6rem}
+.cap.after{color:var(--accent)}
+.under{font-size:.85rem;color:var(--muted);margin:.6rem 0 0;max-width:34ch}
+/* The page corner: the menu rises above the round control. */
+.corner{position:relative;background:var(--paper);border-radius:12px;padding:1rem 1rem 1rem;display:flex;flex-direction:column;align-items:flex-end;gap:.6rem;min-height:120px}
+.ctl{width:44px;height:44px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(47,52,55,.2);display:grid;place-items:center}
+.ctl::after{content:"";width:18px;height:18px;border-radius:50% 50% 50% 4px;border:2px solid #fff;box-sizing:border-box}
+.dots{width:28px;height:28px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-weight:600;letter-spacing:1px;font-size:.9rem;align-self:flex-end;margin-right:52px;margin-bottom:-44px}
+/* The menu, at the size core draws it (290 px wide). */
+.menu{width:290px;max-width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:.86rem;box-shadow:0 8px 28px rgba(47,52,55,.1);overflow:hidden;padding:.3rem 0}
+.menu .here{padding:.45rem 1rem .35rem;color:var(--muted);font-size:.78rem}
+.menu .row{display:flex;align-items:center;gap:.6rem;padding:.5rem 1rem;color:var(--strong);min-height:36px;box-sizing:border-box}
+.menu .row .ic{width:16px;height:16px;flex:none;display:inline-grid;place-items:center;color:var(--muted)}
+.menu .row .ic svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.menu .row .av{width:16px;height:16px;border-radius:50%;background:#d8a0a0;flex:none}
+.menu .row .w{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu .row .end{color:var(--muted);font-size:.78rem;white-space:nowrap;flex:none}
+.menu .row.hover{background:var(--accent-soft)}
+.menu .row.invite .w{color:var(--strong)}
+.menu .row.sub{padding-left:2.4rem;color:var(--ink)}
+.menu .row.sub .end{color:var(--accent)}
+.menu .n{background:var(--accent);color:#fff;border-radius:999px;font-size:.7rem;padding:0 .4rem;line-height:1.3rem;min-width:1.3rem;text-align:center;flex:none}
+.menu hr{border:0;border-top:1px solid var(--line);margin:.3rem 0}
+.menu .sw{width:30px;height:18px;border-radius:9px;background:#d9d7d2;position:relative;flex:none}
+.menu .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.menu .sw.on{background:var(--accent)}
+.menu .sw.on::after{left:14px}
+.menu kbd{font:inherit;font-size:.74rem;color:var(--muted)}
+.menu .gone{height:0;overflow:hidden;opacity:0}
+.tip{position:relative;display:inline-block;margin:.5rem 0 0 2.4rem;background:var(--strong);color:#fff;font-size:.76rem;padding:.3rem .55rem;border-radius:6px;max-width:230px;line-height:1.35}
+/* The flow: a decision list, drawn as steps. */
+.flow{display:grid;gap:.5rem;margin:1.5rem 0;max-width:640px}
+.step{display:grid;grid-template-columns:auto 1fr;gap:.9rem;align-items:start;background:var(--paper);border-radius:10px;padding:.8rem 1rem}
+.step .q{font-weight:600;color:var(--strong)}
+.step .no{font-size:.85rem;color:var(--muted);margin-top:.15rem}
+.step .no b{color:var(--mark);font-weight:600}
+.step .k{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:.8rem;font-weight:600;margin-top:.1rem}
+.step.end{background:var(--accent-soft)}
+.step.end .k{background:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:.92rem;margin:1rem 0}
+th,td{text-align:left;vertical-align:top;padding:.55rem .6rem;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--strong);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase}
+.wrap{overflow-x:auto}
+.gone-word{color:var(--mark)}
+.ok{color:var(--ok)}
+code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05em .3em;border-radius:4px}
+</style>
+</head>
+<body>
+<main>
+<h1>Pipeup for your browser, offered once</h1>
+<p class="lede">A page with Pipeup built in tells a reviewer, in its own menu, that Pipeup exists for their browser too: one quiet row, only where the extension is public, gone for good when they say so.</p>
+<p class="meta">Visual spec · core library (not the extension) · 27 November 2026 · for the functional spec §7 (the menu) and §16 (distribution)</p>
+
+<div class="verdict">
+<p><b>The shape.</b> One row at the top of Pipeup's ⋯ menu, <b>Pipeup for Chrome</b> (the browser's name changes), with a browser glyph. Pressing it opens two choices beneath, the way Copy comments does: <b>Chrome Web Store</b> and <b>Don't tell me again</b>. Either choice ends the offer on this site.</p>
+<p><b>Shown only when</b> the reviewer's browser has a public listing, the page draws Pipeup's own menu, the screen has a pointer or keyboard, and nobody has ended the offer here.</p>
+<p><b>Costs</b> nothing on the network (the list of browsers ships inside Pipeup) and about 0.4 KB of the 53 KB budget.</p>
+</div>
+
+<h2>When the row shows</h2>
+<p>Each question is asked in order when the menu opens. The first "no" means no row, and nothing else changes.</p>
+<div class="flow">
+  <div class="step"><div class="k">1</div><div><div class="q">Is this a browser Pipeup has a public extension for?</div><div class="no">Known from the browser's own name (Chrome and the browsers built on it, Safari, Edge, Firefox), against the list shipped in this build. Phones and tablets: <b>no row</b>, there is no extension for them yet.</div></div></div>
+  <div class="step"><div class="k">2</div><div><div class="q">Is this Pipeup's own menu on the page?</div><div class="no">A host that draws the menu itself (the extension's toolbar menu, a page with its own) shows <b>no row</b>: either the extension is already here, or the page chose its own words.</div></div></div>
+  <div class="step"><div class="k">3</div><div><div class="q">Has the page's author left the offer on?</div><div class="no">An author who would rather their page said nothing about extensions turns it off with one attribute, <code>data-pipeup-extension="off"</code>: <b>no row</b>, ever, on that page.</div></div></div>
+  <div class="step"><div class="k">4</div><div><div class="q">Has this reviewer ended the offer on this site?</div><div class="no">Choosing the store, or Don't tell me again, is remembered where Pipeup keeps the reviewer's other choices (Theme, Hide comments). <b>No row</b> after that, on any of this site's pages, in this browser.</div></div></div>
+  <div class="step end"><div class="k">✓</div><div><div class="q">The row shows, at the top of the menu.</div><div class="no">Farthest from the hand (the menu rises from the control; Start commenting stays nearest it), first to read, easy to pass over. The arrow keys reach it like any row.</div></div></div>
+</div>
+<p>Pipeup can't tell whether the extension is already installed: an extension that is off for this page is invisible to it, and it makes no network request to ask. So the offer leans on being quiet and on going away for good. It is never a toast, a bubble or a badge; it never opens on its own; it is in the menu or nowhere.</p>
+
+<h2>The menu, before, with the row, and after</h2>
+<div class="row3">
+  <div>
+    <p class="cap">Today · Chrome</p>
+    <div class="corner">
+      <div class="menu">
+        <div class="here">Only in this browser until you send them.</div>
+        <div class="row"><span class="av"></span><span class="w">Red Fox</span><span class="end">Add name</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span><span class="w">Copy comments</span><span class="end">›</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 3a9 9 0 0 1 0 18"/></svg></span><span class="w">Theme</span><span class="end">Automatic</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span class="w">All comments</span><span class="n">3</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.1A10 10 0 0 1 21 12a10.5 10.5 0 0 1-2.4 3.3M6.3 6.3A10.5 10.5 0 0 0 3 12a10 10 0 0 0 13.9 4.9"/></svg></span><span class="w">Hide comments</span><span class="sw"></span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.2L4 20l.8-4.4A8 8 0 1 1 20 12z"/></svg></span><span class="w">Start commenting</span><kbd>⇧⌥C</kbd><span class="sw"></span></div>
+      </div>
+      <div class="ctl"></div>
+    </div>
+    <p class="under">Seven rows and the quiet line. The extension is never mentioned.</p>
+  </div>
+  <div>
+    <p class="cap after">Proposed · Chrome, first visit</p>
+    <div class="corner">
+      <div class="menu">
+        <div class="here">Only in this browser until you send them.</div>
+        <div class="row invite"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span class="w">Pipeup for Chrome</span><span class="end">›</span></div>
+        <hr>
+        <div class="row"><span class="av"></span><span class="w">Red Fox</span><span class="end">Add name</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span><span class="w">Copy comments</span><span class="end">›</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 3a9 9 0 0 1 0 18"/></svg></span><span class="w">Theme</span><span class="end">Automatic</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span class="w">All comments</span><span class="n">3</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.1A10 10 0 0 1 21 12a10.5 10.5 0 0 1-2.4 3.3M6.3 6.3A10.5 10.5 0 0 0 3 12a10 10 0 0 0 13.9 4.9"/></svg></span><span class="w">Hide comments</span><span class="sw"></span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.2L4 20l.8-4.4A8 8 0 1 1 20 12z"/></svg></span><span class="w">Start commenting</span><kbd>⇧⌥C</kbd><span class="sw"></span></div>
+      </div>
+      <div class="ctl"></div>
+    </div>
+    <p class="under">One row, the browser's own name, the same glyph the extension uses. On hover or focus its tooltip eases in: <i>Comment on any page, not only this one.</i></p>
+  </div>
+  <div>
+    <p class="cap after">Proposed · the row pressed</p>
+    <div class="corner">
+      <div class="menu">
+        <div class="here">Only in this browser until you send them.</div>
+        <div class="row invite hover"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span class="w">Pipeup for Chrome</span><span class="end">⌄</span></div>
+        <div class="row sub"><span class="w">Chrome Web Store</span><span class="end">↗</span></div>
+        <div class="row sub"><span class="w">Don't tell me again</span></div>
+        <hr>
+        <div class="row"><span class="av"></span><span class="w">Red Fox</span><span class="end">Add name</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span><span class="w">Copy comments</span><span class="end">›</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M12 3a9 9 0 0 1 0 18"/></svg></span><span class="w">Theme</span><span class="end">Automatic</span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span class="w">All comments</span><span class="n">3</span></div>
+        <hr>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.9 5.1A10 10 0 0 1 21 12a10.5 10.5 0 0 1-2.4 3.3M6.3 6.3A10.5 10.5 0 0 0 3 12a10 10 0 0 0 13.9 4.9"/></svg></span><span class="w">Hide comments</span><span class="sw"></span></div>
+        <div class="row"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.6 7.2L4 20l.8-4.4A8 8 0 1 1 20 12z"/></svg></span><span class="w">Start commenting</span><kbd>⇧⌥C</kbd><span class="sw"></span></div>
+      </div>
+      <div class="ctl"></div>
+    </div>
+    <p class="under">The two choices ease open beneath, as Copy comments' do (a second press, ←, or Esc folds them). The store opens in a new tab and the menu closes. Don't tell me again eases the row out while the menu stays open, so it is seen to go.</p>
+  </div>
+</div>
+<p>After either choice the menu is the one on the left again, on every page of this site, in this browser. There is no way back from Don't tell me again, and none is needed: the store is a search away, and the website says where the extension lives.</p>
+
+<h2>Wording</h2>
+<div class="wrap"><table>
+<tr><th>Where</th><th>Words</th><th>Why these</th></tr>
+<tr><td>The row</td><td><b>Pipeup for Chrome</b> · Pipeup for Safari · Pipeup for Edge · Pipeup for Firefox</td><td>The product's own name for the extension, and what the stores list it as. No "Install", "Get", "New" or "Free": the row names a thing, the choices say what to do with it.</td></tr>
+<tr><td>Its tooltip</td><td>Comment on any page, not only this one.</td><td>The one reason a reviewer would want it, in their terms. No feature list.</td></tr>
+<tr><td>First choice</td><td>Chrome Web Store ↗ · App Store · Edge Add-ons · Firefox Add-ons</td><td>Says where the link goes before it goes there (§14: links go only to known places, and the reviewer knows which). The arrow marks a new tab. The store's name alone: "Get it from the Chrome Web Store" didn't fit a sub-row at the menu's width when built.</td></tr>
+<tr><td>Its tooltip</td><td>Opens the store in a new tab. Pipeup makes no request itself.</td><td>The honest line for a library that otherwise never leaves the page.</td></tr>
+<tr><td>Second choice</td><td>Don't tell me again</td><td>The reviewer's own words for it. Not "Dismiss", "Hide" or "Not now": it is final, and says so.</td></tr>
+<tr><td>Its tooltip</td><td>Takes this row out of the menu on this site, in this browser.</td><td>Says exactly how far the choice reaches, since Pipeup keeps nothing across sites.</td></tr>
+<tr><td>Screen readers</td><td>The row is a button named "Pipeup for Chrome", expanded or collapsed; the choices are a link and a button.</td><td>The same pattern as Copy comments and its choices.</td></tr>
+</table></div>
+
+<h2>Which browsers, which stores</h2>
+<p>The list ships in the build and changes only with a release. A browser is on it once its listing is public; until then its reviewers see nothing, which is also what every browser not on the list sees (Brave, Arc and the rest install from the Chrome Web Store, so they count as Chrome).</p>
+<div class="wrap"><table>
+<tr><th>Browser</th><th>Row</th><th>Store</th><th>Today (27 Nov 2026)</th></tr>
+<tr><td>Chrome, and browsers built on Chromium that take Chrome's store (Brave, Vivaldi, Opera, Arc)</td><td>Pipeup for Chrome</td><td>Chrome Web Store</td><td class="ok">Submitted; on the list when it is public</td></tr>
+<tr><td>Safari on a Mac</td><td>Pipeup for Safari</td><td>Mac App Store</td><td>1.1.0 in review; on the list when it is public</td></tr>
+<tr><td>Edge</td><td>Pipeup for Edge</td><td>Edge Add-ons</td><td class="gone-word">Not submitted: no row</td></tr>
+<tr><td>Firefox</td><td>Pipeup for Firefox</td><td>Firefox Add-ons</td><td class="gone-word">Not submitted: no row</td></tr>
+<tr><td>Any browser on a phone or tablet; anything else</td><td>—</td><td>—</td><td class="gone-word">No row</td></tr>
+</table></div>
+<p>Edge reports itself as Chrome as well as Edge, and Safari's name appears in Chrome's; the check reads the most specific name first, as Pipeup's extension already does when it decides which rows to offer. A wrong guess only sends someone to a store that says "not for this browser", which is why the first choice names the store.</p>
+
+<h2>How it behaves, in full</h2>
+<ul class="plain">
+  <li><b>Where it is.</b> First in the ⋯ menu, above the name row, with a separator under it. Nowhere else: not in All comments, not by the control, not in a comment box, never a toast.</li>
+  <li><b>What it looks like.</b> An ordinary row: the browser glyph, one line of words, › at the end. It is not coloured, bold, badged or marked new. In the dark look it is drawn as every other row is.</li>
+  <li><b>Pressing it</b> opens the two choices beneath with the same easing as Copy comments; a second press, ←, or Esc folds them. The choices are folded each time the menu opens.</li>
+  <li><b>The store row</b> opens the store's listing in a new tab and closes the menu. It also ends the offer on this site: the reviewer has been shown the way, and the store is where it continues.</li>
+  <li><b>Don't tell me again</b> ends the offer on this site at once. The row and its choices ease out (height and opacity, over Pipeup's usual quick motion); the menu stays open, so the reviewer sees it go; focus moves to the name row.</li>
+  <li><b>Remembered</b> where Theme and Hide comments are: in this browser, for this site. Pipeup keeps nothing across sites and asks no server, so a reviewer who said no here may see the row again on another author's page. Said plainly in the tooltip.</li>
+  <li><b>Keyboard.</b> ↑ ↓ Home End reach the row; Enter or → opens the choices; Enter chooses one; ← or Esc folds them; Esc again closes the menu. Nothing about the menu's existing keys changes.</li>
+  <li><b>Touch.</b> No row on a screen with only touch: there is no extension to install there.</li>
+  <li><b>Authors.</b> <code>data-pipeup-extension="off"</code> keeps the row off a page; <code>pipeup init</code> doesn't set it. Nothing else is configurable: no custom words, no custom link.</li>
+  <li><b>Network and privacy.</b> None, until the reviewer presses the store choice, and then it is the browser opening a page, not Pipeup. The row's presence tells no one anything.</li>
+  <li><b>Size.</b> About 0.4 KB gzipped: the browser check, the row, two choices, one preference. Within the 53 KB budget; counted in `scripts/size.mjs` when built.</li>
+</ul>
+
+<h2>Not in this design</h2>
+<ul class="plain">
+  <li>Knowing whether the extension is already installed (it would need the extension to announce itself on every page, which it doesn't do, and shouldn't).</li>
+  <li>A "remind me later" or any return of the row after it has been ended.</li>
+  <li>A row in the extension's own menu pointing the other way (to adding Pipeup to a page): that is the author's story, told on the website.</li>
+  <li>Telling anyone the row was shown, pressed or ended.</li>
+</ul>
+
+<h2>Change log</h2>
+<ul class="plain">
+  <li>2026-11-27 — First draft, reviewed with the maintainer; the functional spec’s §7c now carries the requirements, and §18 places it in 1.2.</li>
+  <li>2026-11-27 — Built in core. The store row became the store's name alone, which fits the sub-row; everything else as drawn.</li>
+</ul>
+</main>
+</body>
+</html>
