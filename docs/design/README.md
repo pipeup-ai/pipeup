@@ -7,7 +7,7 @@ specs are records: once a later pass redoes a thing, the earlier page is history
 
 ## Visual specs, current
 
-- [extension-invite.html](extension-invite.html) — the extension offered from the page's own menu (extension-invite.md; proposed, 1.2).
+- [extension-invite.html](extension-invite.html) — the extension offered from the page's own menu (extension-invite.md; 1.2).
 - [extension-menu.html](extension-menu.html) — the browser extension's one toolbar menu (one-menu.md).
 - [newcomer-pass.html](newcomer-pass.html) — the newcomer's first run, second pass (newcomer-pass.md).
 - [states-pass.html](states-pass.html) — the states after the first comment (states-pass.md).

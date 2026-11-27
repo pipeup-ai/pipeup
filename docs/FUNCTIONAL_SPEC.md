@@ -520,7 +520,7 @@ text offer to comment mode (below).
   - **where comments go**, one quiet line (not an item: no tooltip, and the arrow keys pass over it): with plain
     Pipeup, that they stay in this browser until the reviewer sends them; an add-on with something to report puts
     its status there instead (Share's "Shared · up to date", Live's "Live with 2 others");
-  - **Pipeup for your browser** (§7c; *not built*), only where the reviewer's browser has a public extension and until
+  - **Pipeup for your browser** (§7c), only where the reviewer's browser has a public extension and until
     they end the offer: one row, "Pipeup for Chrome" (the browser's name), that opens to the store and to Don't tell
     me again;
   - **who you are** — your avatar and name (your animal, such as "Red Fox", until you add one), with
@@ -667,7 +667,7 @@ text offer to comment mode (below).
 
 ## 7c. Pipeup for your browser, offered in the menu
 
-*Not built.* Visual spec: [design/extension-invite.html](design/extension-invite.html).
+*Built (1.2).* Visual spec: [design/extension-invite.html](design/extension-invite.html); note: [design/extension-invite.md](design/extension-invite.md).
 
 A page with Pipeup built in can tell a reviewer that Pipeup exists for their browser too (the extension,
 [EXTENSION_SPEC.md](EXTENSION_SPEC.md)), so that they can comment on any page, not only this one. The offer is one row
@@ -679,8 +679,8 @@ in Pipeup's own menu, and nothing else: never a toast, a bubble, a badge or anyt
   follows the light and dark looks like any row.
 - **Pressing it opens two choices beneath it**, as Copy comments does (a second press, ←, or Esc folds them; they are
   folded each time the menu opens):
-  - **Get it from the Chrome Web Store** (or the App Store, Edge Add-ons, Firefox Add-ons), marked as opening a new
-    tab. It opens the store's own listing in a new tab and closes the menu. Its tooltip: "Opens the store in a new
+  - **Chrome Web Store** (or App Store, Edge Add-ons, Firefox Add-ons), marked as opening a new tab: the store's name
+    is the whole row, so it fits the menu's width. It opens the store's own listing in a new tab and closes the menu. Its tooltip: "Opens the store in a new
     tab. Pipeup makes no request itself."
   - **Don't tell me again.** The row and its choices ease out while the menu stays open, so the reviewer sees them go,
     and focus moves to the name row. Its tooltip says how far the choice reaches: "Takes this row out of the menu on
@@ -2157,3 +2157,4 @@ and the newcomer passes needed; the maintainer allowed up to 70 KB).
 - 2026-11-25 — Audited against the code after the extension spec's rewrite: the lines that said built what isn't (a General way to comment, verified people, dictation in an ask, a version lookup in the check, authors turning gestures off) now say not built or are gone; a drawer that was never built is gone; the size and release lines are history, not plans; wording follows the product (For you, Live with 2 others, Let Sam know by mail, an issue not a pull request, replies' ⋯ on your own); the header says 1.0 is out; three open questions decided in the code are closed. Nothing in the product changed.
 - 2026-11-25 — Freshness pass, with the maintainer: promises with no plan behind them are out (verified people, mentions by webhook or mail service, the author's relay with rooms and invites, a version lookup in the check); §13 says no relay is planned; §17 and §19 say less. `pipeup watch` no longer tells 0.6 pages apart (§15c).
 - 2026-11-27 — §7c: a page with Pipeup built in offers the extension in its menu, as one row first from the top ("Pipeup for Chrome"), opening to the store and to Don't tell me again; only where the browser has a public listing, only on Pipeup's own menu, not by touch, off with `data-pipeup-extension="off"`, remembered per site in this browser, no network. Visual spec design/extension-invite.html. §18 names it as 1.2. Not built.
+- 2026-11-27 — §7c built: the row, its two choices and the remembered choice in core (+0.9 KB; the budget goes to 68.5 KB). The store row is the store's name alone ("Chrome Web Store ↗"), since "Get it from the Chrome Web Store" didn't fit a sub-row at the menu's width. Chrome is the one browser on the list.

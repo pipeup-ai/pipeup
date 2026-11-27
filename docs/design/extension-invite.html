@@ -85,7 +85,7 @@ code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05
 <p class="meta">Visual spec · core library (not the extension) · 27 November 2026 · for the functional spec §7 (the menu) and §16 (distribution)</p>
 
 <div class="verdict">
-<p><b>The shape.</b> One row at the top of Pipeup's ⋯ menu, <b>Pipeup for Chrome</b> (the browser's name changes), with a browser glyph. Pressing it opens two choices beneath, the way Copy comments does: <b>Get it from the Chrome Web Store</b> and <b>Don't tell me again</b>. Either choice ends the offer on this site.</p>
+<p><b>The shape.</b> One row at the top of Pipeup's ⋯ menu, <b>Pipeup for Chrome</b> (the browser's name changes), with a browser glyph. Pressing it opens two choices beneath, the way Copy comments does: <b>Chrome Web Store</b> and <b>Don't tell me again</b>. Either choice ends the offer on this site.</p>
 <p><b>Shown only when</b> the reviewer's browser has a public listing, the page draws Pipeup's own menu, the screen has a pointer or keyboard, and nobody has ended the offer here.</p>
 <p><b>Costs</b> nothing on the network (the list of browsers ships inside Pipeup) and about 0.4 KB of the 53 KB budget.</p>
 </div>
@@ -147,7 +147,7 @@ code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05
       <div class="menu">
         <div class="here">Only in this browser until you send them.</div>
         <div class="row invite hover"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span class="w">Pipeup for Chrome</span><span class="end">⌄</span></div>
-        <div class="row sub"><span class="w">Get it from the Chrome Web Store</span><span class="end">↗</span></div>
+        <div class="row sub"><span class="w">Chrome Web Store</span><span class="end">↗</span></div>
         <div class="row sub"><span class="w">Don't tell me again</span></div>
         <hr>
         <div class="row"><span class="av"></span><span class="w">Red Fox</span><span class="end">Add name</span></div>
@@ -171,7 +171,7 @@ code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05
 <tr><th>Where</th><th>Words</th><th>Why these</th></tr>
 <tr><td>The row</td><td><b>Pipeup for Chrome</b> · Pipeup for Safari · Pipeup for Edge · Pipeup for Firefox</td><td>The product's own name for the extension, and what the stores list it as. No "Install", "Get", "New" or "Free": the row names a thing, the choices say what to do with it.</td></tr>
 <tr><td>Its tooltip</td><td>Comment on any page, not only this one.</td><td>The one reason a reviewer would want it, in their terms. No feature list.</td></tr>
-<tr><td>First choice</td><td>Get it from the Chrome Web Store ↗ · the App Store · Edge Add-ons · Firefox Add-ons</td><td>Says where the link goes before it goes there (§14: links go only to known places, and the reviewer knows which). The arrow marks a new tab.</td></tr>
+<tr><td>First choice</td><td>Chrome Web Store ↗ · App Store · Edge Add-ons · Firefox Add-ons</td><td>Says where the link goes before it goes there (§14: links go only to known places, and the reviewer knows which). The arrow marks a new tab. The store's name alone: "Get it from the Chrome Web Store" didn't fit a sub-row at the menu's width when built.</td></tr>
 <tr><td>Its tooltip</td><td>Opens the store in a new tab. Pipeup makes no request itself.</td><td>The honest line for a library that otherwise never leaves the page.</td></tr>
 <tr><td>Second choice</td><td>Don't tell me again</td><td>The reviewer's own words for it. Not "Dismiss", "Hide" or "Not now": it is final, and says so.</td></tr>
 <tr><td>Its tooltip</td><td>Takes this row out of the menu on this site, in this browser.</td><td>Says exactly how far the choice reaches, since Pipeup keeps nothing across sites.</td></tr>
@@ -195,7 +195,7 @@ code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05
   <li><b>Where it is.</b> First in the ⋯ menu, above the name row, with a separator under it. Nowhere else: not in All comments, not by the control, not in a comment box, never a toast.</li>
   <li><b>What it looks like.</b> An ordinary row: the browser glyph, one line of words, › at the end. It is not coloured, bold, badged or marked new. In the dark look it is drawn as every other row is.</li>
   <li><b>Pressing it</b> opens the two choices beneath with the same easing as Copy comments; a second press, ←, or Esc folds them. The choices are folded each time the menu opens.</li>
-  <li><b>Get it from the store</b> opens the store's listing in a new tab and closes the menu. It also ends the offer on this site: the reviewer has been shown the way, and the store is where it continues.</li>
+  <li><b>The store row</b> opens the store's listing in a new tab and closes the menu. It also ends the offer on this site: the reviewer has been shown the way, and the store is where it continues.</li>
   <li><b>Don't tell me again</b> ends the offer on this site at once. The row and its choices ease out (height and opacity, over Pipeup's usual quick motion); the menu stays open, so the reviewer sees it go; focus moves to the name row.</li>
   <li><b>Remembered</b> where Theme and Hide comments are: in this browser, for this site. Pipeup keeps nothing across sites and asks no server, so a reviewer who said no here may see the row again on another author's page. Said plainly in the tooltip.</li>
   <li><b>Keyboard.</b> ↑ ↓ Home End reach the row; Enter or → opens the choices; Enter chooses one; ← or Esc folds them; Esc again closes the menu. Nothing about the menu's existing keys changes.</li>
@@ -216,6 +216,7 @@ code{font:.88em ui-monospace,Menlo,monospace;background:var(--paper);padding:.05
 <h2>Change log</h2>
 <ul class="plain">
   <li>2026-11-27 — First draft, reviewed with the maintainer; the functional spec’s §7c now carries the requirements, and §18 places it in 1.2.</li>
+  <li>2026-11-27 — Built in core. The store row became the store's name alone, which fits the sub-row; everything else as drawn.</li>
 </ul>
 </main>
 </body>

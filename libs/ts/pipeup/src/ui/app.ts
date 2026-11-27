@@ -20,6 +20,7 @@ import { createSelection } from "./select";
 import { copyText } from "./files";
 import { createLauncher } from "./launcher";
 import { createHere } from "./here";
+import { publicExtension } from "./invite";
 import { IGNORED, pageLook, pickBlock } from "./pick";
 import { hit, quoteRects } from "./geometry";
 import { installPageSheet, lightWords, paintHighlights } from "./highlights";
@@ -585,7 +586,21 @@ export function startApp(o: AppOptions): App {
     },
   };
 
+  // Pipeup for your browser (§7c): offered while this browser has a public listing, the page keeps Pipeup's own menu
+  // and lets the offer stand, the screen isn't touch alone, and no one has ended it on this site.
+  const INVITE_KEY = "pipeup:invite";
   const menu: MenuActions = {
+    invite: () =>
+      touch() || setting("data-pipeup-extension") === "off" || prefs.getItem(INVITE_KEY)
+        ? null
+        : publicExtension(),
+    endInvite() {
+      try {
+        prefs.setItem(INVITE_KEY, "1");
+      } catch {
+        /* kept for this page only */
+      }
+    },
     look: () => choice,
     setLook(next) {
       choice = next;

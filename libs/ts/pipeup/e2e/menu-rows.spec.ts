@@ -20,6 +20,8 @@ test("the menu, top down: who you are, Copy comments, Theme, All comments, then 
   );
   expect(shape).toEqual([
     "sec", // where comments go: "Only in this browser until you send them."
+    // Pipeup for your browser (§7c): the test browser is Chrome, whose listing is public; its separator is inside the block.
+    "Pipeup for Chrome / Chrome Web Store / Don't tell me again",
     me,
     "|",
     "Copy comments",
@@ -251,7 +253,7 @@ test("Copy comments opens to its two choices and folds them away again; the menu
   await open(page, "site.html");
   await openMenu(page);
   const copy = menu(page).getByRole("menuitem", { name: "Copy comments" });
-  const choices = menu(page).locator(".subs");
+  const choices = menu(page).locator(".subs").filter({ hasText: "As Markdown" });
   await expect(copy).toHaveAttribute("aria-expanded", "false");
   await expect(choices).toHaveAttribute("inert", "");
   await copy.click();

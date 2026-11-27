@@ -39,12 +39,15 @@ test("the menu works from the keyboard and keeps focus while toggling", async ({
   expect((await focusInPipeup(page)).text).toMatch(/^Copy comments/);
   await page.keyboard.press("ArrowUp");
   expect((await focusInPipeup(page)).text).toContain("Add name");
+  // First from the top: the offer of Pipeup for this browser (§7c), whose choices are folded away too.
+  await page.keyboard.press("ArrowUp");
+  expect((await focusInPipeup(page)).text).toMatch(/^Pipeup for Chrome/);
   await page.keyboard.press("Home");
-  expect((await focusInPipeup(page)).text).toContain("Add name");
+  expect((await focusInPipeup(page)).text).toMatch(/^Pipeup for Chrome/);
   await page.keyboard.press("End");
   expect((await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("ArrowDown");
-  expect((await focusInPipeup(page)).text).toContain("Add name");
+  expect((await focusInPipeup(page)).text).toMatch(/^Pipeup for Chrome/);
   await page.keyboard.press("Escape");
   await expect(page.locator(".menu.show")).toHaveCount(0);
   expect((await focusInPipeup(page)).cls).toContain("mode");
@@ -94,6 +97,7 @@ test("after editing the name, focus returns to the identity row", async ({ page 
   await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
   await page.keyboard.press("Home");
+  await page.keyboard.press("ArrowDown");
   expect((await focusInPipeup(page)).text).toContain("Sam");
   await page.keyboard.press("Enter");
   await expect.poll(async () => (await focusInPipeup(page)).tag).toBe("INPUT");
@@ -112,7 +116,10 @@ test("choosing Your name from the keyboard puts focus in the name field at once"
   await page.locator(".launch .mode").focus();
   await page.keyboard.press("ArrowUp");
   await expect.poll(async () => (await focusInPipeup(page)).text).toMatch(/^Start commenting/);
+  // Home is the offer of Pipeup for this browser (§7c), first from the top; your name is the row under it.
   await page.keyboard.press("Home");
+  expect((await focusInPipeup(page)).text).toMatch(/^Pipeup for Chrome/);
+  await page.keyboard.press("ArrowDown");
   expect((await focusInPipeup(page)).text).toContain("Sam");
   await page.keyboard.press("Enter");
   await page.keyboard.type(" Lee");
