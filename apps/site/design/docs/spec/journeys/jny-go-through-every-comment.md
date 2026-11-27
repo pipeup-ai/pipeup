@@ -20,10 +20,10 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (4)</summary>
 
-- **AC-all-comments-1** (FR-010): Given three threads, when Maya opens All comments, then a panel on the right lists the three in page order, each with the words it is about, and the page's content is narrower but all still visible. _(proven in the prototype, 2026-11-10)_
-- **AC-all-comments-2** (FR-010): Given the panel open, when she chooses the second card, then it opens out in place with its reply box and the page scrolls to its paragraph. _(proven in the prototype, 2026-11-10)_
-- **AC-all-comments-3** (FR-010): Given the panel open, when she turns on For you, then the list reads "No comments mention you", and turning it off brings the three back. _(proven in the prototype, 2026-11-10)_
-- **AC-all-comments-4** (FR-010): Given the panel open, when she presses Esc, then the panel closes and focus is on the comment control. _(proven in the prototype, 2026-11-10)_
+- **AC-all-comments-1** (FR-010): Given three threads, when Maya opens All comments, then a panel on the right lists the three in page order, each with the words it is about, and the page's content is narrower but all still visible. _(proven in the prototype, 2026-11-26)_
+- **AC-all-comments-2** (FR-010): Given the panel open, when she chooses the second card, then it opens out in place with its reply box and the page scrolls to its paragraph. _(proven in the prototype, 2026-11-26)_
+- **AC-all-comments-3** (FR-010): Given the panel open, when she turns on For you, then the list reads "No comments mention you", and turning it off brings the three back. _(proven in the prototype, 2026-11-26)_
+- **AC-all-comments-4** (FR-010): Given the panel open, when she presses Esc, then the panel closes and focus is on the comment control. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -38,9 +38,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-show-resolved-1** (FR-015): Given one resolved thread and the panel open, when Maya turns on Resolved, then the list shows four threads in page order with the resolved one marked "· resolved" and offering Reopen. _(proven in the prototype, 2026-11-10)_
+- **AC-show-resolved-1** (FR-015): Given one resolved thread and the panel open, when Maya turns on Resolved, then the list shows four threads in page order with the resolved one marked "· resolved" and offering Reopen. _(proven in the prototype, 2026-11-26)_
   - Set up: the all-comments screen, then Resolve on the pin thread.
-- **AC-show-resolved-2** (FR-015): Given Resolved on, when she turns it off, then the resolved thread leaves the list and the open three remain. _(proven in the prototype, 2026-11-10)_
+- **AC-show-resolved-2** (FR-015): Given Resolved on, when she turns it off, then the resolved thread leaves the list and the open three remain. _(proven in the prototype, 2026-11-26)_
 
 </details>
 

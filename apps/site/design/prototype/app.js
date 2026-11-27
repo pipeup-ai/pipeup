@@ -7,8 +7,11 @@
  *   block; words threads mark their words with cmp-highlight. A thread takes replies, reactions (the quick row) and
  *   the More menu (Copy thread, Edit, Delete with its dialog).
  * - Cancel or Esc with words typed shows "Comment discarded." with Undo (also ⌘Z) for a few seconds.
- * - The corner tag (cmp-comment-control) counts the open threads and opens the menu (cmp-popover-menu): the name
- *   row edits in place, Copy comments as Markdown or as text, Theme, All comments, Hide comments, Start commenting.
+ * - The corner tag (cmp-comment-control) counts the open threads; one click starts and stops comment mode, and the ⋯
+ *   beside it (press and hold by touch, ↑ from the keyboard) opens the menu (cmp-popover-menu): where comments are, the
+ *   name row edits in place, Copy comments as Markdown or as text, Theme, All comments, Hide comments, Start commenting.
+ * - Comment mode's first run shows one hint; a sent comment closes to its compact card and opens to read with a quiet
+ *   reply line; selecting words offers the icon in comment mode and out of it (Pipeup 0.9.0 to 1.1.0).
  * - All comments (cmp-comments-panel) lists every thread beside the page with its filters and the footer the control
  *   turns into; one thread is open at a time, in the panel while it is open.
  * - Each step's route is a view of this page (#open-page … #undo-a-cancel): opening one sets the state the step
@@ -26,7 +29,7 @@
   var CLOCK = (window.DA_PROTOTYPE && window.DA_PROTOTYPE.clock) || "2026-10-28T10:47";
   var ORDER = ["kicker", "title", "lede", "river-heading", "river-rose", "raise-the-deck", "gone", "path-heading", "pin-spot", "path-washed"];
   var SECTIONS = { "river-heading": "The river", "river-rose": "The river", "raise-the-deck": "The river", "path-heading": "The path", "pin-spot": "The path", "path-washed": "The path" };
-  var EMOJI = [["👍", "thumbs up"], ["❤️", "heart"], ["😂", "laughing"], ["🎉", "party"], ["🤔", "thinking"]];
+  var EMOJI = [["👍", "thumbs up"], ["❤️", "heart"], ["😂", "laughing"], ["🎉", "party"], ["😮", "surprised"], ["🙏", "thanks"]];
   var SEED = [
     { id: "t1", block: "raise-the-deck", kind: "block", quote: "", text: "Two days is optimistic. Last time the same job took a week; say so, or give a range.", at: "2026-10-28T10:42" },
     { id: "t2", block: "river-rose", kind: "words", quote: "rose twice that week", text: "Was it twice? The log says once, on the 14th.", at: "2026-10-28T10:45" },
@@ -34,6 +37,7 @@
   ];
   var REPLY_SAMPLE = "Or give a range: two days with the water low, a week otherwise.";
   var PAGE = doc.body.getAttribute("data-page") || "review";
+  var messageTimer = null;
   var DECK = PAGE === "deck";
   var SLIDES = ["Autumn at the footbridge", "Raise the deck before spring", "Mend the path"];
   var DECK_SEED = [
@@ -108,12 +112,174 @@
     }, settle());
   }
 
+
+  // ---- Pipeup for browsers, in Safari (safari.html): the extension's own states, nothing of the page's Pipeup
+  if (PAGE === "safari") {
+    var S = {
+      get: function (k, d) { var v = P.ui(k); return v === undefined || v === null || v === "" ? d : v; },
+      set: function (k, v) { P.ui(k, v); }
+    };
+    var sMenuPanel = doc.querySelector('[data-ref="menu"] > .ds-popover-menu__panel');
+    var sButton = doc.querySelector('[data-ref="toolbar-button"]');
+    var sSheet = doc.getElementById("safari-sheet");
+    var sHint = doc.querySelector("[data-s-hint]"), sSaved = doc.querySelector("[data-s-saved]");
+    var sColumn = doc.querySelector("[data-s-column]");
+    var sBlock = doc.querySelector('.ds-naming-bar[data-block="launch"]');
+    var sApp = doc.querySelector("[data-app-window]"), sBrowser = doc.querySelector("[data-browser]");
+    var S_CLOCK = CLOCK;
+    function sText() { return S.get("stext", ""); }
+    function sComments() { return sText() ? 1 : 0; }
+    function sOn() { return S.get("son", "") === "1"; }
+    function sMode() { return S.get("smode", "") === "1"; }
+    function sBuiltIn() { return S.get("sbuilt", "") === "1"; }
+    function sMenuOpen() { return sMenuPanel && !sMenuPanel.hidden; }
+    function sOpenMenu() { if (!sMenuOpen()) sButton.click(); }
+    function sCloseMenu() { if (sMenuOpen()) sButton.click(); }
+    function sArrive(el) { arrive(el); }
+    function sLeave(el, done) { leave(el, done); }
+    function sMessage(text) { var m = sSaved.querySelector("[data-s-message]"); m.textContent = text; if (sSaved.hidden) sArrive(sSaved); clearTimeout(messageTimer); messageTimer = setTimeout(function () { sLeave(sSaved); }, 6000); }
+    function sRender() {
+      var app = S.get("sview", "") === "turn-on-in-safari";
+      sApp.hidden = !app; sBrowser.hidden = app;
+      var appOn = S.get("sapp", "") === "1";
+      doc.querySelector("[data-app-line]").textContent = appOn ? "Pipeup is on in Safari." : "Turn on Pipeup in Safari.";
+      doc.querySelector("[data-app-help]").textContent = appOn ? "Press its button on any page." : "Under Extensions, tick Pipeup.";
+      doc.querySelector("[data-app-button]").textContent = appOn ? "Try it on a sample page" : "Open Safari Settings";
+      doc.querySelector("[data-app-drawing]").textContent = appOn ? "A page where the pointer picks a sentence, a comment is typed and sent, and its mark stays (a moving drawing; still under reduced motion)" : "Safari's Extensions pane, where the pointer ticks Pipeup's row (a moving drawing; still under reduced motion)";
+      var built = sBuiltIn(), on = sOn() && !built, mode = on && sMode(), n = sComments();
+      doc.querySelector("[data-address]").textContent = built ? "notes.example/footbridge" : "lumen.example/launch-plan";
+      doc.querySelector("[data-address-line]").textContent = built ? "notes.example/footbridge" : "lumen.example/launch-plan";
+      doc.querySelectorAll("[data-off]").forEach(function (li) { li.hidden = on || built; });
+      doc.querySelectorAll("[data-on]").forEach(function (li) { li.hidden = !on; });
+      doc.querySelectorAll("[data-built-in]").forEach(function (li) { li.hidden = !built; });
+      doc.querySelectorAll("[data-save]").forEach(function (li) { li.hidden = !on || S.get("ssave", "") !== "1"; });
+      doc.querySelector('[data-s="save"]').setAttribute("aria-expanded", S.get("ssave", "") === "1" ? "true" : "false");
+      doc.querySelector("[data-s-save-icon]").setAttribute("data-icon", S.get("ssave", "") === "1" ? "chevron-down" : "chevron-right");
+      doc.querySelector("[data-asks]").hidden = on || built || S.get("sasked", "") === "1";
+      doc.querySelector("[data-s-count]").textContent = String(n);
+      doc.querySelector("[data-s-name]").textContent = S.get("sname", "") || "Add your name";
+      doc.querySelector('[data-s="mode"]').setAttribute("aria-pressed", mode ? "true" : "false");
+      doc.querySelectorAll("[data-shortcut]").forEach(function (e) { e.textContent = shortcut(); });
+      // the badge
+      var badge = sButton.querySelector(".ds-browser-chrome__badge"), want = n ? String(n) : mode ? "on" : "";
+      if (want && !badge) { badge = doc.createElement("span"); badge.className = "ds-browser-chrome__badge"; sButton.appendChild(badge); sArrive(badge); }
+      if (badge) { if (want) badge.textContent = want; else badge.remove(); }
+      sButton.setAttribute("aria-label", "Pipeup" + (n ? ", " + n + " comment" + (n === 1 ? "" : "s") + " on this page" : mode ? ", commenting" : ""));
+      doc.querySelector("[data-kicker]").textContent = built ? "Field notes · October" : "Lumen · draft for review";
+      doc.querySelector("[data-title]").textContent = built ? "Autumn at the footbridge" : "Lumen launch plan";
+      doc.querySelector("[data-own-control]").hidden = !built;
+      // the page: the picked paragraph, the box, the card
+      var bar = sBlock.querySelector(".ds-naming-bar__bar"), content = sBlock.querySelector("[data-launch]");
+      var picked = mode && !sText() && S.get("spicked", "") === "1";
+      content.classList.toggle("ds-naming-bar__target", picked);
+      if (picked && bar.hidden) sArrive(bar); else if (!picked && !bar.hidden && !bar.hasAttribute("data-ds-leaving")) sLeave(bar);
+      var composing = mode && S.get("scompose", "") === "1" && !sText();
+      var html = "";
+      if (composing) html = '<article class="ds-comment-card ds-comment-card--composing" aria-label="New comment" data-ref="new-comment" data-compose><div class="ds-comment-card__you">' + avatarS() + "<span>You're " + esc(S.get("sname", "") || "Green Otter") + '</span><button class="ds-button ds-button--link" type="button" data-s="name">' + (S.get("sname", "") ? "edit name" : "add your name") + '</button></div><div class="ds-comment-card__box"><div class="ds-text-field"><label class="ds-text-field__label ds-visually-hidden" for="first-comment-text">Comment</label><textarea class="ds-text-field__input" id="first-comment-text" rows="3" placeholder="Comment or add others with @" data-s-text></textarea></div><div class="ds-comment-card__buttons"><button class="ds-button ds-button--quiet" type="button" data-s="cancel">Cancel</button><button class="ds-button ds-button--primary" type="button" aria-disabled="true" data-s="send">Comment</button></div></div></article>';
+      else if (sText()) html = '<article class="ds-comment-card" aria-label="Thread by ' + esc(S.get("sname", "") || "Green Otter") + '" data-ref="thread"><div class="ds-comment-card__head">' + avatarS() + '<span class="ds-comment-card__name">' + esc(S.get("sname", "") || "Green Otter") + '</span><span class="ds-comment-card__time" title="Today at ' + clockTime(S_CLOCK) + '">just now</span></div><p class="ds-comment-card__text">' + esc(sText()) + "</p></article>";
+      if ((sColumn.getAttribute("data-rendered") || "") !== html) { var draft = sColumn.querySelector("[data-s-text]"); var dv = draft ? draft.value : ""; sColumn.innerHTML = html; sColumn.setAttribute("data-rendered", html); var card = sColumn.querySelector(".ds-comment-card"); if (card) sArrive(card); var ta = sColumn.querySelector("[data-s-text]"); if (ta) { if (dv) ta.value = dv; ta.focus(); } }
+      var marker = content.querySelector(".ds-highlight");
+      if (sText() && !marker) content.innerHTML = '<button class="ds-highlight" type="button" aria-label="Comment by you: ' + esc(sText()) + '" data-s="open">' + content.textContent + "</button>";
+      else if (!sText() && marker) content.textContent = marker.textContent;
+      if (!mode && !sHint.hidden) sLeave(sHint);
+    }
+    function avatarS() { var nm = S.get("sname", "") || "Green Otter"; var ini = nm.split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase(); return '<span class="ds-avatar ds-avatar--sm" aria-hidden="true"><span class="ds-avatar__initials">' + esc(ini) + "</span></span>"; }
+    function sStart() {
+      // Comment on this page, the shortcut or the right-click item: in Safari the first time asks once, then the press goes through
+      if (S.get("sallowed", "") !== "1") { sCloseMenu(); sSheet.showModal(); return; }
+      sCloseMenu(); S.set("son", "1"); S.set("smode", "1");
+      if (S.get("shinted", "") !== "1") { S.set("shinted", "1"); sArrive(sHint); }
+      sRender();
+    }
+    function sAllow(every) { S.set("sallowed", "1"); if (every) S.set("sasked", "1"); sSheet.close(); sStart(); }
+    function sSend() {
+      var ta = sColumn.querySelector("[data-s-text]"); if (!ta || !ta.value.trim()) return;
+      S.set("stext", ta.value.trim()); S.set("scompose", ""); S.set("spicked", "");
+      if (!sHint.hidden) sLeave(sHint); // the first comment answers the hint
+      sRender();
+      if (S.get("ssaidsaved", "") !== "1") { S.set("ssaidsaved", "1"); sMessage("Saved in this browser. Press Pipeup in the toolbar to copy, save or send them."); }
+    }
+    doc.addEventListener("click", function (e) {
+      var t = e.target, h;
+      if (t.closest("[data-gap]")) return;
+      if (t.closest("[data-app-button]")) { if (S.get("sapp", "") === "1") { S.set("sview", "press-pipeup"); location.hash = "press-pipeup"; } else { S.set("sapp", "1"); } sRender(); return; }
+      if ((h = t.closest("[data-s]"))) {
+        var k = h.getAttribute("data-s");
+        if (k === "start") sStart();
+        else if (k === "allow") sAllow(false);
+        else if (k === "allow-all") sAllow(true);
+        else if (k === "mode") { S.set("smode", sMode() ? "" : "1"); if (!sMode()) { S.set("spicked", ""); S.set("scompose", ""); } sRender(); }
+        else if (k === "save") { S.set("ssave", S.get("ssave", "") === "1" ? "" : "1"); sRender(); }
+        else if (k === "copy") { var label = doc.querySelector("[data-s-copy-label]"); sCloseMenu(); if (!sComments()) { sMessage("No open comments to copy."); return; } label.textContent = "Copied"; setTimeout(function () { label.textContent = "Copy comments"; }, 1500); sMessage("Copied 1 comment: paste it anywhere."); }
+        else if (k === "file-md" || k === "file-pu") { sCloseMenu(); sMessage(k === "file-md" ? "Saved lumen-launch-plan.md to Downloads." : "Saved lumen-launch-plan.pipeup to Downloads."); S.set("ssave", ""); sRender(); }
+        else if (k === "your") { sCloseMenu(); notDesignedS("Your comments on this page opens Pipeup's own panel on the page: Go through every comment, with the name and the Comment switch in its bar"); }
+        else if (k === "name") { var nm = window.prompt ? "" : ""; S.set("sname", "Maya Lindqvist"); sRender(); }
+        else if (k === "cancel") { S.set("scompose", ""); sRender(); }
+        else if (k === "send") sSend();
+        else if (k === "open") notDesignedS("The thread opens to read as in Review a document");
+        return;
+      }
+      if (t.closest(".ds-popover-menu") || t.closest(".ds-dialog") || t.closest(".ds-comment-card") || t.closest(".ds-inline-alert")) return;
+      if (sOn() && sMode() && !sText()) {
+        var w = t.closest('.ds-naming-bar[data-block="launch"]');
+        if (w) { S.set("spicked", "1"); S.set("scompose", "1"); sRender(); return; }
+      }
+    }, true);
+    function notDesignedS(q) { var gap = doc.createElement("button"); gap.setAttribute("data-gap", q); gap.hidden = true; doc.body.appendChild(gap); gap.click(); gap.remove(); }
+    sBrowser.addEventListener("mousemove", function (e) {
+      if (!(sOn() && sMode()) || sText() || S.get("scompose", "") === "1") return;
+      var over = !!(e.target.closest && e.target.closest('.ds-naming-bar[data-block="launch"]'));
+      if (over !== (S.get("spicked", "") === "1")) { S.set("spicked", over ? "1" : ""); sRender(); }
+    });
+    doc.addEventListener("input", function (e) { var ta = e.target.closest && e.target.closest("[data-s-text]"); if (!ta) return; var b = doc.querySelector('[data-s="send"]'); if (b) { if (ta.value.trim()) b.removeAttribute("aria-disabled"); else b.setAttribute("aria-disabled", "true"); } });
+    doc.addEventListener("keydown", function (e) {
+      if (e.code === "KeyC" && e.shiftKey && e.altKey && !e.metaKey && !e.ctrlKey && !e.repeat) { e.preventDefault(); if (sBuiltIn()) { notDesignedS("The page's own Pipeup takes the shortcut: Review a document"); return; } if (!sOn()) sStart(); else { S.set("smode", sMode() ? "" : "1"); sRender(); } return; }
+      if (e.key === "Enter" && !e.shiftKey && e.target.closest && e.target.closest("[data-s-text]")) { e.preventDefault(); sSend(); return; }
+      if (e.key === "Escape") {
+        if (sSheet.open) return;
+        if (e.target.closest && e.target.closest("[data-s-text]")) { S.set("scompose", ""); sRender(); return; }
+        if (sMenuOpen()) return;
+        if (sOn() && sMode()) { S.set("smode", ""); S.set("spicked", ""); sRender(); }
+      }
+    }, true);
+    var sBatching = false;
+    function sView(name) {
+      sBatching = true;
+      ["son", "smode", "stext", "scompose", "spicked", "ssave", "sapp", "sallowed", "sasked", "shinted", "ssaidsaved", "sname", "sbuilt"].forEach(function (k) { S.set(k, ""); });
+      S.set("sview", name);
+      sHint.hidden = true; sSaved.hidden = true; sColumn.innerHTML = ""; sColumn.removeAttribute("data-rendered");
+      var after = null;
+      switch (name) {
+        case "turn-on-in-safari": break;
+        case "press-pipeup": after = sOpenMenu; break;
+        case "allow-once": after = function () { sSheet.showModal(); }; break;
+        case "first-comment": S.set("sallowed", "1"); S.set("sasked", "1"); S.set("son", "1"); S.set("smode", "1"); S.set("shinted", "1"); S.set("spicked", "1"); S.set("scompose", "1"); break;
+        case "the-menu": S.set("sallowed", "1"); S.set("sasked", "1"); S.set("son", "1"); S.set("shinted", "1"); S.set("ssaidsaved", "1"); S.set("stext", "Two weeks after the beta is tight; say which week."); after = sOpenMenu; break;
+        case "built-in-page": S.set("sallowed", "1"); S.set("sasked", "1"); S.set("sbuilt", "1"); after = sOpenMenu; break;
+        default: break;
+      }
+      sBatching = false;
+      sRender();
+      if (after) setTimeout(after, 0);
+    }
+    function sCurrent() { return (location.hash || "").replace(/^#/, "").split(";")[0]; }
+    P.on("change", function () { if (sBatching) return; try { sRender(); } catch (err) { if (window.console) console.error(err); } });
+    window.addEventListener("hashchange", function () { var v = sCurrent(); if (v) sView(v); });
+    var sStartUp = function () { var v = sCurrent(); if (v) sView(v); else sView("turn-on-in-safari"); };
+    if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", sStartUp); else sStartUp();
+    return;
+  }
+
   // ---- the page
 
   var report = doc.querySelector('[data-ref="report"], [data-ref="deck"]');
   var body = doc.querySelector("[data-body]");
   var control = doc.querySelector('[data-ref="comment-control"]');
   var controlRow = doc.querySelector('[data-ref="control-row"]');
+  var more = doc.querySelector('[data-ref="menu-more"]');
+  var modeHint = doc.querySelector('[data-ref="mode-hint"]');
+  var holdTimer = null, held = false;
+  var typingReply = {}; // the open card's quiet reply line has grown into the box (kept out of the store so typing never re-renders)
   var panel = doc.querySelector('.ds-popover-menu[data-ref="menu"] > .ds-popover-menu__panel');
   var side = doc.querySelector('[data-ref="comments-panel"]');
   var copiedMessage = doc.querySelector('[data-ref="copied-message"]');
@@ -124,7 +290,6 @@
   var dialog = doc.getElementById("delete-dialog");
   var shown = {};
   var hoverBlock = "";
-  var messageTimer = null;
   var undoTimer = null;
   var deleting = "";
 
@@ -186,8 +351,9 @@
         t.replies.forEach(function (r) { h += '<li class="ds-comment-card__reply"><div class="ds-comment-card__head">' + avatar(r) + '<span class="ds-comment-card__name">' + esc(writer(r)) + '</span><span class="ds-comment-card__time" title="Today at ' + clockTime(r.at) + '">' + ago(r.at) + '</span></div><p class="ds-comment-card__text">' + esc(r.text) + "</p></li>"; });
         h += "</ul>";
       }
-      h += '<div class="ds-comment-card__box"><div class="ds-text-field"><label class="ds-text-field__label ds-visually-hidden" for="reply-' + t.id + '">Reply</label><textarea class="ds-text-field__input" id="reply-' + t.id + '" rows="2" placeholder="Reply or add others with @" data-reply="' + t.id + '"></textarea></div>' +
-        '<div class="ds-comment-card__buttons"><button class="ds-button ds-button--quiet" type="button" data-cancel-reply>Cancel</button><button class="ds-button ds-button--primary" type="button" aria-disabled="true" data-reply-send="' + t.id + '">Reply</button></div></div>';
+      var typing = !!typingReply[t.id];
+      h += '<div class="ds-comment-card__box"><div class="ds-text-field"><label class="ds-text-field__label ds-visually-hidden" for="reply-' + t.id + '">Reply</label><textarea class="ds-text-field__input" id="reply-' + t.id + '" rows="' + (typing ? 2 : 1) + '" placeholder="Reply or add others with @" data-reply="' + t.id + '"></textarea></div>' +
+        (typing ? '<div class="ds-comment-card__buttons"><button class="ds-button ds-button--quiet" type="button" data-cancel-reply>Cancel</button><button class="ds-button ds-button--primary" type="button" aria-disabled="true" data-reply-send="' + t.id + '">Reply</button></div>' : '') + '</div>';
     } else if (t.replies && t.replies.length) h += '<p class="ds-comment-card__count">' + t.replies.length + (t.replies.length === 1 ? " reply" : " replies") + "</p>";
     return h + "</article>";
   }
@@ -334,8 +500,7 @@
     doc.querySelectorAll("[data-column]").forEach(function (col) {
       var id = col.getAttribute("data-column");
       var html = "";
-      if (id === "kicker" && get("handoff", "") === "1" && PAGE === "author") html = promptCard(open);
-      else if (id === "river-rose" && blockedText && !blockedMessage.hidden) html = '<div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="markdown-text"><div class="ds-code-block__header"><span class="ds-code-block__title">Your comments as Markdown, selected</span></div><pre class="ds-code-block__code"><code>' + esc(blockedText) + "</code></pre></div>";
+      if (id === "river-rose" && blockedText && !blockedMessage.hidden) html = '<div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="markdown-text"><div class="ds-code-block__header"><span class="ds-code-block__title">Your comments as Markdown, selected</span></div><pre class="ds-code-block__code"><code>' + esc(blockedText) + "</code></pre></div>";
       else {
         if (c && c.block === id && !inPanel) html += composingCard(c);
         if (!hide) open.filter(function (t) { return t.block === id; }).forEach(function (t) { html += card(t, openId === t.id && !inPanel); });
@@ -408,14 +573,17 @@
     return section + " › " + (w ? w.getAttribute("data-kind") : "Block") + " \"" + (w ? words(w) : t.block) + "…\"";
   }
   function threadLines(t) {
-    var out = ["## " + where(t), "- " + writer(t) + ", " + clockTime(t.at) + ": " + t.text];
+    var out = ["## " + where(t)];
+    if (t.kind === "words") out.push("> " + t.quote); else if (t.kind === "pin") out.push("> Pin");
+    out.push("- " + writer(t) + ", " + clockTime(t.at) + ": " + t.text);
     (t.replies || []).forEach(function (r) { out.push("  - " + writer(r) + ", " + clockTime(r.at) + ": " + r.text); });
     return out;
   }
   function markdown(list) {
-    var out = ["# Comments on Autumn at the footbridge", list.length + " open thread" + (list.length === 1 ? "" : "s") + " · exported today at " + clockTime(CLOCK) + " (resolved threads left out)"];
+    var who = []; list.forEach(function (t) { [t].concat(t.replies || []).forEach(function (x) { var w = writer(x); if (who.indexOf(w) < 0) who.push(w); }); });
+    var out = ["# Comments on Autumn at the footbridge", list.length + " open comment" + (list.length === 1 ? "" : "s") + " by " + (who.join(", ") || name()) + ", copied today at " + clockTime(CLOCK) + ".", location.href.split("#")[0]];
     list.forEach(function (t) { out.push(""); out = out.concat(threadLines(t)); });
-    out.push("", "Work through each thread and say what changed.");
+    out.push("", "For an AI assistant: work through the open comments above in order and say what changed; a reply goes under its comment.");
     return out.join("\n");
   }
   function plain(list) {
@@ -423,7 +591,13 @@
     list.forEach(function (t) { out.push(where(t), writer(t) + ": " + t.text); (t.replies || []).forEach(function (r) { out.push(writer(r) + ": " + r.text); }); out.push(""); });
     return out.join("\n").trim();
   }
-  function closeMenu() { if (panel && !panel.hidden) control.click(); }
+  function closeMenu() { if (panel && !panel.hidden) more.click(); }
+  function openMenu() { if (panel && panel.hidden) more.click(); }
+  function agentText(open) {
+    var out = ["These comments were left in the reviewer's browser; they are not in the page's file.", "Answer each one in a replies block the page can read, under its comment's id; you may mark a thread addressed, never resolve it.", "Page: " + location.href.split("#")[0] + " · document id: prototype-autumn", ""];
+    open.forEach(function (t) { out.push("[" + t.id + "] " + where(t)); out.push("  " + writer(t) + ", " + clockTime(t.at) + ": " + t.text); (t.replies || []).forEach(function (r) { out.push("  - " + writer(r) + ", " + clockTime(r.at) + ": " + r.text); }); out.push(""); });
+    return out.join("\n").trim();
+  }
   function promptCard(open) {
     var text = "Work through each thread below and say what changed.\n\n" + markdown(open);
     return '<section class="ds-prompt-card ds-prompt-card--ring" aria-label="Prompt: Ask your agent" data-ds="prompt-card" data-ref="agent-prompt"><div class="ds-prompt-card__header"><div class="ds-prompt-card__heading ds-visually-hidden"><h2 class="ds-prompt-card__title">Ask your agent</h2><p class="ds-prompt-card__meta">For any coding agent · ' + open.length + ' threads</p></div><div class="ds-prompt-card__actions"><button class="ds-button ds-button--secondary ds-button--join-start ds-button--ringed" type="button" data-ds-copy data-prompt-copy><span class="ds-icon ds-button__copy-icon" data-icon="copy"></span><span class="ds-icon ds-button__done-icon" data-icon="check"></span><span class="ds-button__label"><span data-ds-copy-label>Copy prompt</span><span class="ds-button__sizer" aria-hidden="true">Press Ctrl+C</span><span class="ds-button__sizer" aria-hidden="true">Copy prompt</span></span></button><div class="ds-popover-menu ds-popover-menu--split" data-ds="popover-menu"><button class="ds-button ds-button--secondary ds-button--join-end ds-button--ringed ds-popover-menu__trigger" type="button" aria-expanded="false"><span class="ds-icon" data-icon="chevron-down"></span><span class="ds-visually-hidden">More ways to take this prompt</span></button><div class="ds-popover-menu__panel" hidden><ul class="ds-popover-menu__items" aria-label="More ways to take this prompt"><li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-ds-prompt-view>View prompt</button></li><li><button class="ds-button ds-button--quiet ds-popover-menu__item" type="button" data-ds-prompt-save><span data-ds-prompt-save-label>Save as Markdown</span></button></li></ul></div></div></div></div><div class="ds-prompt-card__text"><div class="ds-code-block ds-code-block--flush ds-code-block--compact" data-ds="code-block"><pre class="ds-code-block__code"><code>' + esc(text) + "</code></pre></div></div></section>";
@@ -431,14 +605,13 @@
 
   function copyAll(kind) {
     var open = threads().filter(function (t) { return !t.resolved; });
-    var text = kind === "markdown" ? markdown(open) : plain(open);
+    var text = kind === "markdown" ? markdown(open) : kind === "agent" ? agentText(open) : plain(open);
     var labels = doc.querySelectorAll('[data-menu="' + kind + '"] [data-label]');
     if (!open.length) { closeMenu(); message(copiedMessage, "No open comments to copy.", 4000); return; }
     function ok() {
       labels.forEach(function (label) { var original = label.textContent; label.textContent = "Copied"; setTimeout(function () { label.textContent = original; }, 1500); });
       closeMenu();
-      message(copiedMessage, "Copied " + open.length + " comment" + (open.length === 1 ? "" : "s") + " as " + (kind === "markdown" ? "Markdown" : "text") + ".", 4000);
-      if (PAGE === "author" && kind === "markdown") { set("handoff", "1"); render(); }
+      message(copiedMessage, "Copied " + open.length + " comment" + (open.length === 1 ? "" : "s") + (kind === "agent" ? " for your agent." : " as " + (kind === "markdown" ? "Markdown" : "text") + "."), 4000);
     }
     function blocked() {
       closeMenu();
@@ -462,6 +635,8 @@
   function setMode(on) {
     set("mode", on ? "1" : "");
     if (!on) { hoverBlock = ""; set("selection", ""); }
+    if (on && modeHint && get("hinted", "") !== "1") { set("hinted", "1"); arrive(modeHint); }
+    else if (!on && modeHint && !modeHint.hidden) leave(modeHint);
     render();
   }
   function startCompose(c) {
@@ -505,12 +680,13 @@
     list.push(t);
     saveThreads(list);
     Object.keys(shown).forEach(function (k) { if (k.indexOf("compose:") === 0) delete shown[k]; });
-    set("compose", ""); set("open", t.id); set("focusReply", "1");
+    set("compose", ""); set("open", "");
     render();
   }
   function openThread(id) {
     var th = thread(id);
     if (DECK && th && th.block !== "slide-" + slide()) set("slide", String(th.block).replace("slide-", ""));
+    delete typingReply[id];
     set("open", id); set("react", ""); set("edit", ""); set("focusReply", "1"); render();
     var t = thread(id), w = t && blockEl(t.block === "pin-spot" ? "path-heading" : t.block);
     if (panelOpen() && w && w.scrollIntoView) w.scrollIntoView({ block: "center" });
@@ -532,6 +708,7 @@
     if (!ta || !ta.value.trim()) return;
     var text = ta.value.trim();
     updateThread(id, function (t) { t.replies = (t.replies || []).concat([{ text: text, at: CLOCK }]); });
+    delete typingReply[id];
     set("focusReply", "1");
     render();
     var r = doc.querySelector('[data-reply="' + id + '"]'); if (r) r.value = "";
@@ -567,7 +744,6 @@
   report.addEventListener("mouseleave", function () { if (hoverBlock) { hoverBlock = ""; render(); } });
 
   doc.addEventListener("mouseup", function () {
-    if (!mode()) return;
     var s = window.getSelection();
     if (!s || s.isCollapsed) return;
     var text = s.toString().trim();
@@ -584,11 +760,15 @@
     var t = e.target;
     if (t.closest("[data-gap]")) return; // the runtime says it is not designed
     var h;
-    if (t.closest('[data-ref="comment-control"]')) { // the copy choices are folded each time the menu opens
+    if (t.closest('[data-ref="menu-more"]')) { // the copy choices are folded each time the menu opens
       doc.querySelectorAll("[data-copy-choice]").forEach(function (li) { li.hidden = true; });
       doc.querySelector('[data-menu="copy"]').setAttribute("aria-expanded", "false");
       if (get("nameEditing", "") === "menu") set("nameEditing", "");
       return;
+    }
+    if (t.closest('[data-ref="comment-control"]')) { // one click starts commenting, another stops it
+      if (held) { held = false; return; } // a press-and-hold opened the menu instead
+      closeMenu(); setMode(!mode()); return;
     }
     if (t.closest("[data-undo]")) { undo(); return; }
     if ((h = t.closest("[data-selection-icon]"))) { var sel = selection(); if (sel) startCompose({ block: sel.block, kind: "words", quote: sel.quote }); return; }
@@ -633,7 +813,7 @@
         var wasOpen = h.getAttribute("aria-expanded") === "true";
         h.setAttribute("aria-expanded", wasOpen ? "false" : "true");
         doc.querySelectorAll("[data-copy-choice]").forEach(function (li) { li.hidden = wasOpen; }); // instant: the choices unfold inside the open panel, which has already settled
-      } else if (m === "markdown" || m === "text") copyAll(m);
+      } else if (m === "markdown" || m === "text" || m === "agent") copyAll(m);
       else if (m === "theme") { var cur = root.getAttribute("data-ds-theme"); if (!cur) root.setAttribute("data-ds-theme", "light"); else if (cur === "light") root.setAttribute("data-ds-theme", "dark"); else root.removeAttribute("data-ds-theme"); render(); }
       else if (m === "hide") { var h2 = !hidden(); if (h2) { doc.querySelectorAll(".ds-comment-card, .ds-pin").forEach(function (el) { el.setAttribute("data-ds-leaving", ""); }); setTimeout(function () { set("hide", "1"); render(); }, settle()); } else { set("hide", ""); render(); } }
       else if (m === "mode") setMode(!mode());
@@ -655,6 +835,7 @@
       var c = compose(), ct = doc.querySelector("[data-compose-text]");
       if (c && !(ct && ct.value.trim())) { discard("comment"); return; }
     }
+    if (!mode() && selection()) { var sw = t.closest(".ds-naming-bar[data-block]"); if (!sw || sw.getAttribute("data-block") !== selection().block) { set("selection", ""); render(); } }
     if (get("open", "") && !panelOpen()) closeThread();
   }, true);
 
@@ -677,6 +858,13 @@
     control.focus();
   }
 
+  control.addEventListener("pointerdown", function (e) {
+    if (e.pointerType !== "touch") return;
+    held = false; clearTimeout(holdTimer);
+    holdTimer = setTimeout(function () { held = true; openMenu(); }, 500);
+  });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) { control.addEventListener(ev, function () { clearTimeout(holdTimer); }); });
+
   doc.addEventListener("input", function (e) {
     var ta = e.target.closest ? e.target.closest("[data-compose-text]") : null;
     if (ta) {
@@ -686,7 +874,17 @@
       return;
     }
     var ra = e.target.closest ? e.target.closest("[data-reply]") : null;
-    if (ra) { var rb = doc.querySelector('[data-reply-send="' + ra.getAttribute("data-reply") + '"]'); if (rb) { if (ra.value.trim()) rb.removeAttribute("aria-disabled"); else rb.setAttribute("aria-disabled", "true"); } }
+    if (ra) {
+      var rid2 = ra.getAttribute("data-reply"), box = ra.closest(".ds-comment-card__box");
+      if (ra.value.trim() && !typingReply[rid2]) { // the quiet line grows into the box, in place, so the words and the focus stay
+        typingReply[rid2] = true; ra.setAttribute("rows", "2");
+        var buttons = doc.createElement("div"); buttons.className = "ds-comment-card__buttons";
+        buttons.innerHTML = '<button class="ds-button ds-button--quiet" type="button" data-cancel-reply>Cancel</button><button class="ds-button ds-button--primary" type="button" data-reply-send="' + rid2 + '">Reply</button>';
+        box.appendChild(buttons); arrive(buttons);
+        return;
+      }
+      var rb = doc.querySelector('[data-reply-send="' + rid2 + '"]'); if (rb) { if (ra.value.trim()) rb.removeAttribute("aria-disabled"); else rb.setAttribute("aria-disabled", "true"); }
+    }
   });
 
   doc.addEventListener("focusout", function (e) {
@@ -697,6 +895,7 @@
   doc.addEventListener("keydown", function (e) {
     var inField = e.target.closest && e.target.closest("input, textarea");
     if (e.code === "KeyC" && e.shiftKey && e.altKey && !e.metaKey && !e.ctrlKey && !e.repeat) { e.preventDefault(); setMode(!mode()); return; }
+    if (e.key === "ArrowUp" && e.target === control) { e.preventDefault(); openMenu(); return; }
     if (DECK && !inField && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { turn(e.key === "ArrowRight" ? 1 : -1); return; }
     if (e.key === "z" && (e.metaKey || e.ctrlKey) && !(inField && e.target.value) && json("undo", "null")) { e.preventDefault(); undo(); return; }
     if (e.key === "Enter" && e.target.closest && e.target.closest("[data-name-input]")) { e.preventDefault(); e.stopPropagation(); saveName(e.target, true); return; }
@@ -725,14 +924,16 @@
   var batching = false;
   function view(name) {
     batching = true;
-    var all = { threads: "[]", compose: "", open: "", selection: "", mode: "", hide: "", clipboardBlocked: "", blockedText: "", panel: "", forYou: "", showResolved: "", react: "", edit: "", undo: "", nameEditing: "", slide: "1", handoff: "", cut: "" };
+    var all = { threads: "[]", compose: "", open: "", selection: "", mode: "", hide: "", clipboardBlocked: "", blockedText: "", panel: "", forYou: "", showResolved: "", react: "", edit: "", undo: "", nameEditing: "", slide: "1", handoff: "", cut: "", hinted: "" };
+    typingReply = {};
+    if (modeHint && !modeHint.hidden) modeHint.hidden = true;
     Object.keys(all).forEach(function (k) { set(k, all[k]); });
     hoverBlock = ""; shown = {};
     var after = null;
     switch (name) {
-      case "pick-a-block": set("mode", "1"); hoverBlock = "raise-the-deck"; break;
+      case "pick-a-block": set("mode", "1"); hoverBlock = "raise-the-deck"; after = function () { set("hinted", "1"); arrive(modeHint); }; break;
       case "write-comment": set("mode", "1"); set("compose", JSON.stringify({ block: "raise-the-deck", kind: "block", text: "" })); set("focusCompose", "1"); break;
-      case "read-thread": saveThreads(seed(1)); set("open", "t1"); set("focusReply", "1"); break;
+      case "read-thread": saveThreads(seed(1)); set("hinted", "1"); break;
       case "answer-a-thread": saveThreads(seed(1)); set("open", "t1"); after = function () { var ta = doc.querySelector('[data-reply="t1"]'); if (ta) { ta.value = REPLY_SAMPLE; ta.dispatchEvent(new Event("input", { bubbles: true })); } var more = doc.querySelector('[data-thread="t1"] .ds-popover-menu__trigger'); if (more) more.click(); }; break;
       case "select-words": saveThreads(seed(1)); set("mode", "1"); set("selection", JSON.stringify({ block: "river-rose", quote: "rose twice that week" })); break;
       case "drop-a-pin": saveThreads(seed(2)); set("mode", "1"); set("compose", JSON.stringify({ block: "pin-spot", kind: "pin", text: "" })); set("focusCompose", "1"); break;
@@ -740,8 +941,8 @@
       case "delete-a-thread": saveThreads(seed(1)); set("open", "t1"); after = function () { var more = doc.querySelector('[data-thread="t1"] .ds-popover-menu__trigger'); if (more) more.click(); var del = doc.querySelector('[data-more="delete"]'); if (del) del.click(); }; break;
       case "resolve-a-thread": saveThreads(seed(3)); break;
       case "show-resolved": var sr = seed(3); sr[0].resolved = true; saveThreads(sr); set("panel", "1"); set("showResolved", "1"); break;
-      case "add-your-name": saveThreads(seed(3)); set("nameEditing", "menu"); set("focusName", "1"); after = function () { if (panel.hidden) control.click(); set("nameEditing", "menu"); set("focusName", "1"); render(); }; break;
-      case "copy-for-ai": saveThreads(seed(3)); after = function () { if (panel.hidden) control.click(); doc.querySelector('[data-menu="copy"]').click(); }; break;
+      case "add-your-name": saveThreads(seed(3)); set("nameEditing", "menu"); set("focusName", "1"); after = function () { openMenu(); set("nameEditing", "menu"); set("focusName", "1"); render(); }; break;
+      case "copy-for-ai": saveThreads(seed(3)); after = function () { openMenu(); doc.querySelector('[data-menu="copy"]').click(); }; break;
       case "clipboard-blocked": saveThreads(seed(3)); set("clipboardBlocked", "1"); after = function () { copyAll("markdown"); }; break;
       case "undo-a-cancel": set("mode", "1"); hoverBlock = "raise-the-deck"; set("undo", JSON.stringify({ block: "raise-the-deck", kind: "block", text: "Two days is optimistic." })); after = function () { message(discardedMessage, "Comment discarded.", 0); arrive(undoButton); clearTimeout(undoTimer); undoTimer = setTimeout(function () { leave(discardedMessage); leave(undoButton); set("undo", ""); }, 6000); }; break;
       case "open-on-phone": break;
@@ -755,7 +956,7 @@
       case "turn-the-slide": saveThreads(JSON.parse(JSON.stringify(DECK_SEED.slice(0, 2)))); set("slide", "3"); set("mode", "1"); break;
       case "comments-by-slide": saveThreads(JSON.parse(JSON.stringify(DECK_SEED))); set("slide", "2"); set("panel", "1"); set("open", "d2"); break;
       case "see-everyones-comments": saveThreads(JSON.parse(JSON.stringify(AUTHOR_SEED))); set("open", "a3"); break;
-      case "hand-to-agent": saveThreads(JSON.parse(JSON.stringify(AUTHOR_SEED))); after = function () { if (panel.hidden) control.click(); doc.querySelector('[data-menu="copy"]').click(); }; break;
+      case "hand-to-agent": saveThreads(JSON.parse(JSON.stringify(AUTHOR_SEED))); after = function () { openMenu(); doc.querySelector('[data-menu="copy"]').click(); }; break;
       default: break;
     }
     batching = false;

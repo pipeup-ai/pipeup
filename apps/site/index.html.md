@@ -2,6 +2,8 @@
 
 People comment right on your page: documents, decks or whole sites. No accounts, no servers. Comments stay in each person's browser until they send them to you.
 
+In Chrome, Pipeup for browsers adds comments to any page without a script tag: [Add to Chrome](https://chromewebstore.google.com/detail/pipeup/bpjgfiflacmcnnkiijgclbecnkeohcnd). Safari, Edge and Firefox follow when their listings are public.
+
 The home page shows Pipeup on a document, slides, a website and with the keyboard, beside four steps:
 
 1. **Copy the prompt** (the Copy prompt button). One copy per page: each copy carries a key of its own. What it says: [What your AI does](https://pipeup-ai.github.io/pipeup/prompt.html.md).

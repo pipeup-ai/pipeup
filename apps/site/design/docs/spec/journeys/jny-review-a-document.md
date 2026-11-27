@@ -13,10 +13,11 @@ Maya says what she thinks about a paragraph of a report, in place, and hands all
 
 - **FR-001** Pipeup adds one control to the page, flush with the bottom-right corner of the window, and nothing else; the page's own layout, look and behaviour outside comment mode stay exactly as the author made them.
 
-<details><summary>Acceptance criteria (2)</summary>
+<details><summary>Acceptance criteria (3)</summary>
 
-- **AC-open-page-1** (FR-001): Given the report opened from disk with Pipeup in it, when the page renders, then the only thing of Pipeup's on screen is the 32 px tag in the bottom-right corner, and every element of the author's page keeps its size, place and style. _(proven in the prototype, 2026-11-10)_
-- **AC-open-page-2** (FR-001): Given the page open, when Maya points at the tag, then its shortcut slides out to the left and the tag stays where it was. _(proven in the prototype, 2026-11-10)_
+- **AC-open-page-1** (FR-001): Given the report opened from disk with Pipeup in it, when the page renders, then the only thing of Pipeup's on screen is the 32 px tag in the bottom-right corner, and every element of the author's page keeps its size, place and style. _(proven in the prototype, 2026-11-26)_
+- **AC-open-page-2** (FR-001): Given the page open, when Maya points at the tag, then its shortcut and the ⋯ slide out to the left and the tag stays where it was. _(proven in the prototype, 2026-11-26)_
+- **AC-open-page-3** (FR-001): Given the page open, when Maya clicks the tag once, then comment mode is on and no menu has opened; the ⋯ beside it opens the menu. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -24,17 +25,19 @@ Maya says what she thinks about a paragraph of a report, in place, and hands all
 ![Pick a block to comment on](../../references/screens/jny-review-a-document/pick-a-block--default--desktop--dark.png)
 
 Wording (text the mock does not show as it is; `{…}` is what the data fills in):
+- "Click anything to comment · This button or Esc when you're done": the first-run hint, once per browser; where Pipeup's tag isn't shown (a page with its own button) it names no button.
 - "Section · {section}": the naming bar and the comment's place after Around it on a block in a section.
 - "Page · {title}": the same after a second Around it.
 
 - **FR-002** In comment mode, hovering outlines the most obvious block under the pointer and names it by what it is and its own words, with the choices to move the comment around it, inside it, or to a pin, and clicking a block opens the comment box at once.
 
-<details><summary>Acceptance criteria (4)</summary>
+<details><summary>Acceptance criteria (5)</summary>
 
-- **AC-pick-a-block-1** (FR-002): Given comment mode on, when Maya moves the pointer over the second paragraph, then a dashed outline surrounds that paragraph without changing its size or place, and the bar above it reads "Paragraph · We recommend raising the deck". _(proven in the prototype, 2026-11-10)_
-- **AC-pick-a-block-2** (FR-002): Given a block outlined, when Maya clicks it, then the comment box opens with the cursor in it, with no second click. _(proven in the prototype, 2026-11-10)_
-- **AC-pick-a-block-4** (FR-002): Given the second paragraph picked with words typed, when Maya presses Around it, then the comment box moves to the section The river with the words kept, and a second press moves it to the page as a whole. _(proven in the prototype, 2026-11-10)_
-- **AC-pick-a-block-3** (FR-002): Given comment mode on, when Maya presses Esc, then comment mode ends, the outline and bar fade out and the page behaves as normal. _(proven in the prototype, 2026-11-10)_
+- **AC-pick-a-block-1** (FR-002): Given comment mode on, when Maya moves the pointer over the second paragraph, then a dashed outline surrounds that paragraph without changing its size or place, and the bar above it reads "Paragraph · We recommend raising the deck". _(proven in the prototype, 2026-11-26)_
+- **AC-pick-a-block-2** (FR-002): Given a block outlined, when Maya clicks it, then the comment box opens with the cursor in it, with no second click. _(proven in the prototype, 2026-11-26)_
+- **AC-pick-a-block-4** (FR-002): Given the second paragraph picked with words typed, when Maya presses Around it, then the comment box moves to the section The river with the words kept, and a second press moves it to the page as a whole. _(proven in the prototype, 2026-11-26)_
+- **AC-pick-a-block-3** (FR-002): Given comment mode on, when Maya presses Esc, then comment mode ends, the outline, the bar and the hint fade out and the page behaves as normal. _(proven in the prototype, 2026-11-26)_
+- **AC-pick-a-block-5** (FR-002): Given comment mode on for the first time in this browser, when it starts, then one hint reads "Click anything to comment · This button or Esc when you're done", and the next time comment mode starts no hint shows. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -48,35 +51,35 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-write-comment-1** (FR-003): Given the comment box open and empty, when Maya looks at it, then it shows who she is with a way to change her name, the placeholder "Comment or add others with @", and a greyed Comment button. _(proven in the prototype, 2026-11-10)_
-- **AC-write-comment-2** (FR-003): Given words typed in the box, when Maya clicks on the page's blank space, then the box and its words stay where they are. _(proven in the prototype, 2026-11-10)_
-- **AC-write-comment-3** (FR-003): Given words typed, when Maya presses Enter, then the comment is sent and the box becomes a thread in the same place. _(proven in the prototype, 2026-11-10)_
+- **AC-write-comment-1** (FR-003): Given the comment box open and empty, when Maya looks at it, then it shows who she is with a way to change her name, the placeholder "Comment or add others with @", and a greyed Comment button. _(proven in the prototype, 2026-11-26)_
+- **AC-write-comment-2** (FR-003): Given words typed in the box, when Maya clicks on the page's blank space, then the box and its words stay where they are. _(proven in the prototype, 2026-11-26)_
+- **AC-write-comment-3** (FR-003): Given words typed, when Maya presses Enter, then the comment is sent, the box closes to a compact card in the same place, and the block keeps its marker. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
 ### Read it back beside the text
 ![Read it back beside the text](../../references/screens/jny-review-a-document/read-thread--default--desktop--dark.png)
 
-- **FR-004** Every thread shows as the same compact card wherever it appears: the writer, how long ago, the words and the reply count, with its actions on hover; on documents the cards sit in a column beside the content, level with what they are about, and open with a reply box.
+- **FR-004** Every thread shows as the same compact card wherever it appears: the writer, how long ago, the words and the reply count, with its actions on hover; on documents the cards sit in a column beside the content, level with what they are about, and a card opens to read with a quiet reply line.
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-read-thread-1** (FR-004): Given a comment just sent on the second paragraph, when the page is looked at, then a card with Maya's name, "just now" and her words sits in the column level with that paragraph, open, with the cursor in its reply box, and the corner tag reads 1. _(proven in the prototype, 2026-11-10)_
-- **AC-read-thread-2** (FR-004): Given the open card, when Maya presses Esc, then the card closes to its compact form and focus returns to the paragraph's highlight. _(proven in the prototype, 2026-11-10)_
-- **AC-read-thread-3** (FR-004): Given the compact card, when Maya points at it, then React, Resolve and More fade in at its top right and nothing on the card moves. _(proven in the prototype, 2026-11-10)_
+- **AC-read-thread-1** (FR-004): Given a comment just sent on the second paragraph, when the page is looked at, then a compact card with Maya's name, "just now" and her words sits in the column level with that paragraph, closed, and the corner tag reads 1. _(proven in the prototype, 2026-11-26)_
+- **AC-read-thread-2** (FR-004): Given the compact card, when Maya clicks it, then it opens to read with one quiet reply line beneath her words, and Esc closes it again with focus back on the paragraph's highlight. _(proven in the prototype, 2026-11-26)_
+- **AC-read-thread-3** (FR-004): Given the compact card, when Maya points at it, then React, Resolve and More fade in at its top right and nothing on the card moves. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
 ### Comment on a few words
 ![Comment on a few words](../../references/screens/jny-review-a-document/select-words--default--desktop--dark.png)
 
-- **FR-007** In comment mode, selecting words offers one comment icon just past the end of the paragraph's text, level with the selection's last line, never covering the words; pressing it opens the comment box for exactly those words, which then carry a soft highlight that opens the thread.
+- **FR-007** Selecting words, in comment mode or out of it, offers one comment icon just past the end of the paragraph's text, level with the selection's last line, never covering the words; pressing it opens the comment box for exactly those words, which then carry a soft highlight that opens the thread.
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-select-words-1** (FR-007): Given comment mode on, when Maya selects "rose twice that week" in the first paragraph, then one comment icon appears just past the end of that paragraph's text, level with the selection's last line, and no block outline shows. _(proven in the prototype, 2026-11-10)_
-- **AC-select-words-2** (FR-007): Given the icon showing, when she presses it and types, then the comment box opens in the column level with the paragraph and the selected words stay marked. _(proven in the prototype, 2026-11-10)_
-- **AC-select-words-3** (FR-007): Given comment mode off, when she selects words, then nothing of Pipeup's is offered. _(proven in the prototype, 2026-11-10)_
+- **AC-select-words-1** (FR-007): Given comment mode on, when Maya selects "rose twice that week" in the first paragraph, then one comment icon appears just past the end of that paragraph's text, level with the selection's last line, and no block outline shows. _(proven in the prototype, 2026-11-26)_
+- **AC-select-words-2** (FR-007): Given the icon showing, when she presses it and types, then the comment box opens in the column level with the paragraph and the selected words stay marked. _(proven in the prototype, 2026-11-26)_
+- **AC-select-words-3** (FR-007): Given comment mode off, when she selects words, then the same comment icon is offered, and commenting from it leaves comment mode off. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -87,9 +90,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-drop-a-pin-1** (FR-008): Given comment mode on, when Maya Option-clicks just under "The path", then a pin appears at that spot, open, and the comment box opens in the column level with it with the cursor in it. _(proven in the prototype, 2026-11-10)_
-- **AC-drop-a-pin-2** (FR-008): Given a pin's comment sent, when she looks at the page, then the pin shows 3 and the corner tag reads 3. _(proven in the prototype, 2026-11-10)_
-- **AC-drop-a-pin-3** (FR-008): Given the pin, when the window is resized, then the pin keeps its place relative to the heading it sits under. _(not tested in the prototype, 2026-11-10)_
+- **AC-drop-a-pin-1** (FR-008): Given comment mode on, when Maya Option-clicks just under "The path", then a pin appears at that spot, open, and the comment box opens in the column level with it with the cursor in it. _(proven in the prototype, 2026-11-26)_
+- **AC-drop-a-pin-2** (FR-008): Given a pin's comment sent, when she looks at the page, then the pin shows 3 and the corner tag reads 3. _(proven in the prototype, 2026-11-26)_
+- **AC-drop-a-pin-3** (FR-008): Given the pin, when the window is resized, then the pin keeps its place relative to the heading it sits under. _(not tested in the prototype, 2026-11-26)_
 
 </details>
 
@@ -103,14 +106,15 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 - "No open comments to copy.": when every thread is resolved or there is none.
 - "Hide comments · {state}": the switch's state, On or Off.
 - "Start commenting · {state}": the switch's state, On or Off.
+- "Only in this browser until you send them.": the quiet first line with plain Pipeup; an add-on with something to report puts its status there instead ("Shared · up to date", "Live · 2 here").
 
 - **FR-005** The comment control's menu offers Copy comments as Markdown and as text; the Markdown says, for every open thread, where it is (section, element, quoted words or pin), who wrote it and when, and the comment and its replies, and a message beside the control confirms the copy.
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-copy-for-ai-1** (FR-005): Given the tag outside comment mode, when Maya clicks it, then the menu rises above the tag with who she is, Copy comments, Theme, All comments · 3, Hide comments and Start commenting with its shortcut, in that order. _(proven in the prototype, 2026-11-10)_
-- **AC-copy-for-ai-2** (FR-005): Given the menu open, when Maya chooses Copy comments then As Markdown, then the clipboard holds Markdown that names the section, the element and the quoted words or the pin of each of her three threads, her name and time, and her words, and the message "Copied 3 comments as Markdown." shows beside the tag. _(proven in the prototype, 2026-11-10)_
-- **AC-copy-for-ai-3** (FR-005): Given one of the three threads resolved, when she copies as Markdown, then only the two open threads are in the text and the count says 2. _(proven in the prototype, 2026-11-10)_
+- **AC-copy-for-ai-1** (FR-005): Given the tag outside comment mode, when Maya presses the ⋯ beside it, then the menu rises above the tag with the quiet line about where comments are, who she is, Copy comments, Theme, All comments · 3, Hide comments and Start commenting with its shortcut, in that order. _(proven in the prototype, 2026-11-26)_
+- **AC-copy-for-ai-2** (FR-005): Given the menu open, when Maya chooses Copy comments then As Markdown, then the clipboard holds Markdown that opens with the page's title, the count and her name, and names the section, the element and the quoted words or the pin of each of her three threads with her words and time, and the message "Copied 3 comments as Markdown." shows beside the tag. _(proven in the prototype, 2026-11-26)_
+- **AC-copy-for-ai-3** (FR-005): Given one of the three threads resolved, when she copies as Markdown, then only the two open threads are in the text and the count says 2. _(proven in the prototype, 2026-11-26)_
   - Set up: the pin thread resolved from its card.
 
 </details>
@@ -125,9 +129,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-clipboard-blocked-1** (FR-006): Given a browser that refuses clipboard writes, when Maya chooses As Markdown, then the Markdown appears selected in a block beside the page and a message beside the tag names the copy key for her platform. _(proven in the prototype, 2026-11-10)_
+- **AC-clipboard-blocked-1** (FR-006): Given a browser that refuses clipboard writes, when Maya chooses As Markdown, then the Markdown appears selected in a block beside the page and a message beside the tag names the copy key for her platform. _(proven in the prototype, 2026-11-26)_
   - Set up: the browser's clipboard permission denied for the page.
-- **AC-clipboard-blocked-2** (FR-006): Given the text selected, when she presses the named key, then the clipboard holds the same Markdown and the message reads "Copied 3 comments as Markdown." _(proven in the prototype, 2026-11-10)_
+- **AC-clipboard-blocked-2** (FR-006): Given the text selected, when she presses the named key, then the clipboard holds the same Markdown and the message reads "Copied 3 comments as Markdown." _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -142,9 +146,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-undo-a-cancel-1** (FR-012): Given words typed in the comment box, when Maya presses Esc, then the box goes and a message beside the tag reads "Comment discarded." with Undo. _(proven in the prototype, 2026-11-10)_
-- **AC-undo-a-cancel-2** (FR-012): Given the message showing, when she presses Undo, then the box is back in the same place with the same words and the cursor at their end. _(proven in the prototype, 2026-11-10)_
-- **AC-undo-a-cancel-3** (FR-012): Given the message showing, when a few seconds pass, then the message and its Undo are gone. _(proven in the prototype, 2026-11-10)_
+- **AC-undo-a-cancel-1** (FR-012): Given words typed in the comment box, when Maya presses Esc, then the box goes and a message beside the tag reads "Comment discarded." with Undo. _(proven in the prototype, 2026-11-26)_
+- **AC-undo-a-cancel-2** (FR-012): Given the message showing, when she presses Undo, then the box is back in the same place with the same words and the cursor at their end. _(proven in the prototype, 2026-11-26)_
+- **AC-undo-a-cancel-3** (FR-012): Given the message showing, when a few seconds pass, then the message and its Undo are gone. _(proven in the prototype, 2026-11-26)_
   - Set up: the write-comment screen, words typed, then Esc.
 
 </details>

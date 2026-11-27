@@ -15,8 +15,8 @@ Tom gathers every reviewer's comments, pinned to their places and signed, in one
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-see-everyones-comments-1** (FR-020): Given five threads by three writers, when the page renders, then each card shows its writer's name and the tag reads 4. _(proven in the prototype, 2026-11-10)_
-- **AC-see-everyones-comments-2** (FR-020): Given a thread by Red Fox, when Tom opens its More menu, then it offers Copy thread only. _(proven in the prototype, 2026-11-10)_
+- **AC-see-everyones-comments-1** (FR-020): Given five threads by three writers, when the page renders, then each card shows its writer's name and the tag reads 4. _(proven in the prototype, 2026-11-26)_
+- **AC-see-everyones-comments-2** (FR-020): Given a thread by Red Fox, when Tom opens its More menu, then it offers Copy thread only. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -27,12 +27,12 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 - "Copied {n} comments as Markdown.": after As Markdown.
 - "{writer}, {time}: {words}": each comment and reply in the Markdown, so the agent knows who said it.
 
-- **FR-021** The copied Markdown names the writer and time of every comment and reply, and the author's page offers one prompt that carries it to a coding agent.
+- **FR-021** The copied Markdown names the writer and time of every comment and reply; with the agents add-on the menu offers Copy for my agent, which carries the open comments and how to answer them to a coding agent in one paste, and Paste my agent's replies, which brings the agent's answer back into the threads.
 
 <details><summary>Acceptance criteria (2)</summary>
 
-- **AC-hand-to-agent-1** (FR-021): Given four threads by three writers, when Tom copies as Markdown, then the clipboard names Maya Lindqvist, Red Fox and Otter on their comments and the message reads "Copied 4 comments as Markdown." _(proven in the prototype, 2026-11-10)_
-- **AC-hand-to-agent-2** (FR-021): Given the prompt card, when he presses Copy prompt, then the clipboard holds "Work through each thread below and say what changed." followed by the Markdown. _(proven in the prototype, 2026-11-10)_
+- **AC-hand-to-agent-1** (FR-021): Given four threads by three writers, when Tom copies as Markdown, then the clipboard names Maya Lindqvist, Red Fox and Otter on their comments and the message reads "Copied 4 comments as Markdown." _(proven in the prototype, 2026-11-26)_
+- **AC-hand-to-agent-2** (FR-021): Given the agents add-on on the page, when he chooses Copy for my agent, then the clipboard holds the four open comments with their places and how to answer them, and the message reads "Copied 4 comments for your agent." _(proven in the prototype, 2026-11-26)_
 
 </details>
 

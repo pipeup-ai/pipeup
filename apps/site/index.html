@@ -66,6 +66,11 @@
       .gh svg { display: block; transition: transform 0.26s var(--ease); }
       .gh:hover, .gh:focus-visible { color: var(--strong); }
       .gh:hover svg { transform: translateY(-1px); }
+      .links { display: inline-flex; align-items: center; gap: 22px; }
+      /* Add to <browser>: a quiet link in the header, there only when this browser has a public listing (website spec §3). */
+      .add { padding: 6px 12px 6px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--strong); transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease); }
+      .add:hover, .add:focus-visible { border-color: var(--strong); background: var(--bone); }
+      .add[hidden] { display: none; }
       .more-links { display: flex; gap: 22px; align-items: baseline; margin-left: auto; }
       .agents { position: relative; }
       .agents-link { color: var(--muted); text-decoration: none; transition: color 0.2s var(--ease); }
@@ -359,10 +364,16 @@
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" shape-rendering="geometricPrecision" aria-hidden="true"><path d="M20.5 11.5a8 8 0 0 1-11.7 7.1L4 19.8l1.2-4.4A8 8 0 1 1 20.5 11.5z" /></svg>
           Pipeup
         </span>
+        <span class="links">
+        <a class="gh add" id="add-to" href="https://chromewebstore.google.com/detail/pipeup/bpjgfiflacmcnnkiijgclbecnkeohcnd" target="_blank" rel="noopener" hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M4 9.5h16M7.5 6.8h.01"/></svg>
+          <span>Add to Chrome</span>
+        </a>
         <a class="gh" href="https://github.com/pipeup-ai/pipeup" aria-label="Pipeup on GitHub">
           <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z" /></svg>
           GitHub
         </a>
+        </span>
       </header>
 
       <section class="hero">
@@ -538,6 +549,24 @@
       );
       document.querySelectorAll(".rise").forEach((el) => io.observe(el));
       const isMac = /Mac|iP(hone|ad|od)/.test(navigator.platform);
+      // Add to <browser>: shown where this browser has a public listing of Pipeup for browsers, the same list the library
+      // uses on a page (functional spec §7c). Most specific name first; nothing on phones and tablets, or elsewhere.
+      (() => {
+        const ua = navigator.userAgent;
+        if (/Mobile|Android|iP(?:hone|ad)/.test(ua)) return;
+        const stores = [
+          [/\bEdg/, "Edge", ""],
+          [/Firefox\//, "Firefox", ""],
+          [/Chrom(?:e|ium)\//, "Chrome", "https://chromewebstore.google.com/detail/pipeup/bpjgfiflacmcnnkiijgclbecnkeohcnd"],
+          [/Version\/.*Safari\//, "Safari", ""],
+        ];
+        const hit = stores.find(([re]) => re.test(ua));
+        if (!hit || !hit[2]) return;
+        const add = document.getElementById("add-to");
+        add.href = hit[2];
+        add.querySelector("span").textContent = `Add to ${hit[1]}`;
+        add.hidden = false;
+      })();
       if (!isMac) document.querySelectorAll("[data-shortcut]").forEach((el) => (el.innerHTML = "<kbd>Shift</kbd><kbd>Alt</kbd><kbd>C</kbd>"));
       const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 

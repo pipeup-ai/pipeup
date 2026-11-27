@@ -15,38 +15,41 @@ The data and its behaviour, the scenarios the acceptance criteria start from, th
 | Density | compact, regular, roomy | regular |
 | Icons | outline, solid | outline |
 | Motion | still, subtle, lively | subtle |
-| Radius | square, soft, round | square |
+| Radius | square, soft, round | soft |
 | Theme | light, dark, contrast | light |
 
 Each text colour on its surface, with its contrast ratio in every theme (at least 4.5:1). Keep these pairs; another pairing is not designed.
 
 | Text | Surface | light | dark | contrast |
 |---|---|---:|---:|---:|
-| `--ds-color-accent` | `--ds-color-surface-default` | 4.77:1 | 8.32:1 | 8.48:1 |
-| `--ds-color-accent` | `--ds-color-surface-raised` | 5.25:1 | 7.31:1 | 8.48:1 |
-| `--ds-color-text-default` | `--ds-color-surface-default` | 13.57:1 | 13.96:1 | 21.00:1 |
-| `--ds-color-text-default` | `--ds-color-surface-raised` | 14.93:1 | 12.27:1 | 21.00:1 |
-| `--ds-color-text-default` | `--ds-color-surface-sunken` | 12.17:1 | 15.06:1 | 18.76:1 |
-| `--ds-color-text-muted` | `--ds-color-surface-default` | 6.74:1 | 8.11:1 | 13.51:1 |
-| `--ds-color-text-muted` | `--ds-color-surface-raised` | 7.41:1 | 7.13:1 | 13.51:1 |
-| `--ds-color-text-muted` | `--ds-color-surface-sunken` | 6.04:1 | 8.75:1 | 12.07:1 |
-| `--ds-color-text-muted` | `--ds-color-neutral-surface` | 5.82:1 | 5.85:1 | 11.33:1 |
-| `--ds-color-text-on-accent` | `--ds-color-accent` | 5.66:1 | 8.32:1 | 8.48:1 |
-| `--ds-color-text-on-accent` | `--ds-color-accent-hover` | 7.21:1 | 9.83:1 | 10.94:1 |
-| `--ds-color-text-on-accent` | `--ds-color-accent-pressed` | 9.31:1 | 6.32:1 | 13.92:1 |
-| `--ds-color-text-on-accent` | `--ds-color-status-danger` | 8.16:1 | 8.46:1 | 9.57:1 |
-| `--ds-color-text-on-strong` | `--ds-color-surface-strong` | 13.57:1 | 10.07:1 | 21.00:1 |
-| `--ds-color-text-on-strong-muted` | `--ds-color-surface-strong` | 8.35:1 | 5.85:1 | 14.45:1 |
-| `--ds-color-status-info` | `--ds-color-status-info-surface` | 6.67:1 | 7.40:1 | 9.69:1 |
-| `--ds-color-status-success` | `--ds-color-status-success-surface` | 6.13:1 | 8.30:1 | 8.90:1 |
-| `--ds-color-status-warning` | `--ds-color-status-warning-surface` | 5.68:1 | 8.67:1 | 9.65:1 |
-| `--ds-color-status-danger` | `--ds-color-status-danger-surface` | 6.18:1 | 7.40:1 | 8.56:1 |
+| `--ds-color-accent` | `--ds-color-surface-default` | 6.93:1 | 6.34:1 | 10.21:1 |
+| `--ds-color-accent` | `--ds-color-surface-raised` | 6.93:1 | 5.86:1 | 10.21:1 |
+| `--ds-color-text-default` | `--ds-color-surface-default` | 12.60:1 | 14.45:1 | 21.00:1 |
+| `--ds-color-text-default` | `--ds-color-surface-raised` | 12.60:1 | 13.36:1 | 21.00:1 |
+| `--ds-color-text-default` | `--ds-color-surface-sunken` | 11.65:1 | 15.18:1 | 18.76:1 |
+| `--ds-color-text-muted` | `--ds-color-surface-default` | 6.49:1 | 8.12:1 | 13.51:1 |
+| `--ds-color-text-muted` | `--ds-color-surface-raised` | 6.49:1 | 7.51:1 | 13.51:1 |
+| `--ds-color-text-muted` | `--ds-color-surface-sunken` | 6.01:1 | 8.53:1 | 12.07:1 |
+| `--ds-color-text-muted` | `--ds-color-neutral-surface` | 5.44:1 | 6.59:1 | 11.33:1 |
+| `--ds-color-text-default` | `--ds-color-accent-surface` | 10.57:1 | 11.88:1 | 16.27:1 |
+| `--ds-color-text-on-accent` | `--ds-color-accent` | 6.93:1 | 6.34:1 | 10.21:1 |
+| `--ds-color-text-on-accent` | `--ds-color-accent-hover` | 8.47:1 | 7.75:1 | 12.60:1 |
+| `--ds-color-text-on-accent` | `--ds-color-accent-pressed` | 10.21:1 | 5.22:1 | 14.98:1 |
+| `--ds-color-text-on-accent` | `--ds-color-status-danger` | 8.42:1 | 8.32:1 | 9.57:1 |
+| `--ds-color-text-on-strong` | `--ds-color-surface-strong` | 12.60:1 | 14.45:1 | 21.00:1 |
+| `--ds-color-text-on-strong-muted` | `--ds-color-surface-strong` | 7.06:1 | 5.44:1 | 14.45:1 |
+| `--ds-color-status-info` | `--ds-color-status-info-surface` | 7.59:1 | 8.53:1 | 9.69:1 |
+| `--ds-color-status-success` | `--ds-color-status-success-surface` | 6.93:1 | 8.94:1 | 8.90:1 |
+| `--ds-color-status-warning` | `--ds-color-status-warning-surface` | 7.16:1 | 8.77:1 | 9.65:1 |
+| `--ds-color-status-danger` | `--ds-color-status-danger-surface` | 7.28:1 | 7.28:1 | 8.56:1 |
 
 The tokens each component uses:
 
-- **Avatar:** `--ds-border-width-strong`, `--ds-color-neutral-surface`, `--ds-color-surface-raised`, `--ds-color-text-muted`, `--ds-radius-pill`, `--ds-size-avatar-lg`, `--ds-size-avatar-md`, `--ds-size-avatar-sm`, `--ds-text-size-lg`, `--ds-text-size-xs`, `--ds-text-tracking-normal`, `--ds-text-weight-strong`
+- **Avatar:** `--ds-border-width-strong`, `--ds-color-neutral-surface`, `--ds-color-surface-raised`, `--ds-color-text-muted`, `--ds-radius-avatar`, `--ds-size-avatar-lg`, `--ds-size-avatar-md`, `--ds-size-avatar-sm`, `--ds-text-size-lg`, `--ds-text-size-xs`, `--ds-text-tracking-normal`, `--ds-text-weight-strong`
+- **Browser chrome:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-default`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-surface-default`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-color-text-on-accent`, `--ds-color-window-close`, `--ds-color-window-minimise`, `--ds-color-window-zoom`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-font-family-base`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-radius-control`, `--ds-radius-pill`, `--ds-radius-surface`, `--ds-shadow-frame`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-8`, `--ds-target-min`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-weight-strong`
 - **Button:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-accent-hover`, `--ds-color-accent-pressed`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-status-danger`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-color-text-on-accent`, `--ds-control-height`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-font-family-base`, `--ds-icon-size`, `--ds-icon-size-sm`, `--ds-motion-ease`, `--ds-motion-ease-steady`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-opacity-disabled`, `--ds-radius-control`, `--ds-space-1`, `--ds-space-2`, `--ds-space-4`, `--ds-space-5`, `--ds-target-min`, `--ds-text-leading-tight`, `--ds-text-size-lg`, `--ds-text-size-md`, `--ds-text-tracking-normal`, `--ds-text-weight-medium`
 - **Card:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-motion-ease`, `--ds-motion-lift`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-surface`, `--ds-shadow-lifted`, `--ds-shadow-raised`, `--ds-space-2`, `--ds-space-3`, `--ds-space-5`, `--ds-text-leading-tight`, `--ds-text-size-lg`, `--ds-text-size-md`, `--ds-text-size-sm`, `--ds-text-weight-strong`
+- **Chart:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-border-default`, `--ds-color-border-strong`, `--ds-color-status-danger-mark`, `--ds-color-status-info-mark`, `--ds-color-status-success-mark`, `--ds-color-status-warning-mark`, `--ds-color-surface-default`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-settle`, `--ds-radius-pill`, `--ds-size-dot`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-5`, `--ds-space-7`, `--ds-space-8`, `--ds-text-leading-tight`, `--ds-text-size-md`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-tracking-caps`, `--ds-text-weight-medium`, `--ds-text-weight-regular`, `--ds-text-weight-strong`
 - **Checkbox:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-status-danger`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-icon-size`, `--ds-icon-size-sm`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-opacity-disabled`, `--ds-space-1`, `--ds-space-2`, `--ds-target-min`, `--ds-text-leading-tight`, `--ds-text-size-md`, `--ds-text-size-sm`, `--ds-text-weight-medium`
 - **Chip:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-status-warning`, `--ds-color-status-warning-surface`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-radius-pill`, `--ds-space-1`, `--ds-space-2`, `--ds-text-leading-tight`, `--ds-text-size-xs`, `--ds-text-tracking-normal`, `--ds-text-weight-medium`, `--ds-text-weight-regular`
 - **Code block:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-strong`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-color-text-on-strong`, `--ds-color-text-on-strong-muted`, `--ds-focus-width`, `--ds-font-family-base`, `--ds-font-family-mono`, `--ds-icon-size-sm`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-radius-surface`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-target-min`, `--ds-text-leading-body`, `--ds-text-leading-tight`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-weight-medium`
@@ -54,12 +57,12 @@ The tokens each component uses:
 - **Comment control:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-status-warning-mark`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-color-text-on-accent`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-radius-pill`, `--ds-radius-surface`, `--ds-shadow-raised`, `--ds-size-dot`, `--ds-space-1`, `--ds-space-3`, `--ds-space-8`, `--ds-target-min`, `--ds-target-touch`, `--ds-text-size-sm`, `--ds-text-weight-strong`
 - **Comments panel:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-border-strong`, `--ds-color-surface-default`, `--ds-color-surface-raised`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-font-family-mono`, `--ds-layout-panel`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-6`, `--ds-text-size-xs`, `--ds-text-tracking-caps`
 - **Dialog:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-strong`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-layout-measure`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-radius-surface`, `--ds-shadow-overlay`, `--ds-shadow-raised`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-5`, `--ds-space-6`, `--ds-space-8`, `--ds-target-min`, `--ds-text-leading-tight`, `--ds-text-size-md`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-weight-medium`, `--ds-text-weight-strong`
-- **Highlight:** `--ds-border-width-strong`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-status-warning-mark`, `--ds-color-status-warning-surface`, `--ds-color-surface-sunken`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-space-1`
+- **Highlight:** `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-accent-surface`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-surface-sunken`, `--ds-color-text-on-accent`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-space-1`
 - **Icon button:** `--ds-border-width`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-control-height`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-opacity-disabled`, `--ds-radius-control`, `--ds-target-min`
 - **Inline alert:** `--ds-border-width`, `--ds-color-status-danger`, `--ds-color-status-danger-mark`, `--ds-color-status-danger-surface`, `--ds-color-status-info`, `--ds-color-status-info-mark`, `--ds-color-status-info-surface`, `--ds-color-status-success`, `--ds-color-status-success-mark`, `--ds-color-status-success-surface`, `--ds-color-status-warning`, `--ds-color-status-warning-mark`, `--ds-color-status-warning-surface`, `--ds-font-family-mono`, `--ds-icon-size-sm`, `--ds-motion-ease`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-space-1`, `--ds-space-3`, `--ds-space-4`, `--ds-text-leading-body`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-weight-strong`
 - **Key:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-border-strong`, `--ds-color-surface-raised`, `--ds-color-text-default`, `--ds-font-family-base`, `--ds-radius-control`, `--ds-space-1`, `--ds-space-5`, `--ds-text-size-sm`, `--ds-text-weight-medium`
 - **List row:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-focus-width`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-radius-control`, `--ds-shadow-raised`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-target-min`, `--ds-text-leading-tight`, `--ds-text-size-md`, `--ds-text-size-sm`, `--ds-text-weight-medium`, `--ds-text-weight-regular`, `--ds-text-weight-strong`
-- **Naming bar:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-border-strong`, `--ds-color-surface-raised`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-control-height`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-space-1`, `--ds-space-3`, `--ds-space-8`, `--ds-text-size-xs`, `--ds-text-tracking-caps`, `--ds-text-tracking-normal`, `--ds-text-weight-strong`
+- **Naming bar:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-accent-surface`, `--ds-color-surface-raised`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-control-height`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-control`, `--ds-space-1`, `--ds-space-3`, `--ds-space-8`, `--ds-text-size-xs`, `--ds-text-tracking-caps`, `--ds-text-tracking-normal`, `--ds-text-weight-strong`
 - **Page header:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-surface-default`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-control-height`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-6`, `--ds-text-leading-tight`, `--ds-text-size-sm`, `--ds-text-weight-medium`
 - **Pin:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-on-accent`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-radius-pill`, `--ds-shadow-raised`, `--ds-target-min`, `--ds-text-size-sm`, `--ds-text-weight-strong`
 - **Popover menu:** `--ds-border-width`, `--ds-color-border-default`, `--ds-color-surface-raised`, `--ds-motion-ease`, `--ds-motion-lift`, `--ds-motion-settle`, `--ds-radius-surface`, `--ds-shadow-overlay`, `--ds-space-1`, `--ds-space-2`, `--ds-space-4`, `--ds-space-8`
@@ -70,6 +73,7 @@ The tokens each component uses:
 - **Sidebar navigation:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-default`, `--ds-color-surface-default`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-color-text-on-accent`, `--ds-layout-sidebar`, `--ds-radius-control`, `--ds-size-avatar-md`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-5`, `--ds-space-6`, `--ds-text-leading-tight`, `--ds-text-size-lg`, `--ds-text-size-sm`, `--ds-text-size-xs`, `--ds-text-tracking-normal`, `--ds-text-tracking-tight`, `--ds-text-weight-medium`, `--ds-text-weight-regular`, `--ds-text-weight-strong`
 - **Site header:** `--ds-border-width`, `--ds-border-width-strong`, `--ds-color-border-default`, `--ds-color-focus-ring`, `--ds-color-surface-default`, `--ds-color-surface-sunken`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-control-height`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-layout-margin`, `--ds-layout-margin-narrow`, `--ds-layout-max-width`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-radius-control`, `--ds-size-avatar-sm`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-space-4`, `--ds-space-6`, `--ds-target-min`, `--ds-text-leading-tight`, `--ds-text-size-lg`, `--ds-text-size-md`, `--ds-text-tracking-tight`, `--ds-text-weight-medium`, `--ds-text-weight-strong`
 - **Slide:** `--ds-border-width`, `--ds-color-border-strong`, `--ds-color-surface-raised`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-font-family-mono`, `--ds-motion-ease`, `--ds-motion-settle`, `--ds-radius-surface`, `--ds-shadow-frame`, `--ds-space-2`, `--ds-space-4`, `--ds-space-5`, `--ds-space-7`, `--ds-space-8`, `--ds-text-leading-body`, `--ds-text-leading-tight`, `--ds-text-size-3xl`, `--ds-text-size-sm`, `--ds-text-size-xl`, `--ds-text-tracking-display`, `--ds-text-weight-strong`
+- **Sparkline:** `--ds-border-width-strong`, `--ds-color-accent`, `--ds-color-border-strong`, `--ds-color-text-default`, `--ds-color-text-muted`, `--ds-size-dot`, `--ds-space-1`, `--ds-text-size-md`, `--ds-text-size-xs`, `--ds-text-weight-medium`
 - **Status pill:** `--ds-color-neutral-mark`, `--ds-color-neutral-surface`, `--ds-color-status-danger-mark`, `--ds-color-status-info-mark`, `--ds-color-status-success-mark`, `--ds-color-status-warning-mark`, `--ds-color-text-muted`, `--ds-radius-pill`, `--ds-size-dot`, `--ds-space-1`, `--ds-space-2`, `--ds-space-3`, `--ds-text-leading-tight`, `--ds-text-size-xs`, `--ds-text-weight-medium`
 - **Step list:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-default`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-color-text-muted`, `--ds-color-text-on-accent`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-radius-pill`, `--ds-radius-surface`, `--ds-size-avatar-sm`, `--ds-space-1`, `--ds-text-size-xs`, `--ds-text-weight-strong`
 - **Switch:** `--ds-border-width`, `--ds-color-accent`, `--ds-color-border-strong`, `--ds-color-focus-ring`, `--ds-color-neutral-surface`, `--ds-color-surface-raised`, `--ds-color-surface-sunken`, `--ds-focus-offset`, `--ds-focus-width`, `--ds-icon-size`, `--ds-motion-ease`, `--ds-motion-quick`, `--ds-motion-settle`, `--ds-opacity-disabled`, `--ds-radius-pill`
@@ -95,6 +99,13 @@ The ids the workspace uses for what this specification names, for people who wor
 | Step | Reopen the page with its comments (Come back to a page later) | `jny-come-back-later/reopen-page` |
 | Step | Hide the comments to read (Come back to a page later) | `jny-come-back-later/hide-comments` |
 | Step | Find a thread whose words were cut (Come back to a page later) | `jny-come-back-later/content-gone` |
+| Journey | Comment on any page in Safari | `jny-comment-in-safari` |
+| Step | Turn Pipeup on in Safari (Comment on any page in Safari) | `jny-comment-in-safari/turn-on-in-safari` |
+| Step | Press Pipeup in the toolbar (Comment on any page in Safari) | `jny-comment-in-safari/press-pipeup` |
+| Step | Answer Safari's one question (Comment on any page in Safari) | `jny-comment-in-safari/allow-once` |
+| Step | Write the first comment (Comment on any page in Safari) | `jny-comment-in-safari/first-comment` |
+| Step | Copy or save from the toolbar menu (Comment on any page in Safari) | `jny-comment-in-safari/the-menu` |
+| Step | A page with Pipeup built in (Comment on any page in Safari) | `jny-comment-in-safari/built-in-page` |
 | Journey | Go through every comment | `jny-go-through-every-comment` |
 | Step | See every comment in one place (Go through every comment) | `jny-go-through-every-comment/all-comments` |
 | Step | Bring resolved threads back (Go through every comment) | `jny-go-through-every-comment/show-resolved` |
@@ -126,5 +137,16 @@ The ids the workspace uses for what this specification names, for people who wor
 
 Where each open question is answered:
 
-- How will this be observed: moderated sessions, or something counted?: `project.md:50`
-- How many pastes, and who judges that the agent found the place?: `project.md:51`
+- Safari's exact title on the sheet. Proposed: “Pipeup” would like to acce…: `journeys/jny-comment-in-safari/screens/allow-once.md:25`
+- The brief has no Business model yet: write it, or a clarification marker: `project.md:20`
+- The brief has no Traction yet: write it, or a clarification marker: `project.md:20`
+- The brief has no Team yet: write it, or a clarification marker: `project.md:20`
+- The brief has no Ask yet: write it, or a clarification marker: `project.md:20`
+- How will this be observed: moderated sessions, or something counted?: `project.md:53`
+- How many pastes, and who judges that the agent found the place?: `project.md:54`
+- What future will play out, in one sentence, that makes this product nece…: `project.md:57`
+- How large is the market for commenting and review tools? No published, s…: `project.md:91`
+- Google Docs and Microsoft Word are marked partly for handing comments to…: `project.md:111`
+- Do Pastel's reviewers need an account to comment? Not verified, so Paste…: `project.md:112`
+- What does spacesheep cost, and can someone comment there without an acco…: `project.md:113`
+- Does commenting in the Vercel Toolbar always need a Vercel login? Not ch…: `project.md:114`

@@ -21,14 +21,14 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 - "Its {n} replies go with it.": the dialog's meta line when it has replies ("Its 1 reply goes with it.").
 - "Reply discarded.": after Cancel in a reply box with words in it.
 
-- **FR-009** Every thread takes replies one level deep beneath the comment, reactions as a quick row of five emoji that become counted pills, and a More menu with Copy thread, and on the writer's own comment Edit and Delete, where Delete asks once more.
+- **FR-009** Every thread takes replies one level deep beneath the comment, reactions as a quick row of six emoji (and a "more" for the full picker) that become counted pills, and a More menu with Copy thread, and on the writer's own comment Edit and Delete, where Delete asks once more.
 
 <details><summary>Acceptance criteria (4)</summary>
 
-- **AC-answer-a-thread-1** (FR-009): Given her thread open, when Maya types a reply and presses Enter, then the reply appears indented beneath the comment with her name and "just now", and the reply box is empty with focus still in it. _(proven in the prototype, 2026-11-10)_
-- **AC-answer-a-thread-2** (FR-009): Given her thread open, when she presses React and chooses 👍, then "👍 1" shows under the comment and the quick row goes. _(proven in the prototype, 2026-11-10)_
-- **AC-answer-a-thread-3** (FR-009): Given her thread open, when she presses More, then a menu shows Copy thread, Edit and Delete in that order, and Esc closes it with focus back on More. _(proven in the prototype, 2026-11-10)_
-- **AC-answer-a-thread-4** (FR-009): Given the More menu open, when she chooses Delete and confirms, then the thread and its card are gone and the tag's count falls by one. _(proven in the prototype, 2026-11-10)_
+- **AC-answer-a-thread-1** (FR-009): Given her thread open, when Maya types a reply and presses Enter, then the reply appears indented beneath the comment with her name and "just now", and the reply box is empty with focus still in it. _(proven in the prototype, 2026-11-26)_
+- **AC-answer-a-thread-2** (FR-009): Given her thread open, when she presses React and chooses 👍, then "👍 1" shows under the comment and the quick row goes. _(proven in the prototype, 2026-11-26)_
+- **AC-answer-a-thread-3** (FR-009): Given her thread open, when she presses More, then a menu shows Copy thread, Edit and Delete in that order, and Esc closes it with focus back on More. _(proven in the prototype, 2026-11-26)_
+- **AC-answer-a-thread-4** (FR-009): Given the More menu open, when she chooses Delete and confirms, then the thread and its card are gone and the tag's count falls by one. _(proven in the prototype, 2026-11-26)_
   - Set up: the read-thread screen, then More.
 
 </details>
@@ -44,9 +44,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-delete-a-thread-1** (FR-013): Given her thread open, when Maya chooses Delete in the More menu, then a dialog asks "Delete this comment?" and says it has no replies, with Cancel focused. _(proven in the prototype, 2026-11-10)_
-- **AC-delete-a-thread-2** (FR-013): Given the dialog, when she presses Esc, then it closes, the thread is still there and focus is on More. _(proven in the prototype, 2026-11-10)_
-- **AC-delete-a-thread-3** (FR-013): Given the dialog, when she presses Delete, then the card is gone, no mark is left beside the paragraph and the tag shows no count. _(proven in the prototype, 2026-11-10)_
+- **AC-delete-a-thread-1** (FR-013): Given her thread open, when Maya chooses Delete in the More menu, then a dialog asks "Delete this comment?" and says it has no replies, with Cancel focused. _(proven in the prototype, 2026-11-26)_
+- **AC-delete-a-thread-2** (FR-013): Given the dialog, when she presses Esc, then it closes, the thread is still there and focus is on More. _(proven in the prototype, 2026-11-26)_
+- **AC-delete-a-thread-3** (FR-013): Given the dialog, when she presses Delete, then the card is gone, no mark is left beside the paragraph and the tag shows no count. _(proven in the prototype, 2026-11-26)_
 
 </details>
 
@@ -61,9 +61,9 @@ Wording (text the mock does not show as it is; `{…}` is what the data fills in
 
 <details><summary>Acceptance criteria (3)</summary>
 
-- **AC-resolve-a-thread-1** (FR-014): Given her thread at rest, when Maya presses Resolve, then the card and the paragraph's mark are gone, the tag's count falls by one and "Resolved." shows beside the tag. _(proven in the prototype, 2026-11-10)_
-- **AC-resolve-a-thread-2** (FR-014): Given a resolved thread, when she copies as Markdown, then the thread is not in the text. _(proven in the prototype, 2026-11-10)_
-- **AC-resolve-a-thread-3** (FR-014): Given a resolved thread and All comments open with Resolved on, when she presses Reopen on it, then the card is back beside its paragraph and the tag's count rises by one. _(proven in the prototype, 2026-11-10)_
+- **AC-resolve-a-thread-1** (FR-014): Given her thread at rest, when Maya presses Resolve, then the card and the paragraph's mark are gone, the tag's count falls by one and "Resolved." shows beside the tag. _(proven in the prototype, 2026-11-26)_
+- **AC-resolve-a-thread-2** (FR-014): Given a resolved thread, when she copies as Markdown, then the thread is not in the text. _(proven in the prototype, 2026-11-26)_
+- **AC-resolve-a-thread-3** (FR-014): Given a resolved thread and All comments open with Resolved on, when she presses Reopen on it, then the card is back beside its paragraph and the tag's count rises by one. _(proven in the prototype, 2026-11-26)_
   - Set up: the read-thread screen, Esc, then Resolve; then All comments with Resolved on.
 
 </details>

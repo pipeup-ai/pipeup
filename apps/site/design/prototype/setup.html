@@ -9,7 +9,7 @@
 <script src="runtime/data.js"></script>
 <script defer src="runtime/prototype.js"></script>
 <script defer src="runtime/ds.js"></script>
-<meta name="designup-review" content="{&quot;service&quot;:&quot;https://pipeup-design-reviews.noisyniche8.chatgpt.site&quot;,&quot;project&quot;:&quot;pipeup&quot;,&quot;design&quot;:&quot;https://pipeup-ai.github.io/pipeup/design/&quot;,&quot;page&quot;:&quot;prototype/setup.html&quot;,&quot;snapshot&quot;:&quot;e2b6658a&quot;}">
+<meta name="designup-review" content="{&quot;service&quot;:&quot;https://pipeup-design-reviews.noisyniche8.chatgpt.site&quot;,&quot;project&quot;:&quot;pipeup&quot;,&quot;design&quot;:&quot;https://pipeup-ai.github.io/pipeup/design/&quot;,&quot;page&quot;:&quot;prototype/setup.html&quot;,&quot;snapshot&quot;:&quot;3ff480bd&quot;}">
 <link rel="stylesheet" href="../site/assets/review-submit.css">
 <script src="../site/assets/review-auth.js" defer></script>
 <script src="../site/assets/review-submit.js" defer></script>
@@ -23,8 +23,8 @@
         <div class="ds-stack ds-stack--tight" data-ref="headline" data-pipeup-id="headline"><h1 class="ds-text-display-md">Add Pipeup to a page</h1><p class="ds-text-lede">One script tag, pinned to a version, and a document key that stays the same once people have commented.</p></div>
         <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="key-block" data-pipeup-id="key-block"><div class="ds-code-block__header"><span class="ds-code-block__title">The html tag</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code>&lt;html data-pipeup-doc="MQQLnEw1V1KQtXotdXeyksEYEB60YVpvSh65pKhcG38"&gt;</code></pre></div>
         <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="script-block" data-pipeup-id="script-block"><div class="ds-code-block__header"><span class="ds-code-block__title">Just before the end of body</span><button class="ds-code-block__copy" type="button" data-flag="copied"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code>&lt;script
-  src="https://cdn.jsdelivr.net/npm/pipeup@0.8.2/dist/pipeup.min.js"
-  integrity="sha384-…"
+  src="https://cdn.jsdelivr.net/npm/pipeup@1.1.0/dist/pipeup.min.js"
+  integrity="sha384-UYNs9fSoacI36Qr8J/GuLazXlHCXtrWOkn0/gH6lBDT6RFIsDY1zzi2xLwZ94aOc"
   crossorigin="anonymous"
 &gt;&lt;/script&gt;</code></pre></div>
         <p class="ds-text-body" data-ref="make-a-key" data-pipeup-id="make-a-key">Make a key in any browser console on a page with Pipeup loaded: <code class="ds-text-mono">await Pipeup.newDocumentAttribute()</code></p>
@@ -33,7 +33,7 @@
       </div>
       <div class="ds-stack ds-stack--loose" data-ref="check" data-pipeup-id="check" data-if="hash:check-the-page">
         <div class="ds-stack ds-stack--tight" data-ref="headline-check" data-pipeup-id="headline-check"><h1 class="ds-text-display-md">Run the check</h1><p class="ds-text-lede">What Pipeup changes or covers on the page, at three widths.</p></div>
-        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block" data-pipeup-id="command-block"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@0 check page.html</code></pre></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block" data-pipeup-id="command-block"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@1 check page.html</code></pre></div>
         <div class="ds-code-block ds-code-block--strong" data-ds="code-block" data-ref="report-block" data-pipeup-id="report-block"><div class="ds-code-block__header"><span class="ds-code-block__title">pipeup check</span></div><pre class="ds-code-block__code"><code>page.html
   390: nothing covered, nothing changed
   820: nothing covered, nothing changed
@@ -42,7 +42,7 @@
       </div>
       <div class="ds-stack ds-stack--loose" data-ref="check-failed" data-pipeup-id="check-failed" data-if="hash:check-the-page-error">
         <div class="ds-stack ds-stack--tight" data-ref="headline-check-failed" data-pipeup-id="headline-check-failed"><h1 class="ds-text-display-md">Run the check</h1><p class="ds-text-lede">What Pipeup changes or covers on the page, at three widths.</p></div>
-        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block-failed" data-pipeup-id="command-block-failed"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@0 check page.html</code></pre></div>
+        <div class="ds-code-block ds-code-block--compact" data-ds="code-block" data-ref="command-block-failed" data-pipeup-id="command-block-failed"><div class="ds-code-block__header"><span class="ds-code-block__title">Terminal</span><button class="ds-code-block__copy" type="button"><span class="ds-icon ds-code-block__copy-icon" data-icon="copy"></span><span class="ds-icon ds-code-block__done-icon" data-icon="check"></span><span class="ds-code-block__copy-label">Copy</span></button></div><pre class="ds-code-block__code"><code><span class="ds-code-block__prefix">$ </span>npx --yes pipeup@1 check page.html</code></pre></div>
         <div class="ds-code-block ds-code-block--strong" data-ds="code-block" data-ref="report-block-failed" data-pipeup-id="report-block-failed"><div class="ds-code-block__header"><span class="ds-code-block__title">pipeup check</span></div><pre class="ds-code-block__code"><code>page.html
   390: nothing covered, nothing changed
   820: nothing covered, nothing changed
