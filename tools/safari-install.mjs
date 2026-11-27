@@ -112,6 +112,17 @@ if (existsSync(home))
 rmSync(home, { recursive: true, force: true });
 cpSync(built, home, { recursive: true });
 execFileSync("codesign", ["--verify", "--deep", "--strict", home]);
+// xcodebuild's own product (and a release build's, from the store packaging) is a second Pipeup with the same
+// version as far as Safari is concerned: forgotten and deleted, so one copy is left (26 November 2026).
+for (const extra of [
+  built,
+  `${dist}/safari-app/rel/Build/Products/Release/Pipeup.app`,
+]) {
+  if (!existsSync(extra)) continue;
+  spawnSync("pluginkit", ["-r", appex(extra)], { stdio: "ignore" });
+  spawnSync(lsregister, ["-u", extra], { stdio: "ignore" });
+  rmSync(extra, { recursive: true, force: true });
+}
 execFileSync("pluginkit", ["-a", appex(home)]);
 execFileSync("open", [home]);
 await new Promise((r) => setTimeout(r, 2500));
@@ -124,6 +135,18 @@ const registered = run("pluginkit", ["-m", "-v", "-A", "-i", EXT]);
 const where = registered.split("\n").filter((l) => l.includes("/"));
 if (where.length !== 1 || !where[0].includes(home))
   fail(`Safari would see more than one Pipeup:\n${registered}`);
+// Safari's list follows Launch Services, which can know copies pluginkit doesn't: the same check there.
+const known = run(lsregister, ["-dump"], true)
+  .split("\n")
+  .map(
+    (l) => /^path:\s+(\/.*\/Pipeup\.app)(?:\s+\(0x[0-9a-f]+\))?$/.exec(l)?.[1],
+  )
+  .filter(Boolean)
+  .filter((p) => p !== home && existsSync(p));
+if (known.length)
+  fail(
+    `Safari would see more than one Pipeup; also at:\n  ${known.join("\n  ")}`,
+  );
 
 const manifest = JSON.parse(
   readFileSync(`${appex(home)}/Contents/Resources/manifest.json`, "utf8"),
@@ -139,7 +162,7 @@ console.log(
 );
 
 function run(cmd, args, quiet = false) {
-  const r = spawnSync(cmd, args, { encoding: "utf8" });
+  const r = spawnSync(cmd, args, { encoding: "utf8", maxBuffer: 1 << 28 });
   if (r.status !== 0 && !quiet)
     fail(`${cmd} ${args.join(" ")} failed:\n${r.stderr || r.stdout}`);
   return (r.stdout ?? "") + (quiet ? (r.stderr ?? "") : "");
